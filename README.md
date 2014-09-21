@@ -7,6 +7,8 @@ HydraFW is a native C (and asm) open source firmware for HydraBus board with sup
 
 For windows users, how to flash hydrafw firmware:
 
+![HydraBus board USB DFU mode](HydraBus_board.jpg)
+
     1) PowerOff HydraBus board (disconnect all USB)
     2) Connect HydraBus pin BOOT0 to 3V3 (using a dual female splittable jumper wire) to enter USB DFU
     3) Connect MicroUsb cable from PC to HydraBus USB1 board, now windows shall detect a new device
