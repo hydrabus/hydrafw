@@ -24,36 +24,27 @@ you can also use arrow up or down for history.
 mount, umount, ls, cat & erase work only when a micro SD card is inserted in HydraBus.
 
 HydraFW supported commands in v0.1Beta for HydraBus:
-? or h         - Help
-clear          - clear screen
-info           - info on FW & HW
-ch_mem         - memory info
-ch_threads     - threads
-ch_test        - chibios tests
-mount          - mount sd
-umount         - unmount sd
-ls [opt dir]   - list files in sd
-cat <filename> - display sd file (ASCII)
-erase          - erase sd
-Those commands are very basic and more will come later to read/write on I2C, SPI, UART...
 
-HydraFW supported commands in v0.1Beta for HydraBus+HydraNFC(HydraNFC detected):
-? or h         - Help
-clear          - clear screen
-info           - info on FW & HW
-ch_mem         - memory info
-ch_threads     - threads
-ch_test        - chibios tests
-mount          - mount sd
-umount         - unmount sd
-ls [opt dir]   - list files in sd
-cat <filename> - display sd file (ASCII)
-erase          - erase sd
-nfc_mifare     - NFC read Mifare/ISO14443A UID
-nfc_vicinity   - NFC read Vicinity UID
-nfc_dump       - NFC dump registers
-nfc_sniff      - NFC start sniffer ISO14443A
-nfc_sniff can be started by K3 and stopped by K4 buttons
+    ? or h         - Help
+    clear          - clear screen
+    info           - info on FW & HW
+    ch_mem         - memory info
+    ch_threads     - threads
+    ch_test        - chibios tests
+    mount          - mount sd
+    umount         - unmount sd
+    ls [opt dir]   - list files in sd
+    cat <filename> - display sd file (ASCII)
+    erase          - erase sd
+    Those commands are very basic and more will come later to read/write on I2C, SPI, UART...
+
+HydraFW additional commands in v0.1Beta for HydraBus+HydraNFC(HydraNFC detected):
+
+    nfc_mifare     - NFC read Mifare/ISO14443A UID
+    nfc_vicinity   - NFC read Vicinity UID
+    nfc_dump       - NFC dump registers
+    nfc_sniff      - NFC start sniffer ISO14443A
+    nfc_sniff can be started by K3 and stopped by K4 buttons
 
 The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3 available here:
 https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
