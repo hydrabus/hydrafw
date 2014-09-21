@@ -54,6 +54,7 @@ Custom chibios (based on ChibiOS 3.0) included as Submodule.
 Custom microrl included as Submodule.
 
 To build hydrafw firmware:
-    $ cd in root directory (which contains directories common, fatfs, hydrabus, hydranfc ...)
+
+    cd in root directory (which contains directories common, fatfs, hydrabus, hydranfc ...)
     $ make clean
     $ make
