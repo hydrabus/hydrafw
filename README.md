@@ -5,21 +5,6 @@ HydraFW is a native C (and asm) open source firmware for HydraBus board with sup
 
 ![HydraBus+HydraNFC board](HydraBus_HydraNFC_board.jpg)
 
-##How to build, flash and use hydrafw on windows:
-
-![HydraBus board USB DFU mode](HydraBus_board.jpg)
-
-    1) PowerOff HydraBus board (disconnect all USB)
-    2) Connect HydraBus pin BOOT0 to 3V3 (using a dual female splittable jumper wire) to enter USB DFU
-    3) Connect MicroUsb cable from PC to HydraBus USB1 board, now windows shall detect a new device
-       (if you have problem to detect the device use an USB1.1 or 2.0 Hub
-          as there is problem with USB3.0 port on some computer and windows version).
-    4) Download the USB DFU driver from directory https://github.com/bvernoux/hydrabus/firmware/STM32F4_USB_DFU_Driver.zip
-     4-1) Extract the archive and install the drivers.
-    5) Launch from current directory update_fw_usb_dfu_hydrabus.bat (will flash latest firmware during about 10s)
-    6) Disconnect MicroUsb cable from HydraBus and Disconnect "BOOT0 to 3V3"
-    7) Reconnect MicroUsb cable on USB1 or USB2(both port are supported), Now hydrafw is started.
-
 I recommend Putty for terminal to be used with HydraBus connected with USB1 or 2
 When connected type h for help and use TAB key for completion,
 you can also use arrow up or down for history.
@@ -47,6 +32,21 @@ HydraFW additional commands in v0.1Beta for HydraBus+HydraNFC(HydraNFC detected)
     nfc_dump       - NFC dump registers
     nfc_sniff      - NFC start sniffer ISO14443A
     nfc_sniff can be started by K3 and stopped by K4 buttons
+
+##How to build, flash and use hydrafw on windows:
+
+![HydraBus board USB DFU mode](HydraBus_board.jpg)
+
+    1) PowerOff HydraBus board (disconnect all USB)
+    2) Connect HydraBus pin BOOT0 to 3V3 (using a dual female splittable jumper wire) to enter USB DFU
+    3) Connect MicroUsb cable from PC to HydraBus USB1 board, now windows shall detect a new device
+       (if you have problem to detect the device use an USB1.1 or 2.0 Hub
+          as there is problem with USB3.0 port on some computer and windows version).
+    4) Download the USB DFU driver from directory https://github.com/bvernoux/hydrabus/firmware/STM32F4_USB_DFU_Driver.zip
+     4-1) Extract the archive and install the drivers.
+    5) Launch from current directory update_fw_usb_dfu_hydrabus.bat (will flash latest firmware during about 10s)
+    6) Disconnect MicroUsb cable from HydraBus and Disconnect "BOOT0 to 3V3"
+    7) Reconnect MicroUsb cable on USB1 or USB2(both port are supported), Now hydrafw is started.
 
 The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3 available here:
 https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
