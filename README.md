@@ -10,7 +10,7 @@ When connected type h for help and use TAB key for completion,
 you can also use arrow up or down for history.
 mount, umount, ls, cat & erase work only when a micro SD card is inserted in HydraBus.
 
-HydraFW supported commands in v0.1Beta for HydraBus:
+##HydraFW supported commands in v0.1Beta for HydraBus:
 
     ? or h         - Help
     clear          - clear screen
@@ -25,7 +25,7 @@ HydraFW supported commands in v0.1Beta for HydraBus:
     erase          - erase sd
     Those commands are very basic and more will come later to read/write on I2C, SPI, UART...
 
-HydraFW additional commands in v0.1Beta for HydraBus+HydraNFC(HydraNFC detected):
+##HydraFW additional commands in v0.1Beta for HydraBus+HydraNFC(HydraNFC detected):
 
     nfc_mifare     - NFC read Mifare/ISO14443A UID
     nfc_vicinity   - NFC read Vicinity UID
