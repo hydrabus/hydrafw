@@ -5,7 +5,7 @@ HydraFW is a native C (and asm) open source firmware for HydraBus board with sup
 
 ![HydraBus+HydraNFC board](HydraBus_HydraNFC_board.jpg)
 
-For windows users, how to flash hydrafw firmware:
+##How to build, flash and use hydrafw on windows:
 
 ![HydraBus board USB DFU mode](HydraBus_board.jpg)
 
@@ -52,11 +52,48 @@ The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3
 https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
 
 Required dependencies:
-Custom chibios (based on ChibiOS 3.0) included as Submodule.
-Custom microrl included as Submodule.
 
-To build hydrafw firmware:
+    Custom chibios (based on ChibiOS 3.0) included as Submodule.
+    Custom microrl included as Submodule.
 
-    cd in root directory (which contains directories common, fatfs, hydrabus, hydranfc ...)
-    $ make clean
-    $ make
+To build hydrafw firmware (with mingw or cygwin):
+
+    cd in root directory(which contains directories common, fatfs, hydrabus, hydranfc ...)
+    make clean
+    make
+
+
+##How to build, flash and use hydrafw on Linux (Debian/Ubuntu):
+
+###Prerequisites for Linux:
+
+    cd ~
+    sudo apt-get install git dfu-util python putty
+    wget http://www.bialix.com/intelhex/intelhex-1.4.zip
+    unzip intelhex-1.4.zip
+    cd intelhex-1.4
+    sudo python setup.py install
+    http-get https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
+    tar xjf gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
+    echo 'PATH=$PATH:~/gcc-arm-none-eabi-4_7-2013q3/bin' >> ~/.bashrc
+    git clone https://github.com/bvernoux/hydrabus.git hydrabus
+    cd hydrabus/
+    git submodule init
+    git submodule update
+
+###Build hydrafw on Linux:
+
+    cd ~/hydrabus/firmware/hydrafw
+    make clean
+    make
+
+###Flash and use hydrafw on Linux:
+
+    cd ~/hydrabus/firmware/hydrafw
+    python dfu-convert.py -i ./build/hydrafw.hex ./build/hydrafw.dfu
+    read -p "`echo -e '\nConnect HydraBus pin BOOT0 to 3V3 (using a dual female splittable jumper wire) to enter USB DFU then\nPress [Enter] key to start flashing HydraBus Firmware...'`"
+    sudo dfu-util -a 0 -d 0483:df11 -D ./build/hydrafw.dfu
+    read -p "`echo -e '\nDisconnect MicroUsb cable from HydraBus and Disconnect 'BOOT0 to 3V3' and Reconnect microUSB to PC then\nPress [Enter] key to start using HydraBus with Putty'`"
+    sudo cp 09-hydrabus.rules /etc/udev/rules.d/09-hydrabus.rules
+    sudo udevadm trigger
+    putty /dev/ttyACM0
