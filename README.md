@@ -3,6 +3,9 @@ HydraFW official firmware for HydraBus/HydraNFC
 
 HydraFW is a native C (and asm) open source firmware for HydraBus board with support of HydraNFC Shield.
 
+You can Buy HydraBus/HydraNFC Online in Seeed Studio Online Shop:
+http://www.seeedstudio.com/depot/HydraBus-m-132.html
+
 ![HydraBus+HydraNFC board](HydraBus_HydraNFC_board.jpg)
 
 I recommend Putty for terminal to be used with HydraBus connected with USB1 or 2
