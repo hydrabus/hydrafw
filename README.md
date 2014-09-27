@@ -51,6 +51,9 @@ mount, umount, ls, cat & erase work only when a micro SD card is inserted in Hyd
     6) Disconnect MicroUsb cable from HydraBus and Disconnect "BOOT0 to 3V3"
     7) Reconnect MicroUsb cable on USB1 or USB2(both port are supported), Now hydrafw is started.
 
+When hydrafw is executed on Windows you need to install STM32 Virtual COM Port Driver (only the first time) from:
+http://www.st.com/web/en/catalog/tools/PF257938
+
 The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3 available here:
 https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
 
