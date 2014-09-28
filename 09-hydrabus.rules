@@ -1,0 +1,6 @@
+# UDEV Rules for HydraBus boards, http://www.hydrabus.com
+#
+# To install, type this command in a terminal:
+#   sudo cp 09-hydrabus.rules /etc/udev/rules.d/09-hydrabus.rules
+#
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740", MODE:="0666"
