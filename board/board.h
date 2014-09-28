@@ -51,8 +51,8 @@
 /*
  * MCU type as defined in the ST header.
  */
-#define STM32F40_41xxx
-
+#define STM32F405xx
+#define PLATFORM_NAME           "STM32F405 High Performance with DSP and FPU"
 /*
  * IO pins assignments.
  */
