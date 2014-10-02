@@ -36,8 +36,29 @@ mount, umount, ls, cat & erase work only when a micro SD card is inserted in Hyd
     nfc_sniff      - NFC start sniffer ISO14443A
     nfc_sniff can be started by K3 and stopped by K4 buttons
 
-##How to build, flash and use hydrafw on windows:
+##How to build, flash and use hydrafw on Windows:
 
+###Required dependencies:
+
+    Custom chibios (based on ChibiOS 3.0) included as Submodule.
+    Custom microrl included as Submodule.
+    
+###Prerequisites for Windows:
+    git clone https://github.com/bvernoux/hydrabus.git hydrabus
+    cd hydrabus/
+    git submodule init
+    git submodule update
+
+
+###To build hydrafw firmware (with mingw or cygwin):
+The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3 available here:
+https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
+
+    cd in root directory(which contains directories common, fatfs, hydrabus, hydranfc ...)
+    make clean
+    make
+
+###Flash and use hydrafw on Windows:
 ![HydraBus board USB DFU mode](HydraBus_board.jpg)
 
     1) PowerOff HydraBus board (disconnect all USB)
@@ -45,29 +66,17 @@ mount, umount, ls, cat & erase work only when a micro SD card is inserted in Hyd
     3) Connect MicroUsb cable from PC to HydraBus USB1 board, now windows shall detect a new device
        (if you have problem to detect the device use an USB1.1 or 2.0 Hub
           as there is problem with USB3.0 port on some computer and windows version).
-    4) Download the USB DFU driver from directory https://github.com/bvernoux/hydrabus/firmware/STM32F4_USB_DFU_Driver.zip
+    4) Download the USB DFU driver from directory 
+    https://github.com/bvernoux/hydrabus/firmware/STM32F4_USB_DFU_Driver.zip
      4-1) Extract the archive and install the drivers.
     5) Launch from current directory update_fw_usb_dfu_hydrabus.bat (will flash latest firmware during about 10s)
     6) Disconnect MicroUsb cable from HydraBus and Disconnect "BOOT0 to 3V3"
     7) Reconnect MicroUsb cable on USB1 or USB2(both port are supported), Now hydrafw is started.
-
-When hydrafw is running and connected on a Windows XP, Vista, 7 & 8 you need to install STM32 Virtual COM Port Driver (only the first time) from:
-https://github.com/bvernoux/hydrabus/tree/master/firmware/hydrafw/driver_usb_cdc
-
-The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3 available here:
-https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
-
-Required dependencies:
-
-    Custom chibios (based on ChibiOS 3.0) included as Submodule.
-    Custom microrl included as Submodule.
-
-To build hydrafw firmware (with mingw or cygwin):
-
-    cd in root directory(which contains directories common, fatfs, hydrabus, hydranfc ...)
-    make clean
-    make
-
+    When hydrafw is running and connected on a Windows XP, Vista, 7 & 8, 
+    you need to install STM32 Virtual COM Port Driver (only the first time) from: 
+    https://github.com/bvernoux/hydrabus/tree/master/firmware/hydrafw/driver_usb_cdc
+    In order to communicate with HydraBus (Through USB Virtual COM Port)
+    I recommend the use Putty Terminal see http://www.putty.org
 
 ##How to build, flash and use hydrafw on Linux (Debian/Ubuntu):
 
@@ -94,6 +103,7 @@ To build hydrafw firmware (with mingw or cygwin):
     make
 
 ###Flash and use hydrafw on Linux:
+![HydraBus board USB DFU mode](HydraBus_board.jpg)
 
     cd ~/hydrabus/firmware/hydrafw
     python dfu-convert.py -i ./build/hydrafw.hex ./build/hydrafw.dfu
