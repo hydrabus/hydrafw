@@ -87,8 +87,8 @@ https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
     wget http://www.bialix.com/intelhex/intelhex-1.4.zip
     unzip intelhex-1.4.zip
     cd intelhex-1.4
-    sudo python setup.py install
-    http-get https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
+    sudo python setup.py install --user
+    wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
     tar xjf gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
     echo 'PATH=$PATH:~/gcc-arm-none-eabi-4_7-2013q3/bin' >> ~/.bashrc
     git clone https://github.com/bvernoux/hydrabus.git hydrabus
@@ -113,3 +113,5 @@ https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
     sudo cp 09-hydrabus.rules /etc/udev/rules.d/09-hydrabus.rules
     sudo udevadm trigger
     putty /dev/ttyACM0
+    # Alternative to Putty is to use screen for Debian...
+    screen /dev/ttyACM0
