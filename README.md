@@ -113,5 +113,10 @@ https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
     sudo cp 09-hydrabus.rules /etc/udev/rules.d/09-hydrabus.rules
     sudo udevadm trigger
     putty /dev/ttyACM0
-    # Alternative to Putty is to use screen for Debian...
+
+###Using HydraBus, alternative method using screen for Debian...
+
+    sudo apt-get install screen
+    sudo cp 09-hydrabus.rules /etc/udev/rules.d/09-hydrabus.rules
+    sudo udevadm trigger
     screen /dev/ttyACM0
