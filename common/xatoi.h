@@ -5,6 +5,6 @@
 #ifndef _XATOI_H
 #define _XATOI_H
 
-int xatoi (char** str, long* res);
+int xatoi(char** str, long* res);
 
 #endif /* _XATOI_H */
