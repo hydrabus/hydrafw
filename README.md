@@ -44,8 +44,8 @@ mount, umount, ls, cat & erase work only when a micro SD card is inserted in Hyd
     Custom microrl included as Submodule.
     
 ###Prerequisites for Windows:
-    git clone https://github.com/bvernoux/hydrabus.git hydrabus
-    cd hydrabus/
+    git clone https://github.com/bvernoux/hydrafw.git hydrafw
+    cd hydrafw/
     git submodule init
     git submodule update
 
@@ -74,7 +74,7 @@ https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
     7) Reconnect MicroUsb cable on USB1 or USB2(both port are supported), Now hydrafw is started.
     When hydrafw is running and connected on a Windows XP, Vista, 7 & 8, 
     you need to install STM32 Virtual COM Port Driver (only the first time) from: 
-    https://github.com/bvernoux/hydrabus/tree/master/firmware/hydrafw/driver_usb_cdc
+    https://github.com/bvernoux/hydrafw/driver_usb_cdc
     In order to communicate with HydraBus (Through USB Virtual COM Port)
     I recommend the use Putty Terminal see http://www.putty.org
 
@@ -91,21 +91,21 @@ https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
     wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
     tar xjf gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
     echo 'PATH=$PATH:~/gcc-arm-none-eabi-4_7-2013q3/bin' >> ~/.bashrc
-    git clone https://github.com/bvernoux/hydrabus.git hydrabus
-    cd hydrabus/
+    git clone https://github.com/bvernoux/hydrafw.git hydrafw
+    cd ~/hydrafw
     git submodule init
     git submodule update
 
 ###Build hydrafw on Linux:
 
-    cd ~/hydrabus/firmware/hydrafw
+    cd ~/hydrafw
     make clean
     make
 
 ###Flash and use hydrafw on Linux:
 ![HydraBus board USB DFU mode](HydraBus_board.jpg)
 
-    cd ~/hydrabus/firmware/hydrafw
+    cd ~/hydrafw
     python dfu-convert.py -i ./build/hydrafw.hex ./build/hydrafw.dfu
     read -p "`echo -e '\nConnect HydraBus pin BOOT0 to 3V3 (using a dual female splittable jumper wire) to enter USB DFU then\nPress [Enter] key to start flashing HydraBus Firmware...'`"
     sudo dfu-util -a 0 -d 0483:df11 -D ./build/hydrafw.dfu
