@@ -1,0 +1,6 @@
+[submodule "chibios"]
+	path = chibios
+	url = https://github.com/bvernoux/ChibiOS-RT
+[submodule "microrl"]
+	path = microrl
+	url = https://github.com/bvernoux/microrl.git
