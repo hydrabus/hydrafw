@@ -20,8 +20,9 @@
 
 #include "hydrabus.h"
 #include "hydranfc.h"
+#include "hydrafw_version.hdr"
 
-#define HYDRABUS_VERSION "HydraFW (HydraBus/HydraNFC) v0.1Beta 21 Sept 2014"
+#define HYDRAFW_VERSION "HydraFW (HydraBus/HydraNFC) " HYDRAFW_GIT_TAG " " HYDRAFW_GIT_HASH " " HYDRAFW_BUILD_DATE
 
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
@@ -140,7 +141,7 @@ void cmd_init(BaseSequentialStream *chp, int argc, const char* const* argv)
     chprintf(chp, "argv[%d]=%s\r\n", i, argv[i]);
   }
 
-	chprintf(chp, "%s\r\n", HYDRABUS_VERSION);
+	chprintf(chp, "%s\r\n", HYDRAFW_VERSION);
 
 	cycles_start = get_cyclecounter();
   DelayUs(10000);

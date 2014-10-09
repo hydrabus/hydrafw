@@ -131,7 +131,7 @@ char** complet(void* user_handle, int argc, const char * const * argv)
 //*****************************************************************************
 // execute callback for microrl library
 // do what you want here, but don't write to argv!!! read only!!
-int execute(void* user_handle, int argc, const char* const* argv)
+unsigned int execute(void* user_handle, int argc, const char* const* argv)
 {
   /* HydraNFC Shield detected*/
   if(hydranfc_is_detected() == TRUE)

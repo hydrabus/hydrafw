@@ -27,8 +27,6 @@ typedef struct
   ptFunc ptFunc_exe_cmd;
 } microrl_exec_t;
 
-int execute(void* user_handle, int argc, const char* const* argv);
-
 // print to stream callback
 void print(void* user_handle, const char * str);
 
@@ -36,7 +34,7 @@ void print(void* user_handle, const char * str);
 char get_char(void* user_handle);
 
 // execute callback
-int execute(void* user_handle, int argc, const char* const* argv);
+unsigned int execute(void* user_handle, int argc, const char* const* argv);
 
 // completion callback
 char ** complet(void* user_handle, int argc, const char* const* argv);
