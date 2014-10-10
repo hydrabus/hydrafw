@@ -59,24 +59,7 @@ https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
     make
 
 ###Flash and use hydrafw on Windows:
-![HydraBus board USB DFU mode](HydraBus_board.jpg)
-
-    1) PowerOff HydraBus board (disconnect all USB)
-    2) Connect HydraBus pin BOOT0 to 3V3 (using a dual female splittable jumper wire) to enter USB DFU
-    3) Connect MicroUsb cable from PC to HydraBus USB1 board, now windows shall detect a new device
-       (if you have problem to detect the device use an USB1.1 or 2.0 Hub
-          as there is problem with USB3.0 port on some computer and windows version).
-    4) Download the USB DFU driver from directory 
-    https://github.com/bvernoux/hydrabus/firmware/STM32F4_USB_DFU_Driver.zip
-     4-1) Extract the archive and install the drivers.
-    5) Launch from current directory update_fw_usb_dfu_hydrabus.bat (will flash latest firmware during about 10s)
-    6) Disconnect MicroUsb cable from HydraBus and Disconnect "BOOT0 to 3V3"
-    7) Reconnect MicroUsb cable on USB1 or USB2(both port are supported), Now hydrafw is started.
-    When hydrafw is running and connected on a Windows XP, Vista, 7 & 8, 
-    you need to install STM32 Virtual COM Port Driver (only the first time) from: 
-    https://github.com/bvernoux/hydrafw/driver_usb_cdc
-    In order to communicate with HydraBus (Through USB Virtual COM Port)
-    I recommend the use Putty Terminal see http://www.putty.org
+See the wiki https://github.com/bvernoux/hydrafw/wiki/Getting-Started-with-HydraBus
 
 ##How to build, flash and use hydrafw on Linux (Debian/Ubuntu):
 
@@ -103,20 +86,5 @@ https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
     make
 
 ###Flash and use hydrafw on Linux:
-![HydraBus board USB DFU mode](HydraBus_board.jpg)
+See the wiki https://github.com/bvernoux/hydrafw/wiki/Getting-Started-with-HydraBus
 
-    cd ~/hydrafw
-    python dfu-convert.py -i ./build/hydrafw.hex ./build/hydrafw.dfu
-    read -p "`echo -e '\nConnect HydraBus pin BOOT0 to 3V3 (using a dual female splittable jumper wire) to enter USB DFU then\nPress [Enter] key to start flashing HydraBus Firmware...'`"
-    sudo dfu-util -a 0 -d 0483:df11 -D ./build/hydrafw.dfu
-    read -p "`echo -e '\nDisconnect MicroUsb cable from HydraBus and Disconnect 'BOOT0 to 3V3' and Reconnect microUSB to PC then\nPress [Enter] key to start using HydraBus with Putty'`"
-    sudo cp 09-hydrabus.rules /etc/udev/rules.d/09-hydrabus.rules
-    sudo udevadm trigger
-    putty /dev/ttyACM0
-
-###Using HydraBus, alternative method using screen for Debian...
-
-    sudo apt-get install screen
-    sudo cp 09-hydrabus.rules /etc/udev/rules.d/09-hydrabus.rules
-    sudo udevadm trigger
-    screen /dev/ttyACM0
