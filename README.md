@@ -29,7 +29,9 @@ https://github.com/bvernoux/hydrafw/wiki/HydraFW-commands
 ###To build hydrafw firmware (with mingw or cygwin):
 The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3 available here:
 https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
-MinGW (http://www.mingw.org) is required (or Cygwin) including make and python 2.x to build all.
+
+MinGW (http://www.mingw.org) is required (or Cygwin) and shall include make
+Python 2.x (https://www.python.org/) to build all (mainly for dfu-convert.py).
 
     cd in root directory(which contains directories common, fatfs, hydrabus, hydranfc ...)
     make clean
