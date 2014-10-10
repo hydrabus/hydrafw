@@ -167,12 +167,12 @@ FORCE:
 %.hdr: FORCE
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	-rm -f $(OBJDIR)/common.o
-	hydrafw-version.sh > $@.tmp
+	sh hydrafw-version.sh > $@.tmp
 	if [ -f "$@" ] && cmp -s $@ $@.tmp; then rm $@.tmp; else echo "Generating $@"; mv $@.tmp $@; fi
 else
 	@echo Creating $@
 	@rm -f $(OBJDIR)/common.o
-	@hydrafw-version.sh > $@.tmp
+	@sh hydrafw-version.sh > $@.tmp
 	@if [ -f "$@" ] && cmp -s $@ $@.tmp; then rm $@.tmp; else echo "Generating $@"; mv $@.tmp $@; fi
 endif
 
