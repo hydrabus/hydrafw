@@ -84,6 +84,7 @@ void hydrabus_print_help(BaseSequentialStream *chp, int argc, const char* const*
   print(chp,"umount         - unmount sd\n\r");
   print(chp,"ls [opt dir]   - list files in sd\n\r");
   print(chp,"cat <filename> - display sd file (ASCII)\n\r");
+  print(chp,"hd <filename>  - hexdump sd file\n\r");
   print(chp,"erase          - erase sd\n\r");
 }
 
