@@ -17,7 +17,7 @@
 #ifndef _HYDRABUS_MICRORL_H_
 #define _HYDRABUS_MICRORL_H_
 
-#define HYDRABUS_NUM_OF_CMD (11+1)
+#define HYDRABUS_NUM_OF_CMD (12+1)
 extern char* hydrabus_compl_world[HYDRABUS_NUM_OF_CMD + 1];
 extern microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD];
 

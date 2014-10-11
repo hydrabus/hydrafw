@@ -1,0 +1,5 @@
+# build leftovers
+.dep/
+build/
+hydrafw_version.hdr
+

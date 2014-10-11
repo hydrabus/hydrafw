@@ -70,5 +70,8 @@ typedef struct
 #define DWT_CTRL                (DWTBase->CTRL)
 #define DWT_CTRL_CYCCNTENA      (0x1U << 0)
 
+#ifndef MIN
+#define MIN(a, b) (a < b ? a : b)
+#endif
 
 #endif /* _COMMON_H_ */

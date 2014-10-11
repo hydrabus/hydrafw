@@ -29,6 +29,7 @@
 
 #include "mcu.h"
 #include "microsd.h"
+#include "common.h"
 
 #define SDC_BURST_SIZE  8 /* how many sectors reads at once */
 #define IN_OUT_BUF_SIZE (MMCSD_BLOCK_SIZE * SDC_BURST_SIZE + 8)
@@ -777,10 +778,38 @@ void cmd_sd_ls(BaseSequentialStream *chp, int argc, const char* const* argv)
   }
 }
 
+/* Call only with len=multiples of 16 (unless end of dump). */
+static void dump_hexbuf(BaseSequentialStream *chp, uint32_t offset,
+		const uint8_t *buf, int len)
+{
+	int b, i;
+	char asc[17];
+
+	b = 0;
+	while (len) {
+		chprintf(chp, "%.8x: ", offset + b);
+		for (i = 0; i < MIN(len, 16); i++, b++) {
+			chprintf(chp, "%.2x", buf[b]);
+			if (i & 1)
+				chprintf(chp, " ");
+			if (i == 7)
+				chprintf(chp, " ");
+			if (buf[b] >= 0x20 && buf[b] < 0x7f)
+				asc[i] = buf[b];
+			else
+				asc[i] = '.';
+		}
+		asc[i] = 0;
+		chprintf(chp, " %s\r\n", asc);
+		len -= i;
+	}
+}
+
 void cmd_sd_cat(BaseSequentialStream *chp, int argc, const char* const* argv)
 {
   #define MAX_FILE_SIZE (524288)
-  int filelen;
+  bool hex;
+  int offset, filelen;
   uint32_t cnt;
   FRESULT err;
   FIL fp;
@@ -818,6 +847,8 @@ void cmd_sd_cat(BaseSequentialStream *chp, int argc, const char* const* argv)
     chprintf(chp, "Read file: %s, size=%d\r\n", filename, filelen);
   }
 
+  hex = !strcmp(argv[0], "hd");
+  offset = 0;
   while(filelen)
   {
     if(filelen >= IN_OUT_BUF_SIZE)
@@ -838,12 +869,19 @@ void cmd_sd_cat(BaseSequentialStream *chp, int argc, const char* const* argv)
     if (!cnt)
       break;
 
-    /* Force end of string at end of buffer */
-    inbuf[cnt] = 0;
-    chprintf(chp, "%s", inbuf);
+    if (hex) {
+      dump_hexbuf(chp, offset, inbuf, cnt);
+      offset += cnt;
+    } else {
+      /* Force end of string at end of buffer */
+      inbuf[cnt] = 0;
+      chprintf(chp, "%s", inbuf);
+    }
   }
-  chprintf(chp, "\r\n");
+  if (!hex)
+      chprintf(chp, "\r\n");
 }
+
 /**
  * SDIO Test Destructive
  */

@@ -44,6 +44,7 @@
 #define _CMD_SD_LS        "ls"
 #define _CMD_SD_CAT       "cat"
 #define _CMD_SD_ERASE     "erase"
+#define _CMD_SD_HD        "hd"
 
 /* Update hydrabus_microrl.h => HYDRABUS_NUM_OF_CMD if new command are added/removed */
 microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD] =
@@ -59,7 +60,8 @@ microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD] =
 /* 8  */ { _CMD_SD_UMOUNT,   &cmd_sd_umount },
 /* 9  */ { _CMD_SD_LS,       &cmd_sd_ls },
 /* 10 */ { _CMD_SD_CAT,      &cmd_sd_cat },
-/* 11 */ { _CMD_SD_ERASE,    &cmd_sd_erase}
+/* 11 */ { _CMD_SD_ERASE,    &cmd_sd_erase},
+/* 12 */ { _CMD_SD_HD,       &cmd_sd_cat},
 };
 
 // array for completion
