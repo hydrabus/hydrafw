@@ -24,12 +24,17 @@
 void scs_dwt_cycle_counter_enabled(void);
 #define clear_cyclecounter() ( DWTBase->CYCCNT = 0 )
 #define get_cyclecounter() ( DWTBase->CYCCNT )
-void wait_nbcycles(unsigned int nbcycles);
+void wait_nbcycles(uint32_t nbcycles);
 void DelayUs(uint32_t delay_us);
 
 extern uint8_t buf[300];
 /* Generic large buffer.*/
 extern uint8_t fbuff[1024];
+
+#define NB_SBUFFER  (65536)
+#define G_SBUF_SDC_BURST_SIZE (NB_SBUFFER/MMCSD_BLOCK_SIZE) /* how many sectors reads at once */
+extern uint32_t g_sbuf_idx;
+extern uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));
 
 /* USB1: Virtual serial port over USB.*/
 extern SerialUSBDriver SDU1;
@@ -84,7 +89,6 @@ void cmd_info(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_init(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_mem(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_threads(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_test(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv);
 
 #endif /* _COMMON_H_ */

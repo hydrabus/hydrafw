@@ -36,11 +36,6 @@
 filename_t write_filename;
 
 #define TRF7970_DATA_SIZE (384)
-/* Flip/Flop Buffer ASCII to transmit on USART */
-#define NB_SBUFFER  (65536)
-uint32_t g_sbuf_idx;
-uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));
-
 #define SPI_RX_DMA_SIZE (4)
 uint8_t spi_rx_dma_buf[2][SPI_RX_DMA_SIZE+12] __attribute__ ((aligned (16)));
 uint8_t htoa[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};

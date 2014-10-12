@@ -30,6 +30,9 @@ uint8_t buf[300];
 /* Generic large buffer.*/
 uint8_t fbuff[1024];
 
+uint32_t g_sbuf_idx;
+uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));
+
 /* USB1: Virtual serial port over USB.*/
 SerialUSBDriver SDU1;
 /* USB2: Virtual serial port over USB.*/
@@ -42,7 +45,7 @@ void scs_dwt_cycle_counter_enabled(void)
   DWT_CTRL  |= DWT_CTRL_CYCCNTENA;
 }
 
-void wait_nbcycles(unsigned int nbcycles)
+void wait_nbcycles(uint32_t nbcycles)
 {
   if(nbcycles < 10)
   {
@@ -73,51 +76,38 @@ void DelayUs(uint32_t delay_us)
 
 void cmd_mem(t_hydra_console *con, int argc, const char* const* argv)
 {
-  size_t n, size;
 
   (void)argc;
   (void)argv;
+  size_t n, size;
+  BaseSequentialStream* chp = con->bss;
 
   n = chHeapStatus(NULL, &size);
-  chprintf(con->bss, "core free memory : %u bytes\r\n", chCoreStatus());
-  chprintf(con->bss, "heap fragments   : %u\r\n", n);
-  chprintf(con->bss, "heap free total  : %u bytes\r\n", size);
+  chprintf(chp, "core free memory : %u bytes\r\n", chCoreStatus());
+  chprintf(chp, "heap fragments   : %u\r\n", n);
+  chprintf(chp, "heap free total  : %u bytes\r\n", size);
+
 }
 
 void cmd_threads(t_hydra_console *con, int argc, const char* const* argv)
 {
-  static const char *states[] = {CH_STATE_NAMES};
-  thread_t *tp;
-
   (void)argc;
   (void)argv;
+  static const char *states[] = {CH_STATE_NAMES};
+  thread_t *tp;
+  BaseSequentialStream *chp = con->bss;
 
-  chprintf(con->bss, "    addr    stack prio refs state    name\r\n");
+
+  chprintf(chp, "    addr    stack prio refs state    name\r\n");
   tp = chRegFirstThread();
   do {
-    chprintf(con->bss, "%.8lx %.8lx %4lu %4lu %9s %s\r\n",
+    chprintf(chp, "%.8lx %.8lx %4lu %4lu %9s %s\r\n",
             (uint32_t)tp, (uint32_t)tp->p_ctx.r13,
             (uint32_t)tp->p_prio, (uint32_t)(tp->p_refs - 1),
             states[tp->p_state], tp->p_name);
     tp = chRegNextThread(tp);
   } while (tp != NULL);
 
-}
-
-void cmd_test(t_hydra_console *con, int argc, const char* const* argv)
-{
-  thread_t *tp;
-
-  (void)argc;
-  (void)argv;
-
-  tp = chThdCreateFromHeap(NULL, TEST_WA_SIZE, chThdGetPriorityX(),
-                           TestThread, con->sdu);
-  if (tp == NULL) {
-    chprintf(con->bss, "out of memory\r\n");
-    return;
-  }
-  chThdWait(tp);
 }
 
 void cmd_info(t_hydra_console *con, int argc, const char* const* argv)
@@ -130,78 +120,63 @@ void cmd_init(t_hydra_console *con, int argc, const char* const* argv)
 	(void)argc;
 	(void)argv;
 
-  int i;
-	unsigned int cycles_start;
-	unsigned int cycles_stop;
-	unsigned int cycles_delta;
+	int i;
+	uint32_t cycles_start;
+	uint32_t cycles_stop;
+	uint32_t cycles_delta;
+	BaseSequentialStream* chp = con->bss;
 
-	chprintf(con->bss, "argc=%d\r\n",argc);
-  for(i=0; i<argc; i++)
-  {
-    chprintf(con->bss, "argv[%d]=%s\r\n", i, argv[i]);
-  }
+	chprintf(chp, "argc=%d\r\n",argc);
+	for(i=0; i<argc; i++)
+	{
+    	chprintf(chp, "argv[%d]=%s\r\n", i, argv[i]);
+	}
 
-	chprintf(con->bss, "%s\r\n", HYDRAFW_VERSION);
+	chprintf(chp, "%s\r\n", HYDRAFW_VERSION);
 
 	cycles_start = get_cyclecounter();
-  DelayUs(10000);
+	DelayUs(10000);
 	cycles_stop = get_cyclecounter();
 	cycles_delta = cycles_stop-cycles_start;
-	chprintf(con->bss, "Test DelayUs(10000) start=%d end=%d delta=%d\r\nTime=%dus (@168MHz)\r\n", cycles_start, cycles_stop, cycles_delta, (cycles_delta/168));
-	chprintf(con->bss, "\r\n");
+	chprintf(chp, "Test DelayUs(10000) start=%d end=%d delta=%d\r\nTime=%dus (@168MHz)\r\n", cycles_start, cycles_stop, cycles_delta, (cycles_delta/168));
+	chprintf(chp, "\r\n");
 
-	chprintf(con->bss, "MCU Info\r\n");
-	chprintf(con->bss, "%d: DBGMCU_IDCODE:0x%X\r\n", get_cyclecounter(), *((uint32_t*)0xE0042000));
-	chprintf(con->bss, "%d: MCU CPUID:    0x%X\r\n", get_cyclecounter(), *((uint32_t*)0xE000ED00));
-	chprintf(con->bss, "%d: MCU FlashUID: 0x%X 0x%X 0x%X\r\n", get_cyclecounter(), *((uint32_t*)0x1FFF7A10), *((uint32_t*)0x1FFF7A14), *((uint32_t*)0x1FFF7A18));
-	chprintf(con->bss, "%d: MCU FlashSize:%dKB\r\n", get_cyclecounter(), *((uint16_t*)0x1FFF7A22));
-	chprintf(con->bss, "\r\n");
+	chprintf(chp, "MCU Info\r\n");
+	chprintf(chp, "DBGMCU_IDCODE:0x%X\r\n", *((uint32_t*)0xE0042000));
+	chprintf(chp, "MCU CPUID:    0x%X\r\n", *((uint32_t*)0xE000ED00));
+	chprintf(chp, "MCU FlashUID: 0x%X 0x%X 0x%X\r\n", *((uint32_t*)0x1FFF7A10), *((uint32_t*)0x1FFF7A14), *((uint32_t*)0x1FFF7A18));
+	chprintf(chp, "MCU FlashSize:%dKB\r\n", *((uint16_t*)0x1FFF7A22));
+	chprintf(chp, "\r\n");
 
-  chprintf(con->bss, "Kernel:       %s\r\n", CH_KERNEL_VERSION);
+	chprintf(chp, "Kernel:       %s\r\n", CH_KERNEL_VERSION);
 #ifdef PORT_COMPILER_NAME
-  chprintf(con->bss, "Compiler:     %s\r\n", PORT_COMPILER_NAME);
+	chprintf(chp, "Compiler:     %s\r\n", PORT_COMPILER_NAME);
 #endif
-  chprintf(con->bss, "Architecture: %s\r\n", PORT_ARCHITECTURE_NAME);
+	chprintf(chp, "Architecture: %s\r\n", PORT_ARCHITECTURE_NAME);
 #ifdef PORT_CORE_VARIANT_NAME
-  chprintf(con->bss, "Core Variant: %s\r\n", PORT_CORE_VARIANT_NAME);
+	chprintf(chp, "Core Variant: %s\r\n", PORT_CORE_VARIANT_NAME);
 #endif
 #ifdef PORT_INFO
-  chprintf(con->bss, "Port Info:    %s\r\n", PORT_INFO);
+	chprintf(chp, "Port Info:    %s\r\n", PORT_INFO);
 #endif
 #ifdef PLATFORM_NAME
-  chprintf(con->bss, "Platform:     %s\r\n", PLATFORM_NAME);
+	chprintf(chp, "Platform:     %s\r\n", PLATFORM_NAME);
 #endif
 #ifdef BOARD_NAME
-  chprintf(con->bss, "Board:        %s\r\n", BOARD_NAME);
+	chprintf(chp, "Board:        %s\r\n", BOARD_NAME);
 #endif
 #ifdef __DATE__
 #ifdef __TIME__
-  chprintf(con->bss, "Build time:   %s%s%s\r\n", __DATE__, " - ", __TIME__);
+	chprintf(chp, "Build time:   %s%s%s\r\n", __DATE__, " - ", __TIME__);
 #endif
 #endif
 
-/*
-	chprintf(con->bss, "Start Init HydraBus\r\n");
-	hydrabus_init();
-	chprintf(con->bss, "End Init HydraBus\r\n");
-
-	chprintf(con->bss, "Start Init HydraNFC\r\n");
-	hydranfc_detected = hydranfc_init();
-  if(hydranfc_detected == FALSE)
-  {
-    chprintf(con->bss, "HydraNFC Shield not present/not detected\r\n");
-  }else
-  {
-    chprintf(con->bss, "HydraNFC Shield detected\r\n");
-  }
-	chprintf(con->bss, "End Init HydraNFC\r\n");
-*/
   if(hydranfc_is_detected() == FALSE)
   {
-    chprintf(con->bss, "HydraNFC Shield not present/not detected\r\n");
+    chprintf(chp, "HydraNFC Shield not present/not detected\r\n");
   }else
   {
-    chprintf(con->bss, "HydraNFC Shield detected\r\n");
+    chprintf(chp, "HydraNFC Shield detected\r\n");
   }
 }
 
@@ -209,8 +184,11 @@ void cmd_init(t_hydra_console *con, int argc, const char* const* argv)
 /* Just debug to check Timing and accuracy with output pin */
 void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv)
 {
+    (void)argc;
     (void)argv;
     uint8_t i;
+    BaseSequentialStream* chp = con->bss;
+
 #if 0
     register volatile uint16_t* gpio_set;
     register volatile uint16_t* gpio_clr;
@@ -225,19 +203,14 @@ void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv)
 #endif
     volatile systime_t tick, ticks10MHz, ticks3_39MHz, tick1MHz;
 
-    if (argc > 0) {
-        chprintf(con->bss, "Usage: dbg\r\n");
-        return;
-    }
-
     ticks10MHz = NS2RTT(50);
     ticks3_39MHz = NS2RTT(148);
     tick1MHz = NS2RTT(500);
-    chprintf(con->bss, "50ns=%.2ld ticks\r\n", (uint32_t)ticks10MHz);
-    chprintf(con->bss, "148ns=%.2ld ticks\r\n", (uint32_t)ticks3_39MHz);
-    chprintf(con->bss, "500ns=%.2ld ticks\r\n", (uint32_t)tick1MHz);
-    chprintf(con->bss, "Test dbg Out Freq Max 84Mhz(11.9ns),10MHz(100ns/2),3.39MHz(295ns/2),1MHz(1us/2)\r\nPress User Button to exit\r\n");
-    chThdSleepMilliseconds(5);
+    chprintf(chp, "50ns=%.2ld ticks\r\n", (uint32_t)ticks10MHz);
+    chprintf(chp, "148ns=%.2ld ticks\r\n", (uint32_t)ticks3_39MHz);
+    chprintf(chp, "500ns=%.2ld ticks\r\n", (uint32_t)tick1MHz);
+    chprintf(chp, "Test dbg Out Freq Max 84Mhz(11.9ns),10MHz(100ns/2),3.39MHz(295ns/2),1MHz(1us/2)\r\nPress User Button to exit\r\n");
+    chThdSleepMilliseconds(1);
 
     while(1)
     {
@@ -351,5 +324,6 @@ void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv)
         }
 
     }
-    chprintf(con->bss, "Test dbg Out Freq end\r\n");
+    chprintf(chp, "Test dbg Out Freq end\r\n");
+
 }

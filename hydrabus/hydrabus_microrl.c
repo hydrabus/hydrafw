@@ -37,15 +37,19 @@
 #define _CMD_HELP1        "h"
 #define _CMD_CLEAR        "clear"
 #define _CMD_INFO         "info"
+
 #define _CMD_CH_MEM       "ch_mem"
 #define _CMD_CH_THREADS   "ch_threads"
-#define _CMD_CH_TEST      "ch_test"
+
 #define _CMD_SD_MOUNT     "mount"
 #define _CMD_SD_UMOUNT    "umount"
+#define _CMD_SD_CD        "cd"
+#define _CMD_SD_PWD       "pwd"
 #define _CMD_SD_LS        "ls"
 #define _CMD_SD_CAT       "cat"
-#define _CMD_SD_ERASE     "erase"
 #define _CMD_SD_HD        "hd"
+#define _CMD_SD_ERASE     "erase"
+#define _CMD_SD_RPERFO    "sd_rperfo"
 
 /* Update hydrabus_microrl.h => HYDRABUS_NUM_OF_CMD if new command are added/removed */
 microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD] =
@@ -56,13 +60,16 @@ microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD] =
 /* 3  */ { _CMD_INFO,        &cmd_info },
 /* 4  */ { _CMD_CH_MEM,      &cmd_mem },
 /* 5  */ { _CMD_CH_THREADS,  &cmd_threads },
-/* 6  */ { _CMD_CH_TEST,     &cmd_test },
-/* 7  */ { _CMD_SD_MOUNT,    &cmd_sd_mount },
-/* 8  */ { _CMD_SD_UMOUNT,   &cmd_sd_umount },
-/* 9  */ { _CMD_SD_LS,       &cmd_sd_ls },
-/* 10 */ { _CMD_SD_CAT,      &cmd_sd_cat },
-/* 11 */ { _CMD_SD_ERASE,    &cmd_sd_erase},
+/* 6  */ { _CMD_SD_MOUNT,    &cmd_sd_mount },
+/* 7  */ { _CMD_SD_UMOUNT,   &cmd_sd_umount },
+/* 8  */ { _CMD_SD_CD,       &cmd_sd_cd },
+/* 9  */ { _CMD_SD_PWD,      &cmd_sd_pwd },
+/* 10 */ { _CMD_SD_LS,       &cmd_sd_ls },
+/* 11 */ { _CMD_SD_CAT,      &cmd_sd_cat },
 /* 12 */ { _CMD_SD_HD,       &cmd_sd_cat},
+/* 13 */ { _CMD_SD_ERASE,    &cmd_sd_erase},
+/* 14 */ { _CMD_SD_RPERFO,   &cmd_sd_read_perfo },
+
 };
 
 // array for completion
@@ -83,6 +90,8 @@ void hydrabus_print_help(t_hydra_console *con, int argc, const char* const* argv
   print(con, "ch_test        - chibios tests\n\r");
   print(con, "mount          - mount sd\n\r");
   print(con, "umount         - unmount sd\n\r");
+  print(con, "cd <dir>       - change directory in sd\n\r");
+  print(con, "pwd            - show current directory path in sd\n\r");
   print(con, "ls [opt dir]   - list files in sd\n\r");
   print(con, "cat <filename> - display sd file (ASCII)\n\r");
   print(con, "hd <filename>  - hexdump sd file\n\r");
