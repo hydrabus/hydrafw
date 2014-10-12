@@ -26,9 +26,9 @@ extern volatile int irq_end_rx;
 bool hydranfc_init(void);
 bool hydranfc_is_detected(void);
 
-void cmd_nfc_vicinity(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_nfc_mifare(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_nfc_dump_regs(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_nfc_sniff_14443A(struct hydra_console *con, int argc, const char* const* argv);
+void cmd_nfc_vicinity(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_nfc_mifare(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_nfc_dump_regs(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_nfc_sniff_14443A(t_hydra_console *con, int argc, const char* const* argv);
 
 #endif /* _HYDRANFC_H_ */

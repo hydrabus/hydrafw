@@ -135,7 +135,7 @@ void fillbuffers(uint8_t pattern)
 /**
  * SDIO Test Non Destructive
  */
-void cmd_sdiotest(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_sdiotest(t_hydra_console *con, int argc, const char* const* argv)
 {
   (void)argc;
   (void)argv;
@@ -391,7 +391,7 @@ void cmd_sdiotest(struct hydra_console *con, int argc, const char* const* argv)
   }
 }
 
-void cmd_sdc(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_sdc(t_hydra_console *con, int argc, const char* const* argv)
 {
   static const char *mode[] = {"SDV11", "SDV20", "MMC", NULL};
   systime_t start, end;
@@ -497,7 +497,7 @@ exittest:
   sdcDisconnect(&SDCD1);
 }
 
-static FRESULT scan_files(struct hydra_console *con, char *path)
+static FRESULT scan_files(t_hydra_console *con, char *path)
 {
   FRESULT res;
   FILINFO fno;
@@ -667,7 +667,7 @@ int umount(void)
   return 0;
 }
 
-void cmd_sd_mount(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_sd_mount(t_hydra_console *con, int argc, const char* const* argv)
 {
   (void)argc;
   (void)argv;
@@ -702,7 +702,7 @@ void cmd_sd_mount(struct hydra_console *con, int argc, const char* const* argv)
   fs_ready = TRUE;
 }
 
-void cmd_sd_umount(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_sd_umount(t_hydra_console *con, int argc, const char* const* argv)
 {
   (void)argc;
   (void)argv;
@@ -720,7 +720,7 @@ void cmd_sd_umount(struct hydra_console *con, int argc, const char* const* argv)
   fs_ready = FALSE;
 }
 
-void cmd_sd_ls(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_sd_ls(t_hydra_console *con, int argc, const char* const* argv)
 {
   FRESULT err;
   uint32_t clusters;
@@ -779,7 +779,7 @@ void cmd_sd_ls(struct hydra_console *con, int argc, const char* const* argv)
 }
 
 /* Call only with len=multiples of 16 (unless end of dump). */
-static void dump_hexbuf(struct hydra_console *con, uint32_t offset,
+static void dump_hexbuf(t_hydra_console *con, uint32_t offset,
 		const uint8_t *buf, int len)
 {
 	int b, i;
@@ -805,7 +805,7 @@ static void dump_hexbuf(struct hydra_console *con, uint32_t offset,
 	}
 }
 
-void cmd_sd_cat(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_sd_cat(t_hydra_console *con, int argc, const char* const* argv)
 {
   #define MAX_FILE_SIZE (524288)
   bool hex;
@@ -885,7 +885,7 @@ void cmd_sd_cat(struct hydra_console *con, int argc, const char* const* argv)
 /**
  * SDIO Test Destructive
  */
-void cmd_sd_erase(struct hydra_console *con, int argc, const char* const* argv){
+void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv){
   (void)argc;
   (void)argv;
   uint32_t i = 0;

@@ -21,8 +21,8 @@
 extern char* hydrabus_compl_world[HYDRABUS_NUM_OF_CMD + 1];
 extern microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD];
 
-void hydrabus_print_help(struct hydra_console *con, int argc, const char* const* argv);
-int hydrabus_execute(struct hydra_console *con, int argc, const char* const* argv);
-void hydrabus_sigint(struct hydra_console *con);
+void hydrabus_print_help(t_hydra_console *con, int argc, const char* const* argv);
+int hydrabus_execute(t_hydra_console *con, int argc, const char* const* argv);
+void hydrabus_sigint(t_hydra_console *con);
 
 #endif /* _HYDRABUS_MICRORL_H_ */

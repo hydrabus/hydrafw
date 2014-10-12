@@ -230,7 +230,7 @@ bool hydranfc_init(void)
   return TRUE;
 }
 
-void cmd_nfc_vicinity(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_nfc_vicinity(t_hydra_console *con, int argc, const char* const* argv)
 {
     (void)argc;
     (void)argv;
@@ -344,7 +344,7 @@ void cmd_nfc_vicinity(struct hydra_console *con, int argc, const char* const* ar
     chprintf(con->bss, "Test nfv ISO15693/Vicinity end\r\n");
 }
 
-void cmd_nfc_mifare(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_nfc_mifare(t_hydra_console *con, int argc, const char* const* argv)
 {
     (void)argc;
     (void)argv;
@@ -521,7 +521,7 @@ void cmd_nfc_mifare(struct hydra_console *con, int argc, const char* const* argv
     chprintf(con->bss, "Test nfm ISO14443-A/Mifare end\r\n");
 }
 
-void cmd_nfc_dump_regs(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_nfc_dump_regs(t_hydra_console *con, int argc, const char* const* argv)
 {
     (void)argc;
     (void)argv;

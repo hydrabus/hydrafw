@@ -37,13 +37,13 @@
 #include "hydrabus.h"
 #include "hydranfc.h"
 
-typedef void (*ptFunc_microrl)(struct hydra_console *con, int argc, const char* const* argv);
+typedef void (*ptFunc_microrl)(t_hydra_console *con, int argc, const char* const* argv);
 
 // create microrl objects for each console
 microrl_t rl_con1;
 microrl_t rl_con2;
 
-struct hydra_console consoles[] = {
+t_hydra_console consoles[] = {
 	{ "console USB1", NULL, .sdu=&SDU1, &rl_con1 },
 	{ "console USB2", NULL, .sdu=&SDU2, &rl_con2 },
 };
@@ -99,7 +99,7 @@ THD_FUNCTION(ThreadHydraNFC, arg)
 
 THD_FUNCTION(console, arg)
 {
-	struct hydra_console *con;
+	t_hydra_console *con;
 
 	con = arg;
 	chRegSetThreadName(con->thread_name);

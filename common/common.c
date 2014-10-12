@@ -71,7 +71,7 @@ void DelayUs(uint32_t delay_us)
 	osalSysPolledDelayX(US2RTC(STM32_HCLK, delay_us));
 }
 
-void cmd_mem(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_mem(t_hydra_console *con, int argc, const char* const* argv)
 {
   size_t n, size;
 
@@ -84,7 +84,7 @@ void cmd_mem(struct hydra_console *con, int argc, const char* const* argv)
   chprintf(con->bss, "heap free total  : %u bytes\r\n", size);
 }
 
-void cmd_threads(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_threads(t_hydra_console *con, int argc, const char* const* argv)
 {
   static const char *states[] = {CH_STATE_NAMES};
   thread_t *tp;
@@ -104,7 +104,7 @@ void cmd_threads(struct hydra_console *con, int argc, const char* const* argv)
 
 }
 
-void cmd_test(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_test(t_hydra_console *con, int argc, const char* const* argv)
 {
   thread_t *tp;
 
@@ -120,12 +120,12 @@ void cmd_test(struct hydra_console *con, int argc, const char* const* argv)
   chThdWait(tp);
 }
 
-void cmd_info(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_info(t_hydra_console *con, int argc, const char* const* argv)
 {
   cmd_init(con, argc, argv);
 }
 
-void cmd_init(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_init(t_hydra_console *con, int argc, const char* const* argv)
 {
 	(void)argc;
 	(void)argv;
@@ -207,7 +207,7 @@ void cmd_init(struct hydra_console *con, int argc, const char* const* argv)
 
 #define waitcycles(n) ( wait_nbcycles(n) )
 /* Just debug to check Timing and accuracy with output pin */
-void cmd_dbg(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv)
 {
     (void)argv;
     uint8_t i;

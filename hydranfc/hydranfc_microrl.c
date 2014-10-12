@@ -73,7 +73,7 @@ microrl_exec_t hydranfc_keyworld[HYDRANFC_NUM_OF_CMD] =
 char* hydranfc_compl_world[HYDRANFC_NUM_OF_CMD + 1];
 
 //*****************************************************************************
-void hydranfc_print_help(struct hydra_console *con, int argc, const char* const* argv)
+void hydranfc_print_help(t_hydra_console *con, int argc, const char* const* argv)
 {
   (void)argc;
   (void)argv;
@@ -101,7 +101,7 @@ void hydranfc_print_help(struct hydra_console *con, int argc, const char* const*
 //*****************************************************************************
 // execute callback for microrl library
 // do what you want here, but don't write to argv!!! read only!!
-int hydranfc_execute(struct hydra_console *con, int argc, const char* const* argv)
+int hydranfc_execute(t_hydra_console *con, int argc, const char* const* argv)
 {
   bool cmd_found;
   int curr_arg = 0;
@@ -135,7 +135,7 @@ int hydranfc_execute(struct hydra_console *con, int argc, const char* const* arg
 }
 
 //*****************************************************************************
-void hydranfc_sigint(struct hydra_console *con)
+void hydranfc_sigint(t_hydra_console *con)
 {
   print(con, "HydraNFC microrl ^C catched!\n\r");
 }

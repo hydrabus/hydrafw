@@ -483,7 +483,7 @@ void sniff_write_8b_ASCII_HEX(uint8_t data, bool add_space)
   }
 }
 
-void cmd_nfc_sniff_14443A(struct hydra_console *con, int argc, const char* const* argv)
+void cmd_nfc_sniff_14443A(t_hydra_console *con, int argc, const char* const* argv)
 {
   (void)con;
   (void)argc;

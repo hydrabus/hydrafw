@@ -33,7 +33,7 @@
 char** compl_world;
 microrl_exec_t* keyworld;
 
-void print_clear(struct hydra_console *con, int argc, const char* const* argv)
+void print_clear(t_hydra_console *con, int argc, const char* const* argv)
 {
   (void)argc;
   (void)argv;
@@ -45,7 +45,7 @@ void print_clear(struct hydra_console *con, int argc, const char* const* argv)
 //*****************************************************************************
 void print(void *user_handle, const char *str)
 {
-	struct hydra_console *con;
+	t_hydra_console *con;
 	int len;
 
 	if(!str)
@@ -59,7 +59,7 @@ void print(void *user_handle, const char *str)
 }
 
 //*****************************************************************************
-char get_char(struct hydra_console *con) 
+char get_char(t_hydra_console *con) 
 {
 	uint8_t car;
 
@@ -130,7 +130,7 @@ char** complet(void* user_handle, int argc, const char * const * argv)
 // do what you want here, but don't write to argv!!! read only!!
 unsigned int execute(void *user_handle, int argc, const char* const* argv)
 {
-	struct hydra_console *con;
+	t_hydra_console *con;
 
 	con = user_handle;
 	if(hydranfc_is_detected())
@@ -142,7 +142,7 @@ unsigned int execute(void *user_handle, int argc, const char* const* argv)
 //*****************************************************************************
 void sigint(void *user_handle)
 {
-	struct hydra_console *con;
+	t_hydra_console *con;
 
 	con = user_handle;
 	if(hydranfc_is_detected())

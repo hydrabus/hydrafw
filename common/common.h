@@ -70,7 +70,7 @@ typedef struct
 /* How much thread working area to allocate per console. */
 #define CONSOLE_WA_SIZE 2048
 
-struct hydra_console {
+typedef struct hydra_console {
 	char *thread_name;
 	thread_t *thread;
 	union {
@@ -78,13 +78,13 @@ struct hydra_console {
 		BaseSequentialStream *bss;
 	};
 	microrl_t *mrl;
-};
+} t_hydra_console;
 
-void cmd_info(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_init(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_mem(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_threads(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_test(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_dbg(struct hydra_console *con, int argc, const char* const* argv);
+void cmd_info(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_init(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_mem(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_threads(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_test(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv);
 
 #endif /* _COMMON_H_ */

@@ -33,13 +33,13 @@ int mount(void);
 int umount(void);
 
 /* Shell commands */
-void cmd_sd_mount(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_sd_umount(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_sd_ls(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_sd_cat(struct hydra_console *con, int argc, const char* const* argv);
+void cmd_sd_mount(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_sd_umount(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_sd_ls(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_sd_cat(t_hydra_console *con, int argc, const char* const* argv);
 
-void cmd_sdiotest(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_sd_erase(struct hydra_console *con, int argc, const char* const* argv);
-void cmd_sdc(struct hydra_console *con, int argc, const char* const* argv);
+void cmd_sdiotest(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_sdc(t_hydra_console *con, int argc, const char* const* argv);
 
 #endif /* _MICROSD_H_ */

@@ -19,7 +19,7 @@
 
 #include "ch.h"
 
-typedef void (*ptFunc)(struct hydra_console *con, int argc, const char* const* argv);
+typedef void (*ptFunc)(t_hydra_console *con, int argc, const char* const* argv);
 
 typedef struct
 {
@@ -31,7 +31,7 @@ typedef struct
 void print(void *user_handle, const char *str);
 
 // get_char from stream
-char get_char(struct hydra_console *con);
+char get_char(t_hydra_console *con);
 
 // execute callback
 unsigned int execute(void *user_handle, int argc, const char* const* argv);

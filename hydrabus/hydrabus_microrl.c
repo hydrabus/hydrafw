@@ -69,7 +69,7 @@ microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD] =
 char* hydrabus_compl_world[HYDRABUS_NUM_OF_CMD + 1];
 
 //*****************************************************************************
-void hydrabus_print_help(struct hydra_console *con, int argc, const char* const* argv)
+void hydrabus_print_help(t_hydra_console *con, int argc, const char* const* argv)
 {
   (void)argc;
   (void)argv;
@@ -92,7 +92,7 @@ void hydrabus_print_help(struct hydra_console *con, int argc, const char* const*
 //*****************************************************************************
 // execute callback for microrl library
 // do what you want here, but don't write to argv!!! read only!!
-int hydrabus_execute(struct hydra_console *con, int argc, const char* const* argv)
+int hydrabus_execute(t_hydra_console *con, int argc, const char* const* argv)
 {
   bool cmd_found;
   int curr_arg = 0;
@@ -126,7 +126,7 @@ int hydrabus_execute(struct hydra_console *con, int argc, const char* const* arg
 }
 
 //*****************************************************************************
-void hydrabus_sigint(struct hydra_console *con)
+void hydrabus_sigint(t_hydra_console *con)
 {
   /* Hit ctrl-U and enter. */
   microrl_insert_char(con->mrl, 0x15);
