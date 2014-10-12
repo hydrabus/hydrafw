@@ -17,6 +17,6 @@
 #ifndef _MICRORL_COMMON_H_
 #define _MICRORL_COMMON_H_
 
-void print_clear(BaseSequentialStream *chp, int argc, const char* const* argv);
+void print_clear(struct hydra_console *con, int argc, const char* const* argv);
 
 #endif /* _MICRORL_COMMON_H_ */

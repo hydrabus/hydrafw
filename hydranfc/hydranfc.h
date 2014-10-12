@@ -17,6 +17,8 @@
 #ifndef _HYDRANFC_H_
 #define _HYDRANFC_H_
 
+#include "common.h"
+
 extern volatile int nb_irq;
 extern volatile int irq;
 extern volatile int irq_end_rx;
@@ -24,9 +26,9 @@ extern volatile int irq_end_rx;
 bool hydranfc_init(void);
 bool hydranfc_is_detected(void);
 
-void cmd_nfc_vicinity(BaseSequentialStream *chp, int argc, const char* const* argv);
-void cmd_nfc_mifare(BaseSequentialStream *chp, int argc, const char* const* argv);
-void cmd_nfc_dump_regs(BaseSequentialStream *chp, int argc, const char* const* argv);
-void cmd_nfc_sniff_14443A(BaseSequentialStream *chp, int argc, const char* const* argv);
+void cmd_nfc_vicinity(struct hydra_console *con, int argc, const char* const* argv);
+void cmd_nfc_mifare(struct hydra_console *con, int argc, const char* const* argv);
+void cmd_nfc_dump_regs(struct hydra_console *con, int argc, const char* const* argv);
+void cmd_nfc_sniff_14443A(struct hydra_console *con, int argc, const char* const* argv);
 
 #endif /* _HYDRANFC_H_ */

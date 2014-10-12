@@ -25,6 +25,7 @@
 #include "microsd.h"
 
 #include "common.h"
+#include "microrl.h"
 #include "microrl_common.h"
 #include "microrl_callback.h"
 
@@ -68,30 +69,30 @@ microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD] =
 char* hydrabus_compl_world[HYDRABUS_NUM_OF_CMD + 1];
 
 //*****************************************************************************
-void hydrabus_print_help(BaseSequentialStream *chp, int argc, const char* const* argv)
+void hydrabus_print_help(struct hydra_console *con, int argc, const char* const* argv)
 {
   (void)argc;
   (void)argv;
 
-  print(chp,"Use TAB key for completion\n\r");
-  print(chp,"? or h         - Help\t\n\r");
-  print(chp,"clear          - clear screen\n\r");
-  print(chp,"info           - info on FW & HW\n\r");
-  print(chp,"ch_mem         - memory info\t\n\r");
-  print(chp,"ch_threads     - threads\n\r");
-  print(chp,"ch_test        - chibios tests\n\r");
-  print(chp,"mount          - mount sd\n\r");
-  print(chp,"umount         - unmount sd\n\r");
-  print(chp,"ls [opt dir]   - list files in sd\n\r");
-  print(chp,"cat <filename> - display sd file (ASCII)\n\r");
-  print(chp,"hd <filename>  - hexdump sd file\n\r");
-  print(chp,"erase          - erase sd\n\r");
+  print(con, "Use TAB key for completion\n\r");
+  print(con, "? or h         - Help\t\n\r");
+  print(con, "clear          - clear screen\n\r");
+  print(con, "info           - info on FW & HW\n\r");
+  print(con, "ch_mem         - memory info\t\n\r");
+  print(con, "ch_threads     - threads\n\r");
+  print(con, "ch_test        - chibios tests\n\r");
+  print(con, "mount          - mount sd\n\r");
+  print(con, "umount         - unmount sd\n\r");
+  print(con, "ls [opt dir]   - list files in sd\n\r");
+  print(con, "cat <filename> - display sd file (ASCII)\n\r");
+  print(con, "hd <filename>  - hexdump sd file\n\r");
+  print(con, "erase          - erase sd\n\r");
 }
 
 //*****************************************************************************
 // execute callback for microrl library
 // do what you want here, but don't write to argv!!! read only!!
-int hydrabus_execute(BaseSequentialStream *chp, int argc, const char* const* argv)
+int hydrabus_execute(struct hydra_console *con, int argc, const char* const* argv)
 {
   bool cmd_found;
   int curr_arg = 0;
@@ -107,7 +108,7 @@ int hydrabus_execute(BaseSequentialStream *chp, int argc, const char* const* arg
     {
       if( (strcmp(argv[curr_arg], hydrabus_keyworld[cmd].str_cmd)) == 0 )
       {
-        hydrabus_keyworld[cmd].ptFunc_exe_cmd(chp, argc-curr_arg, &argv[curr_arg]);
+        hydrabus_keyworld[cmd].ptFunc_exe_cmd(con, argc-curr_arg, &argv[curr_arg]);
         cmd_found = TRUE;
         break;
       }
@@ -115,9 +116,9 @@ int hydrabus_execute(BaseSequentialStream *chp, int argc, const char* const* arg
     }
     if(cmd_found == FALSE)
     {
-      print(chp,"command: '");
-      print(chp,(char*)argv[curr_arg]);
-      print(chp,"' Not found.\n\r");
+      print(con,"command: '");
+      print(con,(char*)argv[curr_arg]);
+      print(con,"' Not found.\n\r");
     }
     curr_arg++;
   }
@@ -125,10 +126,10 @@ int hydrabus_execute(BaseSequentialStream *chp, int argc, const char* const* arg
 }
 
 //*****************************************************************************
-void hydrabus_sigint(BaseSequentialStream *chp, int argc, const char* const* argv)
+void hydrabus_sigint(struct hydra_console *con)
 {
-  (void)argc;
-  (void)argv;
-
-  print(chp, "HydraBus ^C catched!\n\r");
+  /* Hit ctrl-U and enter. */
+  microrl_insert_char(con->mrl, 0x15);
+  microrl_insert_char(con->mrl, 0x0d);
+  microrl_insert_char(con->mrl, 0x0a);
 }
