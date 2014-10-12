@@ -96,8 +96,12 @@ void hydranfc_print_help(t_hydra_console *con, int argc, const char* const* argv
   print(con, "ch_test        - chibios tests\n\r");
   print(con, "mount          - mount sd\n\r");
   print(con, "umount         - unmount sd\n\r");
+  print(con, "cd <dir>       - change directory in sd\n\r");
+  print(con, "pwd            - show current directory path in sd\n\r");
   print(con, "ls [opt dir]   - list files in sd\n\r");
   print(con, "cat <filename> - display sd file (ASCII)\n\r");
+  print(con, "hd <filename>  - hexdump sd file\n\r");
+  print(con, "sd_rperfo      - sd read performance test\n\r");
   print(con, "erase          - erase sd\n\r");
   print(con, "nfc_mifare     - NFC read Mifare/ISO14443A UID\n\r");
   print(con, "nfc_vicinity   - NFC read Vicinity UID\n\r");

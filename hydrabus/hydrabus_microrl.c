@@ -95,6 +95,7 @@ void hydrabus_print_help(t_hydra_console *con, int argc, const char* const* argv
   print(con, "ls [opt dir]   - list files in sd\n\r");
   print(con, "cat <filename> - display sd file (ASCII)\n\r");
   print(con, "hd <filename>  - hexdump sd file\n\r");
+  print(con, "sd_rperfo      - sd read performance test\n\r");
   print(con, "erase          - erase sd\n\r");
 }
 
