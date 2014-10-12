@@ -34,7 +34,7 @@ Token is word separate by white space, for example 3 token line:
 Define you prompt string here. You can use colors escape code, for highlight you prompt,
 for example this prompt will green color (if you terminal supports color)
 */
-#define _PROMPT_DEFAUTL _PROMPT_TXT	/* shall not include _PROMPT_START & _PROMPT_END */
+#define _PROMPT_DEFAULT _PROMPT_TXT	/* shall not include _PROMPT_START & _PROMPT_END */
 
 /*Define it, if you wanna use completion functional, also set completion callback in you code,
 now if user press TAB calls 'copmlitetion' callback. If you no need it, you can just set 
