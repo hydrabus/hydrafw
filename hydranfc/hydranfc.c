@@ -230,7 +230,7 @@ bool hydranfc_init(void)
   return TRUE;
 }
 
-void cmd_nfc_vicinity(BaseSequentialStream *chp, int argc, const char* const* argv)
+void cmd_nfc_vicinity(t_hydra_console *con, int argc, const char* const* argv)
 {
     (void)argc;
     (void)argv;
@@ -250,7 +250,7 @@ void cmd_nfc_vicinity(BaseSequentialStream *chp, int argc, const char* const* ar
     init_ms = Trf797xInitialSettings();
     Trf797xReset();
 
-    chprintf(chp, "Test nf ISO15693/Vicinity (high speed) read UID start, init_ms=%d ms\r\n", init_ms);
+    chprintf(con->bss, "Test nf ISO15693/Vicinity (high speed) read UID start, init_ms=%d ms\r\n", init_ms);
 
     /* Write Modulator and SYS_CLK Control Register (0x09) (13.56Mhz SYS_CLK and default Clock 13.56Mhz)) */
     data_buf[0] = MODULATOR_CONTROL;
@@ -261,7 +261,7 @@ void cmd_nfc_vicinity(BaseSequentialStream *chp, int argc, const char* const* ar
     Trf797xReadSingle(data_buf, 1);
     if(data_buf[0] != 0x31)
     {
-      chprintf(chp, "Error Modulator Control Register read=0x%.2lX (shall be 0x31)\r\n", (uint32_t)data_buf[0]);
+      chprintf(con->bss, "Error Modulator Control Register read=0x%.2lX (shall be 0x31)\r\n", (uint32_t)data_buf[0]);
     }
     /* Configure Mode ISO Control Register (0x01) to 0x02 (ISO15693 high bit rate, one subcarrier, 1 out of 4) */
     data_buf[0] = ISO_CONTROL;
@@ -272,7 +272,7 @@ void cmd_nfc_vicinity(BaseSequentialStream *chp, int argc, const char* const* ar
     Trf797xReadSingle(data_buf, 1);
     if(data_buf[0] != 0x02)
     {
-      chprintf(chp, "Error ISO Control Register read=0x%.2lX (shall be 0x02)\r\n", (uint32_t)data_buf[0]);
+      chprintf(con->bss, "Error ISO Control Register read=0x%.2lX (shall be 0x02)\r\n", (uint32_t)data_buf[0]);
     }
     /* Configure Test Settings 1 to BIT6/0x40 => MOD Pin becomes receiver subcarrier output (Digital Output for RX/TX) */
 /*
@@ -297,7 +297,7 @@ void cmd_nfc_vicinity(BaseSequentialStream *chp, int argc, const char* const* ar
     /* Read back (Chip Status Control Register (0x00) shall be set to RF ON */
     data_buf[0] = CHIP_STATE_CONTROL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "RF ON Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "RF ON Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     /* Send Inventory(3B) and receive data + UID */
     data_buf[0] = 0x26; /* Request Flags */
@@ -310,23 +310,23 @@ void cmd_nfc_vicinity(BaseSequentialStream *chp, int argc, const char* const* ar
     if (fifo_size > 0) 
     {
         // fifo_size shall be equal to 0x0A (10 bytes availables)
-        chprintf(chp, "RX (contains UID):");
+        chprintf(con->bss, "RX (contains UID):");
         for(i=0; i<fifo_size; i++)
-        chprintf(chp, " 0x%.2lX", (uint32_t)data_buf[i]);
-        chprintf(chp, "\r\n");
+        chprintf(con->bss, " 0x%.2lX", (uint32_t)data_buf[i]);
+        chprintf(con->bss, "\r\n");
 
         /* Read RSSI levels and oscillator status(0x0F/0x4F) */
         data_buf[0] = RSSI_LEVELS;                       // read RSSI levels
         Trf797xReadSingle(data_buf, 1);
-        chprintf(chp, "RSSI data: 0x%.2lX\r\n", (uint32_t)data_buf[0]);
+        chprintf(con->bss, "RSSI data: 0x%.2lX\r\n", (uint32_t)data_buf[0]);
         // data_buf[0] shall be equal to value > 0x40
         if(data_buf[0] < 0x40)
         {
-          chprintf(chp, "Error RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
+          chprintf(con->bss, "Error RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
         }
     }else
     {
-        chprintf(chp, "No data in RX FIFO\r\n");
+        chprintf(con->bss, "No data in RX FIFO\r\n");
     }
 
     /* Turn RF OFF (Chip Status Control Register (0x00)) */
@@ -335,16 +335,16 @@ void cmd_nfc_vicinity(BaseSequentialStream *chp, int argc, const char* const* ar
     /* Read back (Chip Status Control Register (0x00) shall be set to RF OFF */
     data_buf[0] = CHIP_STATE_CONTROL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "RF OFF Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "RF OFF Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
     //  data_buf[0] shall be equal to value 0x00
 
-    chprintf(chp, "nb_irq: 0x%.2ld\r\n", (uint32_t)nb_irq);
+    chprintf(con->bss, "nb_irq: 0x%.2ld\r\n", (uint32_t)nb_irq);
     nb_irq = 0;
 
-    chprintf(chp, "Test nfv ISO15693/Vicinity end\r\n");
+    chprintf(con->bss, "Test nfv ISO15693/Vicinity end\r\n");
 }
 
-void cmd_nfc_mifare(BaseSequentialStream *chp, int argc, const char* const* argv)
+void cmd_nfc_mifare(t_hydra_console *con, int argc, const char* const* argv)
 {
     (void)argc;
     (void)argv;
@@ -365,7 +365,7 @@ void cmd_nfc_mifare(BaseSequentialStream *chp, int argc, const char* const* argv
     init_ms = Trf797xInitialSettings();
     Trf797xReset();
 
-    chprintf(chp, "Test nf ISO14443-A/Mifare read UID(4bytes only) start, init_ms=%d ms\r\n", init_ms);
+    chprintf(con->bss, "Test nf ISO14443-A/Mifare read UID(4bytes only) start, init_ms=%d ms\r\n", init_ms);
 
     /* Write Modulator and SYS_CLK Control Register (0x09) (13.56Mhz SYS_CLK and default Clock 13.56Mhz)) */
     data_buf[0] = MODULATOR_CONTROL;
@@ -374,7 +374,7 @@ void cmd_nfc_mifare(BaseSequentialStream *chp, int argc, const char* const* argv
 
     data_buf[0] = MODULATOR_CONTROL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "Modulator Control Register read=0x%.2lX (shall be 0x31)\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "Modulator Control Register read=0x%.2lX (shall be 0x31)\r\n", (uint32_t)data_buf[0]);
 
     /* Configure Mode ISO Control Register (0x01) to 0x88 (ISO14443A RX bit rate, 106 kbps) and no RX CRC (CRC is not present in the response)) */
     data_buf[0] = ISO_CONTROL;
@@ -385,7 +385,7 @@ void cmd_nfc_mifare(BaseSequentialStream *chp, int argc, const char* const* argv
     Trf797xReadSingle(data_buf, 1);
     if(data_buf[0] != 0x88)
     {
-      chprintf(chp, "Error ISO Control Register read=0x%.2lX (shall be 0x88)\r\n", (uint32_t)data_buf[0]);
+      chprintf(con->bss, "Error ISO Control Register read=0x%.2lX (shall be 0x88)\r\n", (uint32_t)data_buf[0]);
     }
     /* Configure Test Settings 1 to BIT6/0x40 => MOD Pin becomes receiver subcarrier output (Digital Output for RX/TX) */
 /*
@@ -408,7 +408,7 @@ void cmd_nfc_mifare(BaseSequentialStream *chp, int argc, const char* const* argv
     /* Read back (Chip Status Control Register (0x00) shall be set to RF ON */
     data_buf[0] = CHIP_STATE_CONTROL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "RF ON Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "RF ON Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     /* Send REQA(7bits) and receive ATQA(2bytes) */
     data_buf[0] = 0x26; /* REQA (7bits) */
@@ -426,14 +426,14 @@ void cmd_nfc_mifare(BaseSequentialStream *chp, int argc, const char* const* argv
     }
     if (fifo_size > 0)
     {
-        chprintf(chp, "RX data(ATQA):");
+        chprintf(con->bss, "RX data(ATQA):");
         for(i=0; i<fifo_size; i++)
-        chprintf(chp, " 0x%.2lX", (uint32_t)data_buf[i]);
-        chprintf(chp, "\r\n");
+        chprintf(con->bss, " 0x%.2lX", (uint32_t)data_buf[i]);
+        chprintf(con->bss, "\r\n");
 
         data_buf[0] = RSSI_LEVELS;                       // read RSSI levels
         Trf797xReadSingle(data_buf, 1);
-        chprintf(chp, "RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
+        chprintf(con->bss, "RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
 
         /* Send AntiColl(2Bytes) and receive UID+BCC(5bytes) */
         data_buf[0] = 0x93;
@@ -441,17 +441,17 @@ void cmd_nfc_mifare(BaseSequentialStream *chp, int argc, const char* const* argv
         fifo_size = Trf797x_transceive_bytes(data_buf, 2, uid_buf, UID_MAX, 10/* 10ms TX/RX Timeout */, 0/* TX CRC disabled */); 
         if (fifo_size > 0)
         {
-            chprintf(chp, "RX data(UID+BCC):");
+            chprintf(con->bss, "RX data(UID+BCC):");
             for(i=0; i<fifo_size; i++)
-            chprintf(chp, " 0x%.2lX", (uint32_t)uid_buf[i]);
-            chprintf(chp, "\r\n");
+            chprintf(con->bss, " 0x%.2lX", (uint32_t)uid_buf[i]);
+            chprintf(con->bss, "\r\n");
 
             data_buf[0] = RSSI_LEVELS;                       // read RSSI levels
             Trf797xReadSingle(data_buf, 1);
-            chprintf(chp, "RSSI data: 0x%.2lX\r\n", (uint32_t)data_buf[0]);
+            chprintf(con->bss, "RSSI data: 0x%.2lX\r\n", (uint32_t)data_buf[0]);
             if(data_buf[0] < 0x40)
             {
-              chprintf(chp, "Error RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
+              chprintf(con->bss, "Error RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
             }
 
             /* Select RX with CRC_A */
@@ -470,14 +470,14 @@ void cmd_nfc_mifare(BaseSequentialStream *chp, int argc, const char* const* argv
             fifo_size = Trf797x_transceive_bytes(data_buf, (2+UID_MAX),  data_buf, DATA_MAX, 10/* 10ms TX/RX Timeout */, 1 /* TX CRC enabled */);
             if (fifo_size > 0)
             {
-                chprintf(chp, "RX data(SAK):");
+                chprintf(con->bss, "RX data(SAK):");
                 for(i=0; i<fifo_size; i++)
-                chprintf(chp, " 0x%.2lX", (uint32_t)data_buf[i]);
-                chprintf(chp, "\r\n");
+                chprintf(con->bss, " 0x%.2lX", (uint32_t)data_buf[i]);
+                chprintf(con->bss, "\r\n");
 
                 data_buf[0] = RSSI_LEVELS;                       // read RSSI levels
                 Trf797xReadSingle(data_buf, 1);
-                chprintf(chp, "RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
+                chprintf(con->bss, "RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
 
                 /* Send Halt(2Bytes+CRC) */
                 data_buf[0] = 0x50;
@@ -485,25 +485,25 @@ void cmd_nfc_mifare(BaseSequentialStream *chp, int argc, const char* const* argv
                 fifo_size = Trf797x_transceive_bytes(data_buf, (2+UID_MAX), data_buf, DATA_MAX, 5 /* 5ms TX/RX Timeout => shall not receive answer */, 1/* TX CRC enabled */); 
                 if (fifo_size > 0)
                 {
-                    chprintf(chp, "RX data(HALT):");
+                    chprintf(con->bss, "RX data(HALT):");
                     for(i=0; i<fifo_size; i++)
-                    chprintf(chp, " 0x%.2lX", (uint32_t)data_buf[i]);
-                    chprintf(chp, "\r\n");
+                    chprintf(con->bss, " 0x%.2lX", (uint32_t)data_buf[i]);
+                    chprintf(con->bss, "\r\n");
                 }else
                 {
-                    chprintf(chp, "Send HALT(No Answer OK)\r\n");
+                    chprintf(con->bss, "Send HALT(No Answer OK)\r\n");
                 }
             }else
             {
-                chprintf(chp, "No data(SAK) in RX FIFO\r\n");
+                chprintf(con->bss, "No data(SAK) in RX FIFO\r\n");
             }
         }else
         {
-            chprintf(chp, "No data(UID) in RX FIFO\r\n");
+            chprintf(con->bss, "No data(UID) in RX FIFO\r\n");
         }
     }else
     {
-        chprintf(chp, "No data(ATQA) in RX FIFO\r\n");
+        chprintf(con->bss, "No data(ATQA) in RX FIFO\r\n");
     }
 
     /* Turn RF OFF (Chip Status Control Register (0x00)) */
@@ -512,142 +512,142 @@ void cmd_nfc_mifare(BaseSequentialStream *chp, int argc, const char* const* argv
     /* Read back (Chip Status Control Register (0x00) shall be set to RF OFF */
     data_buf[0] = CHIP_STATE_CONTROL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "RF OFF Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "RF OFF Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
     //  data_buf[0] shall be equal to value 0x00
 
-    chprintf(chp, "nb_irq: 0x%.2ld\r\n", (uint32_t)nb_irq);
+    chprintf(con->bss, "nb_irq: 0x%.2ld\r\n", (uint32_t)nb_irq);
     nb_irq = 0;
 
-    chprintf(chp, "Test nfm ISO14443-A/Mifare end\r\n");
+    chprintf(con->bss, "Test nfm ISO14443-A/Mifare end\r\n");
 }
 
-void cmd_nfc_dump_regs(BaseSequentialStream *chp, int argc, const char* const* argv)
+void cmd_nfc_dump_regs(t_hydra_console *con, int argc, const char* const* argv)
 {
     (void)argc;
     (void)argv;
     static uint8_t data_buf[16];
 
-    chprintf(chp, "Start Dump TRF7970A Registers\r\n");
+    chprintf(con->bss, "Start Dump TRF7970A Registers\r\n");
 
     data_buf[0] = CHIP_STATE_CONTROL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "Chip Status(0x00)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "Chip Status(0x00)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = ISO_CONTROL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "ISO Control(0x01)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "ISO Control(0x01)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = ISO_14443B_OPTIONS;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "ISO 14443B Options(0x02)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "ISO 14443B Options(0x02)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = ISO_14443A_OPTIONS;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "ISO 14443A Options(0x03)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "ISO 14443A Options(0x03)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = TX_TIMER_EPC_HIGH;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "TX Timer HighByte(0x04)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "TX Timer HighByte(0x04)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = TX_TIMER_EPC_LOW;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "TX Timer LowByte(0x05)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "TX Timer LowByte(0x05)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = TX_PULSE_LENGTH_CONTROL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "TX Pulse Length(0x06)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "TX Pulse Length(0x06)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = RX_NO_RESPONSE_WAIT_TIME;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "RX No Response Wait Time(0x07)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "RX No Response Wait Time(0x07)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = RX_WAIT_TIME;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "RX Wait Time(0x08)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "RX Wait Time(0x08)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = MODULATOR_CONTROL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "Modulator SYS_CLK(0x09)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "Modulator SYS_CLK(0x09)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = RX_SPECIAL_SETTINGS;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "RX SpecialSettings(0x0A)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "RX SpecialSettings(0x0A)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = REGULATOR_CONTROL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "Regulator IO(0x0B)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "Regulator IO(0x0B)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     /* Read/Clear IRQ Status(0x0C=>0x6C)+read dummy */
     Trf797xReadIrqStatus(data_buf);
-    chprintf(chp, "IRQ Status(0x0C)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "IRQ Status(0x0C)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = IRQ_MASK;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "IRQ Mask+Collision Position1(0x0D)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "IRQ Mask+Collision Position1(0x0D)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = COLLISION_POSITION;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "Collision Position2(0x0E)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "Collision Position2(0x0E)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = RSSI_LEVELS;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "RSSI+Oscillator Status(0x0F)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "RSSI+Oscillator Status(0x0F)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = SPECIAL_FUNCTION;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "Special Functions1(0x10)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "Special Functions1(0x10)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = RAM_START_ADDRESS;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "Special Functions2(0x11)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "Special Functions2(0x11)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = RAM_START_ADDRESS+1;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "RAM ADDR0(0x12)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "RAM ADDR0(0x12)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = RAM_START_ADDRESS+2;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "RAM ADDR1(0x13)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "RAM ADDR1(0x13)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = RAM_START_ADDRESS+3;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "Adjust FIFO IRQ Lev(0x14)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "Adjust FIFO IRQ Lev(0x14)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = RAM_START_ADDRESS+4;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "RAM ADDR3(0x15)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "RAM ADDR3(0x15)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = NFC_LOW_DETECTION;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "NFC Low Field Level(0x16)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "NFC Low Field Level(0x16)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = NFC_TARGET_LEVEL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "NFC Target Detection Level(0x18)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "NFC Target Detection Level(0x18)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = NFC_TARGET_PROTOCOL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "NFC Target Protocol(0x19)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "NFC Target Protocol(0x19)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = TEST_SETTINGS_1;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "Test Settings1(0x1A)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "Test Settings1(0x1A)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = TEST_SETTINGS_2;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "Test Settings2(0x1B)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "Test Settings2(0x1B)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = FIFO_CONTROL;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "FIFO Status(0x1C)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "FIFO Status(0x1C)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = TX_LENGTH_BYTE_1;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "TX Length Byte1(0x1D)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "TX Length Byte1(0x1D)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
     data_buf[0] = TX_LENGTH_BYTE_2;
     Trf797xReadSingle(data_buf, 1);
-    chprintf(chp, "TX Length Byte2(0x1E)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
+    chprintf(con->bss, "TX Length Byte2(0x1E)=0x%.2lX\r\n", (uint32_t)data_buf[0]);
 
-    chprintf(chp, "End Dump TRF7970A Registers\r\n");
+    chprintf(con->bss, "End Dump TRF7970A Registers\r\n");
 }

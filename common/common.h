@@ -17,16 +17,9 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#include "microrl.h"
 #include "ch.h"
 #include "hal.h"
-
-void cmd_info(BaseSequentialStream *chp, int argc, const char* const* argv);
-void cmd_init(BaseSequentialStream *chp, int argc, const char* const* argv);
-
-void cmd_mem(BaseSequentialStream *chp, int argc, const char* const* argv);
-void cmd_threads(BaseSequentialStream *chp, int argc, const char* const* argv);
-void cmd_test(BaseSequentialStream *chp, int argc, const char* const* argv);
-void cmd_dbg(BaseSequentialStream *chp, int argc, const char* const* argv);
 
 void scs_dwt_cycle_counter_enabled(void);
 #define clear_cyclecounter() ( DWTBase->CYCCNT = 0 )
@@ -73,5 +66,25 @@ typedef struct
 #ifndef MIN
 #define MIN(a, b) (a < b ? a : b)
 #endif
+
+/* How much thread working area to allocate per console. */
+#define CONSOLE_WA_SIZE 2048
+
+typedef struct hydra_console {
+	char *thread_name;
+	thread_t *thread;
+	union {
+		SerialUSBDriver *sdu;
+		BaseSequentialStream *bss;
+	};
+	microrl_t *mrl;
+} t_hydra_console;
+
+void cmd_info(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_init(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_mem(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_threads(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_test(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv);
 
 #endif /* _COMMON_H_ */

@@ -37,14 +37,16 @@
 #include "hydrabus.h"
 #include "hydranfc.h"
 
-typedef void (*ptFunc_microrl)(BaseSequentialStream *chp, int argc, const char* const* argv);
+typedef void (*ptFunc_microrl)(t_hydra_console *con, int argc, const char* const* argv);
 
-// create microrl object and pointer on it
-microrl_t rl_sdu1;
-microrl_t* prl_sdu1 = &rl_sdu1;
+// create microrl objects for each console
+microrl_t rl_con1;
+microrl_t rl_con2;
 
-microrl_t rl_sdu2;
-microrl_t* prl_sdu2 = &rl_sdu2;
+t_hydra_console consoles[] = {
+	{ "console USB1", NULL, .sdu=&SDU1, &rl_con1 },
+	{ "console USB2", NULL, .sdu=&SDU2, &rl_con2 },
+};
 
 /*
 * This is a periodic thread that manage hydranfc sniffer
@@ -82,7 +84,7 @@ THD_FUNCTION(ThreadHydraNFC, arg)
           D2_OFF;
           chThdSleepMilliseconds(25);
         }
-        cmd_nfc_sniff_14443A((BaseSequentialStream *)NULL, 0, NULL);
+        cmd_nfc_sniff_14443A(NULL, 0, NULL);
       }
 
       if(K4_BUTTON)
@@ -95,203 +97,129 @@ THD_FUNCTION(ThreadHydraNFC, arg)
   return 0;
 }
 
-/*
-* This is a periodic thread that Terminal on USB1
-*/
-THD_WORKING_AREA(waThread_Thread_Term_USB1, 2048);
-THD_FUNCTION(Thread_Term_USB1, arg)
+THD_FUNCTION(console, arg)
 {
-  (void)arg;
-  
-  chRegSetThreadName("Thread_Term_USB1");
-  // call init with ptr to microrl instance and print callback
-  microrl_init(prl_sdu1, &SDU1, print);
-  // set callback for execute
-  microrl_set_execute_callback(prl_sdu1, execute);
+	t_hydra_console *con;
+
+	con = arg;
+	chRegSetThreadName(con->thread_name);
+	microrl_init(con->mrl, con, print);
+	microrl_set_execute_callback(con->mrl, execute);
 #ifdef _USE_COMPLETE
-  // set callback for completion
-  microrl_set_complete_callback(prl_sdu1, complet);
+	microrl_set_complete_callback(con->mrl, complet);
 #endif
-  // set callback for Ctrl+C
-  microrl_set_sigint_callback(prl_sdu1, sigint);
-  
-  while(1)
-  {
-    // put received char from stdin to microrl lib
-    chThdSleepMilliseconds(1);
-    microrl_insert_char(prl_sdu1, get_char(&SDU1));
-  }
+	microrl_set_sigint_callback(con->mrl, sigint);
+
+	while (1) {
+		chThdSleepMilliseconds(1);
+		microrl_insert_char(con->mrl, get_char(con));
+	}
 }
 
 /*
-* This is a periodic thread that Terminal on USB2
-*/
-THD_WORKING_AREA(waThread_Thread_Term_USB2, 2048);
-THD_FUNCTION(Thread_Term_USB2, arg)
-{
-  (void)arg;
-  
-  chRegSetThreadName("Thread_Term_USB2");
-  // call init with ptr to microrl instance and print callback
-  microrl_init(prl_sdu2, &SDU2, print);
-  // set callback for execute
-  microrl_set_execute_callback(prl_sdu2, execute);
-#ifdef _USE_COMPLETE
-  // set callback for completion
-  microrl_set_complete_callback(prl_sdu2, complet);
-#endif
-  // set callback for Ctrl+C
-  microrl_set_sigint_callback(prl_sdu2, sigint);
-  
-  while(1)
-  {
-    // put received char from stdin to microrl lib
-    chThdSleepMilliseconds(1);
-    microrl_insert_char(prl_sdu2, get_char(&SDU2));
-  }
-}
-
-/*
-* Application entry point.
-*/
+ * Application entry point.
+ */
 #define BLINK_FAST   50
 #define BLINK_SLOW   250
 
 int main(void)
 {
-  int sleep_ms;
-  thread_t *shell1tp = NULL;
-  thread_t *shell2tp = NULL;
+	int sleep_ms, i;
 
-  /*
-  * System initializations.
-  * - HAL initialization, this also initializes the configured device drivers
-  *   and performs the board-specific initializations.
-  * - Kernel initialization, the main() function becomes a thread and the
-  *   RTOS is active.
-  */
-  halInit();
-  chSysInit();
+	/*
+	 * System initializations.
+	 * - HAL initialization, this also initializes the configured device
+	 *   drivers and performs the board-specific initializations.
+	 * - Kernel initialization, the main() function becomes a thread and the
+	 *   RTOS is active.
+	 */
+	halInit();
+	chSysInit();
 
-  scs_dwt_cycle_counter_enabled();
+	scs_dwt_cycle_counter_enabled();
 
-  hydrabus_init();
-  if(hydranfc_init() == FALSE)
-  {
-    /* Reinit HydraBus */
-    hydrabus_init();
-  }
+	hydrabus_init();
+	if(hydranfc_init() == FALSE)
+		/* Reinit HydraBus */
+		hydrabus_init();
 
-  /*
-  * Initializes a serial-over-USB CDC driver.
-  */
-  sduObjectInit(&SDU1);
-  sduStart(&SDU1, &serusb1cfg);
+	/*
+	 * Initializes a serial-over-USB CDC driver.
+	 */
+	sduObjectInit(&SDU1);
+	sduStart(&SDU1, &serusb1cfg);
 
-  sduObjectInit(&SDU2);
-  sduStart(&SDU2, &serusb2cfg);  
+	sduObjectInit(&SDU2);
+	sduStart(&SDU2, &serusb2cfg);
 
-  /*
-  * Activates the USB1 & 2 driver and then the USB bus pull-up on D+.
-  * Note, a delay is inserted in order to not have to disconnect the cable
-  * after a reset.
-  */
-  usbDisconnectBus(serusb1cfg.usbp);
-  usbDisconnectBus(serusb2cfg.usbp);
-  
-  chThdSleepMilliseconds(500);
-  
-  usbStart(serusb1cfg.usbp, &usb1cfg);
-  /* Disable VBUS sensing on USB1 (GPIOA9) is not connected to VUSB by default) */
-  #define GCCFG_NOVBUSSENS (1U<<21)
-  stm32_otg_t *otgp = (&USBD1)->otg;
-  otgp->GCCFG |= GCCFG_NOVBUSSENS;
-  
-  usbConnectBus(serusb1cfg.usbp);
+	/*
+	 * Activates the USB1 & 2 driver and then the USB bus pull-up on D+.
+	 * Note, a delay is inserted in order to not have to disconnect the cable
+	 * after a reset.
+	 */
+	usbDisconnectBus(serusb1cfg.usbp);
+	usbDisconnectBus(serusb2cfg.usbp);
 
-  usbStart(serusb2cfg.usbp, &usb2cfg);
-  usbConnectBus(serusb2cfg.usbp);
+	chThdSleepMilliseconds(500);
 
-  chThdSleepMilliseconds(100); /* Wait USB Enumeration */
+	usbStart(serusb1cfg.usbp, &usb1cfg);
+	/*
+	 * Disable VBUS sensing on USB1 (GPIOA9) is not connected to VUSB
+	 * by default)
+	 */
+#define GCCFG_NOVBUSSENS (1U<<21)
+	stm32_otg_t *otgp = (&USBD1)->otg;
+	otgp->GCCFG |= GCCFG_NOVBUSSENS;
 
-  /*
-  * Creates HydraNFC Sniffer thread.
-  */
-  if(hydranfc_is_detected() == TRUE)
-  {
-    chThdCreateStatic(waThreadHydraNFC, sizeof(waThreadHydraNFC), NORMALPRIO, ThreadHydraNFC, NULL);
-  }
+	usbConnectBus(serusb1cfg.usbp);
 
-  /*
-  * Normal main() thread activity
-  */
-  chRegSetThreadName("main");
-  while (TRUE)
-  {
-    /* USB1 CDC */
-    if( (!shell1tp) )
-    {
-      if (SDU1.config->usbp->state == USB_ACTIVE)
-      {
-        /* Spawns a new shell.*/
-        shell1tp = chThdCreateStatic(waThread_Thread_Term_USB1,
-                                     sizeof(waThread_Thread_Term_USB1),
-                                     NORMALPRIO,
-                                     Thread_Term_USB1, NULL);
-      }
-    }
-    else
-    {
-      /* If the previous shell exited.*/
-      if (chThdTerminatedX(shell1tp))
-      {
-        shell1tp = NULL;
-      }
-    }
-    /* USB2 CDC */
-    if (!shell2tp)
-    {
-      if (SDU2.config->usbp->state == USB_ACTIVE)
-      {
-        /* Spawns a new shell.*/
-        shell2tp = chThdCreateStatic(waThread_Thread_Term_USB2,
-                                     sizeof(waThread_Thread_Term_USB2),
-                                     NORMALPRIO,
-                                     Thread_Term_USB2, NULL);
-      }
-    }
-    else
-    {
-      /* If the previous shell exited.*/
-      if (chThdTerminatedX(shell2tp))
-      {
-        shell2tp = NULL;
-      }
-    }    
+	usbStart(serusb2cfg.usbp, &usb2cfg);
+	usbConnectBus(serusb2cfg.usbp);
 
-    /* For test purpose HydraBus ULED blink */
-    if(USER_BUTTON)
-    {
-      sleep_ms = BLINK_FAST;
-    }else
-    {
-      sleep_ms = BLINK_SLOW;
-    }
-    /* chThdSleep(TIME_INFINITE); */
-    ULED_ON;
+	/* Wait for USB Enumeration. */
+	chThdSleepMilliseconds(100);
 
-    chThdSleepMilliseconds(sleep_ms);
-    
-    if(USER_BUTTON)
-    {
-      sleep_ms = BLINK_FAST;
-    }else
-    {
-      sleep_ms = BLINK_SLOW;
-    }
-    ULED_OFF;
+	/*
+	 * Creates HydraNFC Sniffer thread.
+	 */
+	if(hydranfc_is_detected() == TRUE)
+		chThdCreateStatic(waThreadHydraNFC, sizeof(waThreadHydraNFC),
+				NORMALPRIO, ThreadHydraNFC, NULL);
 
-    chThdSleepMilliseconds(sleep_ms);
-  }
+	/*
+	* Normal main() thread activity.
+	*/
+	chRegSetThreadName("main");
+	while (TRUE) {
+		for (i = 0; i < 2; i++) {
+			if (!consoles[i].thread) {
+				if (consoles[i].sdu->config->usbp->state != USB_ACTIVE)
+					continue;
+				/* Spawn new console thread.*/
+				consoles[i].thread = chThdCreateFromHeap(NULL,
+						CONSOLE_WA_SIZE, NORMALPRIO, console, &consoles[i]);
+			} else {
+				if (chThdTerminatedX(consoles[i].thread))
+					/* This console thread terminated. */
+					consoles[i].thread = NULL;
+			}
+		}
 
+		/* For test purpose HydraBus ULED blink */
+		if(USER_BUTTON)
+			sleep_ms = BLINK_FAST;
+		else
+			sleep_ms = BLINK_SLOW;
+		ULED_ON;
+
+		chThdSleepMilliseconds(sleep_ms);
+
+		if(USER_BUTTON)
+			sleep_ms = BLINK_FAST;
+		else
+			sleep_ms = BLINK_SLOW;
+		ULED_OFF;
+
+		chThdSleepMilliseconds(sleep_ms);
+	}
 }

@@ -73,35 +73,35 @@ microrl_exec_t hydranfc_keyworld[HYDRANFC_NUM_OF_CMD] =
 char* hydranfc_compl_world[HYDRANFC_NUM_OF_CMD + 1];
 
 //*****************************************************************************
-void hydranfc_print_help(BaseSequentialStream *chp, int argc, const char* const* argv)
+void hydranfc_print_help(t_hydra_console *con, int argc, const char* const* argv)
 {
   (void)argc;
   (void)argv;
 
-  print(chp,"Use TAB key for completion\n\r");
-  print(chp,"? or h         - Help\t\n\r");
-  print(chp,"clear          - clear screen\n\r");
-  print(chp,"info           - info on FW & HW\n\r");
-  print(chp,"ch_mem         - memory info\t\n\r");
-  print(chp,"ch_threads     - threads\n\r");
-  print(chp,"ch_test        - chibios tests\n\r");
-  print(chp,"mount          - mount sd\n\r");
-  print(chp,"umount         - unmount sd\n\r");
-  print(chp,"ls [opt dir]   - list files in sd\n\r");
-  print(chp,"cat <filename> - display sd file (ASCII)\n\r");
-  print(chp,"erase          - erase sd\n\r");
-  print(chp,"nfc_mifare     - NFC read Mifare/ISO14443A UID\n\r");
-  print(chp,"nfc_vicinity   - NFC read Vicinity UID\n\r");
-  print(chp,"nfc_dump       - NFC dump registers\n\r");
-  print(chp,"nfc_sniff      - NFC start sniffer ISO14443A\n\r");
-  print(chp,"nfc_sniff can be started by K3 and stopped by K4 buttons\n\r");
+  print(con, "Use TAB key for completion\n\r");
+  print(con, "? or h         - Help\t\n\r");
+  print(con, "clear          - clear screen\n\r");
+  print(con, "info           - info on FW & HW\n\r");
+  print(con, "ch_mem         - memory info\t\n\r");
+  print(con, "ch_threads     - threads\n\r");
+  print(con, "ch_test        - chibios tests\n\r");
+  print(con, "mount          - mount sd\n\r");
+  print(con, "umount         - unmount sd\n\r");
+  print(con, "ls [opt dir]   - list files in sd\n\r");
+  print(con, "cat <filename> - display sd file (ASCII)\n\r");
+  print(con, "erase          - erase sd\n\r");
+  print(con, "nfc_mifare     - NFC read Mifare/ISO14443A UID\n\r");
+  print(con, "nfc_vicinity   - NFC read Vicinity UID\n\r");
+  print(con, "nfc_dump       - NFC dump registers\n\r");
+  print(con, "nfc_sniff      - NFC start sniffer ISO14443A\n\r");
+  print(con, "nfc_sniff can be started by K3 and stopped by K4 buttons\n\r");
 
 }
 
 //*****************************************************************************
 // execute callback for microrl library
 // do what you want here, but don't write to argv!!! read only!!
-int hydranfc_execute(BaseSequentialStream *chp, int argc, const char* const* argv)
+int hydranfc_execute(t_hydra_console *con, int argc, const char* const* argv)
 {
   bool cmd_found;
   int curr_arg = 0;
@@ -117,7 +117,7 @@ int hydranfc_execute(BaseSequentialStream *chp, int argc, const char* const* arg
     {
       if( (strcmp(argv[curr_arg], hydranfc_keyworld[cmd].str_cmd)) == 0 )
       {
-        hydranfc_keyworld[cmd].ptFunc_exe_cmd(chp, argc-curr_arg, &argv[curr_arg]);
+        hydranfc_keyworld[cmd].ptFunc_exe_cmd(con, argc-curr_arg, &argv[curr_arg]);
         cmd_found = TRUE;
         break;
       }
@@ -125,9 +125,9 @@ int hydranfc_execute(BaseSequentialStream *chp, int argc, const char* const* arg
     }
     if(cmd_found == FALSE)
     {
-      print(chp,"command: '");
-      print(chp,(char*)argv[curr_arg]);
-      print(chp,"' Not found.\n\r");
+      print(con->sdu,"command: '");
+      print(con->sdu,(char*)argv[curr_arg]);
+      print(con->sdu,"' Not found.\n\r");
     }
     curr_arg++;
   }
@@ -135,10 +135,7 @@ int hydranfc_execute(BaseSequentialStream *chp, int argc, const char* const* arg
 }
 
 //*****************************************************************************
-void hydranfc_sigint(BaseSequentialStream *chp, int argc, const char* const* argv)
+void hydranfc_sigint(t_hydra_console *con)
 {
-  (void)argc;
-  (void)argv;
-
-  print(chp, "HydraNFC microrl ^C catched!\n\r");
+  print(con, "HydraNFC microrl ^C catched!\n\r");
 }

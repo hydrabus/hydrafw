@@ -33,43 +33,40 @@
 char** compl_world;
 microrl_exec_t* keyworld;
 
-void print_clear(BaseSequentialStream *chp, int argc, const char* const* argv)
+void print_clear(t_hydra_console *con, int argc, const char* const* argv)
 {
   (void)argc;
   (void)argv;
-  print(chp,"\033[2J"); // ESC seq to clear entire screen
-  print(chp,"\033[H");  // ESC seq to move cursor at left-top corner
+
+  print(con,"\033[2J"); // ESC seq to clear entire screen
+  print(con,"\033[H");  // ESC seq to move cursor at left-top corner
 }
 
 //*****************************************************************************
-void print(void* user_handle, const char * str)
+void print(void *user_handle, const char *str)
 {
-  int len;
-  if(str != NULL)
-  {
-    len = strlen(str);
-    if((len > 0) &&(len < 1024) )
-    {
-      chSequentialStreamWrite( (BaseSequentialStream *)user_handle, (uint8_t *)str, len);
-    }else
-    {
-      /* Do nothing */
-    }
-  }else
-  {
-    /* Do nothing */
-  }
+	t_hydra_console *con;
+	int len;
+
+	if(!str)
+		return;
+
+	con = user_handle;
+	len = strlen(str);
+	if(len > 0 && len < 1024)
+		chSequentialStreamWrite((BaseSequentialStream *)con->sdu,
+				(uint8_t *)str, len);
 }
 
 //*****************************************************************************
-char get_char(void* user_handle) 
+char get_char(t_hydra_console *con) 
 {
-  uint8_t car;
-  if(chSequentialStreamRead( (BaseSequentialStream *)user_handle,(uint8_t *)&car, 1) == 0)
-  {
-    car = 0;
-  }
-  return car;
+	uint8_t car;
+
+	if(chSequentialStreamRead(con->sdu,(uint8_t *)&car, 1) == 0)
+		car = 0;
+
+	return car;
 }
 
 #ifdef _USE_COMPLETE
@@ -131,30 +128,27 @@ char** complet(void* user_handle, int argc, const char * const * argv)
 //*****************************************************************************
 // execute callback for microrl library
 // do what you want here, but don't write to argv!!! read only!!
-unsigned int execute(void* user_handle, int argc, const char* const* argv)
+unsigned int execute(void *user_handle, int argc, const char* const* argv)
 {
-  /* HydraNFC Shield detected*/
-  if(hydranfc_is_detected() == TRUE)
-  {
-    return hydranfc_execute(user_handle, argc, argv);
-  }else
-  {
-    return hydrabus_execute(user_handle, argc, argv);
-  }
+	t_hydra_console *con;
+
+	con = user_handle;
+	if(hydranfc_is_detected())
+		return hydranfc_execute(con, argc, argv);
+	else
+		return hydrabus_execute(con, argc, argv);
 }
 
 //*****************************************************************************
-void sigint(void* user_handle)
+void sigint(void *user_handle)
 {
-  /* HydraNFC Shield detected*/
-  if(hydranfc_is_detected() == TRUE)
-  {
-    hydranfc_sigint(user_handle, 0, NULL);
-  }else
-  {
-    /* HydraBus */
-    hydrabus_sigint(user_handle, 0, NULL);
-  }
+	t_hydra_console *con;
+
+	con = user_handle;
+	if(hydranfc_is_detected())
+		hydranfc_sigint(con);
+	else
+		hydrabus_sigint(con);
 }
 
 

@@ -19,7 +19,7 @@
 
 #include "ch.h"
 
-typedef void (*ptFunc)(BaseSequentialStream *chp, int argc, const char* const* argv);
+typedef void (*ptFunc)(t_hydra_console *con, int argc, const char* const* argv);
 
 typedef struct
 {
@@ -28,18 +28,18 @@ typedef struct
 } microrl_exec_t;
 
 // print to stream callback
-void print(void* user_handle, const char * str);
+void print(void *user_handle, const char *str);
 
 // get_char from stream
-char get_char(void* user_handle);
+char get_char(t_hydra_console *con);
 
 // execute callback
-unsigned int execute(void* user_handle, int argc, const char* const* argv);
+unsigned int execute(void *user_handle, int argc, const char* const* argv);
 
 // completion callback
 char ** complet(void* user_handle, int argc, const char* const* argv);
 
 // ctrl+c callback
-void sigint(void* user_handle);
+void sigint(void *user_handle);
 
 #endif /* _MICRORL_CALLBACK_H_ */

@@ -25,7 +25,7 @@ Token is word separate by white space, for example 3 token line:
 */
 #define _COMMAND_TOKEN_NMB 50
 
-#define _PROMPT_TXT ">"
+#define _PROMPT_TXT "> "
 
 // Prompt START & END for green color (included automatically)
 #define _PROMPT_START "\033[32m"
