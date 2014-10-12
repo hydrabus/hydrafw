@@ -87,7 +87,6 @@ void hydrabus_print_help(t_hydra_console *con, int argc, const char* const* argv
   print(con, "info           - info on FW & HW\n\r");
   print(con, "ch_mem         - memory info\t\n\r");
   print(con, "ch_threads     - threads\n\r");
-  print(con, "ch_test        - chibios tests\n\r");
   print(con, "mount          - mount sd\n\r");
   print(con, "umount         - unmount sd\n\r");
   print(con, "cd <dir>       - change directory in sd\n\r");
