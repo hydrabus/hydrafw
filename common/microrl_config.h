@@ -17,13 +17,13 @@ If user input chars more then it parametrs-1, chars not added to command line.*/
 #define _COMMAND_LINE_LEN (1+100) // for 32 chars
 
 /*
-Command token number, define max token in command line, if number of token 
-typed in command line exceed this value, then prints message about it and
-command line not to be parced and 'execute' callback will not calls.
-Token is word separate by white space, for example 3 token line:
-"> set mode test"
-*/
-#define _COMMAND_TOKEN_NMB 50
+ * Maximum number of command tokens. If the number of tokens on a command line
+ * exceeds this value an error message will be printed and the command line
+ * will not be executed.
+ * A token is a word separate by white space, for example a 3 token line:
+ * "> set mode test"
+ */
+#define _MAX_COMMAND_TOKENS 50
 
 #define _PROMPT_TXT "> "
 
@@ -70,7 +70,7 @@ Try to build with and without, and compare total code size for tune library.
 
 /*
 Enable 'interrupt signal' callback, if user press Ctrl+C */
-#define _USE_CTLR_C
+#define _USE_CTRL_C
 
 /*
 Print prompt at 'microrl_init', if enable, prompt will print at startup, 
