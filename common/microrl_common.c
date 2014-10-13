@@ -27,8 +27,11 @@
 #include "microrl_callback.h"
 
 #include "hydrabus_microrl.h"
+
+#ifdef HYDRANFC
 #include "hydranfc.h"
 #include "hydranfc_microrl.h"
+#endif
 
 char** compl_world;
 microrl_exec_t* keyworld;
@@ -81,6 +84,7 @@ char** complet(void* user_handle, int argc, const char * const * argv)
 
   compl_world[0] = NULL;
 
+#ifdef HYDRANFC
   /* HydraNFC Shield detected*/
   if(hydranfc_is_detected() == TRUE)
   {
@@ -94,6 +98,12 @@ char** complet(void* user_handle, int argc, const char * const * argv)
     compl_world = &hydrabus_compl_world[0];
     keyworld = hydrabus_keyworld;
   }
+#else
+  /* HydraBus commands */
+  _num_of_cmd = HYDRABUS_NUM_OF_CMD;
+  compl_world = &hydrabus_compl_world[0];
+  keyworld = hydrabus_keyworld;
+#endif
 
   // if there is token in cmdline
   if(argc == 1)
@@ -133,10 +143,15 @@ unsigned int execute(void *user_handle, int argc, const char* const* argv)
 	t_hydra_console *con;
 
 	con = user_handle;
+
+#ifdef HYDRANFC
 	if(hydranfc_is_detected())
 		return hydranfc_execute(con, argc, argv);
 	else
 		return hydrabus_execute(con, argc, argv);
+#else
+  return hydrabus_execute(con, argc, argv);
+#endif
 }
 
 //*****************************************************************************
@@ -145,10 +160,15 @@ void sigint(void *user_handle)
 	t_hydra_console *con;
 
 	con = user_handle;
+
+#ifdef HYDRANFC
 	if(hydranfc_is_detected())
 		hydranfc_sigint(con);
 	else
 		hydrabus_sigint(con);
+#else
+  hydrabus_sigint(con);
+#endif
 }
 
 

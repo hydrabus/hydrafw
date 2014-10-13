@@ -18,6 +18,7 @@
 #define _HYDRANFC_H_
 
 #include "common.h"
+#include "mcu.h"
 
 extern volatile int nb_irq;
 extern volatile int irq;

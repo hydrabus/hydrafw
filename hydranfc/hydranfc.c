@@ -18,9 +18,7 @@
 #include <stdio.h> /* sprintf */
 #include "ch.h"
 #include "hal.h"
-#include "test.h"
 
-#include "shell.h"
 #include "chprintf.h"
 
 #include "ff.h"
@@ -37,8 +35,6 @@
 #include "tools.h"
 
 #include "hydranfc.h"
-
-#define HYDRANFC_FW	"HydraNFC FW v0.1 Beta 02 Sept 2014"
 
 #define printf() chprintf()
 volatile int nb_irq;

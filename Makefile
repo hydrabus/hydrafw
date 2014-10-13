@@ -3,6 +3,15 @@
 # NOTE: Can be overridden externally.
 #
 
+#Set to 1 HYDRAFW_NFC to include HydraNFC extension support
+export HYDRAFW_NFC ?= 1
+
+HYDRAFW_OPTS =
+
+ifeq ($(HYDRAFW_NFC),1)
+HYDRAFW_OPTS += -DHYDRANFC
+endif
+
 # Compiler options here.
 ifeq ($(USE_OPT),)
   USE_OPT = -Os -ggdb -fomit-frame-pointer -falign-functions=16
@@ -81,18 +90,21 @@ PROJECT = hydrafw
 
 # Imported source files and paths
 CHIBIOS = chibios
+
 include ./board/board.mk
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32F4xx/platform.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 include $(CHIBIOS)/os/rt/rt.mk
 include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_stm32f4xx.mk
-include $(CHIBIOS)/test/rt/test.mk
 include $(CHIBIOS)/os/various/fatfs_bindings/fatfs.mk
-include trf7970a/trf7970a.mk
 include common/common.mk
 include hydrabus/hydrabus.mk
+
+ifeq ($(HYDRAFW_NFC),1)
+include trf7970a/trf7970a.mk
 include hydranfc/hydranfc.mk
+endif
 
 # Define linker script file here and link with lib nano
 LDSCRIPT= hydrafw_STM32F405xG.ld
@@ -101,20 +113,22 @@ LDSCRIPT= hydrafw_STM32F405xG.ld
 # setting.
 CSRC = $(PORTSRC) \
        $(KERNSRC) \
-       $(TESTSRC) \
        $(HALSRC) \
        $(OSALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
        $(FATFSSRC) \
-       $(TRFSRC) \
        $(COMMONSRC) \
        $(HYDRABUSSRC) \
-       $(HYDRANFCSRC) \
        $(CHIBIOS)/os/various/chprintf.c \
        $(CHIBIOS)/os/various/memstreams.c \
        ./microrl/src/microrl.c \
        main.c
+
+ifeq ($(HYDRAFW_NFC),1)
+CSRC += $(TRFSRC) \
+        $(HYDRANFCSRC)
+endif
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -143,14 +157,17 @@ TCPPSRC =
 # List ASM source files here
 ASMSRC = $(PORTASM)
 
-INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
+INCDIR = $(PORTINC) $(KERNINC) \
          $(HALINC) $(OSALINC) $(PLATFORMINC) $(BOARDINC) \
          $(CHIBIOS)/os/various  $(FATFSINC) \
-         $(TRFINC) \
          $(COMMONINC) \
          $(HYDRABUSINC) \
-         $(HYDRANFCINC) \
          ./microrl/src
+
+ifeq ($(HYDRAFW_NFC),1)
+INCDIR += $(TRFINC) \
+          $(HYDRANFCINC)
+endif
 
 #
 # Project, sources and paths
@@ -199,7 +216,7 @@ CPPWARN = -Wall -Wextra
 #
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS =
+UDEFS = $(HYDRAFW_OPTS)
 
 # Define ASM defines here
 UADEFS =

@@ -43,23 +43,29 @@
 #define TRF_DISABLE
 #define TRF_ENABLE
 
-/* UBTN PA0 Configured as Input */
+/* IRQ PA1 */
+#undef USER_BUTTON
 #define USER_BUTTON (palReadPad(GPIOA, 0))
+#undef ABORT_BUTTON
 #define ABORT_BUTTON() ((palReadPad(GPIOA, 0)))
 
 /* IRQ PA1 */
 #define IRQ_PORT (palReadPort(GPIOA))
 #define IRQ_PIN (BIT1)
 
-/* ULED PA4 Configured as Output for Test */
+/* PA7 as Input connected to TRF7970A MOD Pin */
+#undef ULED_ON
 #define ULED_ON  (palSetPad(GPIOA, 4))
+#undef ULED_OFF
 #define ULED_OFF (palClearPad(GPIOA, 4))
 
 /* PA7 as Input connected to TRF7970A MOD Pin */
 #define MOD_PIN() (palReadPad(GPIOA, 7))
 
 /* LED D3 / PB3 Configured as Output for Test */
+#undef TST_ON
 #define TST_ON  (palSetPad(GPIOB, 3))
+#undef TST_OFF
 #define TST_OFF (palClearPad(GPIOB, 3))
 
 /* GPIOB SPI2 => PB12=NSS, PB13=SCK, PB14=MISO, PB15=MOSI */
@@ -99,6 +105,7 @@ void McuCounterSet(void);
 void McuDelayMillisecond(u32_t n_ms);
 void McuOscSel(u08_t mode);
 
+#undef NS2RTT
 #define NS2RTT(nsec) ( (US2ST(nsec)/1000) )
 
 static inline systime_t start_timing(void)

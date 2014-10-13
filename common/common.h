@@ -21,6 +21,29 @@
 #include "ch.h"
 #include "hal.h"
 
+#define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
+
+#undef NS2RTT
+#define NS2RTT(nsec) ( (US2ST(nsec)/1000) )
+
+/* UBTN PA0 Configured as Input */
+#undef USER_BUTTON
+#define USER_BUTTON (palReadPad(GPIOA, 0))
+#undef ABORT_BUTTON
+#define ABORT_BUTTON() ((palReadPad(GPIOA, 0)))
+
+/* ULED PA4 Configured as Output for Test */
+#undef ULED_ON
+#define ULED_ON  (palSetPad(GPIOA, 4))
+#undef ULED_OFF
+#define ULED_OFF (palClearPad(GPIOA, 4))
+
+/* PB3 Test */
+#undef TST_ON
+#define TST_ON  (palSetPad(GPIOB, 3))
+#undef TST_OFF
+#define TST_OFF (palClearPad(GPIOB, 3))
+
 void scs_dwt_cycle_counter_enabled(void);
 #define clear_cyclecounter() ( DWTBase->CYCCNT = 0 )
 #define get_cyclecounter() ( DWTBase->CYCCNT )
@@ -75,6 +98,38 @@ typedef struct
 /* How much thread working area to allocate per console. */
 #define CONSOLE_WA_SIZE 2048
 
+ /* Invalid value for mode_config_proto_t => bus_mode, dev_num, dev_mode, speed & numbits */
+#define MODE_SETTINGS_INVALID (0xFFFFFFFF)
+typedef struct
+{
+  uint32_t bus_mode;
+  uint32_t dev_num;
+  uint32_t dev_mode;
+  uint32_t speed;
+  uint32_t numbits;
+
+  uint32_t : 25;
+  uint32_t altAUX : 2; // 4 AUX tbd
+  uint32_t periodicService : 1;
+  uint32_t lsbEN : 1;
+  uint32_t HiZ : 1;
+  uint32_t int16 : 1; // 16 bits output?
+  uint32_t wwr : 1; // write with read
+} mode_config_proto_t;
+
+typedef struct
+{
+  uint32_t num;
+  uint32_t repeat;
+  uint32_t cmd; /* command defined in hydrabus_mode_cmd() */
+} mode_config_command_t;
+
+typedef struct
+{
+  mode_config_proto_t proto;
+  mode_config_command_t cmd;
+} mode_settings_t;
+
 typedef struct hydra_console {
 	char *thread_name;
 	thread_t *thread;
@@ -83,6 +138,7 @@ typedef struct hydra_console {
 		BaseSequentialStream *bss;
 	};
 	microrl_t *mrl;
+  mode_settings_t *mode;
 } t_hydra_console;
 
 void cmd_info(t_hydra_console *con, int argc, const char* const* argv);

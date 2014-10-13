@@ -14,15 +14,17 @@
     limitations under the License.
 */
 #include "common.h"
-#include "mcu.h"
 #include "chprintf.h"
-#include "test.h"
 
 #include "hydrabus.h"
-#include "hydranfc.h"
 #include "hydrafw_version.hdr"
 
+#ifdef HYDRANFC
+#include "hydranfc.h"
 #define HYDRAFW_VERSION "HydraFW (HydraBus/HydraNFC) " HYDRAFW_GIT_TAG " " HYDRAFW_GIT_HASH " " HYDRAFW_BUILD_DATE
+#else
+#define HYDRAFW_VERSION "HydraFW (HydraBus) " HYDRAFW_GIT_TAG " " HYDRAFW_GIT_HASH " " HYDRAFW_BUILD_DATE
+#endif
 
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
@@ -171,6 +173,7 @@ void cmd_init(t_hydra_console *con, int argc, const char* const* argv)
 #endif
 #endif
 
+#ifdef HYDRANFC
   if(hydranfc_is_detected() == FALSE)
   {
     chprintf(chp, "HydraNFC Shield not present/not detected\r\n");
@@ -178,6 +181,8 @@ void cmd_init(t_hydra_console *con, int argc, const char* const* argv)
   {
     chprintf(chp, "HydraNFC Shield detected\r\n");
   }
+#endif
+
 }
 
 #define waitcycles(n) ( wait_nbcycles(n) )

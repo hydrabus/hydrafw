@@ -28,29 +28,32 @@
 #include "usb1cfg.h"
 #include "usb2cfg.h"
 
-#include "mcu.h"
-
 #include "microrl.h"
 #include "microrl_callback.h"
 
 #include "microsd.h"
 #include "hydrabus.h"
-#include "hydranfc.h"
 
-typedef void (*ptFunc_microrl)(t_hydra_console *con, int argc, const char* const* argv);
+#ifdef HYDRANFC
+#include "hydranfc.h"
+#endif
 
 // create microrl objects for each console
 microrl_t rl_con1;
+mode_settings_t mode_con1 = { .proto={ .bus_mode=MODE_SETTINGS_INVALID }, .cmd={ 0 } };
+
 microrl_t rl_con2;
+mode_settings_t mode_con2 = { .proto={ .bus_mode=MODE_SETTINGS_INVALID }, .cmd={ 0 } };
 
 t_hydra_console consoles[] = {
-	{ "console USB1", NULL, .sdu=&SDU1, &rl_con1 },
-	{ "console USB2", NULL, .sdu=&SDU2, &rl_con2 },
+	{ .thread_name="console USB1", .thread=NULL, .sdu=&SDU1, .mrl=&rl_con1, .mode = &mode_con1 },
+	{ .thread_name="console USB2", .thread=NULL, .sdu=&SDU2, .mrl=&rl_con2, .mode = &mode_con2 }
 };
 
 /*
 * This is a periodic thread that manage hydranfc sniffer
 */
+#ifdef HYDRANFC
 THD_WORKING_AREA(waThreadHydraNFC, 2048);
 THD_FUNCTION(ThreadHydraNFC, arg)
 {
@@ -96,6 +99,7 @@ THD_FUNCTION(ThreadHydraNFC, arg)
   }
   return 0;
 }
+#endif
 
 THD_FUNCTION(console, arg)
 {
@@ -139,9 +143,12 @@ int main(void)
 	scs_dwt_cycle_counter_enabled();
 
 	hydrabus_init();
+
+#ifdef HYDRANFC
 	if(hydranfc_init() == FALSE)
 		/* Reinit HydraBus */
 		hydrabus_init();
+#endif
 
 	/*
 	 * Initializes a serial-over-USB CDC driver.
@@ -182,10 +189,11 @@ int main(void)
 	/*
 	 * Creates HydraNFC Sniffer thread.
 	 */
+#ifdef HYDRANFC
 	if(hydranfc_is_detected() == TRUE)
 		chThdCreateStatic(waThreadHydraNFC, sizeof(waThreadHydraNFC),
 				NORMALPRIO, ThreadHydraNFC, NULL);
-
+#endif
 	/*
 	* Normal main() thread activity.
 	*/
