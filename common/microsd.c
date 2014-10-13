@@ -128,139 +128,97 @@ void fillbuffers(uint8_t pattern)
   fillbuffer(pattern, outbuf);
 }
 
+static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offset)
+{
+	uint32_t n, startblk;
+	systime_t start, end;
+	float total;
+	BaseSequentialStream* chp = con->bss;
+
+	/* The test is performed in the middle of the flash area. */
+	startblk = (SDCD1.capacity / MMCSD_BLOCK_SIZE) / 2;
+
+	start = chVTGetSystemTime();
+	end = start + MS2ST(seconds * 1000);
+	n = 0;
+	do {
+		if (blkRead(&SDCD1, startblk, g_sbuf + offset, sectors)) {
+			chprintf(chp, "SD read failed.\r\n");
+			return FALSE;
+		}
+		n += sectors;
+	} while (chVTIsSystemTimeWithin(start, end));
+
+	total = (float)n * MMCSD_BLOCK_SIZE / (1024 * 1024 * seconds);
+	chprintf(chp, "%6D blocks/s, %5D KB/s %4.2f MB/s\r\n", n / seconds,
+			(n * MMCSD_BLOCK_SIZE) / (1024 * seconds), total);
+
+	return TRUE;
+}
+
+#define PERFRUN_SECONDS 2
+static int sd_perf(t_hydra_console *con, int offset)
+{
+	int ret;
+	BaseSequentialStream* chp = con->bss;
+
+	chprintf(chp, "\r\n%sligned reads:\r\n", offset ? "Una" : "A");
+
+	/* Single block read performance. */
+	chprintf(chp, "Single block (1 sector):         ");
+	if (!(ret = sd_perf_run(con, PERFRUN_SECONDS, 1, offset)))
+		return ret;
+
+	chThdSleepMilliseconds(1);
+
+	/* Multiple sequential blocks read performance, aligned.*/
+	chprintf(chp, "Sequential blocks (%d sectors): ", G_SBUF_SDC_BURST_SIZE);
+	ret = sd_perf_run(con, PERFRUN_SECONDS, G_SBUF_SDC_BURST_SIZE, offset);
+
+	return ret;
+}
+
 void cmd_sd_read_perfo(t_hydra_console *con, int argc, const char* const* argv)
 {
-  #define NB_SECONDS (2)
-  (void)argc;
-  (void)argv;
-  static const char *mode[] = {"SDV11", "SDV20", "MMC", NULL};
-  systime_t start, end;
-  uint32_t n, startblk;
-  BaseSequentialStream* chp = con->bss;
+	static const char *mode[] = {"SDV11", "SDV20", "MMC", NULL};
+	BaseSequentialStream* chp = con->bss;
 
-  /* Card presence check.*/
-  if (!blkIsInserted(&SDCD1))
-  {
-    chprintf(chp, "Card not inserted, aborting.\r\n");
-    return;
-  }
+	(void)argc;
+	(void)argv;
 
-  /* Connection to the card.*/
-  chprintf(chp, "Connecting... ");
-  if (sdcConnect(&SDCD1))
-  {
-    chprintf(chp, "failed\r\n");
-    return;
-  }
-  chprintf(chp, "OK\r\n\r\nCard Info\r\n");
-  chprintf(chp, "CSD      : %08X %08X %08X %08X \r\n",
-           SDCD1.csd[3], SDCD1.csd[2], SDCD1.csd[1], SDCD1.csd[0]);
-  chprintf(chp, "CID      : %08X %08X %08X %08X \r\n",
-           SDCD1.cid[3], SDCD1.cid[2], SDCD1.cid[1], SDCD1.cid[0]);
-  chprintf(chp, "Mode     : %s\r\n", mode[ (SDCD1.cardmode&0x03)]);
-  chprintf(chp, "Capacity : %DMB\r\n", SDCD1.capacity / 2048);
-  chThdSleepMilliseconds(1);
+	/* Card presence check.*/
+	if (!blkIsInserted(&SDCD1)) {
+		chprintf(chp, "Card not inserted, aborting.\r\n");
+		return;
+	}
 
-  /* The test is performed in the middle of the flash area.*/
-  startblk = (SDCD1.capacity / MMCSD_BLOCK_SIZE) / 2;
+	/* Connection to the card.*/
+	chprintf(chp, "Connecting... ");
+	if (sdcConnect(&SDCD1)) {
+		chprintf(chp, "failed.\r\n");
+		return;
+	}
+	chprintf(chp, "SD card info:\r\n");
+	chprintf(chp, "CSD:\t  %08X %08X %08X %08X \r\n",
+					 SDCD1.csd[3], SDCD1.csd[2], SDCD1.csd[1], SDCD1.csd[0]);
+	chprintf(chp, "CID:\t  %08X %08X %08X %08X \r\n",
+					 SDCD1.cid[3], SDCD1.cid[2], SDCD1.cid[1], SDCD1.cid[0]);
+	chprintf(chp, "Mode:\t  %s\r\n", mode[ (SDCD1.cardmode&0x03)]);
+	chprintf(chp, "Capacity: %DMB\r\n", SDCD1.capacity / 2048);
+	chThdSleepMilliseconds(1);
 
-  chprintf(chp, "Aligned read perf:\r\n");
-  /* Single block read performance, aligned.*/
-  chprintf(chp, "Single block(1 sector): ");
-  chThdSleepMilliseconds(1);
-  start = chVTGetSystemTime();
-  end = start + MS2ST(NB_SECONDS*1000);
-  n = 0;
-  do
-  {
-    if(blkRead(&SDCD1, startblk, g_sbuf, 1))
-    {
-      chprintf(chp, "failed\r\n");
-      goto exittest;
-    }
-    n++;
-  } while (chVTIsSystemTimeWithin(start, end));
-
-  chprintf(chp, "%D blocks/s, %D KB/s %.2f MB/s\r\n",
-            n,
-            ((n * MMCSD_BLOCK_SIZE)/(1024*NB_SECONDS)),
-            (float)((float)(n * MMCSD_BLOCK_SIZE)/(float)(1024*1024*NB_SECONDS))
-          );
-  chThdSleepMilliseconds(1);
-
-  /* Multiple sequential blocks read performance, aligned.*/
-  chprintf(chp, "Sequential blocks(%d sectors): ", G_SBUF_SDC_BURST_SIZE);
-  start = chVTGetSystemTime();
-  end = start + MS2ST(NB_SECONDS*1000);
-  n = 0;
-  do
-  {
-    if (blkRead(&SDCD1, startblk, g_sbuf, G_SBUF_SDC_BURST_SIZE))
-    {
-      chprintf(chp, "failed\r\n");
-      goto exittest;
-    }
-    n += G_SBUF_SDC_BURST_SIZE;
-  } while (chVTIsSystemTimeWithin(start, end));
-
-  chprintf(chp, "%D blocks/s, %D KB/s %.2f MB/s\r\n",
-            n,
-            ((n * MMCSD_BLOCK_SIZE)/(1024*NB_SECONDS)),
-            (float)((float)(n * MMCSD_BLOCK_SIZE)/(float)(1024*1024*NB_SECONDS))
-          );
-  chThdSleepMilliseconds(1);
+	if (!sd_perf(con, 0))
+		goto exittest;
 
 #if STM32_SDC_SDIO_UNALIGNED_SUPPORT
-
-  chprintf(chp, "Unaligned read perf:\r\n");
-  /* Single block read performance, unaligned.*/
-  chprintf(chp, "Single block(1 sector): ");
-  start = chVTGetSystemTime();
-  end = start + MS2ST(NB_SECONDS*1000);
-  n = 0;
-  do
-  {
-    if (blkRead(&SDCD1, startblk, g_sbuf + 1, 1))
-    {
-      chprintf(chp, "failed\r\n");
-      goto exittest;
-    }
-    n++;
-  } while (chVTIsSystemTimeWithin(start, end));
-
-  chprintf(chp, "%D blocks/s, %D KB/s %.2f MB/s\r\n",
-            n,
-            ((n * MMCSD_BLOCK_SIZE)/(1024*NB_SECONDS)),
-            (float)((float)(n * MMCSD_BLOCK_SIZE)/(float)(1024*1024*NB_SECONDS))
-          );
-  chThdSleepMilliseconds(1);
-
-  /* Multiple sequential blocks read performance, unaligned.*/
-  chprintf(chp, "Sequential blocks(%d sectors): ", G_SBUF_SDC_BURST_SIZE);
-  start = chVTGetSystemTime();
-  end = start + MS2ST(NB_SECONDS*1000);
-  n = 0;
-  do
-  {
-    if (blkRead(&SDCD1, startblk, g_sbuf + 1, G_SBUF_SDC_BURST_SIZE))
-    {
-      chprintf(chp, "failed\r\n");
-      goto exittest;
-    }
-    n += G_SBUF_SDC_BURST_SIZE;
-  } while (chVTIsSystemTimeWithin(start, end));
-  chprintf(chp, "%D blocks/s, %D KB/s %.2f MB/s\r\n",
-            n,
-            ((n * MMCSD_BLOCK_SIZE)/(1024*NB_SECONDS)),
-            (float)((float)(n * MMCSD_BLOCK_SIZE)/(float)(1024*1024*NB_SECONDS))
-          );
-  chThdSleepMilliseconds(1);
+	sd_perf(con, 1);
 #endif /* STM32_SDC_SDIO_UNALIGNED_SUPPORT */
 
-  /* Card disconnect and command end.*/
+	/* Card disconnect and command end.*/
 exittest:
-  sdcDisconnect(&SDCD1);
-  return;
+	sdcDisconnect(&SDCD1);
+
+	return;
 }
 
 void write_file_get_last_filename(filename_t* out_filename)
