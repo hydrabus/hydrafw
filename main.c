@@ -40,10 +40,10 @@
 
 // create microrl objects for each console
 microrl_t rl_con1;
-mode_settings_t mode_con1 = { .proto={ .bus_mode=MODE_SETTINGS_INVALID }, .cmd={ 0 } };
+t_mode_config mode_con1 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=MODE_CONFIG_PROTO_DEV_DEF_VAL }, .cmd={ 0 } };
 
 microrl_t rl_con2;
-mode_settings_t mode_con2 = { .proto={ .bus_mode=MODE_SETTINGS_INVALID }, .cmd={ 0 } };
+t_mode_config mode_con2 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=MODE_CONFIG_PROTO_DEV_DEF_VAL }, .cmd={ 0 } };
 
 t_hydra_console consoles[] = {
 	{ .thread_name="console USB1", .thread=NULL, .sdu=&SDU1, .mrl=&rl_con1, .mode = &mode_con1 },

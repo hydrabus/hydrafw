@@ -1,0 +1,315 @@
+/*
+    HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+#include "hydrabus_mode_spi.h"
+#include "chprintf.h"
+#include "xatoi.h"
+
+const mode_exec_t mode_spi_exec =
+{
+  .mode_cmd          = &mode_cmd_spi,       /* Terminal parameters specific to this mode */
+	.mode_start        = &mode_start_spi,     /* Start command '[' */
+	.mode_startR       = &mode_startR_spi,    /* Start Read command '{' */
+	.mode_stop         = &mode_stop_spi,      /* Stop command ']' */
+	.mode_stopR        = &mode_stopR_spi,     /* Stop Read command '}' */
+	.mode_write        = &mode_write_spi,     /* Write/Send 1 data */
+	.mode_read         = &mode_read_spi,      /* Read 1 data command 'r' */
+	.mode_clkh         = &mode_clkh_spi,      /* Set CLK High (x-WIRE or other raw mode ...) command '/' */
+	.mode_clkl         = &mode_clkl_spi,      /* Set CLK Low (x-WIRE or other raw mode ...) command '\' */
+	.mode_dath         = &mode_dath_spi,      /* Set DAT High (x-WIRE or other raw mode ...) command '-' */
+	.mode_datl         = &mode_datl_spi,      /* Set DAT Low (x-WIRE or other raw mode ...) command '_' */
+	.mode_dats         = &mode_dats_spi,      /* Read Bit (x-WIRE or other raw mode ...) command '!' */
+	.mode_clk          = &mode_clk_spi,       /* CLK Tick (x-WIRE or other raw mode ...) command '^' */
+	.mode_bitr         = &mode_bitr_spi,      /* DAT Read (x-WIRE or other raw mode ...) command '.' */
+	.mode_periodic     = &mode_periodic_spi,  /* Periodic service called (like UART sniffer...) */
+	.mode_macro        = &mode_macro_spi,     /* Macro command "(x)", "(0)" List current macros */
+	.mode_setup        = &mode_setup_spi,     /* Configure the device internal params with user parameters (before Power On) */
+	.mode_setup_exc    = &mode_setup_exc_spi, /* Configure the physical device after Power On (command 'W') */
+	.mode_cleanup      = &mode_cleanup_spi,   /* Exit mode, disable device enter safe mode SPI... */
+	.mode_str_pins     = &mode_str_pins_spi,     /* Pins used string */
+	.mode_str_settings = &mode_str_settings_spi, /* Settings string */
+  .mode_str_name     = &mode_str_name_spi,     /* Mode name string */
+  .mode_str_prompt   = &mode_str_prompt_spi    /* Prompt name string */
+};
+
+static const char* str_dev_arg_num[]={
+ "Choose SPI device number: 1=SPI1, 2=SPI2\r\n" };
+
+/*
+TODO SPI Slave mode
+static const char* str_dev_arg_mode[]={
+ "Choose SPI Mode: 1=Slave, 2=Master\r\n" };
+*/
+static const char* str_dev_arg_speed[]={
+ "Choose SPI1 Freq:\r\n1=0.32MHz, 2=0.65MHz, 3=1.31MHz, 4=2.62MHz, 5=5.25MHz, 6=10.5MHz, 7=21MHz, 8=42MHz\r\n",
+ "Choose SPI2 Freq:\r\n1=0.16MHz, 2=0.32MHz, 3=0.65MHz, 4=1.31MHz, 5=2.62MHz, 6=5.25MHz, 7=10.5MHz, 8=21MHz\r\n" };
+
+static const char* str_dev_arg_cpol_cpha[]={
+ "Choose SPI Clock Polarity(CPOL)/Phase(CPHA):\r\n1=CPOL0/CPHA0, 2=CPOL0/CPHA1, 3=CPOL1/CPHA0, 4=CPOL1/CPHA1\r\n" };
+
+/*
+TODO SPI Number of bits mode
+static const char* str_dev_numbits[]={
+ "Choose SPI Number of bits: 8 or 9\r\n" };
+
+TODO SPI LSB/MSB Transmitted First mode
+static const char* str_dev_bit_lsb_msb[]={
+ "Choose SPI LSB/MSB Transmitted First:\r\n1=MSB Tx first, 2=LSB Tx first\r\n" };
+*/
+
+static const mode_dev_arg_t mode_dev_arg[] =
+{
+ /* argv0 */ { .min=1, .max=2, .dec_val=TRUE, .param=DEV_NUM, .argc_help=ARRAY_SIZE(str_dev_arg_num), .argv_help=str_dev_arg_num },
+// { .min=1, .max=2, .dec_val=TRUE, .param=DEV_MODE, .argc_help=ARRAY_SIZE(str_dev_arg_mode), .argv_help=str_dev_arg_mode },
+ /* argv1 */ { .min=1, .max=8, .dec_val=TRUE, .param=DEV_SPEED, .argc_help=ARRAY_SIZE(str_dev_arg_speed), .argv_help=str_dev_arg_speed },
+ /* argv2 */ { .min=1, .max=4, .dec_val=TRUE, .param=DEV_CPOL_CPHA, .argc_help=ARRAY_SIZE(str_dev_arg_cpol_cpha), .argv_help=str_dev_arg_cpol_cpha }
+// { .min=8, .max=9, .dec_val=FALSE,.param=DEV_NUMBITS, .argc_help=ARRAY_SIZE(str_dev_numbits), .argv_help=str_dev_numbits },
+// { .min=1, .max=2, .dec_val=TRUE, .param=DEV_BIT_LSB_MSB, .argc_help=ARRAY_SIZE(str_dev_bit_lsb_msb), .argv_help=str_dev_bit_lsb_msb }
+};
+#define MODE_DEV_NB_ARGC (ARRAY_SIZE(mode_dev_arg)) /* Number of arguments/parameters for this mode */
+
+/*
+static const char* str_pins_spi[]={
+ "SPI1 pins:\r\n    \r\n",
+ "SPI2 pins:\r\n    \r\n",
+*/
+
+#define STR_SPI_SIZE (100)
+static char str_spi[STR_SPI_SIZE+1];
+
+/* Terminal parameters management specific to this mode */
+/* Return TRUE if success else FALSE */
+bool mode_cmd_spi(t_hydra_console *con, int argc, const char* const* argv)
+{
+  long dev_val;
+  int arg_no;
+
+  if(argc == 0)
+  {
+    hydrabus_mode_dev_manage_arg(con, 0, NULL, 0, 0, (mode_dev_arg_t*)&mode_dev_arg);
+    return FALSE;
+  }
+
+  for(arg_no = 0; arg_no < argc; arg_no++)
+  {
+    dev_val = hydrabus_mode_dev_manage_arg(con, argc, argv, MODE_DEV_NB_ARGC, arg_no, (mode_dev_arg_t*)&mode_dev_arg);
+    if(dev_val == HYDRABUS_MODE_DEV_INVALID)
+    {
+      return FALSE;
+    }
+  }
+
+  if(argc == MODE_DEV_NB_ARGC)
+  {
+    return TRUE;
+  }else
+  {
+    return FALSE;
+  }
+}
+
+/* Start command '[' */
+void mode_start_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* Start Read command '{' */
+void mode_startR_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* Stop command ']' */
+void mode_stop_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* Stop Read command '}' */
+void mode_stopR_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* Write/Send 1 data */
+uint32_t mode_write_spi(t_hydra_console *con, uint32_t data)
+{
+  (void)con;
+  (void)data;
+
+  /* Nothing to do in SPI mode */
+  return 0;
+}
+
+/* Read 1 data command 'r' */
+uint32_t mode_read_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+  return 0;
+}
+
+/* Set CLK High (x-WIRE or other raw mode ...) command '/' */
+void mode_clkh_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* Set CLK Low (x-WIRE or other raw mode ...) command '\' */
+void mode_clkl_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* Set DAT High (x-WIRE or other raw mode ...) command '-' */
+void mode_dath_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* Set DAT Low (x-WIRE or other raw mode ...) command '_' */
+void mode_datl_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* Read Bit (x-WIRE or other raw mode ...) command '!' */
+uint32_t mode_dats_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+  return 0;
+}
+
+/* CLK Tick (x-WIRE or other raw mode ...) command '^' */
+void mode_clk_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* DAT Read (x-WIRE or other raw mode ...) command '.' */
+uint32_t mode_bitr_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+  return 0;
+}
+
+/* Periodic service called (like UART sniffer...) */
+uint32_t mode_periodic_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+  return 0;
+}
+
+/* Macro command "(x)", "(0)" List current macros */
+void mode_macro_spi(t_hydra_console *con, uint32_t macro_num)
+{
+  (void)con;
+  (void)macro_num;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* Configure the device internal params with user parameters (before Power On) */
+void mode_setup_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* Configure the physical device after Power On (command 'W') */
+void mode_setup_exc_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* Exit mode, disable device safe mode SPI... */
+void mode_cleanup_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  /* Nothing to do in SPI mode */
+}
+
+/* String pins used */
+const char* mode_str_pins_spi(t_hydra_console *con)
+{
+  (void)con;
+
+  return "SPIx MOSI=, MISO= ...";
+}
+
+/* String settings */
+const char* mode_str_settings_spi(t_hydra_console *con)
+{
+  mode_config_proto_t* proto;;
+  proto = &con->mode->proto;
+  
+  chsnprintf((char *)str_spi, STR_SPI_SIZE, "SPI%d Speed:%d CPOL/CPHA=%d\r\n",
+              proto->dev_num+1, proto->dev_speed+1, proto->dev_cpol_cpha+1);
+  return str_spi;
+}
+
+/* Return mode name */
+const char* mode_str_name_spi(t_hydra_console *con)
+{
+  mode_config_proto_t* proto;;
+  proto = &con->mode->proto;
+
+  chsnprintf((char *)str_spi, STR_SPI_SIZE, "SPI%d\r\n",
+              proto->dev_num+1 );
+  return str_spi;
+}
+
+/* Return Prompt name */
+const char* mode_str_prompt_spi(t_hydra_console *con)
+{
+  mode_config_proto_t* proto;;
+  proto = &con->mode->proto;
+
+  if( proto->dev_num == 0)
+  {
+    return "spi1> ";
+  }else
+    return "spi2> ";
+}

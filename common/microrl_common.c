@@ -33,9 +33,6 @@
 #include "hydranfc_microrl.h"
 #endif
 
-char** compl_world;
-microrl_exec_t* keyworld;
-
 void print_clear(t_hydra_console *con, int argc, const char* const* argv)
 {
   (void)argc;
@@ -79,10 +76,10 @@ char** complet(void* user_handle, int argc, const char * const * argv)
 {
   (void)user_handle;
   int i;
+  char** compl_world;
+  microrl_exec_t* keyworld;
   int j = 0;
   int _num_of_cmd;
-
-  compl_world[0] = NULL;
 
 #ifdef HYDRANFC
   /* HydraNFC Shield detected*/

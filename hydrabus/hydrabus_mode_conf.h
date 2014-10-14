@@ -14,15 +14,12 @@
     limitations under the License.
 */
 
-#ifndef _HYDRABUS_MICRORL_H_
-#define _HYDRABUS_MICRORL_H_
+#ifndef _HYDRABUS_MODE_CONF_H_
+#define _HYDRABUS_MODE_CONF_H_
 
-#define HYDRABUS_NUM_OF_CMD (16+1)
-extern char* hydrabus_compl_world[HYDRABUS_NUM_OF_CMD + 1];
-extern microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD];
+#include "hydrabus_mode.h"
 
-void hydrabus_print_help(t_hydra_console *con, int argc, const char* const* argv);
-int hydrabus_execute(t_hydra_console *con, int argc, const char* const* argv);
-void hydrabus_sigint(t_hydra_console *con);
+#define HYDRABUS_MODE_NB_CONF (8)
+extern const mode_exec_t* hydrabus_mode_conf[HYDRABUS_MODE_NB_CONF];
 
-#endif /* _HYDRABUS_MICRORL_H_ */
+#endif /* _HYDRABUS_MODE_CONF_H_ */

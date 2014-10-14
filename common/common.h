@@ -98,15 +98,34 @@ typedef struct
 /* How much thread working area to allocate per console. */
 #define CONSOLE_WA_SIZE 2048
 
- /* Invalid value for mode_config_proto_t => bus_mode, dev_num, dev_mode, speed & numbits */
-#define MODE_SETTINGS_INVALID (0xFFFFFFFF)
+typedef enum
+{
+  DEV_NUM = 0,
+  DEV_MODE,
+  DEV_SPEED,
+  DEV_CPOL_CPHA,
+  DEV_NUMBITS,
+  DEV_BIT_LSB_MSB,
+} mode_config_dev_t;
+
+typedef enum
+{
+  MODE_CONFIG_PROTO_INVALID = -1,
+  MODE_CONFIG_PROTO_VALID = 1
+} mode_config_proto_valid_t;
+
+#define MODE_CONFIG_PROTO_DEV_DEF_VAL (0) /* mode_config_proto_t for dev_xxx default safe value */
+
 typedef struct
 {
-  uint32_t bus_mode;
-  uint32_t dev_num;
-  uint32_t dev_mode;
-  uint32_t speed;
-  uint32_t numbits;
+  mode_config_proto_valid_t valid; 
+  long bus_mode;
+  long dev_num;
+  long dev_mode;
+  long dev_speed;
+  long dev_cpol_cpha; /* For SPI */
+  long dev_numbits;
+  long dev_bit_lsb_msb; /* For SPI */
 
   uint32_t : 25;
   uint32_t altAUX : 2; // 4 AUX tbd
@@ -128,7 +147,7 @@ typedef struct
 {
   mode_config_proto_t proto;
   mode_config_command_t cmd;
-} mode_settings_t;
+} t_mode_config;
 
 typedef struct hydra_console {
 	char *thread_name;
@@ -138,7 +157,7 @@ typedef struct hydra_console {
 		BaseSequentialStream *bss;
 	};
 	microrl_t *mrl;
-  mode_settings_t *mode;
+  t_mode_config *mode;
 } t_hydra_console;
 
 void cmd_info(t_hydra_console *con, int argc, const char* const* argv);

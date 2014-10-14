@@ -31,6 +31,7 @@
 
 #include "hydrabus.h"
 #include "hydrabus_microrl.h"
+#include "hydrabus_mode.h"
 
 // definition commands word
 #define _CMD_HELP0        "?"
@@ -69,7 +70,8 @@ microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD] =
 /* 12 */ { _CMD_SD_HD,       &cmd_sd_cat},
 /* 13 */ { _CMD_SD_ERASE,    &cmd_sd_erase},
 /* 14 */ { _CMD_SD_RPERFO,   &cmd_sd_read_perfo },
-
+/* 15 */ { _HYDRABUS_MODE,      &hydrabus_mode },
+/* 16 */ { _HYDRABUS_MODE_INFO, &hydrabus_mode_info }
 };
 
 // array for completion
@@ -96,6 +98,30 @@ void hydrabus_print_help(t_hydra_console *con, int argc, const char* const* argv
   print(con, "hd <filename>  - hexdump sd file\n\r");
   print(con, "sd_rperfo      - sd read performance test\n\r");
   print(con, "erase          - erase sd\n\r");
+
+  print(con, "\n\r");
+  print(con, "m              - Change mode\n\r");
+  print(con, "i              - Mode information\n\r");
+  print(con, "Protocol Interaction\n\r");
+  print(con, "----------------------------------------------\n\r");
+  print(con, "(x)\tMacro x\n\r");
+  print(con, "[\tStart\n\r");
+  print(con, "]\tStop\n\r");
+  print(con, "{\tStart with read\n\r");
+  print(con, "}\tStop\n\r");
+  print(con, "\"abc\"\tSend string\n\r");
+  print(con, "123\t\n\r");
+  print(con, "0x123\t\n\r");
+  print(con, "0b110\tSend value\n\r");
+  print(con, "r\tRead\n\r");
+  print(con, "/\tCLK hi\n\r");
+  print(con, "\\\tCLK lo\n\r");
+  print(con, "^\tCLK tick\n\r");
+  print(con, "-\tDAT hi\n\r");
+  print(con, "_\tDAT lo\n\r");
+  print(con, ".\tDAT read\n\r");
+  print(con, "!\tBit read\n\r");
+  print(con, ":\tRepeat (e.g. r:10)\n\r");
 }
 
 //*****************************************************************************
@@ -125,9 +151,12 @@ int hydrabus_execute(t_hydra_console *con, int argc, const char* const* argv)
     }
     if(cmd_found == FALSE)
     {
-      print(con,"command: '");
-      print(con,(char*)argv[curr_arg]);
-      print(con,"' Not found.\n\r");
+      if(hydrabus_mode_inter_cmd(con, argc-curr_arg, &argv[curr_arg]) == FALSE)
+      {
+        print(con,"command: '");
+        print(con,(char*)argv[curr_arg]);
+        print(con,"' Not found.\n\r");
+      }
     }
     curr_arg++;
   }
