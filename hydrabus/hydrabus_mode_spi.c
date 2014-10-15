@@ -78,7 +78,7 @@ static const mode_dev_arg_t mode_dev_arg[] =
 // { .min=8, .max=9, .dec_val=FALSE,.param=DEV_NUMBITS, .argc_help=ARRAY_SIZE(str_dev_numbits), .argv_help=str_dev_numbits },
 // { .min=1, .max=2, .dec_val=TRUE, .param=DEV_BIT_LSB_MSB, .argc_help=ARRAY_SIZE(str_dev_bit_lsb_msb), .argv_help=str_dev_bit_lsb_msb }
 };
-#define MODE_DEV_NB_ARGC (ARRAY_SIZE(mode_dev_arg)) /* Number of arguments/parameters for this mode */
+#define MODE_DEV_NB_ARGC ((int)ARRAY_SIZE(mode_dev_arg)) /* Number of arguments/parameters for this mode */
 
 /*
 static const char* str_pins_spi[]={
@@ -101,6 +101,10 @@ bool mode_cmd_spi(t_hydra_console *con, int argc, const char* const* argv)
     hydrabus_mode_dev_manage_arg(con, 0, NULL, 0, 0, (mode_dev_arg_t*)&mode_dev_arg);
     return FALSE;
   }
+
+  /* Ignore additional parameters */
+  if(argc > MODE_DEV_NB_ARGC)
+    argc = MODE_DEV_NB_ARGC;
 
   for(arg_no = 0; arg_no < argc; arg_no++)
   {
