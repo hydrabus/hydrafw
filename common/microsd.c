@@ -156,24 +156,32 @@ static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offse
 	return TRUE;
 }
 
-#define PERFRUN_SECONDS 2
+#define PERFRUN_SECONDS 1
 static int sd_perf(t_hydra_console *con, int offset)
 {
+  int nb_sectors;
 	int ret;
 	BaseSequentialStream* chp = con->bss;
 
-	chprintf(chp, "\r\n%sligned reads:\r\n", offset ? "Una" : "A");
+	chprintf(chp, "\r\n%sligned sequential reads:\r\n", offset ? "Una" : "A");
 
 	/* Single block read performance. */
-	chprintf(chp, "Single block (1 sector):         ");
+	chprintf(chp, "0.5KB blocks: ");
 	if (!(ret = sd_perf_run(con, PERFRUN_SECONDS, 1, offset)))
 		return ret;
 
 	chThdSleepMilliseconds(1);
 
-	/* Multiple sequential blocks read performance, aligned.*/
-	chprintf(chp, "Sequential blocks (%d sectors): ", G_SBUF_SDC_BURST_SIZE);
-	ret = sd_perf_run(con, PERFRUN_SECONDS, G_SBUF_SDC_BURST_SIZE, offset);
+  for(nb_sectors = 2; nb_sectors <= G_SBUF_SDC_BURST_SIZE; nb_sectors=nb_sectors*2)
+  {
+    /* Multiple sequential blocks read performance, aligned.*/
+    chprintf(chp, "%3DKB blocks: ", nb_sectors/2 );
+    ret = sd_perf_run(con, PERFRUN_SECONDS, nb_sectors, offset);
+    if(ret == FALSE)
+      return ret;
+
+    chThdSleepMilliseconds(1);
+  }
 
 	return ret;
 }
