@@ -4,7 +4,7 @@
 #
 
 #Set to 1 HYDRAFW_NFC to include HydraNFC extension support
-#export HYDRAFW_NFC ?= 1
+export HYDRAFW_NFC ?= 1
 
 HYDRAFW_OPTS =
 
