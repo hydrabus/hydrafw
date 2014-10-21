@@ -20,6 +20,7 @@
 #include "microrl.h"
 #include "ch.h"
 #include "hal.h"
+#include "mode_config.h"
 
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
 
@@ -97,57 +98,6 @@ typedef struct
 
 /* How much thread working area to allocate per console. */
 #define CONSOLE_WA_SIZE 2048
-
-typedef enum
-{
-  DEV_NUM = 0,
-  DEV_MODE,
-  DEV_SPEED,
-  DEV_CPOL_CPHA,
-  DEV_NUMBITS,
-  DEV_BIT_LSB_MSB,
-} mode_config_dev_t;
-
-typedef enum
-{
-  MODE_CONFIG_PROTO_INVALID = -1,
-  MODE_CONFIG_PROTO_VALID = 1
-} mode_config_proto_valid_t;
-
-#define MODE_CONFIG_PROTO_DEV_DEF_VAL (0) /* mode_config_proto_t for dev_xxx default safe value */
-
-typedef struct
-{
-  mode_config_proto_valid_t valid; 
-  long bus_mode;
-  long dev_num;
-  long dev_mode;
-  long dev_speed;
-  long dev_cpol_cpha; /* For SPI */
-  long dev_numbits;
-  long dev_bit_lsb_msb; /* For SPI */
-
-  uint32_t : 25;
-  uint32_t altAUX : 2; // 4 AUX tbd
-  uint32_t periodicService : 1;
-  uint32_t lsbEN : 1;
-  uint32_t HiZ : 1;
-  uint32_t int16 : 1; // 16 bits output?
-  uint32_t wwr : 1; // write with read
-} mode_config_proto_t;
-
-typedef struct
-{
-  uint32_t num;
-  uint32_t repeat;
-  uint32_t cmd; /* command defined in hydrabus_mode_cmd() */
-} mode_config_command_t;
-
-typedef struct
-{
-  mode_config_proto_t proto;
-  mode_config_command_t cmd;
-} t_mode_config;
 
 typedef struct hydra_console {
 	char *thread_name;

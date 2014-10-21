@@ -14,6 +14,7 @@
     limitations under the License.
 */
 
+#include "string.h"
 #include "ch.h"
 #include "chprintf.h"
 #include "hal.h"
@@ -44,7 +45,11 @@ char hydrabus_mode_prompt[HYDRABUS_MODE_PROMPT_LEN+1];
 #define HYDRABUS_MODE_DAT_RD  '.'
 #define HYDRABUS_MODE_BIT_RD  '!'
 
+#define HYDRABUS_DELAY_MICROS  '&'
+#define HYDRABUS_DELAY_MILLIS  '%'
+
 const char mode_not_configured[] = "Mode not configured, configure mode with 'm'\r\n";
+const char mode_repeat_error[] =  "Error parameter after ':' shall be between 1 & 10000\r\n";
 
 void hydrabus_mode_help(t_hydra_console *con)
 {
@@ -78,7 +83,7 @@ void hydrabus_mode(t_hydra_console *con, int argc, const char* const* argv)
         if(res == TRUE)
         {
           con->mode->proto.bus_mode = bus_mode;
-          microrl_set_prompt(con->mrl, hydrabus_mode_conf[bus_mode]->mode_str_prompt(0));
+          microrl_set_prompt(con->mrl, hydrabus_mode_conf[bus_mode]->mode_str_prompt(con));
         }
         return;
       }else
@@ -109,7 +114,16 @@ void hydrabus_mode_info(t_hydra_console *con, int argc, const char* const* argv)
   BaseSequentialStream* chp = con->bss;
   bus_mode = con->mode->proto.bus_mode;
 
-  chprintf(chp, "Mode Info:\r\nName=%s, Settings=%s\r\nPins=%s\r\n",
+  if(con->mode->proto.valid != MODE_CONFIG_PROTO_VALID)
+  {
+    chprintf(chp, mode_not_configured);
+    return;
+  }
+
+  chprintf(chp, "Mode Info: m %d %d %d %d %d %d\r\nName=%s\r\nSettings=%s\r\nPins=%s\r\n",
+                bus_mode+1, con->mode->proto.dev_num+1, con->mode->proto.dev_mode+1,
+                con->mode->proto.dev_speed+1, con->mode->proto.dev_cpol_cpha+1,
+                con->mode->proto.dev_bit_lsb_msb+1,
                 hydrabus_mode_conf[bus_mode]->mode_str_name(con),
                 hydrabus_mode_conf[bus_mode]->mode_str_settings(con),
                 hydrabus_mode_conf[bus_mode]->mode_str_pins(con));
@@ -117,15 +131,77 @@ void hydrabus_mode_info(t_hydra_console *con, int argc, const char* const* argv)
   return;
 }
 
+/* Return value decoded after ':' (0 means error => out of range or invalid value) 
+   min & max value are included.
+*/
+long hydrabus_mode_repeat_cmd(t_hydra_console *con, const char* const* argv, long min, long max)
+{
+  long val;
+  uint32_t i;
+  uint32_t len;
+  uint32_t pos_repeat;
+  uint32_t pos_val;
+  char* tmp_argv[] = { 0, 0 };
+  BaseSequentialStream* chp = con->bss;
+
+  len = strlen(&argv[0][0]);
+  if(len < 3)
+  {
+    return 0;
+  }
+  /* Search ':' */
+  pos_repeat = 0;
+  for(i = 0; i < len; i++)
+  {
+    if(argv[0][i] == ':')
+    {
+      pos_repeat = i;
+      break;
+    }
+  }
+
+  if(pos_repeat == 0)
+  {
+    return 0;
+  }
+  pos_val = pos_repeat + 1;
+  len = len - pos_val;
+  *tmp_argv = (char*)&argv[0][pos_val];
+
+  if(xatoi(tmp_argv, &val))
+  {
+    if((val >= min) && (val <= max))
+    {
+      return val;
+    }
+    else
+    {
+      chprintf(chp, mode_repeat_error);
+      return 0;
+    }
+  }else
+  {
+    chprintf(chp, mode_repeat_error);
+    return 0;
+  }
+}
+
 /* Return TRUE if command found else return FALSE */
 bool hydrabus_mode_inter_cmd(t_hydra_console *con, int argc, const char* const* argv)
 {
+  int i;
   bool cmd_found;
+  long val;
+  long val_repeat;
+  uint32_t val_repeat_pos;
   uint32_t bus_mode;
   uint32_t ret_val;
   mode_config_proto_t* p_proto;
-  BaseSequentialStream* chp = con->bss;
+  #define TMP_VAL_STRING_MAX_SIZE (10)
+  char tmp_val_string[TMP_VAL_STRING_MAX_SIZE+1];
+  char* tmp_argv[] = { 0, 0 };
 
+  BaseSequentialStream* chp = con->bss;
   cmd_found = FALSE;
 
   if(argc < 1)
@@ -133,9 +209,12 @@ bool hydrabus_mode_inter_cmd(t_hydra_console *con, int argc, const char* const* 
     return cmd_found;
   }
 
+  p_proto = &con->mode->proto;
+  bus_mode = p_proto->bus_mode;
+
   /* Check if it is a valid command */
   switch(argv[0][0])
-  {      
+  {
     case HYDRABUS_MODE_START:
     case HYDRABUS_MODE_STOP:
     case HYDRABUS_MODE_STARTR:
@@ -148,64 +227,164 @@ bool hydrabus_mode_inter_cmd(t_hydra_console *con, int argc, const char* const* 
     case HYDRABUS_MODE_DAT_LO: /* Set DAT Low (x-WIRE or other raw mode ...) */
     case HYDRABUS_MODE_DAT_RD: /* DAT Read (x-WIRE or other raw mode ...) */
     case HYDRABUS_MODE_BIT_RD: /* Read Bit (x-WIRE or other raw mode ...) */
-      cmd_found = TRUE;
       if(con->mode->proto.valid != MODE_CONFIG_PROTO_VALID)
       {
         chprintf(chp, mode_not_configured);
-        return cmd_found;
+        return TRUE;
       }
     break;
 
+    case HYDRABUS_DELAY_MICROS:
+    case HYDRABUS_DELAY_MILLIS:
+      val_repeat = hydrabus_mode_repeat_cmd(con, argv, 1, 10000);
+      if(val_repeat == 0)
+        val_repeat = 1;
+
+      if(argv[0][0] == HYDRABUS_DELAY_MICROS)
+      {
+        chprintf(chp, "DELAY %dus\r\n", val_repeat);
+        DelayUs(val_repeat);
+      }
+      else
+      {
+        chprintf(chp, "DELAY %dms\r\n", val_repeat);
+        DelayUs((val_repeat*1000));
+      }
+      return TRUE;
+    break;
+
     default:
-      return FALSE;
+      /* Check if the value contains optional repeat ':' */
+      val_repeat_pos = 0;
+      for(i = 0; i < TMP_VAL_STRING_MAX_SIZE; i++)
+      {
+        if(argv[0][i] == 0)
+          break;
+
+        if(argv[0][i] == ':')
+        {
+          val_repeat_pos = i;
+          break;
+        }
+      }
+      if(val_repeat_pos > 0)
+      {
+        if(val_repeat_pos < TMP_VAL_STRING_MAX_SIZE)
+        {
+          /* Copy only the string value (without the repeat parameter ...) */
+          strncpy(tmp_val_string, &argv[0][0], val_repeat_pos);
+          tmp_val_string[val_repeat_pos] = 0;
+          *tmp_argv = tmp_val_string;
+        }else
+        {
+          /* Invalid value too long */
+          return FALSE;
+        }
+      }else
+      {
+        *tmp_argv = (char*)&argv[0][0];
+      }
+      /* Check if it is a valid value (means we need to Send this value on bus) */
+      if(xatoi(tmp_argv, &val))
+      {
+        if( (val >= 0) && (val<=255) )
+        {
+          val_repeat = hydrabus_mode_repeat_cmd(con, argv, 1, 10000);
+          if(val_repeat == 0)
+          {
+            hydrabus_mode_conf[bus_mode]->mode_write(con, val);
+            chprintf(chp, "WRITE: 0x%02X\r\n", val);
+          }else
+          {
+            /* Write multiple time same value */
+            for(i = 0; i < val_repeat; i++)
+            {
+              hydrabus_mode_conf[bus_mode]->mode_write(con, val);
+            }
+            chprintf(chp, "WRITE: ");
+            for(i = 0; i < val_repeat; i++)
+            {
+              chprintf(chp, "0x%02X ", val);
+            }
+            chprintf(chp, "\r\n");
+          }
+          return TRUE;
+        }else
+        {
+          return FALSE;
+        }
+      }else
+      {
+        return FALSE;
+      }
     break;
   }
-
-  p_proto = &con->mode->proto;
-  bus_mode = p_proto->bus_mode;
 
   cmd_found = TRUE;
   switch(argv[0][0])
   {      
     case HYDRABUS_MODE_START:
       hydrabus_mode_conf[bus_mode]->mode_start(con);
+      chprintf(chp, "CS ENABLED\r\n");
     break;
 
     case HYDRABUS_MODE_STOP:
       hydrabus_mode_conf[bus_mode]->mode_stop(con);
+      chprintf(chp, "CS DISABLED\r\n");
     break;
 
     case HYDRABUS_MODE_STARTR:
       hydrabus_mode_conf[bus_mode]->mode_startR(con);
+      chprintf(chp, "{\r\n");
     break;
 
     case HYDRABUS_MODE_STOPTR:
       hydrabus_mode_conf[bus_mode]->mode_stopR(con);
+      chprintf(chp, "}\r\n");
     break;
 
     case HYDRABUS_MODE_READ:
-      ret_val = hydrabus_mode_conf[bus_mode]->mode_read(con);
-      chprintf(chp, "0x%02X\r\n", ret_val);
+      val_repeat = hydrabus_mode_repeat_cmd(con, argv, 1, 10000);
+      if(val_repeat == 0)
+      {
+        val = hydrabus_mode_conf[bus_mode]->mode_read(con);
+        chprintf(chp, "READ: 0x%02X\r\n", val);
+      }else
+      {
+        /* Read multiple time */
+        chprintf(chp, "READ: ");
+        for(i = 0; i < val_repeat; i++)
+        {
+          val = hydrabus_mode_conf[bus_mode]->mode_read(con);
+          chprintf(chp, "0x%02X ", val);
+        }
+        chprintf(chp, "\r\n");
+      }
     break;
 
     case HYDRABUS_MODE_CLK_HI: /* Set CLK High (x-WIRE or other raw mode ...) */
       hydrabus_mode_conf[bus_mode]->mode_clkh(con);
+      chprintf(chp, "/\r\n");
     break;
 
     case HYDRABUS_MODE_CLK_LO: /* Set CLK Low (x-WIRE or other raw mode ...) */
       hydrabus_mode_conf[bus_mode]->mode_clkl(con);
+      chprintf(chp, "\\\r\n");
     break;
 
     case HYDRABUS_MODE_CLK_TK: /* CLK Tick (x-WIRE or other raw mode ...) */
       hydrabus_mode_conf[bus_mode]->mode_clk(con);
+      chprintf(chp, "^\r\n");
     break;
 
     case HYDRABUS_MODE_DAT_HI: /* Set DAT High (x-WIRE or other raw mode ...) */
       hydrabus_mode_conf[bus_mode]->mode_dath(con);
+      chprintf(chp, "-\r\n");
     break;
 
     case HYDRABUS_MODE_DAT_LO: /* Set DAT Low (x-WIRE or other raw mode ...) */
       hydrabus_mode_conf[bus_mode]->mode_datl(con);
+      chprintf(chp, "_\r\n");
     break;
 
     case HYDRABUS_MODE_DAT_RD: /* DAT Read (x-WIRE or other raw mode ...) */

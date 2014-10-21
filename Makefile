@@ -4,7 +4,7 @@
 #
 
 #Set to 1 HYDRAFW_NFC to include HydraNFC extension support
-export HYDRAFW_NFC ?= 1
+#export HYDRAFW_NFC ?= 1
 
 HYDRAFW_OPTS =
 
@@ -100,6 +100,7 @@ include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_stm32f4xx.mk
 include $(CHIBIOS)/os/various/fatfs_bindings/fatfs.mk
 include common/common.mk
 include hydrabus/hydrabus.mk
+include drv/stm32cube/stm32cube.mk
 
 ifeq ($(HYDRAFW_NFC),1)
 include trf7970a/trf7970a.mk
@@ -120,6 +121,7 @@ CSRC = $(PORTSRC) \
        $(FATFSSRC) \
        $(COMMONSRC) \
        $(HYDRABUSSRC) \
+       $(STM32CUBESRC) \
        $(CHIBIOS)/os/various/chprintf.c \
        $(CHIBIOS)/os/various/memstreams.c \
        ./microrl/src/microrl.c \
@@ -162,6 +164,7 @@ INCDIR = $(PORTINC) $(KERNINC) \
          $(CHIBIOS)/os/various  $(FATFSINC) \
          $(COMMONINC) \
          $(HYDRABUSINC) \
+         $(STM32CUBEINC) \
          ./microrl/src
 
 ifeq ($(HYDRAFW_NFC),1)

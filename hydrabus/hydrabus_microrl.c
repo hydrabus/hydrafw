@@ -103,25 +103,19 @@ void hydrabus_print_help(t_hydra_console *con, int argc, const char* const* argv
   print(con, "m              - Change mode\n\r");
   print(con, "i              - Mode information\n\r");
   print(con, "Protocol Interaction\n\r");
-  print(con, "----------------------------------------------\n\r");
-  print(con, "(x)\tMacro x\n\r");
-  print(con, "[\tStart\n\r");
-  print(con, "]\tStop\n\r");
-  print(con, "{\tStart with read\n\r");
-  print(con, "}\tStop\n\r");
-  print(con, "\"abc\"\tSend string\n\r");
-  print(con, "123\t\n\r");
-  print(con, "0x123\t\n\r");
-  print(con, "0b110\tSend value\n\r");
-  print(con, "r\tRead\n\r");
-  print(con, "/\tCLK hi\n\r");
-  print(con, "\\\tCLK lo\n\r");
-  print(con, "^\tCLK tick\n\r");
-  print(con, "-\tDAT hi\n\r");
-  print(con, "_\tDAT lo\n\r");
-  print(con, ".\tDAT read\n\r");
-  print(con, "!\tBit read\n\r");
-  print(con, ":\tRepeat (e.g. r:10)\n\r");
+  print(con, "----------------------------------------\n\r");
+  //print(con, "(x)\t\tMacro x\n\r");
+  print(con, "[ Start\t\t] Stop\n\r");
+  //print(con, "{ Start+read\t} Stop+read\n\r");
+  //print(con, "/ CLK hi\t\\ CLK lo\n\r");
+  //print(con, "^ CLK tick\n\r");
+  //print(con, "- DAT hi\t_ DAT lo\n\r");
+  //print(con, ". DAT read\t! Bit read\n\r");
+  print(con, ": Repeat (e.g. r:10)\n\r");
+  //print(con, "\"abc\"\t\tSend string\n\r");
+  print(con, "& DELAY us\t% DELAY ms\n\r");
+  print(con, "123 0x12 0b110\tSend 8bits val\n\r");
+  print(con, "r Read\n\r");
 }
 
 //*****************************************************************************
