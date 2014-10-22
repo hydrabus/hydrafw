@@ -137,9 +137,9 @@ int hydranfc_execute(t_hydra_console *con, int argc, const char* const* argv)
     }
     if(cmd_found == FALSE)
     {
-      print(con->sdu,"command: '");
-      print(con->sdu,(char*)argv[curr_arg]);
-      print(con->sdu,"' Not found.\n\r");
+      print(con,"command: '");
+      print(con,(char*)argv[curr_arg]);
+      print(con,"' Not found.\n\r");
     }
     curr_arg++;
   }

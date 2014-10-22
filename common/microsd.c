@@ -150,7 +150,7 @@ static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offse
 	} while (chVTIsSystemTimeWithin(start, end));
 
 	total = (float)n * MMCSD_BLOCK_SIZE / (1024 * 1024 * seconds);
-	chprintf(chp, "%6D blocks/s, %5D KB/s %4.2f MB/s\r\n", n / seconds,
+	chprintf(chp, "%6D sectors/s, %5D KB/s %4.2f MB/s\r\n", n / seconds,
 			(n * MMCSD_BLOCK_SIZE) / (1024 * seconds), total);
 
 	return TRUE;
