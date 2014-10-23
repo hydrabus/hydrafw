@@ -145,11 +145,11 @@ int hydrabus_execute(t_hydra_console *con, int argc, const char* const* argv)
     }
     if(cmd_found == FALSE)
     {
-      if(hydrabus_mode_inter_cmd(con, argc-curr_arg, &argv[curr_arg]) == FALSE)
+      if(hydrabus_mode_proto_inter(con, argc-curr_arg, &argv[curr_arg]) == FALSE)
       {
         print(con,"command: '");
         print(con,(char*)argv[curr_arg]);
-        print(con,"' Not found.\n\r");
+        print(con,"' Error/Not found.\n\r");
       }
     }
     curr_arg++;

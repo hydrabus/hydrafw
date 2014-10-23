@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_spi.c
   * @author  MCD Application Team
-  *          B.VERNOUX added Timeout exit when UBTN is pressed
+  *          B.VERNOUX added Timeout exit when UBTN is pressed, fix warnings
   * @version V1.1.0
   * @date    19-June-2014
   * @brief   SPI HAL module driver.
@@ -260,8 +260,9 @@ HAL_StatusTypeDef HAL_SPI_DeInit(SPI_HandleTypeDef *hspi)
  __weak void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
  {
    /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_SPI_MspInit could be implenetd in the user file
+            the HAL_SPI_MspInit could be implemented in the user file
    */
+  (void)hspi;
 }
 
 /**
@@ -273,8 +274,9 @@ HAL_StatusTypeDef HAL_SPI_DeInit(SPI_HandleTypeDef *hspi)
  __weak void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
 {
   /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_SPI_MspDeInit could be implenetd in the user file
+            the HAL_SPI_MspDeInit could be implemented in the user file
    */
+  (void)hspi;
 }
 
 /**
@@ -1565,8 +1567,9 @@ void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi)
 __weak void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_SPI_TxCpltCallback could be implenetd in the user file
+            the HAL_SPI_TxCpltCallback could be implemented in the user file
    */
+  (void)hspi;
 }
 
 /**
@@ -1578,8 +1581,9 @@ __weak void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 __weak void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_SPI_RxCpltCallback() could be implenetd in the user file
+            the HAL_SPI_RxCpltCallback() could be implemented in the user file
    */
+  (void)hspi;
 }
 
 /**
@@ -1591,8 +1595,9 @@ __weak void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 __weak void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_SPI_TxRxCpltCallback() could be implenetd in the user file
+            the HAL_SPI_TxRxCpltCallback() could be implemented in the user file
    */
+  (void)hspi;
 }
 
 /**
@@ -1604,8 +1609,9 @@ __weak void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 __weak void HAL_SPI_TxHalfCpltCallback(SPI_HandleTypeDef *hspi)
 {
   /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_SPI_TxHalfCpltCallback could be implenetd in the user file
+            the HAL_SPI_TxHalfCpltCallback could be implemented in the user file
    */
+  (void)hspi;
 }
 
 /**
@@ -1617,8 +1623,9 @@ __weak void HAL_SPI_TxHalfCpltCallback(SPI_HandleTypeDef *hspi)
 __weak void HAL_SPI_RxHalfCpltCallback(SPI_HandleTypeDef *hspi)
 {
   /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_SPI_RxHalfCpltCallback() could be implenetd in the user file
+            the HAL_SPI_RxHalfCpltCallback() could be implemented in the user file
    */
+  (void)hspi;
 }
 
 /**
@@ -1630,8 +1637,9 @@ __weak void HAL_SPI_RxHalfCpltCallback(SPI_HandleTypeDef *hspi)
 __weak void HAL_SPI_TxRxHalfCpltCallback(SPI_HandleTypeDef *hspi)
 {
   /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_SPI_TxRxHalfCpltCallback() could be implenetd in the user file
+            the HAL_SPI_TxRxHalfCpltCallback() could be implemented in the user file
    */
+  (void)hspi;
 }
 
 /**
@@ -1643,10 +1651,11 @@ __weak void HAL_SPI_TxRxHalfCpltCallback(SPI_HandleTypeDef *hspi)
  __weak void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
 {
   /* NOTE : - This function Should not be modified, when the callback is needed,
-            the HAL_SPI_ErrorCallback() could be implenetd in the user file.
+            the HAL_SPI_ErrorCallback() could be implemented in the user file.
             - The ErrorCode parameter in the hspi handle is updated by the SPI processes
             and user can use HAL_SPI_GetError() API to check the latest error occurred.
    */
+  (void)hspi;
 }
 
 /**

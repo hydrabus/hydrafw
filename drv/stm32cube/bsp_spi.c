@@ -18,12 +18,13 @@
 #include "bsp_spi.h"
 #include "bsp_spi_conf.h"
 
+/* 
+Warning in order to use this driver all GPIOs peripherals shall be enabled.
+*/
 #define SPIx_TIMEOUT_MAX (20000000) // About 10sec can be aborted by UBTN too
-
 #define NB_SPI (2)
 static SPI_HandleTypeDef spi_handle[NB_SPI];
 static mode_config_proto_t* spi_mode_conf[NB_SPI];
-
 static uint32_t uwTick = 0;
 
 void HAL_IncTick(void)
@@ -36,10 +37,6 @@ uint32_t HAL_GetTick(void)
   HAL_IncTick();
   return uwTick;
 }
-
-/* 
-Warning in order to use this driver all GPIOs peripherals shall be enabled.
-*/
 
 /**
   * @brief  Init low level hardware: GPIO, CLOCK, NVIC...
@@ -156,22 +153,19 @@ static void spi_gpio_hw_deinit(bsp_dev_spi_t dev_num)
   * @param  dev_num: SPI dev num
   * @retval None
   */
-static bsp_status_t spi_error(bsp_dev_spi_t dev_num)
+static void spi_error(bsp_dev_spi_t dev_num)
 {
-  bsp_status_t status;
-
-  status = bsp_spi_deinit(dev_num);
-  if(status == BSP_OK)
+  if(bsp_spi_deinit(dev_num) == BSP_OK)
   {
     /* Re-Initiaize the SPI comunication bus */
-    status = bsp_spi_init(dev_num, spi_mode_conf[dev_num]);
+    bsp_spi_init(dev_num, spi_mode_conf[dev_num]);
   }
-  return status;
 }
 
 /**
   * @brief  Init SPI device.
   * @param  dev_num: SPI dev num.
+  * @param  mode_conf: Mode config proto.
   * @retval status: status of the init.
   */
 bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
@@ -282,65 +276,61 @@ void bsp_spi_unselect(bsp_dev_spi_t dev_num)
   * @brief  Sends a Byte in blocking mode and return the status.
   * @param  dev_num: SPI dev num.
   * @param  tx_data: data to send.
+  * @param  nb_data: Number of data to send.
   * @retval status of the transfer.
   */
-bsp_status_t bsp_spi_write_u8(bsp_dev_spi_t dev_num, uint8_t tx_data)
+bsp_status_t bsp_spi_write_u8(bsp_dev_spi_t dev_num, uint8_t* tx_data, uint8_t nb_data)
 {
   SPI_HandleTypeDef* hspi;
   hspi = &spi_handle[dev_num];
 
   bsp_status_t status;
-  status = HAL_SPI_Transmit(hspi, &tx_data, 1, SPIx_TIMEOUT_MAX);
-/*
+  status = HAL_SPI_Transmit(hspi, tx_data, nb_data, SPIx_TIMEOUT_MAX);
   if(status != BSP_OK)
   {
     spi_error(dev_num);
-    return status;
   }
-*/
   return status;
 }
 
 /**
   * @brief  Read a Byte in blocking mode and return the status.
   * @param  dev_num: SPI dev num.
-  * @param  rx_data: The received byte.
+  * @param  rx_data: Data to receive.
+  * @param  nb_data: Number of data to receive.
   * @retval status of the transfer.
   */
-bsp_status_t bsp_spi_read_u8(bsp_dev_spi_t dev_num, uint8_t* rx_data)
+bsp_status_t bsp_spi_read_u8(bsp_dev_spi_t dev_num, uint8_t* rx_data, uint8_t nb_data)
 {
   SPI_HandleTypeDef* hspi;
   hspi = &spi_handle[dev_num];
 
   bsp_status_t status;
-  status = HAL_SPI_Receive(hspi, rx_data, 1, SPIx_TIMEOUT_MAX);
-/*
+  status = HAL_SPI_Receive(hspi, rx_data, nb_data, SPIx_TIMEOUT_MAX);
   if(status != BSP_OK)
   {
     spi_error(dev_num);
   }
-*/
   return status;
 }
 
 /**
   * @brief  Send a byte then Read a byte through the SPI interface.
-  * @param  tx_data: data to send.
-  * @param  rx_data: The received byte.
+  * @param  tx_data: Data to send.
+  * @param  rx_data: Data to receive.
+  * @param  nb_data: Number of data to send & receive.
   * @retval status of the transfer.
   */
-bsp_status_t bsp_spi_write_read_u8(bsp_dev_spi_t dev_num, uint8_t tx_data, uint8_t* rx_data)
+bsp_status_t bsp_spi_write_read_u8(bsp_dev_spi_t dev_num, uint8_t* tx_data, uint8_t* rx_data, uint8_t nb_data)
 {
   SPI_HandleTypeDef* hspi;
   hspi = &spi_handle[dev_num];
 
   bsp_status_t status;
-  status = HAL_SPI_TransmitReceive(hspi, &tx_data, rx_data, 1, SPIx_TIMEOUT_MAX);
-/*
+  status = HAL_SPI_TransmitReceive(hspi, tx_data, rx_data, nb_data, SPIx_TIMEOUT_MAX);
   if(status != BSP_OK)
   {
     spi_error(dev_num);
   }
-*/
   return status;
 }

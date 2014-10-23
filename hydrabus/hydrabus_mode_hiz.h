@@ -32,10 +32,12 @@ void mode_stop_hiz(t_hydra_console *con);
 /* Stop Read command '}' */
 void mode_stopR_hiz(t_hydra_console *con);
 
-/* Write/Send 1 data */
-uint32_t mode_write_hiz(t_hydra_console *con, uint32_t data);
-/* Read 1 data command 'r' */
-uint32_t mode_read_hiz(t_hydra_console *con);
+/* Write/Send x data (return status 0=OK) */
+uint32_t mode_write_hiz(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data);
+/* Read x data command 'r' or 'r:x' (return status 0=OK) */
+uint32_t mode_read_hiz(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
+ /* Write & Read x data (return status 0=OK) */
+uint32_t mode_write_read_hiz(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data);
 
 /* Set CLK High (x-WIRE or other raw mode ...) command '/' */
 void mode_clkh_hiz(t_hydra_console *con);

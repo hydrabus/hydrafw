@@ -17,29 +17,30 @@
 
 const mode_exec_t mode_hiz_exec =
 {
-  &mode_cmd_hiz,       /* Terminal parameters specific to this mode (return nb arg used) */
-	&mode_start_hiz,     /* Start command '[' */
-	&mode_startR_hiz,    /* Start Read command '{' */
-	&mode_stop_hiz,      /* Stop command ']' */
-	&mode_stopR_hiz,     /* Stop Read command '}' */
-	&mode_write_hiz,     /* Write/Send 1 data */
-	&mode_read_hiz,      /* Read 1 data command 'r' */
-	&mode_clkh_hiz,      /* Set CLK High (x-WIRE or other raw mode ...) command '/' */
-	&mode_clkl_hiz,      /* Set CLK Low (x-WIRE or other raw mode ...) command '\' */
-	&mode_dath_hiz,      /* Set DAT High (x-WIRE or other raw mode ...) command '-' */
-	&mode_datl_hiz,      /* Set DAT Low (x-WIRE or other raw mode ...) command '_' */
-	&mode_dats_hiz,      /* Read Bit (x-WIRE or other raw mode ...) command '!' */
-	&mode_clk_hiz,       /* CLK Tick (x-WIRE or other raw mode ...) command '^' */
-	&mode_bitr_hiz,      /* DAT Read (x-WIRE or other raw mode ...) command '.' */
-	&mode_periodic_hiz,  /* Periodic service called (like UART sniffer...) */
-	&mode_macro_hiz,     /* Macro command "(x)", "(0)" List current macros */
-	&mode_setup_hiz,     /* Configure the device internal params with user parameters (before Power On) */
-	&mode_setup_exc_hiz, /* Configure the physical device after Power On (command 'W') */
-	&mode_cleanup_hiz,   /* Exit mode, disable device enter safe mode HiZ... */
-	&mode_str_pins_hiz,     /* Pins used string */
-	&mode_str_settings_hiz, /* Settings string */
-  &mode_str_name_hiz,     /* Mode name string */
-  &mode_str_prompt_hiz    /* Prompt name string */
+  .mode_cmd          = &mode_cmd_hiz,       /* Terminal parameters specific to this mode (return nb arg used) */
+	.mode_start        = &mode_start_hiz,     /* Start command '[' */
+	.mode_startR       = &mode_startR_hiz,    /* Start Read command '{' */
+	.mode_stop         = &mode_stop_hiz,      /* Stop command ']' */
+	.mode_stopR        = &mode_stopR_hiz,     /* Stop Read command '}' */
+	.mode_write        = &mode_write_hiz,     /* Write/Send 1 data */
+	.mode_read         = &mode_read_hiz,      /* Read 1 data command 'r' */
+	.mode_write_read   = &mode_write_read_hiz,/* Write & Read 1 data implicitely with mode_write command */
+	.mode_clkh         = &mode_clkh_hiz,      /* Set CLK High (x-WIRE or other raw mode ...) command '/' */
+	.mode_clkl         = &mode_clkl_hiz,      /* Set CLK Low (x-WIRE or other raw mode ...) command '\' */
+	.mode_dath         = &mode_dath_hiz,      /* Set DAT High (x-WIRE or other raw mode ...) command '-' */
+	.mode_datl         = &mode_datl_hiz,      /* Set DAT Low (x-WIRE or other raw mode ...) command '_' */
+	.mode_dats         = &mode_dats_hiz,      /* Read Bit (x-WIRE or other raw mode ...) command '!' */
+	.mode_clk          = &mode_clk_hiz,       /* CLK Tick (x-WIRE or other raw mode ...) command '^' */
+	.mode_bitr         = &mode_bitr_hiz,      /* DAT Read (x-WIRE or other raw mode ...) command '.' */
+	.mode_periodic     = &mode_periodic_hiz,  /* Periodic service called (like UART sniffer...) */
+	.mode_macro        = &mode_macro_hiz,     /* Macro command "(x)", "(0)" List current macros */
+	.mode_setup        = &mode_setup_hiz,     /* Configure the device internal params with user parameters (before Power On) */
+	.mode_setup_exc    = &mode_setup_exc_hiz, /* Configure the physical device after Power On (command 'W') */
+	.mode_cleanup      = &mode_cleanup_hiz,   /* Exit mode, disable device enter safe mode HiZ... */
+	.mode_str_pins     = &mode_str_pins_hiz,     /* Pins used string */
+	.mode_str_settings = &mode_str_settings_hiz, /* Settings string */
+  .mode_str_name     = &mode_str_name_hiz,     /* Mode name string */
+  .mode_str_prompt   = &mode_str_prompt_hiz    /* Prompt name string */
 };
 
 /* Terminal parameters specific to this mode (return nb arg used) */
@@ -48,7 +49,6 @@ bool mode_cmd_hiz(t_hydra_console *con, int argc, const char* const* argv)
   (void)con;
   (void)argc;
   (void)argv;
-
   /* Nothing to do in HiZ mode */
   return TRUE;
 }
@@ -57,7 +57,6 @@ bool mode_cmd_hiz(t_hydra_console *con, int argc, const char* const* argv)
 void mode_start_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -65,7 +64,6 @@ void mode_start_hiz(t_hydra_console *con)
 void mode_startR_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -73,7 +71,6 @@ void mode_startR_hiz(t_hydra_console *con)
 void mode_stop_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -81,25 +78,36 @@ void mode_stop_hiz(t_hydra_console *con)
 void mode_stopR_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
-/* Write/Send 1 data */
-uint32_t mode_write_hiz(t_hydra_console *con, uint32_t data)
+/* Write/Send x data return status 0=OK */
+uint32_t mode_write_hiz(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
   (void)con;
-  (void)data;
-
+  (void)tx_data;
+  (void)nb_data;
   /* Nothing to do in HiZ mode */
   return 0;
 }
 
-/* Read 1 data command 'r' */
-uint32_t mode_read_hiz(t_hydra_console *con)
+/* Read x data command 'r' return status 0=OK */
+uint32_t mode_read_hiz(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 {
   (void)con;
+  (void)rx_data;
+  (void)nb_data;
+  /* Nothing to do in HiZ mode */
+  return 0;
+}
 
+/* Write & Read x data return status 0=OK */
+uint32_t mode_write_read_hiz(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data)
+{
+  (void)con;
+  (void)tx_data;
+  (void)rx_data;
+  (void)nb_data;
   /* Nothing to do in HiZ mode */
   return 0;
 }
@@ -108,7 +116,6 @@ uint32_t mode_read_hiz(t_hydra_console *con)
 void mode_clkh_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -116,7 +123,6 @@ void mode_clkh_hiz(t_hydra_console *con)
 void mode_clkl_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -124,7 +130,6 @@ void mode_clkl_hiz(t_hydra_console *con)
 void mode_dath_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -132,7 +137,6 @@ void mode_dath_hiz(t_hydra_console *con)
 void mode_datl_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -140,7 +144,6 @@ void mode_datl_hiz(t_hydra_console *con)
 uint32_t mode_dats_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
   return 0;
 }
@@ -149,7 +152,6 @@ uint32_t mode_dats_hiz(t_hydra_console *con)
 void mode_clk_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -157,7 +159,6 @@ void mode_clk_hiz(t_hydra_console *con)
 uint32_t mode_bitr_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
   return 0;
 }
@@ -166,7 +167,6 @@ uint32_t mode_bitr_hiz(t_hydra_console *con)
 uint32_t mode_periodic_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
   return 0;
 }
@@ -176,7 +176,6 @@ void mode_macro_hiz(t_hydra_console *con, uint32_t macro_num)
 {
   (void)con;
   (void)macro_num;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -184,7 +183,6 @@ void mode_macro_hiz(t_hydra_console *con, uint32_t macro_num)
 void mode_setup_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -192,7 +190,6 @@ void mode_setup_hiz(t_hydra_console *con)
 void mode_setup_exc_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -200,7 +197,6 @@ void mode_setup_exc_hiz(t_hydra_console *con)
 void mode_cleanup_hiz(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in HiZ mode */
 }
 
@@ -208,7 +204,6 @@ void mode_cleanup_hiz(t_hydra_console *con)
 const char* mode_str_pins_hiz(t_hydra_console *con)
 {
   (void)con;
-
   return "HiZ mode";
 }
 
@@ -216,7 +211,6 @@ const char* mode_str_pins_hiz(t_hydra_console *con)
 const char* mode_str_settings_hiz(t_hydra_console *con)
 {
   (void)con;
-
   return "";
 }
 
@@ -224,7 +218,6 @@ const char* mode_str_settings_hiz(t_hydra_console *con)
 const char* mode_str_name_hiz(t_hydra_console *con)
 {
   (void)con;
-
   return "HiZ";
 }
 
@@ -232,6 +225,5 @@ const char* mode_str_name_hiz(t_hydra_console *con)
 const char* mode_str_prompt_hiz(t_hydra_console *con)
 {
   (void)con;
-
   return "> ";
 }

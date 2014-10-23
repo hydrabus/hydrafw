@@ -34,7 +34,7 @@ typedef enum
 } mode_config_proto_valid_t;
 
 #define MODE_CONFIG_PROTO_DEV_DEF_VAL (0) /* mode_config_proto_t for dev_xxx default safe value */
-
+#define MODE_CONFIG_PROTO_BUFFER_SIZE (256)
 typedef struct
 {
   mode_config_proto_valid_t valid;
@@ -45,7 +45,7 @@ typedef struct
   long dev_cpol_cpha; /* For SPI */
   long dev_numbits;
   long dev_bit_lsb_msb; /* For SPI */
-/*
+
   uint32_t : 25;
   uint32_t altAUX : 2; // 4 AUX tbd
   uint32_t periodicService : 1;
@@ -53,7 +53,9 @@ typedef struct
   uint32_t HiZ : 1;
   uint32_t int16 : 1; // 16 bits output?
   uint32_t wwr : 1; // write with read
-*/
+
+  uint8_t buffer_tx[256];
+  uint8_t buffer_rx[256];
 } mode_config_proto_t;
 
 typedef struct

@@ -26,6 +26,8 @@
 #define HYDRABUS_MODE_DEV_INVALID (-1)
 #define HYDRABUS_MODE_DEV_DEFAULT_VALUE (0)
 
+#define HYDRABUS_MODE_STATUS_OK (0)
+
 typedef enum
 {
 	HIZ = 0,
@@ -49,8 +51,9 @@ typedef struct
 	void (*mode_startR)(t_hydra_console *con); /* Start Read command '{' */
 	void (*mode_stop)(t_hydra_console *con); /* Stop command ']' */
 	void (*mode_stopR)(t_hydra_console *con); /* Stop Read command '}' */
-	uint32_t (*mode_write)(t_hydra_console *con, uint32_t data); /* Write/Send 1 data */
-	uint32_t (*mode_read)(t_hydra_console *con); /* Read 1 data command 'r' */
+	uint32_t (*mode_write)(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data); /* Write/Send x data (return status 0=OK) */
+	uint32_t (*mode_read)(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data); /* Read x data command 'r' or 'r:x' (return status 0=OK) */
+	uint32_t (*mode_write_read)(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data); /* Write & Read x data (return status 0=OK) */
 	void (*mode_clkh)(t_hydra_console *con); /* Set CLK High (x-WIRE or other raw mode ...) command '/' */
 	void (*mode_clkl)(t_hydra_console *con); /* Set CLK Low (x-WIRE or other raw mode ...) command '\' */
 	void (*mode_dath)(t_hydra_console *con); /* Set DAT High (x-WIRE or other raw mode ...) command '-' */
@@ -81,7 +84,7 @@ typedef struct
 
 void hydrabus_mode(t_hydra_console *con, int argc, const char* const* argv);
 void hydrabus_mode_info(t_hydra_console *con, int argc, const char* const* argv);
-bool hydrabus_mode_inter_cmd(t_hydra_console *con, int argc, const char* const* argv);
+bool hydrabus_mode_proto_inter(t_hydra_console *con, int argc, const char* const* argv);
 long hydrabus_mode_dev_manage_arg(t_hydra_console *con, int argc, const char* const* argv,
                                   int mode_dev_nb_arg, int dev_arg_no, mode_dev_arg_t* dev_arg);
 

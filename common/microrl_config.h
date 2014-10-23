@@ -13,8 +13,8 @@ Modified configuration for HydraBus/HydraNFC (bvernoux@hydrabus.com)
 Command line length, define cmdline buffer size. Set max number of chars + 1,
 because last byte of buffer need to contain '\0' - NULL terminator, and 
 not use for storing inputed char.
-If user input chars more then it parametrs-1, chars not added to command line.*/
-#define _COMMAND_LINE_LEN (1+100) // for 32 chars
+If user input chars more then it parameters-1, chars not added to command line.*/
+#define _COMMAND_LINE_LEN (1+400)
 
 /*
  * Maximum number of command tokens. If the number of tokens on a command line
@@ -23,7 +23,7 @@ If user input chars more then it parametrs-1, chars not added to command line.*/
  * A token is a word separate by white space, for example a 3 token line:
  * "> set mode test"
  */
-#define _MAX_COMMAND_TOKENS 50
+#define _MAX_COMMAND_TOKENS 60
 
 #define _PROMPT_TXT "> "
 

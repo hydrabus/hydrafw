@@ -31,8 +31,8 @@ bsp_status_t bsp_spi_deinit(bsp_dev_spi_t dev_num);
 void bsp_spi_select(bsp_dev_spi_t dev_num);
 void bsp_spi_unselect(bsp_dev_spi_t dev_num);
 
-bsp_status_t bsp_spi_write_u8(bsp_dev_spi_t dev_num, uint8_t tx_data);
-bsp_status_t bsp_spi_read_u8(bsp_dev_spi_t dev_num, uint8_t* rx_data);
-bsp_status_t bsp_spi_write_read_u8(bsp_dev_spi_t dev_num, uint8_t tx_data, uint8_t* rx_data);
+bsp_status_t bsp_spi_write_u8(bsp_dev_spi_t dev_num, uint8_t* tx_data, uint8_t nb_data);
+bsp_status_t bsp_spi_read_u8(bsp_dev_spi_t dev_num, uint8_t* rx_data, uint8_t nb_data);
+bsp_status_t bsp_spi_write_read_u8(bsp_dev_spi_t dev_num, uint8_t* tx_data, uint8_t* rx_data, uint8_t nb_data);
 
 #endif /* _BSP_SPI_H_ */

@@ -27,6 +27,7 @@ const mode_exec_t mode_spi_exec =
 	.mode_stopR        = &mode_stopR_spi,     /* Stop Read command '}' */
 	.mode_write        = &mode_write_spi,     /* Write/Send 1 data */
 	.mode_read         = &mode_read_spi,      /* Read 1 data command 'r' */
+	.mode_write_read   = &mode_write_read_spi,/* Write & Read 1 data implicitely with mode_write command */
 	.mode_clkh         = &mode_clkh_spi,      /* Set CLK High (x-WIRE or other raw mode ...) command '/' */
 	.mode_clkl         = &mode_clkl_spi,      /* Set CLK Low (x-WIRE or other raw mode ...) command '\' */
 	.mode_dath         = &mode_dath_spi,      /* Set DAT High (x-WIRE or other raw mode ...) command '-' */
@@ -196,26 +197,37 @@ void mode_stopR_spi(t_hydra_console *con)
   bsp_spi_unselect(proto->dev_num);
 }
 
-/* Write/Send 1 data */
-uint32_t mode_write_spi(t_hydra_console *con, uint32_t data)
+/* Write/Send x data return status 0=OK */
+uint32_t mode_write_spi(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
+  uint32_t status;
   mode_config_proto_t* proto;
 
   proto = &con->mode->proto;
-  bsp_spi_write_u8(proto->dev_num, data);
-
-  return 0;
+  status = bsp_spi_write_u8(proto->dev_num, tx_data, nb_data);
+  return status;
 }
 
-/* Read 1 data command 'r' */
-uint32_t mode_read_spi(t_hydra_console *con)
+/* Read x data command 'r' return status 0=OK */
+uint32_t mode_read_spi(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 {
-  uint8_t rx_data;
+  uint32_t status;
   mode_config_proto_t* proto;
 
   proto = &con->mode->proto;
-  bsp_spi_read_u8(proto->dev_num, &rx_data);
-  return rx_data;
+  status = bsp_spi_read_u8(proto->dev_num, rx_data, nb_data);
+  return status;
+}
+
+/* Write & Read x data return status 0=OK */
+uint32_t mode_write_read_spi(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data)
+{
+  uint32_t status;
+  mode_config_proto_t* proto;
+
+  proto = &con->mode->proto;
+  status = bsp_spi_write_read_u8(proto->dev_num, tx_data, rx_data, nb_data);
+  return status;
 }
 
 /* Set CLK High (x-WIRE or other raw mode ...) command '/' */
@@ -238,7 +250,6 @@ void mode_clkl_spi(t_hydra_console *con)
 void mode_dath_spi(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in SPI mode */
 }
 
@@ -246,7 +257,6 @@ void mode_dath_spi(t_hydra_console *con)
 void mode_datl_spi(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in SPI mode */
 }
 
@@ -254,7 +264,6 @@ void mode_datl_spi(t_hydra_console *con)
 uint32_t mode_dats_spi(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in SPI mode */
   return 0;
 }
@@ -263,7 +272,6 @@ uint32_t mode_dats_spi(t_hydra_console *con)
 void mode_clk_spi(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in SPI mode */
 }
 
@@ -271,7 +279,6 @@ void mode_clk_spi(t_hydra_console *con)
 uint32_t mode_bitr_spi(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in SPI mode */
   return 0;
 }
@@ -280,7 +287,6 @@ uint32_t mode_bitr_spi(t_hydra_console *con)
 uint32_t mode_periodic_spi(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in SPI mode */
   return 0;
 }
@@ -290,15 +296,13 @@ void mode_macro_spi(t_hydra_console *con, uint32_t macro_num)
 {
   (void)con;
   (void)macro_num;
-
-  /* Nothing to do in SPI mode */
+  /* TODO mode_spi Macro command "(x)" */
 }
 
 /* Configure the device internal params with user parameters (before Power On) */
 void mode_setup_spi(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in SPI mode */
 }
 
