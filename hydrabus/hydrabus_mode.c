@@ -50,7 +50,9 @@ char hydrabus_mode_prompt[HYDRABUS_MODE_PROMPT_LEN+1];
 #define HYDRABUS_DELAY_MILLIS  '%'
 
 const char mode_not_configured[] = "Mode not configured, configure mode with 'm'\r\n";
-const char mode_repeat_error[] =  "Error parameter after ':' shall be between %d & %d\r\n";
+const char mode_repeat_too_long[] =  "Error max size for 'arg:arg' shall be >0 & <%d\r\n";
+const char mode_repeat_before_error[] =  "Error parameter before ':' shall be between %d & %d\r\n";
+const char mode_repeat_after_error[] =  "Error parameter after ':' shall be between %d & %d\r\n";
 const char mode_cs_enabled[] =  "/CS ENABLED\r\n";
 const char mode_cs_disabled[] = "/CS DISABLED\r\n";
 
@@ -102,6 +104,7 @@ void hydrabus_mode(t_hydra_console *con, int argc, const char* const* argv)
         {
           con->mode->proto.bus_mode = bus_mode;
           microrl_set_prompt(con->mrl, hydrabus_mode_conf[bus_mode]->mode_str_prompt(con));
+          chprintf(chp, "%s\r\n", hydrabus_mode_conf[bus_mode]->mode_str_settings(con));
         }else
         {
           /* TODO restore history previous line(to avoid user press key Up)*/
@@ -152,216 +155,298 @@ void hydrabus_mode_info(t_hydra_console *con, int argc, const char* const* argv)
   return;
 }
 
-/* Return value decoded after ':' (0 means error => out of range or invalid value) 
-   min & max value are included.
-   nb_arg_car_used means number of character after ':' and including ':'
+/* return the number of characters found in string with value including only:
+ '0' to '9', 'a' to 'f', 'A' to 'F', 'x', 'b', ' ' */
+static uint32_t repeat_len(const char *str, int len)
+{
+  char car;
+  int i;
+
+  for(i = 0; i < len; i++)
+  {
+    car = str[i];
+    if( car >= '0' && car <= '9')
+      continue;
+
+    if( car >= 'a' && car <= 'f')
+      continue;
+
+    if( car >= 'A' && car <= 'F')
+      continue;
+
+    switch(car)
+    {
+      case 'x':
+      case 'b':
+      case ':':
+      case ' ':
+        continue;
+
+      default:
+        /* Error other char invalid return actual pos */
+        return i;
+    }
+  }
+  return i;
+}
+
+/*
+ Copy str_src to str_dst until end of string or max_len:
+ When ':' is found replace it by 0 in str_dst
+ During copy Hexadecimal upper case 'A' to 'F' are converted in lower case.
+ Return pos of ':'+1 (2nd string)
 */
-long hydrabus_mode_repeat_cmd(t_hydra_console *con, const char* const* argv, long min, long max, int* nb_arg_car_used)
+static uint32_t repeat_strncpy(const char* str_src, char* str_dst, int max_len)
+{
+  char char_src;
+  int i;
+  int pos_repeat;
+
+  pos_repeat = -1;
+  for(i = 0; i < max_len; i++)
+  {
+    char_src = str_src[i];
+
+    /* Convert Hexadecimal Upper case to Lower case */
+    if(char_src >= 'A' && char_src <= 'F')
+      char_src += 0x20;
+
+    if(char_src == 0)
+      break;
+
+    if(char_src == ':')
+    {
+      pos_repeat = i;
+      str_dst[i] = 0; /* Set end of string  */
+    }else
+    {
+      str_dst[i] = char_src;
+    }
+  }
+  /* Set end of string  */
+  str_dst[i] = 0;
+  return (pos_repeat+1);
+}
+
+/* Return TRUE if success or FALSE if error (out of range or invalid value)
+   val_before_min & val_before_max are used to check min & max value before ':' which is mandatory
+   val_after_min & val_after_max  are used to check min & max value after ':'.
+   nb_arg_car_used means number of characters used (including before + ':' + after)
+   write_cmd is TRUE when both val_before &  val_after are used
+   write_cmd is FALSE when only val_after
+   val_after is optional (equal to 0 if not found).
+*/
+static bool repeat_cmd(t_hydra_console *con, const char* const* argv,
+                      long val_before_min, long val_before_max, long* val_before,
+                      long val_after_min, long val_after_max, long* val_after,
+                      int* nb_arg_car_used, bool write_cmd)
 {
   long val;
-  uint32_t i;
   uint32_t len;
-  uint32_t pos_repeat;
   uint32_t pos_val;
   char* tmp_argv[] = { 0, 0 };
+  const char* str;
   #define TMP_VAL_STRING_MAX_SIZE (10)
+  char tmp_val_string[TMP_VAL_STRING_MAX_SIZE+1];
   BaseSequentialStream* chp = con->bss;
   *nb_arg_car_used = 0;
 
   len = strlen(&argv[0][0]);
-  if( (len < 3) )
+  if(len < 1)
   {
-    return 0;
+    return FALSE;
   }
 
-  *tmp_argv = (char*)&argv[0][0];
-  /* Search ':' */
-  pos_repeat = 0;
-  for(i = 0; i < len; i++)
+  if(write_cmd == TRUE)
   {
-    if(tmp_argv[0][i] == ':')
+    str = &argv[0][0];
+  }else
+  {
+    /* Command with 1 char + optional ':' repeat */
+    str = &argv[0][1]; /* Remove 1st car which is the command */
+    if(str[0] != ':') /* If no optional repeat command */
     {
-      pos_repeat = i;
-      break;
+      *val_after = 0;
+      *nb_arg_car_used = 1;
+      return TRUE;
     }
   }
 
-  if(pos_repeat == 0)
+  /* Search string len for repeat command */
+  len = repeat_len(str, len);
+  if( ((len == 0) && (write_cmd == TRUE)) )
   {
-    return 0;
+    return FALSE; /* Invalid command */
   }
-  pos_val = pos_repeat + 1;
-  len = len - pos_val;
-  *tmp_argv = (char*)&tmp_argv[0][pos_val];
 
-  *nb_arg_car_used += 1; /* Add char ':' */
-  *nb_arg_car_used += xatoi(tmp_argv, &val);
-  if(*nb_arg_car_used)
+  if(len > TMP_VAL_STRING_MAX_SIZE)
   {
-    if((val >= min) && (val <= max))
+    chprintf(chp, mode_repeat_too_long, TMP_VAL_STRING_MAX_SIZE);
+    return FALSE;
+  }
+
+  pos_val = repeat_strncpy(str, tmp_val_string, len);
+  *nb_arg_car_used = len;
+  if(write_cmd == TRUE)
+  {
+    /* 1st param (before ':') */
+    *val_before = 0;
+    *tmp_argv = tmp_val_string;
+    if(xatoi(tmp_argv, &val))
     {
-      return val;
-    }
-    else
+      if( (val >= val_before_min) && (val <= val_before_max) )
+      {
+        *val_before = val;
+      }else
+      {
+        chprintf(chp, mode_repeat_before_error, val_before_min, val_before_max);
+        return FALSE;
+      }
+    }else
     {
-      chprintf(chp, mode_repeat_error, min, max);
-      return 0;
+      chprintf(chp, mode_repeat_before_error, val_before_min, val_before_max);
+      return FALSE;
     }
   }else
   {
-    chprintf(chp, mode_repeat_error, min, max);
-    return 0;
+    *nb_arg_car_used += 1; /* Add 1st car which is the command */
   }
+
+  /* 2nd param (after ':') */
+  *val_after = 0;
+  if(pos_val > 0)
+  {
+    *tmp_argv = &tmp_val_string[pos_val];
+    if(xatoi(tmp_argv, &val))
+    {
+      if((val >= val_after_min) && (val <= val_after_max))
+      {
+        *val_after = val;
+      }else
+      {
+        chprintf(chp, mode_repeat_after_error, val_after_min, val_after_max);
+        return FALSE;
+      }
+    }else
+    {
+      chprintf(chp, mode_repeat_after_error, val_after_min, val_after_max);
+      return FALSE;
+    }
+  }
+  return TRUE;
 }
 
 /* Return TRUE if success or FALSE in case of error */
-static int hydrabus_mode_write(t_hydra_console *con, const char* const* argv, int* nb_arg_car_used)
+static bool hydrabus_mode_write(t_hydra_console *con, const char* const* argv, int* nb_arg_car_used)
 {
+  bool ret_repeat_cmd;
   int i;
-  int nb_car;
   long val;
-  uint32_t nb_repeat_pos;
   long nb_repeat;
   uint32_t mode_status;
   mode_config_proto_t* p_proto;
   uint32_t bus_mode;
-  #define TMP_VAL_STRING_MAX_SIZE (10)
-  char tmp_val_string[TMP_VAL_STRING_MAX_SIZE+1];
-  char* tmp_argv[] = { 0, 0 };
   BaseSequentialStream* chp = con->bss;
 
   p_proto = &con->mode->proto;
   bus_mode = p_proto->bus_mode;
-  *nb_arg_car_used = 0;
 
-  /* TODO manage write string (only value(s) are supported in actual version) */
-  /* Check if the value contains optional repeat ':' */
-  nb_repeat_pos = 0;
-  for(i = 0; i < TMP_VAL_STRING_MAX_SIZE; i++)
-  {
-    if(argv[0][i] == 0)
-      break;
-
-    if(argv[0][i] == ':')
-    {
-      nb_repeat_pos = i;
-      break;
-    }
-  }
-  if(nb_repeat_pos > 0)
-  {
-    if(nb_repeat_pos < TMP_VAL_STRING_MAX_SIZE)
-    {
-      /* Copy only the string value (without the repeat parameter ...) */
-      strncpy(tmp_val_string, &argv[0][0], nb_repeat_pos);
-      tmp_val_string[nb_repeat_pos] = 0;
-      *tmp_argv = tmp_val_string;
-    }else
-    {
-      /* Invalid value too long */
-      return FALSE;
-    }
-  }else
-  {
-    *tmp_argv = (char*)&argv[0][0];
-  }
-  /* Check if it is a valid value (means we need to Send this value on bus) */
-  *nb_arg_car_used = xatoi(tmp_argv, &val);
-  if(*nb_arg_car_used)
-  {
-    if( (val >= 0) && (val <= 255) )
-    {
-      nb_repeat = hydrabus_mode_repeat_cmd(con, argv, 1, MODE_CONFIG_PROTO_BUFFER_SIZE, &nb_car);
-      *nb_arg_car_used += nb_car;
-      if(nb_repeat == 0)
-      {
-        p_proto->buffer_tx[0] = val;
-        /* Write 1 time */
-        if(p_proto->wwr == 1) /* Write & Read ? */
-        {
-          /* Write & Read */
-          mode_status = hydrabus_mode_conf[bus_mode]->mode_write_read(con, p_proto->buffer_tx, p_proto->buffer_rx, 1);
-          if(mode_status == HYDRABUS_MODE_STATUS_OK)
-            chprintf(chp, "WRITE: 0x%02X READ: 0x%02X\r\n", p_proto->buffer_tx[0], p_proto->buffer_rx[0]);
-          else
-            hydrabus_mode_write_read_error(chp, mode_status);
-        }else
-        {
-          /* Write only */
-          mode_status = hydrabus_mode_conf[bus_mode]->mode_write(con, p_proto->buffer_tx, 1);
-          if(mode_status == HYDRABUS_MODE_STATUS_OK)
-            chprintf(chp, "WRITE: 0x%02X\r\n", p_proto->buffer_tx[0]);
-          else
-            hydrabus_mode_write_error(chp, mode_status);
-        }
-      }else
-      {
-        /* Write multiple times the same value */
-        for(i = 0; i < nb_repeat; i++)
-        {
-          p_proto->buffer_tx[i] = val;
-        }
-
-        if(p_proto->wwr == 1) /* Write & Read ? */
-        {
-          /* Write & Read */
-          mode_status = hydrabus_mode_conf[bus_mode]->mode_write_read(con, p_proto->buffer_tx, p_proto->buffer_rx, nb_repeat);
-          if(mode_status == HYDRABUS_MODE_STATUS_OK)
-          {
-            for(i = 0; i < nb_repeat; i++)
-            {
-              chprintf(chp, "WRITE: 0x%02X READ: 0x%02X\r\n", p_proto->buffer_tx[0], p_proto->buffer_rx[0]);
-            }
-          }else
-          {
-            hydrabus_mode_write_error(chp, mode_status);
-          }
-        }else
-        {
-          /* Write only */
-          mode_status = hydrabus_mode_conf[bus_mode]->mode_write(con, p_proto->buffer_tx, nb_repeat);
-          if(mode_status == HYDRABUS_MODE_STATUS_OK)
-          {
-            chprintf(chp, "WRITE: ");
-            for(i = 0; i < nb_repeat; i++)
-            {
-              chprintf(chp, "0x%02X ", val);
-            }
-            chprintf(chp, "\r\n");
-          }else
-          {
-            hydrabus_mode_write_error(chp, mode_status);
-          }
-        }
-      }
-      return TRUE;
-    }else
-    {
-      return FALSE;
-    }
-  }else
+  ret_repeat_cmd = repeat_cmd(con, argv,
+                              0, 255, &val,
+                              1, 1000, &nb_repeat,
+                              nb_arg_car_used, TRUE);
+  if(ret_repeat_cmd == FALSE)
   {
     return FALSE;
   }
+  /* TODO manage write string (only value(s) are supported in actual version) */
+
+  if(nb_repeat == 0)
+  {
+    p_proto->buffer_tx[0] = val;
+    /* Write 1 time */
+    if(p_proto->wwr == 1) /* Write & Read ? */
+    {
+      /* Write & Read */
+      mode_status = hydrabus_mode_conf[bus_mode]->mode_write_read(con, p_proto->buffer_tx, p_proto->buffer_rx, 1);
+      if(mode_status == HYDRABUS_MODE_STATUS_OK)
+        chprintf(chp, "WRITE: 0x%02X READ: 0x%02X\r\n", p_proto->buffer_tx[0], p_proto->buffer_rx[0]);
+      else
+        hydrabus_mode_write_read_error(chp, mode_status);
+    }else
+    {
+      /* Write only */
+      mode_status = hydrabus_mode_conf[bus_mode]->mode_write(con, p_proto->buffer_tx, 1);
+      if(mode_status == HYDRABUS_MODE_STATUS_OK)
+        chprintf(chp, "WRITE: 0x%02X\r\n", p_proto->buffer_tx[0]);
+      else
+        hydrabus_mode_write_error(chp, mode_status);
+    }
+  }else
+  {
+    /* Write multiple times the same value */
+    for(i = 0; i < nb_repeat; i++)
+    {
+      p_proto->buffer_tx[i] = val;
+    }
+
+    if(p_proto->wwr == 1) /* Write & Read ? */
+    {
+      /* Write & Read */
+      mode_status = hydrabus_mode_conf[bus_mode]->mode_write_read(con, p_proto->buffer_tx, p_proto->buffer_rx, nb_repeat);
+      if(mode_status == HYDRABUS_MODE_STATUS_OK)
+      {
+        for(i = 0; i < nb_repeat; i++)
+        {
+          chprintf(chp, "WRITE: 0x%02X READ: 0x%02X\r\n", p_proto->buffer_tx[0], p_proto->buffer_rx[0]);
+        }
+      }else
+      {
+        hydrabus_mode_write_error(chp, mode_status);
+      }
+    }else
+    {
+      /* Write only */
+      mode_status = hydrabus_mode_conf[bus_mode]->mode_write(con, p_proto->buffer_tx, nb_repeat);
+      if(mode_status == HYDRABUS_MODE_STATUS_OK)
+      {
+        chprintf(chp, "WRITE: ");
+        for(i = 0; i < nb_repeat; i++)
+        {
+          chprintf(chp, "0x%02X ", val);
+        }
+        chprintf(chp, "\r\n");
+      }else
+      {
+        hydrabus_mode_write_error(chp, mode_status);
+      }
+    }
+  }
+  return TRUE;
 }
 
 /* Return TRUE if success or FALSE in case of error */
 static bool hydrabus_mode_read(t_hydra_console *con, const char* const* argv, int* nb_arg_car_used)
 {
+  bool ret_repeat_cmd;
   int i;
   long nb_repeat;
   uint32_t mode_status;
   mode_config_proto_t* p_proto;
   uint32_t bus_mode;
-  int nb_car;
   BaseSequentialStream* chp = con->bss;
 
   p_proto = &con->mode->proto;
   bus_mode = p_proto->bus_mode;
 
-  nb_repeat = hydrabus_mode_repeat_cmd(con, argv, 1, MODE_CONFIG_PROTO_BUFFER_SIZE, &nb_car);
-  *nb_arg_car_used = nb_car;
-  *nb_arg_car_used += 1; /* Add character read 'r' */
+  ret_repeat_cmd = repeat_cmd(con, argv,
+                              0, 0, NULL,
+                              1, MODE_CONFIG_PROTO_BUFFER_SIZE, &nb_repeat,
+                              nb_arg_car_used, FALSE);
+  if(ret_repeat_cmd == FALSE)
+  {
+    return FALSE;
+  }
   if(nb_repeat == 0)
   {
     /* Read 1 time */
@@ -394,11 +479,19 @@ static bool hydrabus_mode_read(t_hydra_console *con, const char* const* argv, in
 /* Return TRUE if success or FALSE in case of error */
 static bool hydrabus_mode_delay(t_hydra_console *con, const char* const* argv, int* nb_arg_car_used)
 {
+  bool ret_repeat_cmd;
   long nb_repeat;
   BaseSequentialStream* chp = con->bss;
 
-  nb_repeat = hydrabus_mode_repeat_cmd(con, argv, 1, HYDRABUS_MODE_DELAY_REPEAT_MAX, nb_arg_car_used);
-  *nb_arg_car_used += 1; /* Add character Delay '&' or '%' */
+  ret_repeat_cmd = repeat_cmd(con, argv,
+                              0, 0, NULL,
+                              1, HYDRABUS_MODE_DELAY_REPEAT_MAX, &nb_repeat,
+                              nb_arg_car_used, FALSE);
+  if(ret_repeat_cmd == FALSE)
+  {
+    return FALSE;
+  }
+
   if(nb_repeat == 0)
     nb_repeat = 1;
 
@@ -415,7 +508,7 @@ static bool hydrabus_mode_delay(t_hydra_console *con, const char* const* argv, i
   return TRUE;
 }
 
-/* 
+/*
 Protocol Interaction commands
 Return TRUE if command found(or in case Error message already written) else return FALSE
 */
@@ -574,6 +667,14 @@ static void hydrabus_mode_dev_set(t_hydra_console *con, mode_config_dev_t param,
       pt_proto->dev_bit_lsb_msb = value;
     break;
 
+    case DEV_PARITY:
+      pt_proto->dev_parity = value;
+    break;
+
+    case DEV_STOP_BIT:
+      pt_proto->dev_stop_bit = value;
+    break;
+
     default:
     break;
   }
@@ -607,7 +708,7 @@ long hydrabus_mode_dev_manage_arg(t_hydra_console *con, int argc, const char* co
   }
 
   res = xatoi((char**)&argv[dev_arg_no], &val);
-  if(res && 
+  if(res &&
      ((val >= dev->min) && (val <= dev->max))
     )
   {

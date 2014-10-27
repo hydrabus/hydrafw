@@ -25,6 +25,8 @@ typedef enum
   DEV_CPOL_CPHA,
   DEV_NUMBITS,
   DEV_BIT_LSB_MSB,
+  DEV_PARITY,
+  DEV_STOP_BIT
 } mode_config_dev_t;
 
 typedef enum
@@ -45,8 +47,10 @@ typedef struct
   long dev_cpol_cpha; /* For SPI */
   long dev_numbits;
   long dev_bit_lsb_msb; /* For SPI */
+  long dev_parity; /* For UART */
+  long dev_stop_bit; /* For UART */
 
-  uint32_t : 25;
+  uint32_t : 25; // not used reserved for future use
   uint32_t altAUX : 2; // 4 AUX tbd
   uint32_t periodicService : 1;
   uint32_t lsbEN : 1;

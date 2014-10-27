@@ -13,24 +13,23 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
+#ifndef _BSP_UART_H_
+#define _BSP_UART_H_
 
-#include "hydrabus_mode_conf.h"
+#include "bsp.h"
+#include "mode_config.h"
 
-#include "hydrabus_mode_hiz.h"
-#include "hydrabus_mode_spi.h"
-#include "hydrabus_mode_uart.h"
-
-const mode_exec_t* hydrabus_mode_conf[HYDRABUS_MODE_NB_CONF] =
+typedef enum
 {
- /* 0 */ &mode_hiz_exec,
- /* 1 */ &mode_spi_exec,
- /* 2 */ &mode_uart_exec
-#if 0
- /* 3 */ &mode_hiz_exec,
- /* 4 */ &mode_hiz_exec,
- /* 5 */ &mode_hiz_exec,
- /* 6 */ &mode_hiz_exec,
- /* 7 */ &mode_hiz_exec
-#endif
-};
+	BSP_DEV_UART1 = 0,
+	BSP_DEV_UART2 = 1
+} bsp_dev_uart_t;
 
+bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_conf);
+bsp_status_t bsp_uart_deinit(bsp_dev_uart_t dev_num);
+
+bsp_status_t bsp_uart_write_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, uint8_t nb_data);
+bsp_status_t bsp_uart_read_u8(bsp_dev_uart_t dev_num, uint8_t* rx_data, uint8_t nb_data);
+bsp_status_t bsp_uart_write_read_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, uint8_t* rx_data, uint8_t nb_data);
+
+#endif /* _BSP_UART_H_ */

@@ -25,18 +25,6 @@ Warning in order to use this driver all GPIOs peripherals shall be enabled.
 #define NB_SPI (2)
 static SPI_HandleTypeDef spi_handle[NB_SPI];
 static mode_config_proto_t* spi_mode_conf[NB_SPI];
-static uint32_t uwTick = 0;
-
-void HAL_IncTick(void)
-{
-  uwTick++;
-}
-
-uint32_t HAL_GetTick(void)
-{
-  HAL_IncTick();
-  return uwTick;
-}
 
 /**
   * @brief  Init low level hardware: GPIO, CLOCK, NVIC...

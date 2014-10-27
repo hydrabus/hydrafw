@@ -13,24 +13,18 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
+#include "stm32f405xx.h"
+#include "stm32f4xx_hal.h"
 
-#include "hydrabus_mode_conf.h"
+static uint32_t uwTick = 0;
 
-#include "hydrabus_mode_hiz.h"
-#include "hydrabus_mode_spi.h"
-#include "hydrabus_mode_uart.h"
-
-const mode_exec_t* hydrabus_mode_conf[HYDRABUS_MODE_NB_CONF] =
+void HAL_IncTick(void)
 {
- /* 0 */ &mode_hiz_exec,
- /* 1 */ &mode_spi_exec,
- /* 2 */ &mode_uart_exec
-#if 0
- /* 3 */ &mode_hiz_exec,
- /* 4 */ &mode_hiz_exec,
- /* 5 */ &mode_hiz_exec,
- /* 6 */ &mode_hiz_exec,
- /* 7 */ &mode_hiz_exec
-#endif
-};
+  uwTick++;
+}
 
+uint32_t HAL_GetTick(void)
+{
+  HAL_IncTick();
+  return uwTick;
+}

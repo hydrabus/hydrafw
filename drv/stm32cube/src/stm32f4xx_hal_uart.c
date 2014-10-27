@@ -2,6 +2,7 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_uart.c
   * @author  MCD Application Team
+  *          B.VERNOUX added Timeout exit when UBTN is pressed
   * @version V1.1.0
   * @date    19-June-2014
   * @brief   UART HAL module driver.
@@ -156,7 +157,6 @@
   ******************************************************************************
   */ 
 
-/* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
 /** @addtogroup STM32F4xx_HAL_Driver
@@ -1610,7 +1610,7 @@ static HAL_StatusTypeDef UART_WaitOnFlagUntilTimeout(UART_HandleTypeDef *huart, 
       /* Check for the Timeout */
       if(Timeout != HAL_MAX_DELAY)
       {
-        if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
+        if((USER_BUTTON) || (Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
         {
           /* Disable TXE, RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts for the interrupt process */
           __HAL_UART_DISABLE_IT(huart, UART_IT_TXE);
@@ -1635,7 +1635,7 @@ static HAL_StatusTypeDef UART_WaitOnFlagUntilTimeout(UART_HandleTypeDef *huart, 
       /* Check for the Timeout */
       if(Timeout != HAL_MAX_DELAY)
       {
-        if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
+        if((USER_BUTTON) || (Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
         {
           /* Disable TXE, RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts for the interrupt process */
           __HAL_UART_DISABLE_IT(huart, UART_IT_TXE);

@@ -19,7 +19,7 @@
 
 #include "hydrabus_mode.h"
 
-#define HYDRABUS_MODE_NB_CONF (8)
+#define HYDRABUS_MODE_NB_CONF (3)
 extern const mode_exec_t* hydrabus_mode_conf[HYDRABUS_MODE_NB_CONF];
 
 #endif /* _HYDRABUS_MODE_CONF_H_ */
