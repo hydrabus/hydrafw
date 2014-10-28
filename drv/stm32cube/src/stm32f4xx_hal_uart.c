@@ -488,6 +488,7 @@ HAL_StatusTypeDef HAL_UART_DeInit(UART_HandleTypeDef *huart)
   /* NOTE: This function Should not be modified, when the callback is needed,
            the HAL_UART_MspInit could be implemented in the user file
    */ 
+  (void)huart;
 }
 
 /**
@@ -501,6 +502,7 @@ HAL_StatusTypeDef HAL_UART_DeInit(UART_HandleTypeDef *huart)
   /* NOTE: This function Should not be modified, when the callback is needed,
            the HAL_UART_MspDeInit could be implemented in the user file
    */ 
+  (void)huart;
 }
 
 /**
@@ -1195,6 +1197,7 @@ void HAL_UART_IRQHandler(UART_HandleTypeDef *huart)
   /* NOTE: This function Should not be modified, when the callback is needed,
            the HAL_UART_TxCpltCallback could be implemented in the user file
    */ 
+  (void)huart;
 }
 
 /**
@@ -1208,6 +1211,7 @@ void HAL_UART_IRQHandler(UART_HandleTypeDef *huart)
   /* NOTE: This function Should not be modified, when the callback is needed,
            the HAL_UART_TxCpltCallback could be implemented in the user file
    */ 
+  (void)huart;
 }
 
 /**
@@ -1221,6 +1225,7 @@ __weak void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   /* NOTE: This function Should not be modified, when the callback is needed,
            the HAL_UART_TxCpltCallback could be implemented in the user file
    */
+  (void)huart;
 }
 
 /**
@@ -1234,6 +1239,7 @@ __weak void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
   /* NOTE: This function Should not be modified, when the callback is needed,
            the HAL_UART_TxCpltCallback could be implemented in the user file
    */
+  (void)huart;
 }
 
 /**
@@ -1246,7 +1252,8 @@ __weak void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 {
   /* NOTE: This function Should not be modified, when the callback is needed,
            the HAL_UART_ErrorCallback could be implemented in the user file
-   */ 
+   */
+  (void)huart;
 }
 
 /**

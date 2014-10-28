@@ -1,17 +1,17 @@
 /*
-    HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+		HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+		Licensed under the Apache License, Version 2.0 (the "License");
+		you may not use this file except in compliance with the License.
+		You may obtain a copy of the License at
 
-        http://www.apache.org/licenses/LICENSE-2.0
+				http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+		Unless required by applicable law or agreed to in writing, software
+		distributed under the License is distributed on an "AS IS" BASIS,
+		WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+		See the License for the specific language governing permissions and
+		limitations under the License.
 */
 
 #include <string.h>
@@ -46,8 +46,8 @@ microrl_t rl_con2;
 t_mode_config mode_con2 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=MODE_CONFIG_PROTO_DEV_DEF_VAL }, .cmd={ 0 } };
 
 t_hydra_console consoles[] = {
-	{ .thread_name="console USB1", .thread=NULL, .sdu=&SDU1, .mrl=&rl_con1, .mode = &mode_con1 },
-	{ .thread_name="console USB2", .thread=NULL, .sdu=&SDU2, .mrl=&rl_con2, .mode = &mode_con2 }
+	{ .thread_name="console USB1", .thread=NULL, .sdu=&SDU1, .mrl=&rl_con1, .insert_char = 0, .mode = &mode_con1 },
+	{ .thread_name="console USB2", .thread=NULL, .sdu=&SDU2, .mrl=&rl_con2, .insert_char = 0, .mode = &mode_con2 }
 };
 
 /*
@@ -57,52 +57,53 @@ t_hydra_console consoles[] = {
 THD_WORKING_AREA(waThreadHydraNFC, 2048);
 THD_FUNCTION(ThreadHydraNFC, arg)
 {
-  int i;
-  (void)arg;
-  chRegSetThreadName("ThreadHydraNFC");
+	int i;
+	(void)arg;
+	chRegSetThreadName("ThreadHydraNFC");
 
-  if(hydranfc_is_detected() == TRUE)
-  {
-    while(1)
-    {
-      chThdSleepMilliseconds(100);
+	if(hydranfc_is_detected() == TRUE)
+	{
+		while(1)
+		{
+			chThdSleepMilliseconds(100);
 
-      if(K1_BUTTON)
-        D4_ON;
-      else
-        D4_OFF;
+			if(K1_BUTTON)
+				D4_ON;
+			else
+				D4_OFF;
 
-      if(K2_BUTTON)
-        D3_ON;
-      else
-        D3_OFF;
+			if(K2_BUTTON)
+				D3_ON;
+			else
+				D3_OFF;
 
-      if(K3_BUTTON)
-      {
-        /* Blink Fast */
-        for(i=0;i<4;i++)
-        {
-          D2_ON;
-          chThdSleepMilliseconds(25);
-          D2_OFF;
-          chThdSleepMilliseconds(25);
-        }
-        cmd_nfc_sniff_14443A(NULL, 0, NULL);
-      }
+			if(K3_BUTTON)
+			{
+				/* Blink Fast */
+				for(i=0;i<4;i++)
+				{
+					D2_ON;
+					chThdSleepMilliseconds(25);
+					D2_OFF;
+					chThdSleepMilliseconds(25);
+				}
+				cmd_nfc_sniff_14443A(NULL, 0, NULL);
+			}
 
-      if(K4_BUTTON)
-        D5_ON;
-      else
-        D5_OFF;
+			if(K4_BUTTON)
+				D5_ON;
+			else
+				D5_OFF;
 
-    }
-  }
-  return 0;
+		}
+	}
+	return 0;
 }
 #endif
 
 THD_FUNCTION(console, arg)
 {
+	int insert_char;
 	t_hydra_console *con;
 
 	con = arg;
@@ -117,6 +118,12 @@ THD_FUNCTION(console, arg)
 	while (1) {
 		chThdSleepMilliseconds(1);
 		microrl_insert_char(con->mrl, get_char(con));
+		if(con->insert_char != 0)
+		{
+			insert_char = con->insert_char;
+			con->insert_char = 0;
+			microrl_insert_char(con->mrl, insert_char);
+		}
 	}
 }
 

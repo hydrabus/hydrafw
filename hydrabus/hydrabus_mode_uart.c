@@ -169,33 +169,85 @@ void mode_stopR_uart(t_hydra_console *con)
 /* Write/Send x data return status 0=OK */
 uint32_t mode_write_uart(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
+  int i;
   uint32_t status;
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
+  BaseSequentialStream* chp = con->bss;
 
-  proto = &con->mode->proto;
   status = bsp_uart_write_u8(proto->dev_num, tx_data, nb_data);
+  if(status == BSP_OK)
+  {
+    if(nb_data == 1)
+    {
+      /* Write 1 data */
+      chprintf(chp, hydrabus_mode_str_write_one_u8, tx_data[0]);
+    }else if(nb_data > 1)
+    {
+      /* Write n data */
+      chprintf(chp, hydrabus_mode_str_mul_write);
+      for(i = 0; i < nb_data; i++)
+      {
+        chprintf(chp, hydrabus_mode_str_mul_value_u8, tx_data[i]);
+      }
+      chprintf(chp, hydrabus_mode_str_mul_end_of_line);
+    }
+  }
   return status;
 }
 
 /* Read x data command 'r' return status 0=OK */
 uint32_t mode_read_uart(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 {
+  int i;
   uint32_t status;
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
+  BaseSequentialStream* chp = con->bss;
 
-  proto = &con->mode->proto;
   status = bsp_uart_read_u8(proto->dev_num, rx_data, nb_data);
+  if(status == BSP_OK)
+  {
+    if(nb_data == 1)
+    {
+      /* Read 1 data */
+      chprintf(chp, hydrabus_mode_str_read_one_u8, rx_data[0]);
+    }else if(nb_data > 1)
+    {
+      /* Read n data */
+      chprintf(chp, hydrabus_mode_str_mul_read);
+      for(i = 0; i < nb_data; i++)
+      {
+        chprintf(chp, hydrabus_mode_str_mul_value_u8, rx_data[i]);
+      }
+      chprintf(chp, hydrabus_mode_str_mul_end_of_line);
+    }
+  }
   return status;
 }
 
 /* Write & Read x data return status 0=OK */
 uint32_t mode_write_read_uart(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data)
 {
+  int i;
   uint32_t status;
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
+  BaseSequentialStream* chp = con->bss;
 
-  proto = &con->mode->proto;
   status = bsp_uart_write_read_u8(proto->dev_num, tx_data, rx_data, nb_data);
+  if(status == BSP_OK)
+  {
+    if(nb_data == 1)
+    {
+      /* Write & Read 1 data */
+      chprintf(chp, hydrabus_mode_str_write_read_u8, tx_data[0], rx_data[0]);
+    }else if(nb_data > 1)
+    {
+      /* Write & Read n data */
+      for(i = 0; i < nb_data; i++)
+      {
+        chprintf(chp, hydrabus_mode_str_write_read_u8, tx_data[i], rx_data[i]);
+      }
+    }
+  }
   return status;
 }
 
@@ -230,11 +282,10 @@ void mode_datl_uart(t_hydra_console *con)
 }
 
 /* Read Bit (x-WIRE or other raw mode ...) command '!' */
-uint32_t mode_dats_uart(t_hydra_console *con)
+void mode_dats_uart(t_hydra_console *con)
 {
   (void)con;
   /* Nothing to do in UART mode */
-  return 0;
 }
 
 /* CLK Tick (x-WIRE or other raw mode ...) command '^' */
@@ -245,11 +296,10 @@ void mode_clk_uart(t_hydra_console *con)
 }
 
 /* DAT Read (x-WIRE or other raw mode ...) command '.' */
-uint32_t mode_bitr_uart(t_hydra_console *con)
+void mode_bitr_uart(t_hydra_console *con)
 {
   (void)con;
   /* Nothing to do in UART mode */
-  return 0;
 }
 
 /* Periodic service called (like UART sniffer...) */

@@ -14,6 +14,7 @@
     limitations under the License.
 */
 #include "hydrabus_mode_hiz.h"
+#include "chprintf.h"
 
 const mode_exec_t mode_hiz_exec =
 {
@@ -56,111 +57,158 @@ bool mode_cmd_hiz(t_hydra_console *con, int argc, const char* const* argv)
 /* Start command '[' */
 void mode_start_hiz(t_hydra_console *con)
 {
-  (void)con;
-  /* Nothing to do in HiZ mode */
+  BaseSequentialStream* chp = con->bss;
+  chprintf(chp, hydrabus_mode_str_cs_enabled);
 }
 
 /* Start Read command '{' */
 void mode_startR_hiz(t_hydra_console *con)
 {
-  (void)con;
-  /* Nothing to do in HiZ mode */
+  BaseSequentialStream* chp = con->bss;
+  chprintf(chp, hydrabus_mode_str_cs_enabled);
 }
 
 /* Stop command ']' */
 void mode_stop_hiz(t_hydra_console *con)
 {
-  (void)con;
-  /* Nothing to do in HiZ mode */
+  BaseSequentialStream* chp = con->bss;
+  chprintf(chp, hydrabus_mode_str_cs_disabled);
 }
 
 /* Stop Read command '}' */
 void mode_stopR_hiz(t_hydra_console *con)
 {
-  (void)con;
-  /* Nothing to do in HiZ mode */
+  BaseSequentialStream* chp = con->bss;
+  chprintf(chp, hydrabus_mode_str_cs_disabled);
 }
 
 /* Write/Send x data return status 0=OK */
 uint32_t mode_write_hiz(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
-  (void)con;
-  (void)tx_data;
-  (void)nb_data;
-  /* Nothing to do in HiZ mode */
+  int i;
+  BaseSequentialStream* chp = con->bss;
+
+  if(nb_data == 1)
+  {
+    /* Write 1 data */
+    chprintf(chp, hydrabus_mode_str_write_one_u8, tx_data[0]);
+  }else if(nb_data > 1)
+  {
+    /* Write n data */
+    chprintf(chp, hydrabus_mode_str_mul_write);
+    for(i = 0; i < nb_data; i++)
+    {
+      chprintf(chp, hydrabus_mode_str_mul_value_u8, tx_data[i]);
+    }
+    chprintf(chp, hydrabus_mode_str_mul_end_of_line);
+  }
+  
   return 0;
 }
 
 /* Read x data command 'r' return status 0=OK */
 uint32_t mode_read_hiz(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 {
-  (void)con;
-  (void)rx_data;
-  (void)nb_data;
-  /* Nothing to do in HiZ mode */
+  int i;
+  BaseSequentialStream* chp = con->bss;
+
+  /* Simulate read */
+  for(i = 0; i < nb_data; i++)
+  {
+    rx_data[i] = 0;
+  }
+
+  if(nb_data == 1)
+  {
+    /* Read 1 data */
+    chprintf(chp, hydrabus_mode_str_read_one_u8, rx_data[0]);
+  }else if(nb_data > 1)
+  {
+    /* Read n data */
+    chprintf(chp, hydrabus_mode_str_mul_read);
+    for(i = 0; i < nb_data; i++)
+    {
+      chprintf(chp, hydrabus_mode_str_mul_value_u8, rx_data[i]);
+    }
+    chprintf(chp, hydrabus_mode_str_mul_end_of_line);
+  }
   return 0;
 }
 
 /* Write & Read x data return status 0=OK */
 uint32_t mode_write_read_hiz(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data)
 {
-  (void)con;
-  (void)tx_data;
-  (void)rx_data;
-  (void)nb_data;
-  /* Nothing to do in HiZ mode */
+  int i;
+  BaseSequentialStream* chp = con->bss;
+
+  /* Simulate read */
+  for(i = 0; i < nb_data; i++)
+  {
+    rx_data[i] = 0;
+  }
+
+  if(nb_data == 1)
+  {
+    /* Write & Read 1 data */
+    chprintf(chp, hydrabus_mode_str_write_read_u8, tx_data[0], rx_data[0]);
+  }else if(nb_data > 1)
+  {
+    /* Write & Read n data */
+    for(i = 0; i < nb_data; i++)
+    {
+      chprintf(chp, hydrabus_mode_str_write_read_u8, tx_data[i], rx_data[i]);
+    }
+  }
   return 0;
 }
 
 /* Set CLK High (x-WIRE or other raw mode ...) command '/' */
 void mode_clkh_hiz(t_hydra_console *con)
 {
-  (void)con;
-  /* Nothing to do in HiZ mode */
+  BaseSequentialStream* chp = con->bss;
+  chprintf(chp, "/\r\n");
 }
 
 /* Set CLK Low (x-WIRE or other raw mode ...) command '\' */
 void mode_clkl_hiz(t_hydra_console *con)
 {
-  (void)con;
-  /* Nothing to do in HiZ mode */
+  BaseSequentialStream* chp = con->bss;
+  chprintf(chp, "\\\r\n");
 }
 
 /* Set DAT High (x-WIRE or other raw mode ...) command '-' */
 void mode_dath_hiz(t_hydra_console *con)
 {
-  (void)con;
-  /* Nothing to do in HiZ mode */
+  BaseSequentialStream* chp = con->bss;
+  chprintf(chp, "-\r\n");
 }
 
 /* Set DAT Low (x-WIRE or other raw mode ...) command '_' */
 void mode_datl_hiz(t_hydra_console *con)
 {
-  (void)con;
-  /* Nothing to do in HiZ mode */
+  BaseSequentialStream* chp = con->bss;
+  chprintf(chp, "_\r\n");
 }
 
 /* Read Bit (x-WIRE or other raw mode ...) command '!' */
-uint32_t mode_dats_hiz(t_hydra_console *con)
+void mode_dats_hiz(t_hydra_console *con)
 {
-  (void)con;
-  /* Nothing to do in HiZ mode */
-  return 0;
+  BaseSequentialStream* chp = con->bss;
+  chprintf(chp, "%d\r\n", 0);
 }
 
 /* CLK Tick (x-WIRE or other raw mode ...) command '^' */
 void mode_clk_hiz(t_hydra_console *con)
 {
-  (void)con;
-  /* Nothing to do in HiZ mode */
+  BaseSequentialStream* chp = con->bss;
+  chprintf(chp, "^\r\n");
 }
 
 /* DAT Read (x-WIRE or other raw mode ...) command '.' */
-uint32_t mode_bitr_hiz(t_hydra_console *con)
+void mode_bitr_hiz(t_hydra_console *con)
 {
-  (void)con;
-  /* Nothing to do in HiZ mode */
-  return 0;
+  BaseSequentialStream* chp = con->bss;
+  chprintf(chp, "%d\r\n", 0);
 }
 
 /* Periodic service called (like UART sniffer...) */

@@ -48,11 +48,11 @@ void mode_dath_uart(t_hydra_console *con);
 /* Set DAT Low (x-WIRE or other raw mode ...) command '_' */
 void mode_datl_uart(t_hydra_console *con);
 /* Read Bit (x-WIRE or other raw mode ...) command '!' */
-uint32_t mode_dats_uart(t_hydra_console *con);
+void mode_dats_uart(t_hydra_console *con);
 /* CLK Tick (x-WIRE or other raw mode ...) command '^' */
 void mode_clk_uart(t_hydra_console *con);
 /* DAT Read (x-WIRE or other raw mode ...) command '.' */
-uint32_t mode_bitr_uart(t_hydra_console *con);
+void mode_bitr_uart(t_hydra_console *con);
 
 /* Periodic service called (like UART sniffer...) */
 uint32_t mode_periodic_uart(t_hydra_console *con);

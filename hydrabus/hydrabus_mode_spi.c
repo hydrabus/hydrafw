@@ -14,9 +14,9 @@
     limitations under the License.
 */
 #include "hydrabus_mode_spi.h"
-#include "chprintf.h"
 #include "xatoi.h"
 #include "bsp_spi.h"
+#include "chprintf.h"
 
 const mode_exec_t mode_spi_exec =
 {
@@ -164,69 +164,125 @@ bool mode_cmd_spi(t_hydra_console *con, int argc, const char* const* argv)
 /* Start command '[' */
 void mode_start_spi(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
+  BaseSequentialStream* chp = con->bss;
 
-  proto = &con->mode->proto;
   bsp_spi_select(proto->dev_num);
+  chprintf(chp, hydrabus_mode_str_cs_enabled);
 }
 
 /* Start Read command '{' */
 void mode_startR_spi(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
+  BaseSequentialStream* chp = con->bss;
 
-  proto = &con->mode->proto;
   bsp_spi_select(proto->dev_num);
+  chprintf(chp, hydrabus_mode_str_cs_enabled);
 }
 
 /* Stop command ']' */
 void mode_stop_spi(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
+  BaseSequentialStream* chp = con->bss;
 
-  proto = &con->mode->proto;
   bsp_spi_unselect(proto->dev_num);
+  chprintf(chp, hydrabus_mode_str_cs_disabled);
 }
 
 /* Stop Read command '}' */
 void mode_stopR_spi(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
+  BaseSequentialStream* chp = con->bss;
 
-  proto = &con->mode->proto;
   bsp_spi_unselect(proto->dev_num);
+  chprintf(chp, hydrabus_mode_str_cs_disabled);
 }
 
 /* Write/Send x data return status 0=OK */
 uint32_t mode_write_spi(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
+  int i;
   uint32_t status;
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
+  BaseSequentialStream* chp = con->bss;
 
-  proto = &con->mode->proto;
   status = bsp_spi_write_u8(proto->dev_num, tx_data, nb_data);
+  if(status == BSP_OK)
+  {
+    if(nb_data == 1)
+    {
+      /* Write 1 data */
+      chprintf(chp, hydrabus_mode_str_write_one_u8, tx_data[0]);
+    }else if(nb_data > 1)
+    {
+      /* Write n data */
+      chprintf(chp, hydrabus_mode_str_mul_write);
+      for(i = 0; i < nb_data; i++)
+      {
+        chprintf(chp, hydrabus_mode_str_mul_value_u8, tx_data[i]);
+      }
+      chprintf(chp, hydrabus_mode_str_mul_end_of_line);
+    }
+  }
   return status;
 }
 
 /* Read x data command 'r' return status 0=OK */
 uint32_t mode_read_spi(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 {
+  int i;
   uint32_t status;
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
+  BaseSequentialStream* chp = con->bss;
 
-  proto = &con->mode->proto;
   status = bsp_spi_read_u8(proto->dev_num, rx_data, nb_data);
+  if(status == BSP_OK)
+  {
+    if(nb_data == 1)
+    {
+      /* Read 1 data */
+      chprintf(chp, hydrabus_mode_str_read_one_u8, rx_data[0]);
+    }else if(nb_data > 1)
+    {
+      /* Read n data */
+      chprintf(chp, hydrabus_mode_str_mul_read);
+      for(i = 0; i < nb_data; i++)
+      {
+        chprintf(chp, hydrabus_mode_str_mul_value_u8, rx_data[i]);
+      }
+      chprintf(chp, hydrabus_mode_str_mul_end_of_line);
+    }
+  }
   return status;
 }
 
 /* Write & Read x data return status 0=OK */
 uint32_t mode_write_read_spi(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data)
 {
+  int i;
   uint32_t status;
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
+  BaseSequentialStream* chp = con->bss;
 
-  proto = &con->mode->proto;
   status = bsp_spi_write_read_u8(proto->dev_num, tx_data, rx_data, nb_data);
+  if(status == BSP_OK)
+  {
+    if(nb_data == 1)
+    {
+      /* Write & Read 1 data */
+      chprintf(chp, hydrabus_mode_str_write_read_u8, tx_data[0], rx_data[0]);
+    }else if(nb_data > 1)
+    {
+      /* Write & Read n data */
+      for(i = 0; i < nb_data; i++)
+      {
+        chprintf(chp, hydrabus_mode_str_write_read_u8, tx_data[i], rx_data[i]);
+      }
+    }
+  }
   return status;
 }
 
@@ -234,7 +290,6 @@ uint32_t mode_write_read_spi(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx
 void mode_clkh_spi(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in SPI mode */
 }
 
@@ -242,7 +297,6 @@ void mode_clkh_spi(t_hydra_console *con)
 void mode_clkl_spi(t_hydra_console *con)
 {
   (void)con;
-
   /* Nothing to do in SPI mode */
 }
 
@@ -261,11 +315,10 @@ void mode_datl_spi(t_hydra_console *con)
 }
 
 /* Read Bit (x-WIRE or other raw mode ...) command '!' */
-uint32_t mode_dats_spi(t_hydra_console *con)
+void mode_dats_spi(t_hydra_console *con)
 {
   (void)con;
   /* Nothing to do in SPI mode */
-  return 0;
 }
 
 /* CLK Tick (x-WIRE or other raw mode ...) command '^' */
@@ -276,11 +329,10 @@ void mode_clk_spi(t_hydra_console *con)
 }
 
 /* DAT Read (x-WIRE or other raw mode ...) command '.' */
-uint32_t mode_bitr_spi(t_hydra_console *con)
+void mode_bitr_spi(t_hydra_console *con)
 {
   (void)con;
   /* Nothing to do in SPI mode */
-  return 0;
 }
 
 /* Periodic service called (like UART sniffer...) */

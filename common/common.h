@@ -107,6 +107,7 @@ typedef struct hydra_console {
 		BaseSequentialStream *bss;
 	};
 	microrl_t *mrl;
+  int insert_char;
   t_mode_config *mode;
 } t_hydra_console;
 

@@ -28,18 +28,33 @@
 
 #define HYDRABUS_MODE_STATUS_OK (0)
 
-typedef enum
-{
-	HIZ = 0,
-	DS1WIRE,
-	UART,
-	I2C,
-	SPI,
-	RAW2WIRE,
-	RAW3WIRE,
-	DIO,
-	MAXPROTO
-} mode_type_t;
+/* Common string for hydrabus mode */
+/* "/CS ENABLED\r\n" */
+extern const char hydrabus_mode_str_cs_enabled[];
+
+/* "/CS DISABLED\r\n" */
+extern const char hydrabus_mode_str_cs_disabled[];
+
+/* "READ: 0x%02X\r\n" */
+extern const char hydrabus_mode_str_read_one_u8[];
+
+/* "WRITE: 0x%02X\r\n" */
+extern const char hydrabus_mode_str_write_one_u8[];
+
+/* "WRITE: 0x%02X READ: 0x%02X\r\n" */
+extern const char hydrabus_mode_str_write_read_u8[];
+
+/* "WRITE: " */
+extern const char hydrabus_mode_str_mul_write[];
+
+/* "READ: " */
+extern const char hydrabus_mode_str_mul_read[];
+
+/* "0x%02X " */
+extern const char hydrabus_mode_str_mul_value_u8[];
+
+/* "\r\n" */
+extern const char hydrabus_mode_str_mul_end_of_line[];
 
 typedef struct
 {
@@ -58,9 +73,9 @@ typedef struct
 	void (*mode_clkl)(t_hydra_console *con); /* Set CLK Low (x-WIRE or other raw mode ...) command '\' */
 	void (*mode_dath)(t_hydra_console *con); /* Set DAT High (x-WIRE or other raw mode ...) command '-' */
 	void (*mode_datl)(t_hydra_console *con); /* Set DAT Low (x-WIRE or other raw mode ...) command '_' */
-	uint32_t (*mode_dats)(t_hydra_console *con); /* Read Bit (x-WIRE or other raw mode ...) command '!' */
+	void (*mode_dats)(t_hydra_console *con); /* Read Bit (x-WIRE or other raw mode ...) command '!' */
 	void (*mode_clk)(t_hydra_console *con); /* CLK Tick (x-WIRE or other raw mode ...) command '^' */
-	uint32_t (*mode_bitr)(t_hydra_console *con); /* DAT Read (x-WIRE or other raw mode ...) command '.' */
+	void (*mode_bitr)(t_hydra_console *con); /* DAT Read (x-WIRE or other raw mode ...) command '.' */
 	uint32_t (*mode_periodic)(t_hydra_console *con); /* Periodic service called (like UART sniffer...) */
 	void (*mode_macro)(t_hydra_console *con, uint32_t macro_num); /* Macro command "(x)", "(0)" List current macros */
 	void (*mode_setup)(t_hydra_console *con); /* Configure the device internal params with final user parameters (before Power On) */
@@ -87,6 +102,5 @@ void hydrabus_mode_info(t_hydra_console *con, int argc, const char* const* argv)
 bool hydrabus_mode_proto_inter(t_hydra_console *con, int argc, const char* const* argv);
 long hydrabus_mode_dev_manage_arg(t_hydra_console *con, int argc, const char* const* argv,
                                   int mode_dev_nb_arg, int dev_arg_no, mode_dev_arg_t* dev_arg);
-
 
 #endif /* _HYDRABUS_MODE_H_ */
