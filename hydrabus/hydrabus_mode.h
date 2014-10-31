@@ -54,7 +54,7 @@ extern const char hydrabus_mode_str_mul_read[];
 extern const char hydrabus_mode_str_mul_value_u8[];
 
 /* "\r\n" */
-extern const char hydrabus_mode_str_mul_end_of_line[];
+extern const char hydrabus_mode_str_mul_br[];
 
 typedef struct
 {

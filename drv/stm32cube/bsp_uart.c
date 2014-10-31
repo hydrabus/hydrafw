@@ -13,10 +13,10 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "stm32f405xx.h"
-#include "stm32f4xx_hal.h"
 #include "bsp_uart.h"
 #include "bsp_uart_conf.h"
+#include "stm32f405xx.h"
+#include "stm32f4xx_hal.h"
 
 /* 
 Warning in order to use this driver all GPIOs peripherals shall be enabled.
@@ -27,16 +27,6 @@ Warning in order to use this driver all GPIOs peripherals shall be enabled.
 
 static UART_HandleTypeDef uart_handle[NB_UART];
 static mode_config_proto_t* uart_mode_conf[NB_UART];
-
-uint32_t HAL_RCC_GetPCLK1Freq(void)
-{
-  return 42000000;
-}
-
-uint32_t HAL_RCC_GetPCLK2Freq(void)
-{
-  return 84000000;
-}
 
 const uint32_t dev_param_speed[] =
 {
@@ -160,7 +150,7 @@ static void uart_error(bsp_dev_uart_t dev_num)
 {
   if(bsp_uart_deinit(dev_num) == BSP_OK)
   {
-    /* Re-Initiaize the UART comunication bus */
+    /* Re-Initialize the UART comunication bus */
     bsp_uart_init(dev_num, uart_mode_conf[dev_num]);
   }
 }

@@ -50,12 +50,13 @@ typedef struct
   long dev_parity; /* For UART */
   long dev_stop_bit; /* For UART */
 
-  uint32_t : 25; // not used reserved for future use
+  uint32_t : 24; // not used reserved for future use
   uint32_t altAUX : 2; // 4 AUX tbd
   uint32_t periodicService : 1;
   uint32_t lsbEN : 1;
   uint32_t HiZ : 1;
   uint32_t int16 : 1; // 16 bits output?
+  uint32_t ack_pending : 1; // I2C Read Ack pending
   uint32_t wwr : 1; // write with read
 
   uint8_t buffer_tx[256];

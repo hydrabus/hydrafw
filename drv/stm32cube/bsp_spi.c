@@ -13,10 +13,10 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "stm32f405xx.h"
-#include "stm32f4xx_hal.h"
 #include "bsp_spi.h"
 #include "bsp_spi_conf.h"
+#include "stm32f405xx.h"
+#include "stm32f4xx_hal.h"
 
 /* 
 Warning in order to use this driver all GPIOs peripherals shall be enabled.
@@ -145,7 +145,7 @@ static void spi_error(bsp_dev_spi_t dev_num)
 {
   if(bsp_spi_deinit(dev_num) == BSP_OK)
   {
-    /* Re-Initiaize the SPI comunication bus */
+    /* Re-Initialize the SPI comunication bus */
     bsp_spi_init(dev_num, spi_mode_conf[dev_num]);
   }
 }

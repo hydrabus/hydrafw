@@ -23,10 +23,10 @@
 #define BSP_UART1_AF          GPIO_AF7_USART1
 /* UART1 TX */
 #define BSP_UART1_TX_PORT     GPIOA
-#define BSP_UART1_TX_PIN      GPIO_PIN_4  /* PA.09 */
+#define BSP_UART1_TX_PIN      GPIO_PIN_9  /* PA.09 */
 /* UART1 RX */
 #define BSP_UART1_RX_PORT     GPIOA
-#define BSP_UART1_RX_PIN      GPIO_PIN_5  /* PA.10 */
+#define BSP_UART1_RX_PIN      GPIO_PIN_10  /* PA.10 */
 
 /* UART2 */
 #define BSP_UART2              USART2

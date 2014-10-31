@@ -16,6 +16,25 @@
 #ifndef _BSP_H_
 #define _BSP_H_
 
+#include <stdint.h>
+
+/* UBTN PA0 Configured as Input */
+#undef USER_BUTTON
+#define USER_BUTTON (palReadPad(GPIOA, 0))
+
+/* Macro for fast read, set & clear GPIO pin */
+#define gpio_get_pin(GPIOx, GPIO_Pin) (GPIOx->IDR & GPIO_Pin)
+#define gpio_set_pin(GPIOx, GPIO_Pin) (GPIOx->BSRRH = GPIO_Pin)
+#define gpio_clr_pin(GPIOx, GPIO_Pin) (GPIOx->BSRRL = GPIO_Pin)
+
+#if !defined(bool) || defined(__DOXYGEN__)
+typedef enum 
+{
+  FALSE = 0,
+  TRUE = (!FALSE)
+} bool;
+#endif
+
 /* Same definition as HAL_StatusTypeDef,
    used as abstraction layer to avoid dependencies with stm32f4xx_hal_def.h
 */
@@ -26,5 +45,11 @@ typedef enum
   BSP_BUSY    = 0x02,
   BSP_TIMEOUT = 0x03
 } bsp_status_t;
+
+/* wait_nb_cycles shall be min 10 */
+bool delay_is_expired(bool start, uint32_t wait_nb_cycles);
+
+/* wait_nb_cycles shall be min 10 */
+void wait_delay(uint32_t wait_nb_cycles);
 
 #endif /* _BSP_H_ */

@@ -1,5 +1,5 @@
 /*
-    HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+    HydraBus/HydraNFC - Copyright (C) 2014 Benjamin VERNOUX
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
     limitations under the License.
 */
 
-#ifndef _HYDRABUS_MODE_CONF_H_
-#define _HYDRABUS_MODE_CONF_H_
+#ifndef _BSP_I2C_CONF_H_
+#define _BSP_I2C_CONF_H_
 
-#include "hydrabus_mode.h"
+/* I2C peripheral configuration */
+#define BSP_I2C1_SCL_SDA_GPIO_PORT  GPIOB
+#define BSP_I2C1_SCL_PIN            GPIO_PIN_6
+#define BSP_I2C1_SDA_PIN            GPIO_PIN_7
 
-#define HYDRABUS_MODE_NB_CONF (4)
-extern const mode_exec_t* hydrabus_mode_conf[HYDRABUS_MODE_NB_CONF];
-
-#endif /* _HYDRABUS_MODE_CONF_H_ */
+#endif /* _BSP_I2C_CONF_H_ */

@@ -19,18 +19,13 @@
 #include "hydrabus_mode_hiz.h"
 #include "hydrabus_mode_spi.h"
 #include "hydrabus_mode_uart.h"
+#include "hydrabus_mode_i2c.h"
 
 const mode_exec_t* hydrabus_mode_conf[HYDRABUS_MODE_NB_CONF] =
 {
  /* 0 */ &mode_hiz_exec,
  /* 1 */ &mode_spi_exec,
- /* 2 */ &mode_uart_exec
-#if 0
- /* 3 */ &mode_hiz_exec,
- /* 4 */ &mode_hiz_exec,
- /* 5 */ &mode_hiz_exec,
- /* 6 */ &mode_hiz_exec,
- /* 7 */ &mode_hiz_exec
-#endif
+ /* 2 */ &mode_uart_exec,
+ /* 3 */ &mode_i2c_exec
 };
 

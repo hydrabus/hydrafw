@@ -100,7 +100,7 @@ uint32_t mode_write_hiz(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
     {
       chprintf(chp, hydrabus_mode_str_mul_value_u8, tx_data[i]);
     }
-    chprintf(chp, hydrabus_mode_str_mul_end_of_line);
+    chprintf(chp, hydrabus_mode_str_mul_br);
   }
   
   return 0;
@@ -130,7 +130,7 @@ uint32_t mode_read_hiz(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
     {
       chprintf(chp, hydrabus_mode_str_mul_value_u8, rx_data[i]);
     }
-    chprintf(chp, hydrabus_mode_str_mul_end_of_line);
+    chprintf(chp, hydrabus_mode_str_mul_br);
   }
   return 0;
 }

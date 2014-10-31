@@ -56,7 +56,7 @@ const char hydrabus_mode_str_write_read_u8[] = "WRITE: 0x%02X READ: 0x%02X\r\n";
 const char hydrabus_mode_str_mul_write[] = "WRITE: ";
 const char hydrabus_mode_str_mul_read[] = "READ: ";
 const char hydrabus_mode_str_mul_value_u8[] = "0x%02X ";
-const char hydrabus_mode_str_mul_end_of_line[] = "\r\n";
+const char hydrabus_mode_str_mul_br[] = "\r\n";
 
 static const char mode_str_delay_us[] = "DELAY %dus\r\n";
 static const char mode_str_delay_ms[] = "DELAY %dms\r\n";
@@ -90,9 +90,11 @@ void hydrabus_mode_help(t_hydra_console *con)
   int i;
   BaseSequentialStream* chp = con->bss;
 
-  for(i=0; i < HYDRABUS_MODE_NB_CONF; i++)
+  chprintf(chp, "%d=%s", 1, hydrabus_mode_conf[0]->mode_str_name(0));
+  for(i = 1; i < HYDRABUS_MODE_NB_CONF; i++)
   {
-    chprintf(chp, "%d=%s, ", i+1, hydrabus_mode_conf[i]->mode_str_name(0));
+    chprintf(chp, ", ");
+    chprintf(chp, "%d=%s", i+1, hydrabus_mode_conf[i]->mode_str_name(0));
   }
   chprintf(chp, "\r\n");
 }
