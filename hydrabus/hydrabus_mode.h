@@ -81,6 +81,7 @@ typedef struct
 	void (*mode_setup)(t_hydra_console *con); /* Configure the device internal params with final user parameters (before Power On) */
 	void (*mode_setup_exc)(t_hydra_console *con); /* Configure the physical device after Power On (command 'W') */
 	void (*mode_cleanup)(t_hydra_console *con); /* Exit mode, disable device enter safe mode HiZ... */
+	const char* (*mode_str_param)(t_hydra_console *con); /* Mode parameters string */
 	const char* (*mode_str_pins)(t_hydra_console *con); /* Pins used string */
 	const char* (*mode_str_settings)(t_hydra_console *con); /* Settings string */
   const char* (*mode_str_name)(t_hydra_console *con); /* Mode name string */

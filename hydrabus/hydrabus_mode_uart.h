@@ -68,6 +68,8 @@ void mode_setup_exc_uart(t_hydra_console *con);
 /* Exit mode, disable device safe mode UART... */
 void mode_cleanup_uart(t_hydra_console *con);
 
+/* Mode parameters string (does not include m & bus_mode) */
+const char* mode_str_param_uart(t_hydra_console *con);
 /* Pins used string */
 const char* mode_str_pins_uart(t_hydra_console *con);
 /* Settings string */

@@ -40,6 +40,7 @@ const mode_exec_t mode_spi_exec =
 	.mode_setup        = &mode_setup_spi,     /* Configure the device internal params with user parameters (before Power On) */
 	.mode_setup_exc    = &mode_setup_exc_spi, /* Configure the physical device after Power On (command 'W') */
 	.mode_cleanup      = &mode_cleanup_spi,   /* Exit mode, disable device enter safe mode SPI... */
+  .mode_str_param    = &mode_str_param_spi,    /* Mode parameters string */
 	.mode_str_pins     = &mode_str_pins_spi,     /* Pins used string */
 	.mode_str_settings = &mode_str_settings_spi, /* Settings string */
   .mode_str_name     = &mode_str_name_spi,     /* Mode name string */
@@ -48,8 +49,22 @@ const mode_exec_t mode_spi_exec =
 
 static const char* str_dev_arg_num[]={
  "Choose SPI device number: 1=SPI1, 2=SPI2\r\n" };
+static const char* str_dev_param_num[]=
+{
+ "1=SPI1",
+ "2=SPI2"
+};
 
-static const char* str_dev_param_mode[2]=
+static const char* str_dev_param_gpio_pull[]=
+{
+ "1=SCK/MISO/MOSI NoPull",
+ "2=SCK/MISO/MOSI PullUp",
+ "3=SCK/MISO/MOSI PullDown"
+};
+static const char* str_dev_arg_gpio_pull[]={
+ "Choose SPI SCK/MISO/MOSI Pull(~40Kohm) mode:\r\n1=NoPull(External Pull), 2=PullUp, 3=PullDown(Common)\r\n" };
+
+static const char* str_dev_param_mode[]=
 {
  "1=Slave",
  "2=Master"
@@ -83,8 +98,8 @@ static const char* str_dev_param_speed[2][8]=
   }
 };
 static const char* str_dev_arg_speed[]={
- "Choose SPI1 Freq:\r\n1=0.32MHz, 2=0.65MHz, 3=1.31MHz, 4=2.62MHz, 5=5.25MHz, 6=10.5MHz, 7=21MHz, 8=42MHz\r\n",
- "Choose SPI2 Freq:\r\n1=0.16MHz, 2=0.32MHz, 3=0.65MHz, 4=1.31MHz, 5=2.62MHz, 6=5.25MHz, 7=10.5MHz, 8=21MHz\r\n" };
+ "Choose SPI1 Freq:\r\n1=0.32MHz, 2=0.65MHz, 3=1.31MHz, 4=2.62MHz,\r\n5=5.25MHz, 6=10.5MHz, 7=21MHz, 8=42MHz\r\n",
+ "Choose SPI2 Freq:\r\n1=0.16MHz, 2=0.32MHz, 3=0.65MHz, 4=1.31MHz,\r\n5=2.62MHz, 6=5.25MHz, 7=10.5MHz, 8=21MHz\r\n" };
 
 static const char* str_dev_param_cpol_cpha[]=
 {
@@ -94,7 +109,7 @@ static const char* str_dev_param_cpol_cpha[]=
   "4=POL1/PHA1"
 };
 static const char* str_dev_arg_cpol_cpha[]={
- "Choose SPI Clock Polarity(POL)/Phase(PHA):\r\n1=POL0/PHA0, 2=POL0/PHA1, 3=POL1/PHA0, 4=POL1/PHA1\r\n" };
+ "Choose SPI Clock Polarity/Phase:\r\n1=POL0/PHA0, 2=POL0/PHA1, 3=POL1/PHA0, 4=POL1/PHA1\r\n" };
 
 static const char* str_dev_param_bit_lsb_msb[]=
 {
@@ -113,16 +128,17 @@ static const char* str_dev_numbits[]={
 static const mode_dev_arg_t mode_dev_arg[] =
 {
  /* argv0 */ { .min=1, .max=2, .dec_val=TRUE, .param=DEV_NUM, .argc_help=ARRAY_SIZE(str_dev_arg_num), .argv_help=str_dev_arg_num },
- /* argv1 */ { .min=1, .max=2, .dec_val=TRUE, .param=DEV_MODE, .argc_help=ARRAY_SIZE(str_dev_arg_mode), .argv_help=str_dev_arg_mode },
- /* argv2 */ { .min=1, .max=8, .dec_val=TRUE, .param=DEV_SPEED, .argc_help=ARRAY_SIZE(str_dev_arg_speed), .argv_help=str_dev_arg_speed },
- /* argv3 */ { .min=1, .max=4, .dec_val=TRUE, .param=DEV_CPOL_CPHA, .argc_help=ARRAY_SIZE(str_dev_arg_cpol_cpha), .argv_help=str_dev_arg_cpol_cpha },
- /* argv4 */ { .min=1, .max=2, .dec_val=TRUE, .param=DEV_BIT_LSB_MSB, .argc_help=ARRAY_SIZE(str_dev_arg_bit_lsb_msb), .argv_help=str_dev_arg_bit_lsb_msb }
+ /* argv1 */ { .min=1, .max=3, .dec_val=TRUE, .param=DEV_GPIO_PULL, .argc_help=ARRAY_SIZE(str_dev_arg_gpio_pull), .argv_help=str_dev_arg_gpio_pull },
+ /* argv2 */ { .min=1, .max=2, .dec_val=TRUE, .param=DEV_MODE, .argc_help=ARRAY_SIZE(str_dev_arg_mode), .argv_help=str_dev_arg_mode },
+ /* argv3 */ { .min=1, .max=8, .dec_val=TRUE, .param=DEV_SPEED, .argc_help=ARRAY_SIZE(str_dev_arg_speed), .argv_help=str_dev_arg_speed },
+ /* argv4 */ { .min=1, .max=4, .dec_val=TRUE, .param=DEV_CPOL_CPHA, .argc_help=ARRAY_SIZE(str_dev_arg_cpol_cpha), .argv_help=str_dev_arg_cpol_cpha },
+ /* argv5 */ { .min=1, .max=2, .dec_val=TRUE, .param=DEV_BIT_LSB_MSB, .argc_help=ARRAY_SIZE(str_dev_arg_bit_lsb_msb), .argv_help=str_dev_arg_bit_lsb_msb }
 // { .min=1, .max=2, .dec_val=TRUE,.param=DEV_NUMBITS, .argc_help=ARRAY_SIZE(str_dev_numbits), .argv_help=str_dev_numbits },
 
 };
 #define MODE_DEV_NB_ARGC ((int)ARRAY_SIZE(mode_dev_arg)) /* Number of arguments/parameters for this mode */
 
-#define STR_SPI_SIZE (128)
+#define STR_SPI_SIZE (150)
 static char str_spi[STR_SPI_SIZE+1];
 
 /* Terminal parameters management specific to this mode */
@@ -153,7 +169,6 @@ bool mode_cmd_spi(t_hydra_console *con, int argc, const char* const* argv)
 
   if(argc == MODE_DEV_NB_ARGC)
   {
-    mode_setup_exc_spi(con);
     return TRUE;
   }else
   {
@@ -361,26 +376,38 @@ void mode_setup_spi(t_hydra_console *con)
 /* Configure the physical device after Power On (command 'W') */
 void mode_setup_exc_spi(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
 
-  proto = &con->mode->proto;
   bsp_spi_init(proto->dev_num, proto);
 }
 
 /* Exit mode, disable device safe mode SPI... */
 void mode_cleanup_spi(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
+  BaseSequentialStream* chp = con->bss;
 
-  proto = &con->mode->proto;
   bsp_spi_deinit(proto->dev_num);
+  chprintf(chp, "mode_cleanup_spi(%d) done\r\n", proto->dev_num);
+}
+
+/* Mode parameters string (does not include m & bus_mode) */
+const char* mode_str_param_spi(t_hydra_console *con)
+{
+  chsnprintf((char *)str_spi, STR_SPI_SIZE, "%d %d %d %d %d %d",
+              con->mode->proto.dev_num+1, 
+              con->mode->proto.dev_gpio_pull+1, 
+              con->mode->proto.dev_mode+1,
+              con->mode->proto.dev_speed+1,
+              con->mode->proto.dev_cpol_cpha+1,
+              con->mode->proto.dev_bit_lsb_msb+1);
+  return str_spi;
 }
 
 /* String pins used */
 const char* mode_str_pins_spi(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
-  proto = &con->mode->proto;
+  mode_config_proto_t* proto = &con->mode->proto;
 
   if(proto->dev_num == 0)
     return "SPI1 CS=PA15, SCK=PB3, MISO=PB4, MOSI=PB5";
@@ -391,11 +418,11 @@ const char* mode_str_pins_spi(t_hydra_console *con)
 /* String settings */
 const char* mode_str_settings_spi(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
-  proto = &con->mode->proto;
+  mode_config_proto_t* proto = &con->mode->proto;
   
-  chsnprintf((char *)str_spi, STR_SPI_SIZE, "SPI%d\r\nMode:%s, Speed:%s\r\nClock Polarity(POL)/Phase(PHA):%s, Bit LSB/MSB:%s",
-              proto->dev_num+1,
+  chsnprintf((char *)str_spi, STR_SPI_SIZE, "Device: %s\r\nGPIO Pull: %s\r\nMode: %s\r\nSpeed: %s\r\nClock Polarity/Phase: %s\r\nBit LSB/MSB: %s",
+              str_dev_param_num[proto->dev_num],
+              str_dev_param_gpio_pull[proto->dev_gpio_pull],
               str_dev_param_mode[proto->dev_mode],
               str_dev_param_speed[proto->dev_num][proto->dev_speed],
               str_dev_param_cpol_cpha[proto->dev_cpol_cpha],
@@ -413,10 +440,9 @@ const char* mode_str_name_spi(t_hydra_console *con)
 /* Return Prompt name */
 const char* mode_str_prompt_spi(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
-  proto = &con->mode->proto;
+  mode_config_proto_t* proto = &con->mode->proto;
 
-  if( proto->dev_num == 0)
+  if(proto->dev_num == 0)
   {
     return "spi1> ";
   }else

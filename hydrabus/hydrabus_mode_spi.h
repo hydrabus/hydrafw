@@ -68,6 +68,8 @@ void mode_setup_exc_spi(t_hydra_console *con);
 /* Exit mode, disable device safe mode SPI... */
 void mode_cleanup_spi(t_hydra_console *con);
 
+/* Mode parameters string (does not include m & bus_mode) */
+const char* mode_str_param_spi(t_hydra_console *con);
 /* Pins used string */
 const char* mode_str_pins_spi(t_hydra_console *con);
 /* Settings string */

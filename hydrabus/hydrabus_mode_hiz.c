@@ -38,6 +38,7 @@ const mode_exec_t mode_hiz_exec =
 	.mode_setup        = &mode_setup_hiz,     /* Configure the device internal params with user parameters (before Power On) */
 	.mode_setup_exc    = &mode_setup_exc_hiz, /* Configure the physical device after Power On (command 'W') */
 	.mode_cleanup      = &mode_cleanup_hiz,   /* Exit mode, disable device enter safe mode HiZ... */
+  .mode_str_param    = &mode_str_param_hiz,    /* Mode parameters string */
 	.mode_str_pins     = &mode_str_pins_hiz,     /* Pins used string */
 	.mode_str_settings = &mode_str_settings_hiz, /* Settings string */
   .mode_str_name     = &mode_str_name_hiz,     /* Mode name string */
@@ -238,6 +239,9 @@ void mode_setup_hiz(t_hydra_console *con)
 void mode_setup_exc_hiz(t_hydra_console *con)
 {
   (void)con;
+  mode_config_proto_t* proto = &con->mode->proto;
+
+  proto->dev_num = 0;
   /* Nothing to do in HiZ mode */
 }
 
@@ -246,6 +250,13 @@ void mode_cleanup_hiz(t_hydra_console *con)
 {
   (void)con;
   /* Nothing to do in HiZ mode */
+}
+
+/* Mode parameters string (does not include m & bus_mode) */
+const char* mode_str_param_hiz(t_hydra_console *con)
+{
+  (void)con;
+  return NULL;
 }
 
 /* String pins used */

@@ -122,17 +122,10 @@ void cmd_init(t_hydra_console *con, int argc, const char* const* argv)
 	(void)argc;
 	(void)argv;
 
-	int i;
 	uint32_t cycles_start;
 	uint32_t cycles_stop;
 	uint32_t cycles_delta;
 	BaseSequentialStream* chp = con->bss;
-
-	chprintf(chp, "argc=%d\r\n",argc);
-	for(i=0; i<argc; i++)
-	{
-    	chprintf(chp, "argv[%d]=%s\r\n", i, argv[i]);
-	}
 
 	chprintf(chp, "%s\r\n", HYDRAFW_VERSION);
 

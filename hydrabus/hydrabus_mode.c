@@ -104,6 +104,9 @@ void hydrabus_mode(t_hydra_console *con, int argc, const char* const* argv)
   bool res;
   int32_t bus_mode;
   BaseSequentialStream* chp = con->bss;
+  mode_config_proto_t* p_proto = &con->mode->proto;
+  long old_dev_num;
+  long new_dev_num;
 
   bus_mode = 0;
   if(argc > 1)
@@ -115,10 +118,24 @@ void hydrabus_mode(t_hydra_console *con, int argc, const char* const* argv)
          (bus_mode < HYDRABUS_MODE_NB_CONF))
       {
         /* Execute mode command of the protocol */
+        old_dev_num = p_proto->dev_num;
         res = hydrabus_mode_conf[bus_mode]->mode_cmd(con, (argc-2), &argv[2]);
         if(res == TRUE)
         {
-          con->mode->proto.bus_mode = bus_mode;
+          new_dev_num = p_proto->dev_num;
+
+          /* Cleanup previous/old mode */
+          p_proto->dev_num = old_dev_num;
+          hydrabus_mode_conf[p_proto->bus_mode]->mode_cleanup(con);
+
+          /* Update mode with new mode / dev_num */
+          p_proto->bus_mode = bus_mode;
+          p_proto->dev_num = new_dev_num;
+
+          /* Setup new mode */
+          hydrabus_mode_conf[p_proto->bus_mode]->mode_setup(con);
+          hydrabus_mode_conf[p_proto->bus_mode]->mode_setup_exc(con);
+
           microrl_set_prompt(con->mrl, hydrabus_mode_conf[bus_mode]->mode_str_prompt(con));
           chprintf(chp, "%s\r\n", hydrabus_mode_conf[bus_mode]->mode_str_settings(con));
         }else
@@ -161,11 +178,13 @@ void hydrabus_mode_info(t_hydra_console *con, int argc, const char* const* argv)
     return;
   }
 
-  chprintf(chp, "Mode Info: m %d %d %d %d %d %d\r\nName=%s\r\nSettings=%s\r\nPins=%s\r\n",
-                bus_mode+1, con->mode->proto.dev_num+1, con->mode->proto.dev_mode+1,
-                con->mode->proto.dev_speed+1, con->mode->proto.dev_cpol_cpha+1,
-                con->mode->proto.dev_bit_lsb_msb+1,
-                hydrabus_mode_conf[bus_mode]->mode_str_name(con),
+  chprintf(chp, "Mode Info: m %d %s\r\nMode: %d=%s\r\n",
+                bus_mode+1,
+                hydrabus_mode_conf[bus_mode]->mode_str_param(con),
+                bus_mode+1,
+                hydrabus_mode_conf[bus_mode]->mode_str_name(con));
+
+  chprintf(chp, "%s\r\nHardware Pins:\r\n%s\r\n",
                 hydrabus_mode_conf[bus_mode]->mode_str_settings(con),
                 hydrabus_mode_conf[bus_mode]->mode_str_pins(con));
 
@@ -361,11 +380,10 @@ static bool hydrabus_mode_write(t_hydra_console *con, const char* const* argv, i
   long val;
   long nb_repeat;
   uint32_t mode_status;
-  mode_config_proto_t* p_proto;
   uint32_t bus_mode;
+  mode_config_proto_t* p_proto = &con->mode->proto;
   BaseSequentialStream* chp = con->bss;
 
-  p_proto = &con->mode->proto;
   bus_mode = p_proto->bus_mode;
 
   ret_repeat_cmd = repeat_cmd(con, argv,
@@ -614,6 +632,10 @@ static void hydrabus_mode_dev_set(t_hydra_console *con, mode_config_dev_t param,
   {
     case DEV_NUM:
       pt_proto->dev_num = value;
+    break;
+
+    case DEV_GPIO_PULL:
+      pt_proto->dev_gpio_pull = value;
     break;
 
     case DEV_MODE:

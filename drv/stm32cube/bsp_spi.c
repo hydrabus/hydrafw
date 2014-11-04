@@ -35,7 +35,7 @@ static mode_config_proto_t* spi_mode_conf[NB_SPI];
   This function replaces HAL_SPI_MspInit() in order to manage multiple devices.
   HAL_SPI_MspInit() shall be empty/not defined
 */
-static void spi_gpio_hw_init(bsp_dev_spi_t dev_num)
+static void spi_gpio_hw_init(bsp_dev_spi_t dev_num, uint32_t gpio_sck_miso_mosi_pull)
 {
   GPIO_InitTypeDef   GPIO_InitStructure;
 
@@ -53,7 +53,7 @@ static void spi_gpio_hw_init(bsp_dev_spi_t dev_num)
 
     /* SPI SCK pin configuration */
     GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+    GPIO_InitStructure.Pull  = gpio_sck_miso_mosi_pull;
     GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStructure.Alternate = BSP_SPI1_AF;
     GPIO_InitStructure.Pin = BSP_SPI1_SCK_PIN;
@@ -81,7 +81,7 @@ static void spi_gpio_hw_init(bsp_dev_spi_t dev_num)
 
     /* SPI SCK pin configuration */
     GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+    GPIO_InitStructure.Pull  = gpio_sck_miso_mosi_pull;
     GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
     GPIO_InitStructure.Alternate = BSP_SPI2_AF;
     GPIO_InitStructure.Pin = BSP_SPI2_SCK_PIN;
@@ -162,11 +162,28 @@ bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
   bsp_status_t status;
   uint32_t cpol;
   uint32_t cpha;
+  uint32_t gpio_sck_miso_mosi_pull;
 
   spi_mode_conf[dev_num] = mode_conf;
   hspi = &spi_handle[dev_num];
 
-  spi_gpio_hw_init(dev_num);
+  switch(mode_conf->dev_gpio_pull)
+  {
+    case MODE_CONFIG_DEV_GPIO_PULLUP:
+      gpio_sck_miso_mosi_pull = GPIO_PULLUP;
+    break;
+
+    case MODE_CONFIG_DEV_GPIO_PULLDOWN:
+      gpio_sck_miso_mosi_pull = GPIO_PULLDOWN;
+    break;
+    
+    default:
+    case MODE_CONFIG_DEV_GPIO_NOPULL:
+      gpio_sck_miso_mosi_pull = GPIO_NOPULL;
+    break;
+  }
+
+  spi_gpio_hw_init(dev_num, gpio_sck_miso_mosi_pull);
 
   __HAL_SPI_RESET_HANDLE_STATE(hspi);
 

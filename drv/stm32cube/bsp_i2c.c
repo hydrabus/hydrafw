@@ -21,9 +21,16 @@
 #define BSP_I2C_DELAY_HC_50KHZ   (1680) /* 50KHz*2 (Half Clock) in number of cycles @168MHz */
 #define BSP_I2C_DELAY_HC_100KHZ  (840) /* 100KHz*2 (Half Clock) in number of cycles @168MHz */
 #define BSP_I2C_DELAY_HC_400KHZ  (210) /* 400KHz*2 (Half Clock) in number of cycles @168MHz */
+#define BSP_I2C_DELAY_HC_1MHZ    (84) /* 1MHz*2 (Half Clock) in number of cycles @168MHz */
 /* Corresponds to Delay of half clock */
-#define I2C_SPEED_MAX (3)
-const int i2c_speed[I2C_SPEED_MAX] = { BSP_I2C_DELAY_HC_50KHZ, BSP_I2C_DELAY_HC_100KHZ, BSP_I2C_DELAY_HC_400KHZ };
+#define I2C_SPEED_MAX (4)
+const int i2c_speed[I2C_SPEED_MAX] =
+{
+  /* 0 */ BSP_I2C_DELAY_HC_50KHZ,
+  /* 1 */ BSP_I2C_DELAY_HC_100KHZ,
+  /* 2 */ BSP_I2C_DELAY_HC_400KHZ,
+  /* 3 */ BSP_I2C_DELAY_HC_1MHZ
+};
 int i2c_speed_delay;
 bool i2c_started;
 
@@ -61,7 +68,7 @@ static void i2c_gpio_hw_deinit(bsp_dev_i2c_t dev_num)
 	* @param  dev_num: I2C dev num
 	* @retval None
 	*/
-static void i2c_gpio_hw_init(bsp_dev_i2c_t dev_num)
+static void i2c_gpio_hw_init(bsp_dev_i2c_t dev_num, uint32_t gpio_scl_sda_pull)
 {
 	(void)dev_num;
 	GPIO_InitTypeDef   gpio_init;
@@ -70,7 +77,7 @@ static void i2c_gpio_hw_init(bsp_dev_i2c_t dev_num)
 	gpio_init.Pin = BSP_I2C1_SCL_PIN | BSP_I2C1_SDA_PIN; 
 	gpio_init.Mode = GPIO_MODE_OUTPUT_OD; /* output open drain */
 	gpio_init.Speed = GPIO_SPEED_FAST;
-	gpio_init.Pull = GPIO_PULLUP; //GPIO_NOPULL;
+	gpio_init.Pull = gpio_scl_sda_pull;
 	gpio_init.Alternate = 0; /* Not used */
 	HAL_GPIO_Init(BSP_I2C1_SCL_SDA_GPIO_PORT, &gpio_init);
 }
@@ -83,6 +90,8 @@ static void i2c_gpio_hw_init(bsp_dev_i2c_t dev_num)
 	*/
 bsp_status_t bsp_i2c_init(bsp_dev_i2c_t dev_num, mode_config_proto_t* mode_conf)
 {
+  uint32_t gpio_scl_sda_pull;
+
 	bsp_i2c_deinit(dev_num);
 
 	/* I2C peripheral configuration */
@@ -92,7 +101,22 @@ bsp_status_t bsp_i2c_init(bsp_dev_i2c_t dev_num, mode_config_proto_t* mode_conf)
     return BSP_ERROR;
 
 	/* Init the I2C */
-	i2c_gpio_hw_init(dev_num);
+  switch(mode_conf->dev_gpio_pull)
+  {
+    case MODE_CONFIG_DEV_GPIO_PULLUP:
+      gpio_scl_sda_pull = GPIO_PULLUP;
+    break;
+
+    case MODE_CONFIG_DEV_GPIO_PULLDOWN:
+      gpio_scl_sda_pull = GPIO_PULLDOWN;
+    break;
+    
+    default:
+    case MODE_CONFIG_DEV_GPIO_NOPULL:
+      gpio_scl_sda_pull = GPIO_NOPULL;
+    break;
+  }
+	i2c_gpio_hw_init(dev_num, gpio_scl_sda_pull);
   
   set_sda_float();
   set_scl_float();

@@ -49,6 +49,7 @@ const mode_exec_t mode_i2c_exec =
 	.mode_setup        = &mode_setup_i2c,     /* Configure the device internal params with user parameters (before Power On) */
 	.mode_setup_exc    = &mode_setup_exc_i2c, /* Configure the physical device after Power On (command 'W') */
 	.mode_cleanup      = &mode_cleanup_i2c,   /* Exit mode, disable device enter safe mode I2C... */
+  .mode_str_param    = &mode_str_param_i2c,    /* Mode parameters string */
 	.mode_str_pins     = &mode_str_pins_i2c,     /* Pins used string */
 	.mode_str_settings = &mode_str_settings_i2c, /* Settings string */
   .mode_str_name     = &mode_str_name_i2c,     /* Mode name string */
@@ -66,14 +67,25 @@ static const char* str_dev_arg_mode[]={
  "Choose I2C Mode: 1=Slave, 2=Master\r\n" };
 */
 
+static const char* str_dev_arg_gpio_pull[]={
+ "Choose I2C SCL/SDA Pull(~40Kohm) mode:\r\n1=NoPull(External Pull), 2=PullUp(Common), 3=PullDown\r\n" };
+static const char* str_dev_param_gpio_pull[]=
+{
+ "1=SCL/SDA NoPull",
+ "2=SCL/SDA PullUp",
+ "3=SCL/SDA PullDown"
+};
+
+static const char* str_dev_arg_speed[] ={
+ "Choose I2C1 Freq:\r\n1=50KHz, 2=100KHz, 3=400KHz, 4=1MHz\r\n" };
 static const char* str_dev_param_speed[]=
 {
   /* I2C1 */
     /* 0  */ "1=50KHz",
     /* 1  */ "2=100KHz",
-    /* 2  */ "3=400KHz"
+    /* 2  */ "3=400KHz",
+    /* 3  */ "4=1MHz"
 };
-static const char* str_dev_arg_speed[] = { "Choose I2C1 Freq:\r\n1=50KHz, 2=100KHz, 3=400KHz\r\n" };
 
 /*
 TODO I2C Addr number of bits mode 7 or 10
@@ -83,11 +95,12 @@ static const char* str_dev_numbits[]={
 
 static const mode_dev_arg_t mode_dev_arg[] =
 {
- /* argv0 */ { .min=1, .max=3, .dec_val=TRUE, .param=DEV_SPEED, .argc_help=ARRAY_SIZE(str_dev_arg_speed), .argv_help=str_dev_arg_speed },
+ /* argv0 */ { .min=1, .max=3, .dec_val=TRUE, .param=DEV_GPIO_PULL, .argc_help=ARRAY_SIZE(str_dev_arg_gpio_pull), .argv_help=str_dev_arg_gpio_pull },
+ /* argv1 */ { .min=1, .max=4, .dec_val=TRUE, .param=DEV_SPEED, .argc_help=ARRAY_SIZE(str_dev_arg_speed), .argv_help=str_dev_arg_speed }
 };
 #define MODE_DEV_NB_ARGC ((int)ARRAY_SIZE(mode_dev_arg)) /* Number of arguments/parameters for this mode */
 
-#define STR_I2C_SIZE (32)
+#define STR_I2C_SIZE (64)
 static char str_i2c[STR_I2C_SIZE+1];
 
 /* Terminal parameters management specific to this mode */
@@ -118,7 +131,6 @@ bool mode_cmd_i2c(t_hydra_console *con, int argc, const char* const* argv)
 
   if(argc == MODE_DEV_NB_ARGC)
   {
-    mode_setup_exc_i2c(con);
     return TRUE;
   }else
   {
@@ -329,9 +341,9 @@ void mode_setup_i2c(t_hydra_console *con)
 /* Configure the physical device after Power On (command 'W') */
 void mode_setup_exc_i2c(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
 
-  proto = &con->mode->proto;
+  proto->dev_num = 0;
   proto->ack_pending = 0;
   bsp_i2c_init(proto->dev_num, proto);
 }
@@ -339,10 +351,20 @@ void mode_setup_exc_i2c(t_hydra_console *con)
 /* Exit mode, disable device safe mode I2C... */
 void mode_cleanup_i2c(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
+  BaseSequentialStream* chp = con->bss;
+  mode_config_proto_t* proto = &con->mode->proto;
 
-  proto = &con->mode->proto;
   bsp_i2c_deinit(proto->dev_num);
+  chprintf(chp, "mode_cleanup_i2c(%d) done\r\n", proto->dev_num);
+}
+
+/* Mode parameters string (does not include m & bus_mode) */
+const char* mode_str_param_i2c(t_hydra_console *con)
+{
+  chsnprintf((char *)str_i2c, STR_I2C_SIZE, "%d %d",
+              con->mode->proto.dev_gpio_pull+1, 
+              con->mode->proto.dev_speed+1);
+  return str_i2c;
 }
 
 /* String pins used */
@@ -355,11 +377,10 @@ const char* mode_str_pins_i2c(t_hydra_console *con)
 /* String settings */
 const char* mode_str_settings_i2c(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
-  proto = &con->mode->proto;
+  mode_config_proto_t* proto = &con->mode->proto;
   
-  chsnprintf((char *)str_i2c, STR_I2C_SIZE, "I2C%d Speed:%s",
-              proto->dev_num+1,
+  chsnprintf((char *)str_i2c, STR_I2C_SIZE, "GPIO Pull: %s\r\nSpeed: %s",
+              str_dev_param_gpio_pull[proto->dev_gpio_pull],
               str_dev_param_speed[proto->dev_speed]);
   return str_i2c;
 }

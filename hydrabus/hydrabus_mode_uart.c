@@ -40,6 +40,7 @@ const mode_exec_t mode_uart_exec =
 	.mode_setup        = &mode_setup_uart,     /* Configure the device internal params with user parameters (before Power On) */
 	.mode_setup_exc    = &mode_setup_exc_uart, /* Configure the physical device after Power On (command 'W') */
 	.mode_cleanup      = &mode_cleanup_uart,   /* Exit mode, disable device enter safe mode UART... */
+  .mode_str_param    = &mode_str_param_uart,    /* Mode parameters string */
 	.mode_str_pins     = &mode_str_pins_uart,     /* Pins used string */
 	.mode_str_settings = &mode_str_settings_uart, /* Settings string */
   .mode_str_name     = &mode_str_name_uart,     /* Mode name string */
@@ -48,7 +49,15 @@ const mode_exec_t mode_uart_exec =
 
 static const char* str_dev_arg_num[]={
  "Choose UART device number: 1=UART1, 2=UART2\r\n" };
+static const char* str_dev_param_num[]=
+{
+  "1=UART1",
+  "2=UART2"
+};
 
+static const char* str_dev_arg_speed[]={
+ "Choose UART Freq:\r\n1=300bps, 2=1200bps, 3=2400bps, 4=4800bps, 5=9600bps\r\n6=19200bps,7=38400bps,8=57600bps,9=115200bps, 10=31250bps\r\nmanual up to 10.5mbps\r\n"
+};
 static const char* str_dev_param_speed[]=
 {
   /* UART1, 2 */
@@ -64,27 +73,24 @@ static const char* str_dev_param_speed[]=
   /* 9  */ "10=31250bps"
   /* 10 */ "manual up to 10.5mbps"
 };
-static const char* str_dev_arg_speed[]={
- "Choose UART Freq:\r\n1=300bps, 2=1200bps, 3=2400bps, 4=4800bps, 5=9600bps\r\n6=19200bps,7=38400bps,8=57600bps,9=115200bps, 10=31250bps\r\nmanual up to 10.5mbps\r\n"
-};
 
+static const char* str_dev_arg_parity[]={
+ "Choose UART Parity: 1=8/none, 2=8/even, 3=8/odd\r\n"
+};
 static const char* str_dev_param_parity[]=
 {
   "1=8/none",
   "2=8/even",
   "3=8/odd"
 };
-static const char* str_dev_arg_parity[]={
- "Choose UART Parity: 1=8/none, 2=8/even, 3=8/odd\r\n"
-};
 
+static const char* str_dev_arg_stop_bit[]={
+ "Choose UART Nb Stop Bit: 1=1 stop, 2=2 stop\r\n"
+};
 static const char* str_dev_param_stop_bit[]=
 {
   "1=1 stop",
   "2=2 stop"
-};
-static const char* str_dev_arg_stop_bit[]={
- "Choose UART Nb Stop Bit: 1=1 stop, 2=2 stop\r\n"
 };
 
 static const mode_dev_arg_t mode_dev_arg[] =
@@ -99,8 +105,8 @@ static const mode_dev_arg_t mode_dev_arg[] =
 #define STR_UART_SIZE (80)
 static char str_uart[STR_UART_SIZE+1];
 
-#define STR_SPEED_UART_SIZE (12)
-static char str_speed_uart[STR_UART_SIZE+1];
+#define STR_SPEED_UART_SIZE (16)
+static char str_speed_uart[STR_SPEED_UART_SIZE+1];
 
 /* Terminal parameters management specific to this mode */
 /* Return TRUE if success else FALSE */
@@ -130,7 +136,6 @@ bool mode_cmd_uart(t_hydra_console *con, int argc, const char* const* argv)
 
   if(argc == MODE_DEV_NB_ARGC)
   {
-    mode_setup_exc_uart(con);
     return TRUE;
   }else
   {
@@ -328,26 +333,34 @@ void mode_setup_uart(t_hydra_console *con)
 /* Configure the physical device after Power On (command 'W') */
 void mode_setup_exc_uart(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
+  mode_config_proto_t* proto = &con->mode->proto;
 
-  proto = &con->mode->proto;
   bsp_uart_init(proto->dev_num, proto);
 }
 
 /* Exit mode, disable device safe mode UART... */
 void mode_cleanup_uart(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
+  BaseSequentialStream* chp = con->bss;
+  mode_config_proto_t* proto = &con->mode->proto;
 
-  proto = &con->mode->proto;
   bsp_uart_deinit(proto->dev_num);
+  chprintf(chp, "mode_cleanup_uart(%d) done\r\n", proto->dev_num);
+}
+
+/* Mode parameters string (does not include m & bus_mode) */
+const char* mode_str_param_uart(t_hydra_console *con)
+{
+  chsnprintf((char *)str_uart, STR_UART_SIZE, "%d %d %d %d",
+              con->mode->proto.dev_num+1, con->mode->proto.dev_speed+1, 
+              con->mode->proto.dev_parity+1, con->mode->proto.dev_stop_bit+1);
+  return str_uart;
 }
 
 /* String pins used */
 const char* mode_str_pins_uart(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
-  proto = &con->mode->proto;
+  mode_config_proto_t* proto = &con->mode->proto;
 
   if(proto->dev_num == 0)
     return "UART1 TX=PA9, RX=PA10";
@@ -374,11 +387,10 @@ static const char* str_speed(t_hydra_console *con)
 /* String settings */
 const char* mode_str_settings_uart(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
-  proto = &con->mode->proto;
+  mode_config_proto_t* proto = &con->mode->proto;
   
-  chsnprintf((char *)str_uart, STR_UART_SIZE, "UART%d Speed:%s Parity:%s Nb Stop Bit:%s",
-              proto->dev_num+1,
+  chsnprintf((char *)str_uart, STR_UART_SIZE, "Device: %s\r\nSpeed: %s\r\nParity: %s\r\nNb Stop Bit: %s",
+              str_dev_param_num[proto->dev_num],
               str_speed(con),
               str_dev_param_parity[proto->dev_parity],
               str_dev_param_stop_bit[proto->dev_stop_bit]);
@@ -396,8 +408,7 @@ const char* mode_str_name_uart(t_hydra_console *con)
 /* Return Prompt name */
 const char* mode_str_prompt_uart(t_hydra_console *con)
 {
-  mode_config_proto_t* proto;
-  proto = &con->mode->proto;
+  mode_config_proto_t* proto = &con->mode->proto;
 
   if( proto->dev_num == 0)
   {
