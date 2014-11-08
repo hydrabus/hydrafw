@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<EmBlocks_project_file>
+	<EmBlocksVersion release="2.30" revision="1" />
+	<FileVersion major="1" minor="0" />
+	<Project>
+		<Option title="hydrafwEm" />
+		<Option pch_mode="2" />
+		<Option compiler="armgcc_eb" />
+		<Build>
+			<Target title="Debug">
+				<Option output="build\bin\Debug\hydrafwEm.elf" />
+				<Option object_output="build\obj\Debug\" />
+				<Option type="0" />
+				<Option create_hex="1" />
+				<Option compiler="armgcc_eb" />
+				<Option projectDeviceOptionsRelation="0" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-fdata-sections" />
+					<Add option="-ffunction-sections" />
+					<Add option="-O0" />
+					<Add option="-g3" />
+				</Compiler>
+				<Assembler>
+					<Add option="-Wa,--gdwarf-2" />
+				</Assembler>
+				<Linker>
+					<Add option="-Wl,--gc-sections" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="build\bin\Release\hydrafwEm.elf" />
+				<Option object_output="build\obj\Release\" />
+				<Option type="0" />
+				<Option create_hex="1" />
+				<Option compiler="armgcc_eb" />
+				<Option projectDeviceOptionsRelation="0" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-g2" />
+					<Add option="-fdata-sections" />
+					<Add option="-ffunction-sections" />
+				</Compiler>
+				<Assembler>
+					<Add option="-Wa,--no-warn" />
+				</Assembler>
+				<Linker>
+					<Add option="-Wl,--gc-sections" />
+				</Linker>
+			</Target>
+		</Build>
+		<Device>
+			<Add option="$device=cortex-m4" />
+			<Add option="$fpu=fpv4-sp-d16" />
+			<Add option="$lscript=./hydrafw_STM32F405xG.ld" />
+			<Add option="$stack=0x0100" />
+			<Add option="$heap=0x0000" />
+		</Device>
+		<Compiler>
+			<Add option="-mfloat-abi=hard" />
+			<Add option="-DARM_MATH_CM4" />
+			<Add option="-DHYDRANFC" />
+			<Add option="-DSTM32F405RG" />
+			<Add option="-DSTM32F4XX" />
+			<Add option="-DCORTEX_USE_FPU" />
+			<Add option="-fno-strict-aliasing" />
+			<Add directory=".\inc" />
+			<Add directory=".\src" />
+			<Add directory=".\cmsis" />
+		</Compiler>
+		<Assembler>
+			<Add option="-x assembler-with-cpp" />
+		</Assembler>
+		<Linker>
+			<Add option="-eb_start_files" />
+			<Add option="-eb_lib=n" />
+			<Add option="-Wl,--defsym=__main_stack_size__=0x400" />
+			<Add option="-Wl,--defsym=__process_stack_size__=0x400" />
+		</Linker>
+		<Unit filename="board\board.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="board\board.h" />
+		<Unit filename="chibios\os\common\ports\ARMCMx\compilers\GCC\crt0.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\common\ports\ARMCMx\compilers\GCC\vectors.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\common\ports\ARMCMx\devices\STM32F4xx\cmparams.h" />
+		<Unit filename="chibios\os\ext\CMSIS\ST\stm32f405xx.h" />
+		<Unit filename="chibios\os\ext\CMSIS\ST\system_stm32f4xx.h" />
+		<Unit filename="chibios\os\ext\CMSIS\include\arm_common_tables.h" />
+		<Unit filename="chibios\os\ext\CMSIS\include\arm_const_structs.h" />
+		<Unit filename="chibios\os\ext\CMSIS\include\arm_math.h" />
+		<Unit filename="chibios\os\ext\CMSIS\include\core_cm0.h" />
+		<Unit filename="chibios\os\ext\CMSIS\include\core_cm0plus.h" />
+		<Unit filename="chibios\os\ext\CMSIS\include\core_cm3.h" />
+		<Unit filename="chibios\os\ext\CMSIS\include\core_cm4.h" />
+		<Unit filename="chibios\os\ext\CMSIS\include\core_cm4_simd.h" />
+		<Unit filename="chibios\os\ext\CMSIS\include\core_cmFunc.h" />
+		<Unit filename="chibios\os\ext\CMSIS\include\core_cmInstr.h" />
+		<Unit filename="chibios\os\hal\include\adc.h" />
+		<Unit filename="chibios\os\hal\include\can.h" />
+		<Unit filename="chibios\os\hal\include\dac.h" />
+		<Unit filename="chibios\os\hal\include\ext.h" />
+		<Unit filename="chibios\os\hal\include\gpt.h" />
+		<Unit filename="chibios\os\hal\include\hal.h" />
+		<Unit filename="chibios\os\hal\include\hal_channels.h" />
+		<Unit filename="chibios\os\hal\include\hal_ioblock.h" />
+		<Unit filename="chibios\os\hal\include\hal_mmcsd.h" />
+		<Unit filename="chibios\os\hal\include\hal_queues.h" />
+		<Unit filename="chibios\os\hal\include\hal_streams.h" />
+		<Unit filename="chibios\os\hal\include\i2c.h" />
+		<Unit filename="chibios\os\hal\include\i2s.h" />
+		<Unit filename="chibios\os\hal\include\icu.h" />
+		<Unit filename="chibios\os\hal\include\mac.h" />
+		<Unit filename="chibios\os\hal\include\mii.h" />
+		<Unit filename="chibios\os\hal\include\mmc_spi.h" />
+		<Unit filename="chibios\os\hal\include\nand.h" />
+		<Unit filename="chibios\os\hal\include\pal.h" />
+		<Unit filename="chibios\os\hal\include\pwm.h" />
+		<Unit filename="chibios\os\hal\include\rtc.h" />
+		<Unit filename="chibios\os\hal\include\sdc.h" />
+		<Unit filename="chibios\os\hal\include\serial.h" />
+		<Unit filename="chibios\os\hal\include\serial_usb.h" />
+		<Unit filename="chibios\os\hal\include\spi.h" />
+		<Unit filename="chibios\os\hal\include\st.h" />
+		<Unit filename="chibios\os\hal\include\uart.h" />
+		<Unit filename="chibios\os\hal\include\usb.h" />
+		<Unit filename="chibios\os\hal\osal\rt\osal.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\osal\rt\osal.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\DACv1\dac_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\DACv1\dac_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\FSMCv1\fsmc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\FSMCv1\fsmc.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\FSMCv1\fsmc_sram.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\FSMCv1\fsmc_sram.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\FSMCv1\nand_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\FSMCv1\nand_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\GPIOv2\pal_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\GPIOv2\pal_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\I2Cv1\i2c_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\I2Cv1\i2c_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\OTGv1\stm32_otg.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\OTGv1\usb_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\OTGv1\usb_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\RTCv2\rtc_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\RTCv2\rtc_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\SPIv1\i2s_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\SPIv1\i2s_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\SPIv1\spi_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\SPIv1\spi_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\TIMv1\gpt_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\TIMv1\gpt_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\TIMv1\icu_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\TIMv1\icu_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\TIMv1\pwm_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\TIMv1\pwm_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\TIMv1\st_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\TIMv1\st_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\TIMv1\stm32_tim.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\USARTv1\serial_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\USARTv1\serial_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\USARTv1\uart_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\USARTv1\uart_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\can_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\can_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\ext_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\ext_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\mac_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\mac_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\sdc_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\LLD\sdc_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\STM32F4xx\adc_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\STM32F4xx\adc_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\STM32F4xx\ext_lld_isr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\STM32F4xx\ext_lld_isr.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\STM32F4xx\hal_lld.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\STM32F4xx\hal_lld.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\STM32F4xx\stm32_dma.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\STM32\STM32F4xx\stm32_dma.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\STM32F4xx\stm32_isr.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\STM32F4xx\stm32_rcc.h" />
+		<Unit filename="chibios\os\hal\ports\STM32\STM32F4xx\stm32_registry.h" />
+		<Unit filename="chibios\os\hal\ports\common\ARMCMx\nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\ports\common\ARMCMx\nvic.h" />
+		<Unit filename="chibios\os\hal\src\adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\can.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\dac.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\ext.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\gpt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\hal.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\hal_mmcsd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\hal_queues.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\i2s.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\icu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\mac.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\mmc_spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\nand.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\pal.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\pwm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\sdc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\serial.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\serial_usb.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\st.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\hal\src\usb.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\include\ch.h" />
+		<Unit filename="chibios\os\rt\include\chbsem.h" />
+		<Unit filename="chibios\os\rt\include\chcond.h" />
+		<Unit filename="chibios\os\rt\include\chdebug.h" />
+		<Unit filename="chibios\os\rt\include\chdynamic.h" />
+		<Unit filename="chibios\os\rt\include\chevents.h" />
+		<Unit filename="chibios\os\rt\include\chheap.h" />
+		<Unit filename="chibios\os\rt\include\chmboxes.h" />
+		<Unit filename="chibios\os\rt\include\chmemcore.h" />
+		<Unit filename="chibios\os\rt\include\chmempools.h" />
+		<Unit filename="chibios\os\rt\include\chmsg.h" />
+		<Unit filename="chibios\os\rt\include\chmtx.h" />
+		<Unit filename="chibios\os\rt\include\chqueues.h" />
+		<Unit filename="chibios\os\rt\include\chregistry.h" />
+		<Unit filename="chibios\os\rt\include\chschd.h" />
+		<Unit filename="chibios\os\rt\include\chsem.h" />
+		<Unit filename="chibios\os\rt\include\chstats.h" />
+		<Unit filename="chibios\os\rt\include\chstreams.h" />
+		<Unit filename="chibios\os\rt\include\chsys.h" />
+		<Unit filename="chibios\os\rt\include\chthreads.h" />
+		<Unit filename="chibios\os\rt\include\chtm.h" />
+		<Unit filename="chibios\os\rt\include\chvt.h" />
+		<Unit filename="chibios\os\rt\ports\ARMCMx\chcore.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\ports\ARMCMx\chcore.h" />
+		<Unit filename="chibios\os\rt\ports\ARMCMx\chcore_timer.h" />
+		<Unit filename="chibios\os\rt\ports\ARMCMx\chcore_v7m.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\ports\ARMCMx\chcore_v7m.h" />
+		<Unit filename="chibios\os\rt\ports\ARMCMx\compilers\GCC\chcoreasm_v7m.s">
+			<Option compilerVar="ASM" />
+		</Unit>
+		<Unit filename="chibios\os\rt\ports\ARMCMx\compilers\GCC\chtypes.h" />
+		<Unit filename="chibios\os\rt\src\chcond.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chdebug.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chdynamic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chevents.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chheap.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chmboxes.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chmemcore.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chmempools.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chmsg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chmtx.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chqueues.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chregistry.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chschd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chsem.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chstats.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chsys.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chthreads.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chtm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\rt\src\chvt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\various\chprintf.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\various\chprintf.h" />
+		<Unit filename="chibios\os\various\fatfs_bindings\fatfs_diskio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\various\fatfs_bindings\fatfs_syscall.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\various\memstreams.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="chibios\os\various\memstreams.h" />
+		<Unit filename="common\chconf.h" />
+		<Unit filename="common\common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="common\common.h" />
+		<Unit filename="common\ffconf.h" />
+		<Unit filename="common\halconf.h" />
+		<Unit filename="common\mcuconf.h" />
+		<Unit filename="common\microrl_callback.h" />
+		<Unit filename="common\microrl_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="common\microrl_common.h" />
+		<Unit filename="common\microrl_config.h" />
+		<Unit filename="common\microsd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="common\microsd.h" />
+		<Unit filename="common\mode_config.h" />
+		<Unit filename="common\usb1cfg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="common\usb1cfg.h" />
+		<Unit filename="common\usb2cfg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="common\usb2cfg.h" />
+		<Unit filename="common\xatoi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="common\xatoi.h" />
+		<Unit filename="drv\stm32cube\bsp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\bsp.h" />
+		<Unit filename="drv\stm32cube\bsp_i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\bsp_i2c.h" />
+		<Unit filename="drv\stm32cube\bsp_i2c_conf.h" />
+		<Unit filename="drv\stm32cube\bsp_spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\bsp_spi.h" />
+		<Unit filename="drv\stm32cube\bsp_spi_conf.h" />
+		<Unit filename="drv\stm32cube\bsp_uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\bsp_uart.h" />
+		<Unit filename="drv\stm32cube\bsp_uart_conf.h" />
+		<Unit filename="drv\stm32cube\core_cm4.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_adc.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_adc_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_can.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_cortex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_crc.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_cryp.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_cryp_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_dac.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_dac_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_dcmi.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_def.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_dma.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_dma2d.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_dma_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_eth.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_flash.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_flash_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_flash_ramfunc.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_gpio.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_gpio_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_hash.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_hash_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_hcd.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_i2c.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_i2c_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_i2s.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_i2s_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_irda.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_iwdg.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_ltdc.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_nand.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_nor.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_pccard.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_pcd.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_pcd_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_pwr.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_pwr_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_rcc.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_rcc_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_rng.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_rtc.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_rtc_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_sai.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_sd.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_sdram.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_smartcard.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_spi.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_sram.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_tim.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_tim_ex.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_uart.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_usart.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_hal_wwdg.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_ll_fmc.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_ll_fsmc.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_ll_sdmmc.h" />
+		<Unit filename="drv\stm32cube\inc\stm32f4xx_ll_usb.h" />
+		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\stm32f405xx.h" />
+		<Unit filename="drv\stm32cube\stm32f4xx_hal_conf.h" />
+		<Unit filename="drv\stm32cube\stm32f4xx_hal_msp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\system_stm32f4xx.h" />
+		<Unit filename="fatfs\src\diskio.h" />
+		<Unit filename="fatfs\src\ff.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fatfs\src\ff.h" />
+		<Unit filename="fatfs\src\ffconf_template.h" />
+		<Unit filename="fatfs\src\integer.h" />
+		<Unit filename="fatfs\src\option\ccsbcs.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus.h" />
+		<Unit filename="hydrabus\hydrabus_microrl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_microrl.h" />
+		<Unit filename="hydrabus\hydrabus_mode.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_mode.h" />
+		<Unit filename="hydrabus\hydrabus_mode_conf.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_mode_conf.h" />
+		<Unit filename="hydrabus\hydrabus_mode_hiz.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_mode_hiz.h" />
+		<Unit filename="hydrabus\hydrabus_mode_i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_mode_i2c.h" />
+		<Unit filename="hydrabus\hydrabus_mode_spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_mode_spi.h" />
+		<Unit filename="hydrabus\hydrabus_mode_uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_mode_uart.h" />
+		<Unit filename="hydrabus\hydrafw_version.hdr" />
+		<Unit filename="hydrafw_STM32F405xG.ld" />
+		<Unit filename="hydrafw_rules.ld" />
+		<Unit filename="hydranfc\hydranfc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydranfc\hydranfc.h" />
+		<Unit filename="hydranfc\hydranfc_cmd_sniff.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydranfc\hydranfc_cmd_sniff_downsampling.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydranfc\hydranfc_cmd_sniff_downsampling.h" />
+		<Unit filename="hydranfc\hydranfc_cmd_sniff_iso14443.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydranfc\hydranfc_cmd_sniff_iso14443.h" />
+		<Unit filename="hydranfc\hydranfc_microrl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydranfc\hydranfc_microrl.h" />
+		<Unit filename="main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="microrl\src\microrl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="microrl\src\microrl.h" />
+		<Unit filename="trf7970a\include\mcu.h" />
+		<Unit filename="trf7970a\include\tools.h" />
+		<Unit filename="trf7970a\include\trf797x.h" />
+		<Unit filename="trf7970a\include\trf_spi.h" />
+		<Unit filename="trf7970a\include\types.h" />
+		<Unit filename="trf7970a\src\mcu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="trf7970a\src\tools.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="trf7970a\src\trf797x.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="trf7970a\src\trf_spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<debugger>
+				<target_debugging_settings target="Release" active_interface="ST-link">
+					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description="" dont_start_server="false" backoff_time="1000" options="0" reg_filter="0" active_family="STMicroelectronics">
+						<family_options family_id="STMicroelectronics">
+							<option opt_id="ID_JTAG_SWD" opt_value="swd" />
+							<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
+							<option opt_id="ID_RESET_TYPE" opt_value="System" />
+							<option opt_id="ID_LOAD_PROGRAM" opt_value="1" />
+							<option opt_id="ID_SEMIHOST_CHECK" opt_value="0" />
+							<option opt_id="ID_RAM_EXEC" opt_value="0" />
+							<option opt_id="ID_VEC_TABLE" opt_value="1" />
+							<option opt_id="ID_DONT_CONN_RESET" opt_value="0" />
+							<option opt_id="ID_ALL_MODE_DEBUG" opt_value="0" />
+							<option opt_id="ID_DEV_ADDR" opt_value="" />
+							<option opt_id="ID_VERBOSE_LEVEL" opt_value="3" />
+						</family_options>
+					</debug_interface>
+				</target_debugging_settings>
+				<target_debugging_settings target="Debug" active_interface="ST-link">
+					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description="" dont_start_server="false" backoff_time="1000" options="0" reg_filter="0" active_family="STMicroelectronics">
+						<family_options family_id="STMicroelectronics">
+							<option opt_id="ID_JTAG_SWD" opt_value="swd" />
+							<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
+							<option opt_id="ID_RESET_TYPE" opt_value="System" />
+							<option opt_id="ID_LOAD_PROGRAM" opt_value="1" />
+							<option opt_id="ID_SEMIHOST_CHECK" opt_value="0" />
+							<option opt_id="ID_RAM_EXEC" opt_value="0" />
+							<option opt_id="ID_VEC_TABLE" opt_value="1" />
+							<option opt_id="ID_DONT_CONN_RESET" opt_value="0" />
+							<option opt_id="ID_ALL_MODE_DEBUG" opt_value="0" />
+							<option opt_id="ID_DEV_ADDR" opt_value="" />
+							<option opt_id="ID_VERBOSE_LEVEL" opt_value="3" />
+						</family_options>
+					</debug_interface>
+				</target_debugging_settings>
+			</debugger>
+			<envvars />
+		</Extensions>
+	</Project>
+</EmBlocks_project_file>
