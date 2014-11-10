@@ -17,8 +17,10 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#include <stdarg.h>
 #include "microrl.h"
 #include "ch.h"
+#include "chprintf.h"
 #include "hal.h"
 #include "mode_config.h"
 
@@ -51,9 +53,9 @@ void scs_dwt_cycle_counter_enabled(void);
 void wait_nbcycles(uint32_t nbcycles);
 void DelayUs(uint32_t delay_us);
 
-extern uint8_t buf[300];
+extern uint8_t buf[512] __attribute__ ((section(".cmm")));
 /* Generic large buffer.*/
-extern uint8_t fbuff[1024];
+extern uint8_t fbuff[2048] __attribute__ ((section(".cmm")));
 
 #define NB_SBUFFER  (65536)
 #define G_SBUF_SDC_BURST_SIZE (NB_SBUFFER/MMCSD_BLOCK_SIZE) /* how many sectors reads at once */
@@ -116,5 +118,23 @@ void cmd_init(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_mem(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_threads(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv);
+
+static inline void cprint(t_hydra_console *con, const char *data, const uint32_t size)
+{
+	BaseSequentialStream* chp = con->bss;
+
+	if(size > 0)
+		chSequentialStreamWrite(chp, (uint8_t *)data, size);
+}
+
+static inline void cprintf(t_hydra_console *con, const char *fmt, ...)
+{
+	BaseSequentialStream* chp = con->bss;
+	va_list ap;
+
+	va_start(ap, fmt);
+	chvprintf(chp, fmt, ap);
+	va_end(ap);
+}
 
 #endif /* _COMMON_H_ */

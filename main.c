@@ -1,17 +1,17 @@
 /*
-		HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
 
-		Licensed under the Apache License, Version 2.0 (the "License");
-		you may not use this file except in compliance with the License.
-		You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-				http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
-		Unless required by applicable law or agreed to in writing, software
-		distributed under the License is distributed on an "AS IS" BASIS,
-		WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-		See the License for the specific language governing permissions and
-		limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 
 #include <string.h>
@@ -61,10 +61,8 @@ THD_FUNCTION(ThreadHydraNFC, arg)
 	(void)arg;
 	chRegSetThreadName("ThreadHydraNFC");
 
-	if(hydranfc_is_detected() == TRUE)
-	{
-		while(1)
-		{
+	if(hydranfc_is_detected() == TRUE) {
+		while(1) {
 			chThdSleepMilliseconds(100);
 
 			if(K1_BUTTON)
@@ -77,11 +75,9 @@ THD_FUNCTION(ThreadHydraNFC, arg)
 			else
 				D3_OFF;
 
-			if(K3_BUTTON)
-			{
+			if(K3_BUTTON) {
 				/* Blink Fast */
-				for(i=0;i<4;i++)
-				{
+				for(i=0; i<4; i++) {
 					D2_ON;
 					chThdSleepMilliseconds(25);
 					D2_OFF;
@@ -118,8 +114,7 @@ THD_FUNCTION(console, arg)
 	while (1) {
 		chThdSleepMilliseconds(1);
 		microrl_insert_char(con->mrl, get_char(con));
-		if(con->insert_char != 0)
-		{
+		if(con->insert_char != 0) {
 			insert_char = con->insert_char;
 			con->insert_char = 0;
 			microrl_insert_char(con->mrl, insert_char);
@@ -199,7 +194,7 @@ int main(void)
 #ifdef HYDRANFC
 	if(hydranfc_is_detected() == TRUE)
 		chThdCreateStatic(waThreadHydraNFC, sizeof(waThreadHydraNFC),
-				NORMALPRIO, ThreadHydraNFC, NULL);
+				  NORMALPRIO, ThreadHydraNFC, NULL);
 #endif
 	/*
 	* Normal main() thread activity.
@@ -212,7 +207,7 @@ int main(void)
 					continue;
 				/* Spawn new console thread.*/
 				consoles[i].thread = chThdCreateFromHeap(NULL,
-						CONSOLE_WA_SIZE, NORMALPRIO, console, &consoles[i]);
+						     CONSOLE_WA_SIZE, NORMALPRIO, console, &consoles[i]);
 			} else {
 				if (chThdTerminatedX(consoles[i].thread))
 					/* This console thread terminated. */

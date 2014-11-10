@@ -26,6 +26,14 @@ ENTRY(Reset_Handler)
 
 SECTIONS
 {
+    .ccm (NOLOAD): ALIGN(4) SUBALIGN(4)
+    {
+        PROVIDE(_ccm_start = .);
+        *(.ccm)
+        *(.ccm.*)
+        PROVIDE(_ccm_end = .);
+    } > ccmram
+
     . = 0;
     _text = .;
 
@@ -82,7 +90,7 @@ SECTIONS
     {
         *(.eh_frame)
     } > flash
-    
+
     .textalign : ONLY_IF_RO
     {
         . = ALIGN(8);
@@ -118,7 +126,7 @@ SECTIONS
         *(.ramtext)
         . = ALIGN(4);
         PROVIDE(_edata = .);
-    } > ram AT > flash
+    } > ccmram AT > flash
 
     .bss :
     {
@@ -131,7 +139,7 @@ SECTIONS
         *(COMMON)
         . = ALIGN(4);
         PROVIDE(_bss_end = .);
-    } > ram    
+    } > ram
 }
 
 PROVIDE(end = .);
