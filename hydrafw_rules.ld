@@ -26,6 +26,14 @@ ENTRY(Reset_Handler)
 
 SECTIONS
 {
+    .ccm (NOLOAD): ALIGN(4) SUBALIGN(4)
+    {
+        PROVIDE(_ccm_start = .);
+        *(.ccm)
+        *(.ccm.*)
+        PROVIDE(_ccm_end = .);
+    } > ccmram
+
     . = 0;
     _text = .;
 
