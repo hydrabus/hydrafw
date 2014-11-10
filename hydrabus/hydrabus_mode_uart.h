@@ -69,13 +69,13 @@ void mode_setup_exc_uart(t_hydra_console *con);
 void mode_cleanup_uart(t_hydra_console *con);
 
 /* Mode parameters string (does not include m & bus_mode) */
-const char* mode_str_param_uart(t_hydra_console *con);
-/* Pins used string */
-const char* mode_str_pins_uart(t_hydra_console *con);
+void mode_print_param_uart(t_hydra_console *con);
+/* Print Pins used */
+void mode_print_pins_uart(t_hydra_console *con);
 /* Settings string */
-const char* mode_str_settings_uart(t_hydra_console *con);
-/* Mode name string */
-const char* mode_str_name_uart(t_hydra_console *con);
+void mode_print_settings_uart(t_hydra_console *con);
+ /* Print Mode name */
+void mode_print_name_uart(t_hydra_console *con);
 /* Mode prompt string*/
 const char* mode_str_prompt_uart(t_hydra_console *con);
 

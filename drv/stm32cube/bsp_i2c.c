@@ -1,17 +1,16 @@
 /*
-		HydraBus/HydraNFC - Copyright (C) 2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2014 Benjamin VERNOUX
 
-		Licensed under the Apache License, Version 2.0 (the "License");
-		you may not use this file except in compliance with the License.
-		You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
 
-				http://www.apache.org/licenses/LICENSE-2.0
-
-		Unless required by applicable law or agreed to in writing, software
-		distributed under the License is distributed on an "AS IS" BASIS,
-		WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-		See the License for the specific language governing permissions and
-		limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 #include "bsp_i2c.h"
 #include "bsp_i2c_conf.h"
@@ -24,12 +23,11 @@
 #define BSP_I2C_DELAY_HC_1MHZ    (84) /* 1MHz*2 (Half Clock) in number of cycles @168MHz */
 /* Corresponds to Delay of half clock */
 #define I2C_SPEED_MAX (4)
-const int i2c_speed[I2C_SPEED_MAX] =
-{
-  /* 0 */ BSP_I2C_DELAY_HC_50KHZ,
-  /* 1 */ BSP_I2C_DELAY_HC_100KHZ,
-  /* 2 */ BSP_I2C_DELAY_HC_400KHZ,
-  /* 3 */ BSP_I2C_DELAY_HC_1MHZ
+const int i2c_speed[I2C_SPEED_MAX] = {
+	/* 0 */ BSP_I2C_DELAY_HC_50KHZ,
+	/* 1 */ BSP_I2C_DELAY_HC_100KHZ,
+	/* 2 */ BSP_I2C_DELAY_HC_400KHZ,
+	/* 3 */ BSP_I2C_DELAY_HC_1MHZ
 };
 int i2c_speed_delay;
 bool i2c_started;
@@ -74,7 +72,7 @@ static void i2c_gpio_hw_init(bsp_dev_i2c_t dev_num, uint32_t gpio_scl_sda_pull)
 	GPIO_InitTypeDef   gpio_init;
 
 	/* BSP_I2C1 SCL and SDA pins configuration ---------------------------*/
-	gpio_init.Pin = BSP_I2C1_SCL_PIN | BSP_I2C1_SDA_PIN; 
+	gpio_init.Pin = BSP_I2C1_SCL_PIN | BSP_I2C1_SDA_PIN;
 	gpio_init.Mode = GPIO_MODE_OUTPUT_OD; /* output open drain */
 	gpio_init.Speed = GPIO_SPEED_FAST;
 	gpio_init.Pull = gpio_scl_sda_pull;
@@ -90,39 +88,38 @@ static void i2c_gpio_hw_init(bsp_dev_i2c_t dev_num, uint32_t gpio_scl_sda_pull)
 	*/
 bsp_status_t bsp_i2c_init(bsp_dev_i2c_t dev_num, mode_config_proto_t* mode_conf)
 {
-  uint32_t gpio_scl_sda_pull;
+	uint32_t gpio_scl_sda_pull;
 
 	bsp_i2c_deinit(dev_num);
 
 	/* I2C peripheral configuration */
-  if(mode_conf->dev_speed < I2C_SPEED_MAX)
-    i2c_speed_delay = i2c_speed[mode_conf->dev_speed];
-  else
-    return BSP_ERROR;
+	if(mode_conf->dev_speed < I2C_SPEED_MAX)
+		i2c_speed_delay = i2c_speed[mode_conf->dev_speed];
+	else
+		return BSP_ERROR;
 
 	/* Init the I2C */
-  switch(mode_conf->dev_gpio_pull)
-  {
-    case MODE_CONFIG_DEV_GPIO_PULLUP:
-      gpio_scl_sda_pull = GPIO_PULLUP;
-    break;
+	switch(mode_conf->dev_gpio_pull) {
+	case MODE_CONFIG_DEV_GPIO_PULLUP:
+		gpio_scl_sda_pull = GPIO_PULLUP;
+		break;
 
-    case MODE_CONFIG_DEV_GPIO_PULLDOWN:
-      gpio_scl_sda_pull = GPIO_PULLDOWN;
-    break;
-    
-    default:
-    case MODE_CONFIG_DEV_GPIO_NOPULL:
-      gpio_scl_sda_pull = GPIO_NOPULL;
-    break;
-  }
+	case MODE_CONFIG_DEV_GPIO_PULLDOWN:
+		gpio_scl_sda_pull = GPIO_PULLDOWN;
+		break;
+
+	default:
+	case MODE_CONFIG_DEV_GPIO_NOPULL:
+		gpio_scl_sda_pull = GPIO_NOPULL;
+		break;
+	}
 	i2c_gpio_hw_init(dev_num, gpio_scl_sda_pull);
-  
-  set_sda_float();
-  set_scl_float();
 
-  i2c_started = FALSE;
-  return BSP_OK;
+	set_sda_float();
+	set_scl_float();
+
+	i2c_started = FALSE;
+	return BSP_OK;
 }
 
 /**
@@ -134,8 +131,8 @@ bsp_status_t bsp_i2c_deinit(bsp_dev_i2c_t dev_num)
 {
 	/* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
 	i2c_gpio_hw_deinit(dev_num);
-  
-  return BSP_OK;
+
+	return BSP_OK;
 }
 
 /**
@@ -147,24 +144,23 @@ bsp_status_t bsp_i2c_start(bsp_dev_i2c_t dev_num)
 {
 	(void)dev_num;
 
-  if(i2c_started == TRUE)
-  {
-    /* Re-Start condition */
-    set_sda_float();
-    i2c_sw_delay();
+	if(i2c_started == TRUE) {
+		/* Re-Start condition */
+		set_sda_float();
+		i2c_sw_delay();
 
-    set_scl_float();
-    i2c_sw_delay();
-  }
+		set_scl_float();
+		i2c_sw_delay();
+	}
 
 	/* Generate START */
-  /* SDA & SCL are assumed to be floating = HIGH */
-  set_sda_low();
-  i2c_sw_delay();
+	/* SDA & SCL are assumed to be floating = HIGH */
+	set_sda_low();
+	i2c_sw_delay();
 
-  set_scl_low();
+	set_scl_low();
 
-  i2c_started = TRUE;
+	i2c_started = TRUE;
 	return BSP_OK;
 }
 
@@ -178,16 +174,16 @@ bsp_status_t bsp_i2c_stop(bsp_dev_i2c_t dev_num)
 	(void)dev_num;
 
 	/* Generate STOP condition */
-  set_sda_low();
-  i2c_sw_delay();
+	set_sda_low();
+	i2c_sw_delay();
 
-  set_scl_float();
-  i2c_sw_delay();
+	set_scl_float();
+	i2c_sw_delay();
 
-  set_sda_float();
-  i2c_sw_delay();
+	set_sda_float();
+	i2c_sw_delay();
 
-  i2c_started = FALSE;
+	i2c_started = FALSE;
 	return BSP_OK;
 }
 
@@ -201,43 +197,42 @@ bsp_status_t bsp_i2c_stop(bsp_dev_i2c_t dev_num)
 bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, bool* tx_ack_flag)
 {
 	(void)dev_num;
-  int i;
-  unsigned char ack_val;
+	int i;
+	unsigned char ack_val;
 
-  /* Write 8 bits */
-  for(i = 0; i < 8; i++)
-  {
-      if(tx_data & 0x80)
-        set_sda_float();
-      else
-        set_sda_low();
+	/* Write 8 bits */
+	for(i = 0; i < 8; i++) {
+		if(tx_data & 0x80)
+			set_sda_float();
+		else
+			set_sda_low();
 
-      i2c_sw_delay();
+		i2c_sw_delay();
 
-      set_scl_float();
-      i2c_sw_delay();
+		set_scl_float();
+		i2c_sw_delay();
 
-      set_scl_low();
-      tx_data <<= 1;
-  }
+		set_scl_low();
+		tx_data <<= 1;
+	}
 
-  /* Read 1 bit ACK or NACK */
-  set_sda_float();
-  i2c_sw_delay();
+	/* Read 1 bit ACK or NACK */
+	set_sda_float();
+	i2c_sw_delay();
 
-  set_scl_float();
-  i2c_sw_delay();
+	set_scl_float();
+	i2c_sw_delay();
 
-  ack_val = get_sda();
+	ack_val = get_sda();
 
-  set_scl_low();
-  i2c_sw_delay();
+	set_scl_low();
+	i2c_sw_delay();
 
-  if(ack_val == 0)
-    *tx_ack_flag = TRUE;
-  else
-    *tx_ack_flag = FALSE;
-  
+	if(ack_val == 0)
+		*tx_ack_flag = TRUE;
+	else
+		*tx_ack_flag = FALSE;
+
 	return BSP_OK;
 }
 
@@ -250,18 +245,18 @@ void bsp_i2c_read_ack(bsp_dev_i2c_t dev_num, bool enable_ack)
 {
 	(void)dev_num;
 
-  /* Write 1 bit ACK or NACK */
-  if(enable_ack == TRUE)
-      set_sda_low(); /* ACK */
-  else
-      set_sda_float(); /* NACK */
+	/* Write 1 bit ACK or NACK */
+	if(enable_ack == TRUE)
+		set_sda_low(); /* ACK */
+	else
+		set_sda_float(); /* NACK */
 
-  i2c_sw_delay();
+	i2c_sw_delay();
 
-  set_scl_float();
-  i2c_sw_delay();
+	set_scl_float();
+	i2c_sw_delay();
 
-  set_scl_low();
+	set_scl_low();
 }
 
 /**
@@ -273,29 +268,29 @@ void bsp_i2c_read_ack(bsp_dev_i2c_t dev_num, bool enable_ack)
 bsp_status_t bsp_i2c_master_read_u8(bsp_dev_i2c_t dev_num, uint8_t* rx_data)
 {
 	(void)dev_num;
-  unsigned char data;
-  int i;
+	unsigned char data;
+	int i;
 
-  /* Read 8 bits */
-  data = 0;
-  for(i = 0; i < 8; i++)
-  {
-    set_sda_float();
-    i2c_sw_delay();
+	/* Read 8 bits */
+	data = 0;
+	for(i = 0; i < 8; i++) {
+		set_sda_float();
+		i2c_sw_delay();
 
-    set_scl_float();
-    i2c_sw_delay();
+		set_scl_float();
+		i2c_sw_delay();
 
-    data <<= 1;
-    if(get_sda())
-        data |= 1;
+		data <<= 1;
+		if(get_sda())
+			data |= 1;
 
-    set_scl_low();
-    i2c_sw_delay();
-  }
-  *rx_data = data;
+		set_scl_low();
+		i2c_sw_delay();
+	}
+	*rx_data = data;
 
-  /* Do not Send ACK / NACK because sent by bsp_i2c_read_ack() */
+	/* Do not Send ACK / NACK because sent by bsp_i2c_read_ack() */
 
 	return BSP_OK;
 }
+

@@ -69,13 +69,13 @@ void mode_setup_exc_i2c(t_hydra_console *con);
 void mode_cleanup_i2c(t_hydra_console *con);
 
 /* Mode parameters string (does not include m & bus_mode) */
-const char* mode_str_param_i2c(t_hydra_console *con);
-/* Pins used string */
-const char* mode_str_pins_i2c(t_hydra_console *con);
+void mode_print_param_i2c(t_hydra_console *con);
+/* Print Pins used */
+void mode_print_pins_i2c(t_hydra_console *con);
 /* Settings string */
-const char* mode_str_settings_i2c(t_hydra_console *con);
-/* Mode name string */
-const char* mode_str_name_i2c(t_hydra_console *con);
+void mode_print_settings_i2c(t_hydra_console *con);
+ /* Print Mode name */
+void mode_print_name_i2c(t_hydra_console *con);
 /* Mode prompt string*/
 const char* mode_str_prompt_i2c(t_hydra_console *con);
 
