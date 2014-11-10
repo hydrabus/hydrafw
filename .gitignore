@@ -3,3 +3,7 @@
 build/
 hydrafw_version.hdr
 
+cscope.out
+hydrafwEm.cscope_file_list
+hydrafwEm.depend
+hydrafwEm.elay

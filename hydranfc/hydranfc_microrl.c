@@ -29,6 +29,7 @@
 #include "microrl_callback.h"
 
 #include "hydranfc.h"
+#include "hydranfc_cmd_transparent.h"
 #include "hydranfc_microrl.h"
 
 #define _CMD_HELP0        "?"
@@ -53,6 +54,7 @@
 #define _CMD_NFC_VICINITY "nfc_vicinity"
 #define _CMD_NFC_SNIFF    "nfc_sniff"
 #define _CMD_NFC_DUMP     "nfc_dump"
+#define _CMD_NFC_PROTOCOL "nfc_select_protocol"
 
 /* Update hydranfc_microrl.h => HYDRANFC_NUM_OF_CMD if new command are added/removed */
 microrl_exec_t hydranfc_keyworld[HYDRANFC_NUM_OF_CMD] =
@@ -75,7 +77,8 @@ microrl_exec_t hydranfc_keyworld[HYDRANFC_NUM_OF_CMD] =
 /* 15 */ { _CMD_NFC_MIFARE,  &cmd_nfc_mifare },
 /* 16 */ { _CMD_NFC_VICINITY,&cmd_nfc_vicinity },
 /* 17 */ { _CMD_NFC_DUMP,    &cmd_nfc_dump_regs },
-/* 18 */ { _CMD_NFC_SNIFF,   &cmd_nfc_sniff_14443A }
+/* 18 */ { _CMD_NFC_SNIFF,   &cmd_nfc_sniff_14443A },
+/* 19 */ { _CMD_NFC_PROTOCOL,&cmd_nfc_set_protocol }
 };
 
 // array for completion
@@ -107,6 +110,9 @@ void hydranfc_print_help(t_hydra_console *con, int argc, const char* const* argv
   print(con, "nfc_dump       - NFC dump registers\n\r");
   print(con, "nfc_sniff      - NFC start sniffer ISO14443A\n\r");
   print(con, "nfc_sniff can be started by K3 and stopped by K4 buttons\n\r");
+  print(con, "--------------------------------------------------------\n\r");
+  print(con, "Low level NFC API - See C# library: \n\r");
+  print(con, "|-> " _CMD_NFC_PROTOCOL " <protocol> - NFC Select protocol \n\r");
 
 }
 

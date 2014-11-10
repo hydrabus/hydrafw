@@ -17,7 +17,7 @@
 #ifndef _HYDRANFC_MICRORL_H_
 #define _HYDRANFC_MICRORL_H_
 
-#define HYDRANFC_NUM_OF_CMD (18+1)
+#define HYDRANFC_NUM_OF_CMD (19+1)
 extern char* hydranfc_compl_world[HYDRANFC_NUM_OF_CMD + 1];
 extern microrl_exec_t hydranfc_keyworld[HYDRANFC_NUM_OF_CMD];
 
