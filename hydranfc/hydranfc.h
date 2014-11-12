@@ -31,5 +31,7 @@ void cmd_nfc_vicinity(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_nfc_mifare(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_nfc_dump_regs(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_nfc_sniff_14443A(t_hydra_console *con, int argc, const char* const* argv);
+void cmd_microrl_select_nfc_low_level(t_hydra_console *con, int argc, const char* const* argv);
+
 
 #endif /* _HYDRANFC_H_ */
