@@ -1,17 +1,16 @@
 /*
-    HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
 
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 
 #ifndef _HYDRABUS_MODE_HIZ_H_
@@ -36,7 +35,7 @@ void mode_stopR_hiz(t_hydra_console *con);
 uint32_t mode_write_hiz(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data);
 /* Read x data command 'r' or 'r:x' (return status 0=OK) */
 uint32_t mode_read_hiz(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
- /* Write & Read x data (return status 0=OK) */
+/* Write & Read x data (return status 0=OK) */
 uint32_t mode_write_read_hiz(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data);
 
 /* Set CLK High (x-WIRE or other raw mode ...) command '/' */
@@ -74,9 +73,10 @@ void mode_print_param_hiz(t_hydra_console *con);
 void mode_print_pins_hiz(t_hydra_console *con);
 /* Settings string */
 void mode_print_settings_hiz(t_hydra_console *con);
- /* Print Mode name */
+/* Print Mode name */
 void mode_print_name_hiz(t_hydra_console *con);
 /* Mode prompt string*/
 const char* mode_str_prompt_hiz(t_hydra_console *con);
 
 #endif /* _HYDRABUS_MODE_HIZ_H_ */
+

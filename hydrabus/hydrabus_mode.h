@@ -1,17 +1,16 @@
 /*
-    HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
 
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 #ifndef _HYDRABUS_MODE_H_
 #define _HYDRABUS_MODE_H_
@@ -56,12 +55,11 @@ extern const char hydrabus_mode_str_mul_value_u8[];
 /* "\r\n" */
 extern const char hydrabus_mode_str_mul_br[];
 
-typedef struct
-{
-  /*
-    Terminal parameters specific to this mode (return TRUE if mode configured with success else FALSE)
-  */
-  bool (*mode_cmd)(t_hydra_console *con, int argc, const char* const* argv);
+typedef struct {
+	/*
+	  Terminal parameters specific to this mode (return TRUE if mode configured with success else FALSE)
+	*/
+	bool (*mode_cmd)(t_hydra_console *con, int argc, const char* const* argv);
 	void (*mode_start)(t_hydra_console *con); /* Start command '[' */
 	void (*mode_startR)(t_hydra_console *con); /* Start Read command '{' */
 	void (*mode_stop)(t_hydra_console *con); /* Stop command ']' */
@@ -84,24 +82,24 @@ typedef struct
 	void (*mode_print_param)(t_hydra_console *con); /* Print Mode parameters */
 	void (*mode_print_pins)(t_hydra_console *con); /* Print Pins used */
 	void (*mode_print_settings)(t_hydra_console *con); /* Settings string */
-  void (*mode_print_name)(t_hydra_console *con);  /* Print Mode name */
-  const char* (*mode_str_prompt)(t_hydra_console *con); /* Prompt name string */
+	void (*mode_print_name)(t_hydra_console *con);  /* Print Mode name */
+	const char* (*mode_str_prompt)(t_hydra_console *con); /* Prompt name string */
 } mode_exec_t;
 
-typedef struct
-{
-  mode_config_dev_t param; /* "mode_config_proto_t" parameter to update (corresponding to arg) */
-  long min; /* arg min value included */
-  long max; /* arg max value included */
-  bool dec_val; /* If TRUE decrement 'arg value' before to store it in pt_val else do nothing */
-  int argc_help; /* argc help (nb device included in argv_help) */
-  const char* const* argv_help; /* argv help string (when arg is invalid/missing) */
+typedef struct {
+	mode_config_dev_t param; /* "mode_config_proto_t" parameter to update (corresponding to arg) */
+	long min; /* arg min value included */
+	long max; /* arg max value included */
+	bool dec_val; /* If TRUE decrement 'arg value' before to store it in pt_val else do nothing */
+	int argc_help; /* argc help (nb device included in argv_help) */
+	const char* const* argv_help; /* argv help string (when arg is invalid/missing) */
 } mode_dev_arg_t;
 
 void hydrabus_mode(t_hydra_console *con, int argc, const char* const* argv);
 void hydrabus_mode_info(t_hydra_console *con, int argc, const char* const* argv);
 bool hydrabus_mode_proto_inter(t_hydra_console *con, int argc, const char* const* argv);
 long hydrabus_mode_dev_manage_arg(t_hydra_console *con, int argc, const char* const* argv,
-                                  int mode_dev_nb_arg, int dev_arg_no, mode_dev_arg_t* dev_arg);
+				  int mode_dev_nb_arg, int dev_arg_no, mode_dev_arg_t* dev_arg);
 
 #endif /* _HYDRABUS_MODE_H_ */
+

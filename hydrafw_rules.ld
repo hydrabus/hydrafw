@@ -63,8 +63,6 @@ SECTIONS
         *(.text.startup.*)
         *(.text)
         *(.text.*)
-        *(.rodata)
-        *(.rodata.*)
         *(.glue_7t)
         *(.glue_7)
         *(.gcc*)
@@ -125,6 +123,8 @@ SECTIONS
         . = ALIGN(4);
         *(.ramtext)
         . = ALIGN(4);
+        *(.rodata)
+        *(.rodata.*)
         PROVIDE(_edata = .);
     } > ccmram AT > flash
 

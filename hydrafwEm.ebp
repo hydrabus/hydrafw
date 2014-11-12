@@ -28,7 +28,7 @@
 					<Add option="-Wl,--gc-sections" />
 				</Linker>
 				<ExtraCommands>
-					<Add before="python Utility_script/hydrafw-version.py $(PROJECT_DIR)common\hydrafw_version.hdr" />
+					<Add before="python scripts/hydrafw-version.py $(PROJECT_DIR)common\hydrafw_version.hdr" />
 					<Mode before="1" />
 					<Mode after="0" />
 				</ExtraCommands>
@@ -59,8 +59,8 @@
 					<Add option="-Wl,--gc-sections" />
 				</Linker>
 				<ExtraCommands>
-					<Add before="python Utility_script/hydrafw-version.py $(PROJECT_DIR)common\hydrafw_version.hdr" />
-					<Add after="python Utility_script/dfu-convert.py -i $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).hex $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dfu" />
+					<Add before="python scripts/hydrafw-version.py $(PROJECT_DIR)common\hydrafw_version.hdr" />
+					<Add after="python scripts/dfu-convert.py -i $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).hex $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dfu" />
 					<Mode before="1" />
 					<Mode after="2" />
 				</ExtraCommands>
@@ -86,8 +86,8 @@
 					<Add option="-Wl,--gc-sections" />
 				</Linker>
 				<ExtraCommands>
-					<Add before="python Utility_script/hydrafw-version.py $(PROJECT_DIR)common\hydrafw_version.hdr" />
-					<Add after="python Utility_script/dfu-convert.py -i $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).hex $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dfu" />
+					<Add before="python scripts/hydrafw-version.py $(PROJECT_DIR)common\hydrafw_version.hdr" />
+					<Add after="python scripts/dfu-convert.py -i $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).hex $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dfu" />
 					<Mode before="1" />
 					<Mode after="2" />
 				</ExtraCommands>

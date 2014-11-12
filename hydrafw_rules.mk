@@ -167,13 +167,11 @@ FORCE:
 %.hdr: FORCE
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	-rm -f $(OBJDIR)/common.o
-	sh hydrafw-version.sh > $@.tmp
-	if [ -f "$@" ] && cmp -s $@ $@.tmp; then rm $@.tmp; else echo "Generating $@"; mv $@.tmp $@; fi
+  python scripts/hydrafw-version.py ./$@
 else
 	@echo Creating $@
 	@rm -f $(OBJDIR)/common.o
-	@sh hydrafw-version.sh > $@.tmp
-	@if [ -f "$@" ] && cmp -s $@ $@.tmp; then rm $@.tmp; else echo "Generating $@"; mv $@.tmp $@; fi
+	@python scripts/hydrafw-version.py ./$@
 endif
 
 $(OBJS): | $(BUILDDIR)
@@ -260,10 +258,10 @@ endif
 
 %.dfu: %.hex $(LDSCRIPT)
 ifeq ($(USE_VERBOSE_COMPILE),yes)
-	python dfu-convert.py -i $< $@
+	python scripts/dfu-convert.py -i $< $@
 else
 	@echo Creating $@
-	@python dfu-convert.py -i $< $@
+	@python scripts/dfu-convert.py -i $< $@
 endif
 
 %.bin: %.elf $(LDSCRIPT)

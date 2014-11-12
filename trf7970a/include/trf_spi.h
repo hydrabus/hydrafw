@@ -35,3 +35,4 @@ void SpiWriteSingle(u08_t *pbuf, u08_t length);
 //===============================================================
 
 #endif /* _TRF_SPI_H_ */
+
