@@ -39,6 +39,7 @@ volatile int irq_end_rx;
 
 volatile bool hydranfc_is_detected_flag = FALSE;
 
+
 /*
 * SPI2 configuration structure => TRF7970A SPI ChipSelect(IO4).
 * Low speed (42MHz/32=1.3125MHz), CPHA=1, CPOL=0, 8bits frames, MSb transmitted first.
@@ -621,3 +622,6 @@ void cmd_nfc_dump_regs(t_hydra_console *con, int argc, const char* const* argv)
 
 	cprintf(con, "End Dump TRF7970A Registers\r\n");
 }
+
+
+

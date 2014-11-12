@@ -7,6 +7,32 @@
 		<Option pch_mode="2" />
 		<Option compiler="armgcc_eb" />
 		<Build>
+			<Target title="Debug">
+				<Option output="buildEm\bin\Debug\hydrafwEm.elf" />
+				<Option object_output="buildEm\obj\Debug\" />
+				<Option type="0" />
+				<Option create_hex="1" />
+				<Option compiler="armgcc_eb" />
+				<Option projectDeviceOptionsRelation="0" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-fdata-sections" />
+					<Add option="-ffunction-sections" />
+					<Add option="-O0" />
+					<Add option="-g3" />
+				</Compiler>
+				<Assembler>
+					<Add option="-Wa,--gdwarf-2" />
+				</Assembler>
+				<Linker>
+					<Add option="-Wl,--gc-sections" />
+				</Linker>
+				<ExtraCommands>
+					<Add before="python Utility_script/hydrafw-version.py $(PROJECT_DIR)common\hydrafw_version.hdr" />
+					<Mode before="1" />
+					<Mode after="0" />
+				</ExtraCommands>
+			</Target>
 			<Target title="Release_o2">
 				<Option output="buildEm\bin\Release_o2\hydrafwEm.elf" />
 				<Option object_output="buildEm\obj\Release_o2\" />
@@ -33,8 +59,8 @@
 					<Add option="-Wl,--gc-sections" />
 				</Linker>
 				<ExtraCommands>
-					<Add before='cmd /c &quot;sh hydrafw-version.sh &gt; $(PROJECT_DIR)hydrabus\hydrafw_version.hdr&quot;' />
-					<Add after="python dfu-convert.py -i $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).hex $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dfu" />
+					<Add before="python Utility_script/hydrafw-version.py $(PROJECT_DIR)common\hydrafw_version.hdr" />
+					<Add after="python Utility_script/dfu-convert.py -i $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).hex $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dfu" />
 					<Mode before="1" />
 					<Mode after="2" />
 				</ExtraCommands>
@@ -60,8 +86,8 @@
 					<Add option="-Wl,--gc-sections" />
 				</Linker>
 				<ExtraCommands>
-					<Add before='cmd /c &quot;sh hydrafw-version.sh &gt; $(PROJECT_DIR)hydrabus\hydrafw_version.hdr&quot;' />
-					<Add after="python dfu-convert.py -i $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).hex $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dfu" />
+					<Add before="python Utility_script/hydrafw-version.py $(PROJECT_DIR)common\hydrafw_version.hdr" />
+					<Add after="python Utility_script/dfu-convert.py -i $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).hex $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dfu" />
 					<Mode before="1" />
 					<Mode after="2" />
 				</ExtraCommands>
@@ -445,6 +471,7 @@
 		<Unit filename="common\common.h" />
 		<Unit filename="common\ffconf.h" />
 		<Unit filename="common\halconf.h" />
+		<Unit filename="common\hydrafw_version.hdr" />
 		<Unit filename="common\mcuconf.h" />
 		<Unit filename="common\microrl_callback.h" />
 		<Unit filename="common\microrl_common.c">
@@ -604,7 +631,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydrabus\hydrabus_mode_uart.h" />
-		<Unit filename="hydrabus\hydrafw_version.hdr" />
 		<Unit filename="hydrafw_STM32F405xG.ld" />
 		<Unit filename="hydrafw_rules.ld" />
 		<Unit filename="hydranfc\hydranfc.c">
@@ -626,6 +652,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydranfc\hydranfc_microrl.h" />
+		<Unit filename="hydranfc\low_level\hydranfc_cmd_transparent.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydranfc\low_level\hydranfc_cmd_transparent.h" />
+		<Unit filename="hydranfc\low_level\hydranfc_low_microrl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydranfc\low_level\hydranfc_low_microrl.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -653,23 +687,6 @@
 		<Extensions>
 			<code_completion />
 			<debugger>
-				<target_debugging_settings target="Release_os" active_interface="ST-link">
-					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description=".\STM32F40x.svd" dont_start_server="false" backoff_time="1000" options="10" reg_filter="0" active_family="STMicroelectronics">
-						<family_options family_id="STMicroelectronics">
-							<option opt_id="ID_JTAG_SWD" opt_value="swd" />
-							<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
-							<option opt_id="ID_RESET_TYPE" opt_value="System" />
-							<option opt_id="ID_LOAD_PROGRAM" opt_value="1" />
-							<option opt_id="ID_SEMIHOST_CHECK" opt_value="0" />
-							<option opt_id="ID_RAM_EXEC" opt_value="0" />
-							<option opt_id="ID_VEC_TABLE" opt_value="1" />
-							<option opt_id="ID_DONT_CONN_RESET" opt_value="0" />
-							<option opt_id="ID_ALL_MODE_DEBUG" opt_value="0" />
-							<option opt_id="ID_DEV_ADDR" opt_value="" />
-							<option opt_id="ID_VERBOSE_LEVEL" opt_value="3" />
-						</family_options>
-					</debug_interface>
-				</target_debugging_settings>
 				<target_debugging_settings target="Release_o2" active_interface="ST-link">
 					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description=".\STM32F40x.svd" dont_start_server="false" backoff_time="1000" options="10" reg_filter="0" active_family="STMicroelectronics">
 						<family_options family_id="STMicroelectronics">
@@ -687,7 +704,41 @@
 						</family_options>
 					</debug_interface>
 				</target_debugging_settings>
+				<target_debugging_settings target="Release_os" active_interface="ST-link">
+					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description=".\STM32F40x.svd" dont_start_server="false" backoff_time="1000" options="10" reg_filter="0" active_family="STMicroelectronics">
+						<family_options family_id="STMicroelectronics">
+							<option opt_id="ID_JTAG_SWD" opt_value="swd" />
+							<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
+							<option opt_id="ID_RESET_TYPE" opt_value="System" />
+							<option opt_id="ID_LOAD_PROGRAM" opt_value="1" />
+							<option opt_id="ID_SEMIHOST_CHECK" opt_value="0" />
+							<option opt_id="ID_RAM_EXEC" opt_value="0" />
+							<option opt_id="ID_VEC_TABLE" opt_value="1" />
+							<option opt_id="ID_DONT_CONN_RESET" opt_value="0" />
+							<option opt_id="ID_ALL_MODE_DEBUG" opt_value="0" />
+							<option opt_id="ID_DEV_ADDR" opt_value="" />
+							<option opt_id="ID_VERBOSE_LEVEL" opt_value="3" />
+						</family_options>
+					</debug_interface>
+				</target_debugging_settings>
 			</debugger>
+			<target_debugging_settings target="Debug" active_interface="ST-link">
+				<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description="" dont_start_server="false" backoff_time="1000" options="0" reg_filter="0" active_family="STMicroelectronics">
+					<family_options family_id="STMicroelectronics">
+						<option opt_id="ID_JTAG_SWD" opt_value="swd" />
+						<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
+						<option opt_id="ID_RESET_TYPE" opt_value="System" />
+						<option opt_id="ID_LOAD_PROGRAM" opt_value="1" />
+						<option opt_id="ID_SEMIHOST_CHECK" opt_value="0" />
+						<option opt_id="ID_RAM_EXEC" opt_value="0" />
+						<option opt_id="ID_VEC_TABLE" opt_value="1" />
+						<option opt_id="ID_DONT_CONN_RESET" opt_value="0" />
+						<option opt_id="ID_ALL_MODE_DEBUG" opt_value="0" />
+						<option opt_id="ID_DEV_ADDR" opt_value="" />
+						<option opt_id="ID_VERBOSE_LEVEL" opt_value="3" />
+					</family_options>
+				</debug_interface>
+			</target_debugging_settings>
 			<envvars />
 			<DoxyBlocks>
 				<comment_style block="0" line="0" />

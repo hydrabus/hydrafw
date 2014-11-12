@@ -83,9 +83,9 @@ char** complet(void* user_handle, int argc, const char * const * argv)
 #ifdef HYDRANFC
 	/* HydraNFC Shield detected*/
 	if(hydranfc_is_detected() == TRUE) {
-		_num_of_cmd = HYDRANFC_NUM_OF_CMD;
-		compl_world = &hydranfc_compl_world[0];
-		keyworld = hydranfc_keyworld;
+		_num_of_cmd = hydranfc_get_num_of_cmd();
+		compl_world = hydranfc_get_compl_world(); //&hydranfc_compl_world[0];
+		keyworld = hydranfc_get_keyworld();
 	} else {
 		/* HydraBus commands */
 		_num_of_cmd = HYDRABUS_NUM_OF_CMD;

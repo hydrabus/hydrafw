@@ -27,8 +27,8 @@ limitations under the License.
 #include "microrl_callback.h"
 
 #include "hydranfc.h"
-#include "hydranfc_cmd_transparent.h"
 #include "hydranfc_microrl.h"
+#include "hydranfc_low_microrl.h"
 
 #define _CMD_HELP0        "?"
 #define _CMD_HELP1        "h"
@@ -52,8 +52,11 @@ limitations under the License.
 #define _CMD_NFC_VICINITY "nfc_vicinity"
 #define _CMD_NFC_SNIFF    "nfc_sniff"
 #define _CMD_NFC_DUMP     "nfc_dump"
-#define _CMD_NFC_PROTOCOL "nfc_select_protocol"
+#define _CMD_NFC_LOW      "nfc_select_low"
 
+void cmd_microrl_select_nfc_low_level(t_hydra_console *con, int argc, const char* const* argv);
+
+#define HYDRANFC_NUM_OF_CMD (19+1)
 /* Update hydranfc_microrl.h => HYDRANFC_NUM_OF_CMD if new command are added/removed */
 microrl_exec_t hydranfc_keyworld[HYDRANFC_NUM_OF_CMD] =
 {
@@ -76,15 +79,40 @@ microrl_exec_t hydranfc_keyworld[HYDRANFC_NUM_OF_CMD] =
 /* 16 */ { _CMD_NFC_VICINITY,&cmd_nfc_vicinity },
 /* 17 */ { _CMD_NFC_DUMP,    &cmd_nfc_dump_regs },
 /* 18 */ { _CMD_NFC_SNIFF,   &cmd_nfc_sniff_14443A },
-/* 19 */ { _CMD_NFC_PROTOCOL,&cmd_nfc_set_protocol }
+/* 19 */ { _CMD_NFC_LOW,     &cmd_microrl_select_nfc_low_level }
 };
 
 // array for completion
 char* hydranfc_compl_world[HYDRANFC_NUM_OF_CMD + 1];
 
+char* hydranfc_get_compl_world()
+{
+	if(nfc_select_low_selected == TRUE)
+  		return hydranfc_low_get_compl_world();
+
+	return &hydranfc_compl_world[0];
+}
+
+microrl_exec_t* hydranfc_get_keyworld()
+{
+	if(nfc_select_low_selected == TRUE)
+  		return hydranfc_low_get_keyworld();
+	return &hydranfc_keyworld;
+}
+
+int hydranfc_get_num_of_cmd()
+{
+	if(nfc_select_low_selected == TRUE)
+  		return hydranfc_low_get_num_of_cmd();
+	return HYDRANFC_NUM_OF_CMD;
+}
+
 //*****************************************************************************
 void hydranfc_print_help(t_hydra_console *con, int argc, const char* const* argv)
 {
+  if(nfc_select_low_selected == TRUE)
+     return hydranfc_low_print_help(con, argc, argv);
+
   (void)argc;
   (void)argv;
 
@@ -106,11 +134,9 @@ void hydranfc_print_help(t_hydra_console *con, int argc, const char* const* argv
   print(con, "nfc_mifare     - NFC read Mifare/ISO14443A UID\n\r");
   print(con, "nfc_vicinity   - NFC read Vicinity UID\n\r");
   print(con, "nfc_dump       - NFC dump registers\n\r");
+  print(con, "nfc_select_low - NFC Low level API - See C# library\n\r");
   print(con, "nfc_sniff      - NFC start sniffer ISO14443A\n\r");
   print(con, "nfc_sniff can be started by K3 and stopped by K4 buttons\n\r");
-  print(con, "--------------------------------------------------------\n\r");
-  print(con, "Low level NFC API - See C# library: \n\r");
-  print(con, "|-> " _CMD_NFC_PROTOCOL " <protocol> - NFC Select protocol \n\r");
 
 }
 
@@ -122,6 +148,9 @@ int hydranfc_execute(t_hydra_console *con, int argc, const char* const* argv)
   bool cmd_found;
   int curr_arg = 0;
   int cmd;
+
+  if(nfc_select_low_selected == TRUE)
+     return hydranfc_low_execute(con, argc, argv);
 
   // just iterate through argv word and compare it with your commands
   cmd_found = FALSE;
@@ -153,5 +182,15 @@ int hydranfc_execute(t_hydra_console *con, int argc, const char* const* argv)
 //*****************************************************************************
 void hydranfc_sigint(t_hydra_console *con)
 {
+  if(nfc_select_low_selected == TRUE)
+     return hydranfc_low_sigint(con);
+
   print(con, "HydraNFC microrl ^C catched!\n\r");
+}
+
+
+void cmd_microrl_select_nfc_low_level(t_hydra_console *con, int argc, const char* const* argv)
+{
+	cprintf(con, "Entering NFC Low level mode\r\n");
+	nfc_select_low_selected = TRUE;
 }
