@@ -39,14 +39,14 @@ microrl_exec_t hydranfc_low_keyworld[HYDRANFC_LOW_NUM_OF_CMD] = {
 char* hydranfc_low_compl_world[HYDRANFC_LOW_NUM_OF_CMD + 1];
 volatile bool nfc_select_low_selected = FALSE;
 
-char* hydranfc_low_get_compl_world()
+char** hydranfc_low_get_compl_world()
 {
-	return &hydranfc_low_compl_world[0];
+	return hydranfc_low_compl_world;
 }
 
 microrl_exec_t* hydranfc_low_get_keyworld()
 {
-	return &hydranfc_low_keyworld;
+	return &hydranfc_low_keyworld[0];
 }
 
 int hydranfc_low_get_num_of_cmd()
@@ -108,6 +108,8 @@ void hydranfc_low_sigint(t_hydra_console *con)
 
 void cmd_microrl_exit_nfc_low_level(t_hydra_console *con, int argc, const char* const* argv)
 {
+	(void)argc;
+	(void)argv;
 	cprintf(con, "Leaving NFC Low level mode\r\n");
 	nfc_select_low_selected = FALSE;
 }

@@ -6,7 +6,9 @@
 
 void cmd_nfc_set_protocol(t_hydra_console *con, int argc, const char* const* argv)
 {
-	//tprintf("Error: cmd_nfc_set_protocol not implemented yet\r\n");
+	(void)argc;
+	(void)argv;
+	cprintf(con, "Selecting the protocol\r\n");
 	setRF_14443_A();
 }
 

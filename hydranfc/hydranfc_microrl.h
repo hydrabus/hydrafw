@@ -19,7 +19,7 @@ limitations under the License.
 void hydranfc_print_help(t_hydra_console *con, int argc, const char* const* argv);
 int hydranfc_execute(t_hydra_console *con, int argc, const char* const* argv);
 void hydranfc_sigint(t_hydra_console *con);
-char* hydranfc_get_compl_world(void);
+char** hydranfc_get_compl_world(void);
 microrl_exec_t* hydranfc_get_keyworld(void);
 int hydranfc_get_num_of_cmd(void);
 
