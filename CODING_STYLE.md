@@ -13,7 +13,7 @@ With following syntax: AStyle.exe -t --style=linux --lineend=linux my_c_file.c
 ![Em::Blocks General settings](http://hydrabus.com/EmBlocks_CodingStyle_GeneralSettings.png)
 
 ##Menu Settings -> Editor -> Source fomatter Tab Style:
-![Em::Blocks Source fomatter Tab Style](http://hydrabus.com/EmBlocks_CodingStyle_SourceFormatter_Indentation.png)
+![Em::Blocks Source fomatter Tab Style](http://hydrabus.com/EmBlocks_CodingStyle_SourceFormatter_Style.png)
 
 ##Menu Settings -> Editor -> General settings Tab Indentation:
-![Em::Blocks Source fomatter Tab Indentation](http://hydrabus.com/EmBlocks_CodingStyle_SourceFormatter_Style.png)
+![Em::Blocks Source fomatter Tab Indentation](http://hydrabus.com/EmBlocks_CodingStyle_SourceFormatter_Indentation.png)
