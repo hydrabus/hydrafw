@@ -4,12 +4,16 @@
 #include "common.h"
 #include "mcu.h"
 
-#define ISO14443A_3    1
-#define ISO14443A_4    2
-#define ISO15693       3
+#define	RF_PROTOCOL_NONE		 	0 // Rf field is turned off
+#define	RF_PROTOCOL_ISO15693		1
+#define	RF_PROTOCOL_ISO14443A		2
+#define	RF_PROTOCOL_ISO14443B		3
+#define	RF_PROTOCOL_UNKNOWN			255
 
-
+// console Commands
 void cmd_nfc_set_protocol(t_hydra_console *con, int argc, const char* const* argv);
-uint32_t setRF_14443_A();
+
+// Set protocol
+void low_setRF_Protocol(uint8_t protocol);
 
 #endif /* HYDRANFC_TRANSPARENT_H_INCLUDED */

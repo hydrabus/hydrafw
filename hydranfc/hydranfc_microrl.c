@@ -84,19 +84,19 @@ microrl_exec_t hydranfc_keyworld[HYDRANFC_NUM_OF_CMD] = {
 // array for completion
 char* hydranfc_compl_world[HYDRANFC_NUM_OF_CMD + 1];
 
-char* hydranfc_get_compl_world(void)
+char** hydranfc_get_compl_world(void)
 {
 	if(nfc_select_low_selected == TRUE)
 		return hydranfc_low_get_compl_world();
 
-	return &hydranfc_compl_world[0];
+	return hydranfc_compl_world;
 }
 
 microrl_exec_t* hydranfc_get_keyworld(void)
 {
 	if(nfc_select_low_selected == TRUE)
 		return hydranfc_low_get_keyworld();
-	return &hydranfc_keyworld;
+	return &hydranfc_keyworld[0];
 }
 
 int hydranfc_get_num_of_cmd(void)
@@ -185,6 +185,7 @@ void hydranfc_sigint(t_hydra_console *con)
 
 void cmd_microrl_select_nfc_low_level(t_hydra_console *con, int argc, const char* const* argv)
 {
-	cprintf(con, "Entering NFC Low level mode\r\n");
+	(void)argc;
+	(void)argv;cprintf(con, "Entering NFC Low level mode\r\n");
 	nfc_select_low_selected = TRUE;
 }

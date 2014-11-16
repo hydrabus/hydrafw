@@ -7,7 +7,7 @@ void hydranfc_low_print_help(t_hydra_console *con, int argc, const char* const* 
 int hydranfc_low_execute(t_hydra_console *con, int argc, const char* const* argv);
 void hydranfc_low_sigint(t_hydra_console *con);
 
-char*           hydranfc_low_get_compl_world();
+char**          hydranfc_low_get_compl_world();
 microrl_exec_t* hydranfc_low_get_keyworld();
 int             hydranfc_low_get_num_of_cmd();
 
