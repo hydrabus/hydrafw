@@ -14,6 +14,8 @@ For more details on HydraBus Hardware and Firmware see also: https://github.com/
 
 For more details on HydraNFC Hardware see: https://github.com/bvernoux/hydranfc
 
+For HydraFW information see Wiki: https://github.com/bvernoux/hydrafw/wiki
+
 For hydrafw usage with VT100 Terminal see wiki
 https://github.com/bvernoux/hydrafw/wiki/HydraFW-commands
 
