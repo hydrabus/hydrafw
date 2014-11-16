@@ -3,30 +3,56 @@
 #include "trf797x.h"
 #include "types.h"
 #include "tools.h"
+#include "stdio.h"
+#include "common.h"
 
-void cmd_nfc_set_protocol(t_hydra_console *con, int argc, const char* const* argv)
+void low_setRF_Protocol_ISO15693();
+void low_setRF_Protocol_ISO14443A();
+void low_setRF_Protocol_ISO14443B();
+void low_setRF_Protocol_Off();
+
+// lowLevelCommand
+// Set protocol
+static struct exception hydraNfcLowLevelException;
+void low_setRF_Protocol(uint8_t protocol)
 {
-	(void)argc;
-	(void)argv;
-	cprintf(con, "Selecting the protocol\r\n");
-	setRF_14443_A();
+	switch(protocol)	{
+		case RF_PROTOCOL_ISO14443A:
+			printf("Calling low_setRF_Protocol_ISO14443A\n");
+			low_setRF_Protocol_ISO14443A();
+			break;
+/*		case RF_PROTOCOL_ISO14443B:
+			low_setRF_Protocol_ISO14443B();
+			break;
+		case RF_PROTOCOL_ISO15693:
+			low_setRF_Protocol_ISO15693();
+			break; */
+		case RF_PROTOCOL_NONE:
+			printf("Calling low_setRF_Protocol_Off\n");
+			low_setRF_Protocol_Off();
+			break;
+		default:
+			hydraNfcLowLevelException.errorCode = 0x01;
+			hydraNfcLowLevelException.errorMessage = "low_setRF_Protocol Error- Unsupported Protocol";
+			Throw hydraNfcLowLevelException;
+	}
 }
 
+void low_setRF_Protocol_Off()
+{
+	printf("Turning off RF\n");
+	Trf797xTurnRfOff();
+}
 
-uint32_t setRF_14443_A()
+void low_setRF_Protocol_ISO14443A()
 {
 	int init_ms;
-#undef DATA_MAX
-#define DATA_MAX (20)
-	uint8_t data_buf[DATA_MAX];
-#undef UID_MAX
-#define UID_MAX (5) /* Does not managed UID > 4+BCC to be done later ... */
-
+	uint8_t fifo_size;
+	uint8_t data_buf[5];
 
 	/* Test ISO14443-A/Mifare read UID */
 	init_ms = Trf797xInitialSettings();
 	Trf797xReset();
-
 
 	/* Write Modulator and SYS_CLK Control Register (0x09) (13.56Mhz SYS_CLK and default Clock 13.56Mhz)) */
 	data_buf[0] = MODULATOR_CONTROL;
@@ -44,7 +70,9 @@ uint32_t setRF_14443_A()
 	data_buf[0] = ISO_CONTROL;
 	Trf797xReadSingle(data_buf, 1);
 	if(data_buf[0] != 0x88) {
-		return 0xFFFFFFFF;
+		hydraNfcLowLevelException.errorCode = 0x02;
+		hydraNfcLowLevelException.errorMessage = "low_setRF_Protocol_ISO14443A Error- ISO_CONTROL Error";
+		Throw hydraNfcLowLevelException;
 	}
 
 	/* Turn RF ON (Chip Status Control Register (0x00)) */
@@ -54,6 +82,5 @@ uint32_t setRF_14443_A()
 	data_buf[0] = CHIP_STATE_CONTROL;
 	Trf797xReadSingle(data_buf, 1);
 	return (uint32_t)data_buf[0];
-
 
 }

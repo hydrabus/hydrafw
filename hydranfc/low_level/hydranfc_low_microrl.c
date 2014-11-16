@@ -20,19 +20,20 @@
 
 #define _CMD_NFC_LOW_EXIT0 "x"
 #define _CMD_NFC_LOW_EXIT1 "exit"
+#define _CMD_NFC_PROTOCOL  "set"
 
 void cmd_microrl_exit_nfc_low_level(t_hydra_console *con, int argc, const char* const* argv);
 
 /* Update hydranfc_low_microrl.h => HYDRANFC_NUM_OF_CMD if new command are added/removed */
-#define HYDRANFC_LOW_NUM_OF_CMD 5
+#define HYDRANFC_LOW_NUM_OF_CMD 6
 
 microrl_exec_t hydranfc_low_keyworld[HYDRANFC_LOW_NUM_OF_CMD] = {
 	/* 0  */ { _CMD_HELP0, &hydranfc_low_print_help },
 	/* 1  */ { _CMD_HELP1, &hydranfc_low_print_help },
 	/* 2  */ { _CMD_CLEAR, &print_clear },
-	/* 2  */ { _CMD_NFC_LOW_EXIT0, &cmd_microrl_exit_nfc_low_level },
-	/* 2  */ { _CMD_NFC_LOW_EXIT1, &cmd_microrl_exit_nfc_low_level },
-///* 3  */ { _CMD_NFC_PROTOCOL,&cmd_nfc_low_level }
+	/* 3  */ { _CMD_NFC_LOW_EXIT0, &cmd_microrl_exit_nfc_low_level },
+	/* 4  */ { _CMD_NFC_LOW_EXIT1, &cmd_microrl_exit_nfc_low_level },
+	/* 5  */ { _CMD_NFC_PROTOCOL,  &cmd_nfc_set_protocol }
 };
 
 // array for completion
@@ -64,8 +65,7 @@ void hydranfc_low_print_help(t_hydra_console *con, int argc, const char* const* 
 	print(con, "? or h         - Help\t\n\r");
 	print(con, "x or exit      - exit the Low Level NFC API menu\n\r");
 	print(con, "clear          - clear screen\n\r");
-	//print(con, _CMD_NFC_PROTOCOL " <protocol> - NFC Select protocol \n\r");
-
+	print(con, _CMD_NFC_PROTOCOL " <protocol> - NFC Select protocol \n\r");
 }
 
 //*****************************************************************************
@@ -112,4 +112,47 @@ void cmd_microrl_exit_nfc_low_level(t_hydra_console *con, int argc, const char* 
 	(void)argv;
 	cprintf(con, "Leaving NFC Low level mode\r\n");
 	nfc_select_low_selected = FALSE;
+}
+
+// Console Command
+void cmd_nfc_set_protocol(t_hydra_console *con, int argc, const char* const* argv)
+{
+	(void)argc;
+	(void)argv;
+	struct exception e;
+
+	uint8_t selectedProtocol = RF_PROTOCOL_UNKNOWN;
+
+	// Test if parameters are passed
+	if (!strcmp("14443A", argv[1]))
+			selectedProtocol = RF_PROTOCOL_ISO14443A;
+
+	if (!strcmp("14443B", argv[1]))
+			selectedProtocol = RF_PROTOCOL_ISO14443B;
+
+	if (!strcmp("15693", argv[1]))
+			selectedProtocol = RF_PROTOCOL_ISO15693;
+
+	if (!strcmp("OFF", argv[1]))
+		selectedProtocol = RF_PROTOCOL_NONE;
+
+	if((argc <= 1) || selectedProtocol == RF_PROTOCOL_UNKNOWN) {
+		print(con, "|-> ** missing or wrong parameters \n\r");
+		print(con, _CMD_NFC_PROTOCOL " <protocol> - NFC Select protocol \n\r");
+		print(con, "    14443A - Set the HF to ISO_14443A\n\r");
+		print(con, "    14443B - Set the HF to ISO_14443B\n\r");
+		print(con, "    15693  - Set the HF to ISO_15693\n\r");
+		print(con, "    OFF    - Turn off the HF field\n\r");
+		return;
+	}
+
+	Try {
+		cprintf(con, "Selecting the protocol: %s\r\n", argv[1]);
+		low_setRF_Protocol(selectedProtocol);
+	} Catch(e) {
+		cprintf(con, "|-> ** cmd_nfc_set_protocol failed **\r\n");
+		cprintf(con, "|-> %s\r\n", e.errorMessage);
+		return;
+	}
+	cprintf(con, "|-> Ok\r\n");
 }
