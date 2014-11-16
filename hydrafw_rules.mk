@@ -156,7 +156,7 @@ VPATH     = $(SRCPATHS)
 # Makefile rules
 #
 
-all: $(HEADER) $(OBJS) $(OUTFILES) MAKE_ALL_RULE_HOOK
+all: MAKE_ALL_RULE_HOOK $(HEADER) $(OBJS) $(OUTFILES)
 
 MAKE_ALL_RULE_HOOK:
 
@@ -166,12 +166,13 @@ FORCE:
 
 %.hdr: FORCE
 ifeq ($(USE_VERBOSE_COMPILE),yes)
+	echo Creating ./common/hydrafw_version.hdr
 	-rm -f $(OBJDIR)/common.o
-  python scripts/hydrafw-version.py ./$@
+  python scripts/hydrafw-version.py ./common/hydrafw_version.hdr
 else
-	@echo Creating $@
+	@echo Creating ./common/hydrafw_version.hdr
 	@rm -f $(OBJDIR)/common.o
-	@python scripts/hydrafw-version.py ./$@
+	@python scripts/hydrafw-version.py ./common/hydrafw_version.hdr
 endif
 
 $(OBJS): | $(BUILDDIR)
