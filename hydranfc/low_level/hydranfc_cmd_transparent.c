@@ -6,14 +6,14 @@
 #include "stdio.h"
 #include "common.h"
 
-void low_setRF_Protocol_ISO15693();
-void low_setRF_Protocol_ISO14443A();
-void low_setRF_Protocol_ISO14443B();
-void low_setRF_Protocol_Off();
+void low_setRF_Protocol_ISO15693(void);
+void low_setRF_Protocol_ISO14443A(void);
+void low_setRF_Protocol_ISO14443B(void);
+void low_setRF_Protocol_Off(void);
 
 // lowLevelCommand
 // Set protocol
-static struct exception hydraNfcLowLevelException;
+//static struct exception hydraNfcLowLevelException;
 void low_setRF_Protocol(uint8_t protocol)
 {
 	switch(protocol)	{
@@ -31,10 +31,12 @@ void low_setRF_Protocol(uint8_t protocol)
 			printf("Calling low_setRF_Protocol_Off\n");
 			low_setRF_Protocol_Off();
 			break;
+
 		default:
-			hydraNfcLowLevelException.errorCode = 0x01;
-			hydraNfcLowLevelException.errorMessage = "low_setRF_Protocol Error- Unsupported Protocol";
-			Throw hydraNfcLowLevelException;
+//			hydraNfcLowLevelException.errorCode = 0x01;
+//			hydraNfcLowLevelException.errorMessage = "low_setRF_Protocol Error- Unsupported Protocol";
+//			Throw hydraNfcLowLevelException;
+		break;
 	}
 }
 
@@ -70,9 +72,9 @@ void low_setRF_Protocol_ISO14443A()
 	data_buf[0] = ISO_CONTROL;
 	Trf797xReadSingle(data_buf, 1);
 	if(data_buf[0] != 0x88) {
-		hydraNfcLowLevelException.errorCode = 0x02;
-		hydraNfcLowLevelException.errorMessage = "low_setRF_Protocol_ISO14443A Error- ISO_CONTROL Error";
-		Throw hydraNfcLowLevelException;
+//		hydraNfcLowLevelException.errorCode = 0x02;
+//		hydraNfcLowLevelException.errorMessage = "low_setRF_Protocol_ISO14443A Error- ISO_CONTROL Error";
+//		Throw hydraNfcLowLevelException;
 	}
 
 	/* Turn RF ON (Chip Status Control Register (0x00)) */

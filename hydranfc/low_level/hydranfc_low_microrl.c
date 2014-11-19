@@ -119,7 +119,7 @@ void cmd_nfc_set_protocol(t_hydra_console *con, int argc, const char* const* arg
 {
 	(void)argc;
 	(void)argv;
-	struct exception e;
+//	struct exception e;
 
 	uint8_t selectedProtocol = RF_PROTOCOL_UNKNOWN;
 
@@ -146,6 +146,9 @@ void cmd_nfc_set_protocol(t_hydra_console *con, int argc, const char* const* arg
 		return;
 	}
 
+	cprintf(con, "Selecting the protocol: %s\r\n", argv[1]);
+	low_setRF_Protocol(selectedProtocol);
+/*
 	Try {
 		cprintf(con, "Selecting the protocol: %s\r\n", argv[1]);
 		low_setRF_Protocol(selectedProtocol);
@@ -154,5 +157,6 @@ void cmd_nfc_set_protocol(t_hydra_console *con, int argc, const char* const* arg
 		cprintf(con, "|-> %s\r\n", e.errorMessage);
 		return;
 	}
+*/
 	cprintf(con, "|-> Ok\r\n");
 }

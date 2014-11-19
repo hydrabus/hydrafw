@@ -22,18 +22,6 @@ limitations under the License.
 #include "chprintf.h"
 #include "hal.h"
 #include "mode_config.h"
-#include "cexcept.h"
-
-/* register exception type */
-struct exception {
-  uint16_t errorCode;
-  const char *errorMessage;
-} exception;
-define_exception_type(struct exception);
-extern struct exception_context the_exception_context[1];
-struct exception_context the_exception_context[1];
-
-
 
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
 
