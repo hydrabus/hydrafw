@@ -14,9 +14,9 @@ if len(args)==1:
   git=Repo().git
   print '#define HYDRAFW_GIT_TAG "' + git.describe(tags=True,always=True) + '"'
   if Repo().is_dirty:
-     print '#define HYDRAFW_GIT_HASH "' + git.rev_parse('head',short=True) + '-dirty"'
+     print '#define HYDRAFW_GIT_HASH "' + git.rev_parse('HEAD',short=True) + '-dirty"'
   else:
-     print '#define HYDRAFW_GIT_HASH "' + git.rev_parse('head',short=True) + '"'
+     print '#define HYDRAFW_GIT_HASH "' + git.rev_parse('HEAD',short=True) + '"'
   print '#define HYDRAFW_BUILD_DATE "' + date.today().isoformat() + '"'
 else:
   parser.print_help()
