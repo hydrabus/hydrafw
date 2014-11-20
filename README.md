@@ -22,14 +22,28 @@ http://www.seeedstudio.com/depot/HydraBus-m-132.html
 ###Prerequisites for Windows:
 * Install git from http://msysgit.github.io
 * Install Python 2.7.x see https://www.python.org/downloads/windows
+    *  Default Install: `C:\Python27\`
+    *  Add in environment variable `PATH` the path to Default Install: `C:\Python27\`
 * Open a Command Prompt window (`cmd.exe`) and type following commands:
 ```
     git clone https://github.com/bvernoux/hydrafw.git hydrafw
     cd hydrafw/
     git submodule init
     git submodule update
-    scripts/Update_python_libraries.bat
+    cd ./scripts
+    python get-pip.py
+    python -m pip install GitPython
+    python -m pip install intelhex --allow-external intelhex --allow-unverified intelhex
 ```
+
+```
+Note: 
+For get-pip.py if you need a proxy for internet access set following variables before to launch
+python get-pip.py:
+set http_proxy=http://proxy.myproxy.com
+set https_proxy=https://proxy.myproxy.com
+```
+
 ###To build hydrafw firmware (with mingw or cygwin):
 
 MinGW (http://www.mingw.org) is required (or Cygwin) and shall include make.
@@ -38,9 +52,9 @@ The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3
 * Install GCC toolchain GNU_ARM_4_7_2013q3 from https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
     *  At end of Installation `Install wizard Complete` choose only `Add path to environment variable`
 * Install MinGW from http://sourceforge.net/projects/mingw/files/latest/download?source=files
-    * `Default install: C:\MinGW\msys\1.0`
+    * Default install: `C:\MinGW\msys\1.0`
     * During MinGW install choose `msys-base` (it includes minimal tools and make 3.81)
-    * Launch msys shell from `Default Install: C:\MinGW\msys\1.0\msys.bat`
+    * Launch msys shell from Default Install: `C:\MinGW\msys\1.0\msys.bat`
 ```
     cd in root directory(which contains directories common, fatfs, hydrabus, hydranfc ...)
     make clean
