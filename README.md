@@ -33,21 +33,29 @@ Install git from http://msysgit.github.io
 
 Install Python 2.7.x see https://www.python.org/downloads/windows
     
+Open a Command Prompt window(cmd.exe) and type following commands:
+
     git clone https://github.com/bvernoux/hydrafw.git hydrafw
     cd hydrafw/
     git submodule init
     git submodule update
-    Launch scripts/Update_python_libraries.bat
+    scripts/Update_python_libraries.bat
 
 ###To build hydrafw firmware (with mingw or cygwin):
-The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3 available here:
-https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
 
-MinGW (http://www.mingw.org) is required (or Cygwin) and shall include make
+MinGW (http://www.mingw.org) is required (or Cygwin) and shall include make.
+The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3.
 
+* Install GCC toolchain GNU_ARM_4_7_2013q3 from https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
+* Install MinGW from http://sourceforge.net/projects/mingw/files/latest/download?source=files
+    * `Default install: C:\MinGW\msys\1.0`
+    * During MinGW install choose `msys-base` (it includes minimal tools and make 3.81)
+    * Launch msys shell from `Default Install: C:\MinGW\msys\1.0\msys.bat`
+```
     cd in root directory(which contains directories common, fatfs, hydrabus, hydranfc ...)
     make clean
     make
+```
 
 ###To build hydrafw firmware (with Em::Blocks):
 Install Em::Blocks (tested with Em::Blocks 2.30) from http://www.emblocks.org/web/downloads-main
