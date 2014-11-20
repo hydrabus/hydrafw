@@ -36,6 +36,7 @@ http://www.seeedstudio.com/depot/HydraBus-m-132.html
     python -m pip install intelhex --allow-external intelhex --allow-unverified intelhex
 ```
 
+
 ```
 Note: 
 For get-pip.py if you need a proxy for internet access set following variables before to launch
@@ -75,10 +76,6 @@ See the wiki https://github.com/bvernoux/hydrafw/wiki/Getting-Started-with-Hydra
 
     cd ~
     sudo apt-get install git dfu-util python putty
-    wget http://www.bialix.com/intelhex/intelhex-1.4.zip
-    unzip intelhex-1.4.zip
-    cd intelhex-1.4
-    python setup.py install --user
     wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
     tar xjf gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
     echo 'PATH=$PATH:~/gcc-arm-none-eabi-4_7-2013q3/bin' >> ~/.bashrc
@@ -91,6 +88,15 @@ See the wiki https://github.com/bvernoux/hydrafw/wiki/Getting-Started-with-Hydra
     python -m pip install GitPython
     python -m pip install intelhex --allow-external intelhex --allow-unverified intelhex
     cd ..
+
+```
+Note: 
+For get-pip.py if you need a proxy for internet access set following variables before to launch
+python get-pip.py:
+export http_proxy=http://proxy.myproxy.com
+export https_proxy=https://proxy.myproxy.com
+sudo -E python get-pip.py
+```
 
 ###Build hydrafw on Linux:
 
