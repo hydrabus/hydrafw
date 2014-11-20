@@ -29,12 +29,13 @@ If you want to help on this project see the [Coding Styles](https://github.com/b
     Custom microrl included as Submodule.
     
 ###Prerequisites for Windows:
-
+    Install git see http://msysgit.github.io
     git clone https://github.com/bvernoux/hydrafw.git hydrafw
     cd hydrafw/
     git submodule init
     git submodule update
-
+    Install Python 2.7.x see https://www.python.org/downloads/windows
+    Launch https://github.com/bvernoux/hydrafw/blob/master/scripts/Update_python_libraries.bat
 
 ###To build hydrafw firmware (with mingw or cygwin):
 The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3 available here:
@@ -68,6 +69,11 @@ See the wiki https://github.com/bvernoux/hydrafw/wiki/Getting-Started-with-Hydra
     cd ~/hydrafw
     git submodule init
     git submodule update
+    cd ./scripts
+    python get-pip.py
+    python -m pip install GitPython
+    python -m pip install intelhex --allow-external intelhex --allow-unverified intelhex
+    cd ..
 
 ###Build hydrafw on Linux:
 
