@@ -29,13 +29,15 @@ If you want to help on this project see the [Coding Styles](https://github.com/b
     Custom microrl included as Submodule.
     
 ###Prerequisites for Windows:
-    Install git see http://msysgit.github.io
+Install git from http://msysgit.github.io
+
+Install Python 2.7.x see https://www.python.org/downloads/windows
+    
     git clone https://github.com/bvernoux/hydrafw.git hydrafw
     cd hydrafw/
     git submodule init
     git submodule update
-    Install Python 2.7.x see https://www.python.org/downloads/windows
-    Launch https://github.com/bvernoux/hydrafw/blob/master/scripts/Update_python_libraries.bat
+    Launch scripts/Update_python_libraries.bat
 
 ###To build hydrafw firmware (with mingw or cygwin):
 The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3 available here:
@@ -43,11 +45,16 @@ https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
 
 MinGW (http://www.mingw.org) is required (or Cygwin) and shall include make
 
-Python 2.x (https://www.python.org/) to build all (mainly for dfu-convert.py)
-
     cd in root directory(which contains directories common, fatfs, hydrabus, hydranfc ...)
     make clean
     make
+
+###To build hydrafw firmware (with Em::Blocks):
+Install Em::Blocks (tested with Em::Blocks 2.30) from http://www.emblocks.org/web/downloads-main
+
+Launch Em::Blocks and choose from Menu `File => Open... Ctrl-O` with file `hydrafwEm.ebp` which is in root of hydrafw/
+
+Build the code with Menu `Build => Rebuild all target files`
 
 ###Flash and use hydrafw on Windows:
 See the wiki https://github.com/bvernoux/hydrafw/wiki/Getting-Started-with-HydraBus
