@@ -45,9 +45,9 @@ set http_proxy=http://proxy.myproxy.com
 set https_proxy=https://proxy.myproxy.com
 ```
 
-###To build hydrafw firmware (with mingw or cygwin):
+###To build hydrafw firmware (with mingw):
 
-MinGW (http://www.mingw.org) is required (or Cygwin) and shall include make.
+MinGW (http://www.mingw.org) is required.
 The firmware is set up for compilation with the GCC toolchain GNU_ARM_4_7_2013q3.
 
 * Install GCC toolchain GNU_ARM_4_7_2013q3 from https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2013-q3-update
