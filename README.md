@@ -19,11 +19,6 @@ http://www.seeedstudio.com/depot/HydraBus-m-132.html
 
 ##How to build, flash and use hydrafw on Windows:
 
-###Required dependencies:
-
-    Custom chibios (based on ChibiOS 3.0) included as Submodule.
-    Custom microrl included as Submodule.
-    
 ###Prerequisites for Windows:
 * Install git from http://msysgit.github.io
 * Install Python 2.7.x see https://www.python.org/downloads/windows
