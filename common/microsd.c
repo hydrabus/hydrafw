@@ -436,21 +436,31 @@ static FRESULT sd_dir_list(t_hydra_console *con, char *path)
 }
 
 /* cd [<path>] - change directory */
-void cmd_sd_cd(t_hydra_console *con, int argc, const char* const* argv)
+int cmd_sd_cd(t_hydra_console *con, t_tokenline_parsed p)
 {
 	FRESULT err;
+	int offset;
 
+	(void)p;
+	int argc = 0;
+	char **argv;
 	if(argc >= 2) {
 		snprintf((char *)fbuff, FILENAME_SIZE, "0:%s", argv[1]);
 	} else {
 		fbuff[0] = 0;
 	}
 
+	if (p.tokens[2] != TARG_STRING || p.tokens[4] != 0)
+		return FALSE;
+
+	memcpy(&offset, p.buf + p.tokens[3], sizeof(int));
+	chsnprintf((char *)fbuff, FILENAME_SIZE, "0:%s", p.buf + offset);
+
 	if (!fs_ready) {
 		err = mount();
 		if(err) {
 			cprintf(con, "mount error:%d\r\n", err);
-			return;
+			return FALSE;
 		}
 	}
 
@@ -459,7 +469,7 @@ void cmd_sd_cd(t_hydra_console *con, int argc, const char* const* argv)
 		cprintf(con, "f_chdir error:%d\r\n", err);
 	}
 
-	return;
+	return TRUE;
 }
 
 /* pwd - Show current directory path */
