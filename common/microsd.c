@@ -953,6 +953,9 @@ int cmd_sd(t_hydra_console *con, t_tokenline_parsed p)
 	case T_LS:
 		ret = cmd_sd_ls(con, p);
 		break;
+	case T_CD:
+		ret = cmd_sd_cd(con, p);
+		break;
 	default:
 		return FALSE;
 	}
