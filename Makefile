@@ -4,7 +4,7 @@
 #
 
 #Set to 1 HYDRAFW_NFC to include HydraNFC extension support
-export HYDRAFW_NFC ?= 1
+export HYDRAFW_NFC ?= 0
 
 HYDRAFW_OPTS =
 
@@ -124,7 +124,7 @@ CSRC = $(PORTSRC) \
        $(STM32CUBESRC) \
        $(CHIBIOS)/os/various/chprintf.c \
        $(CHIBIOS)/os/various/memstreams.c \
-       ./microrl/src/microrl.c \
+	   tokenline/tokenline.c \
        main.c
 
 ifeq ($(HYDRAFW_NFC),1)
@@ -165,7 +165,7 @@ INCDIR = $(PORTINC) $(KERNINC) \
          $(COMMONINC) \
          $(HYDRABUSINC) \
          $(STM32CUBEINC) \
-         ./microrl/src
+		 tokenline
 
 ifeq ($(HYDRAFW_NFC),1)
 INCDIR += $(TRFINC) \

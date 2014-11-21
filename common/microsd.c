@@ -934,3 +934,20 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		umount();
 	}
 }
+
+int cmd_sd(t_hydra_console *con, t_tokenline_parsed p)
+{
+	int ret;
+
+	if (p.tokens[1] == 0)
+		return FALSE;
+
+	ret = TRUE;
+	switch (p.tokens[1]) {
+	default:
+		return FALSE;
+	}
+
+	return ret;
+}
+

@@ -17,10 +17,11 @@ limitations under the License.
 #define _COMMON_H_
 
 #include <stdarg.h>
-#include "microrl.h"
 #include "ch.h"
 #include "chprintf.h"
 #include "hal.h"
+#include "tokenline.h"
+#include "commands.h"
 #include "mode_config.h"
 
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
@@ -114,16 +115,19 @@ typedef struct hydra_console {
 		SerialUSBDriver *sdu;
 		BaseSequentialStream *bss;
 	};
-	microrl_t *mrl;
+	t_tokenline *tl;
 	int insert_char;
 	t_mode_config *mode;
 } t_hydra_console;
 
-void cmd_info(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_init(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_mem(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_threads(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv);
+void print(void *user, const char *str);
+char get_char(t_hydra_console *con);
+void execute(void *user, t_tokenline_parsed p);
+
+typedef int (*cmdfunc)(t_hydra_console *con, t_tokenline_parsed p);
+int cmd_show(t_hydra_console *con, t_tokenline_parsed p);
+int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed p);
+int cmd_sd(t_hydra_console *con, t_tokenline_parsed p);
 
 void print_dbg(const char *data, const uint32_t size);
 void printf_dbg(const char *fmt, ...);

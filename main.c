@@ -28,9 +28,6 @@ limitations under the License.
 #include "usb1cfg.h"
 #include "usb2cfg.h"
 
-#include "microrl.h"
-#include "microrl_callback.h"
-
 #include "microsd.h"
 #include "hydrabus.h"
 
@@ -38,16 +35,19 @@ limitations under the License.
 #include "hydranfc.h"
 #endif
 
-// create microrl objects for each console
-microrl_t rl_con1;
+extern t_token tl_tokens[];
+extern t_token_dict tl_dict[];
+
+// create tokenline objects for each console
+t_tokenline tl_con1;
 t_mode_config mode_con1 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=MODE_CONFIG_PROTO_DEV_DEF_VAL }, .cmd={ 0 } };
 
-microrl_t rl_con2;
+t_tokenline tl_con2;
 t_mode_config mode_con2 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=MODE_CONFIG_PROTO_DEV_DEF_VAL }, .cmd={ 0 } };
 
 t_hydra_console consoles[] = {
-	{ .thread_name="console USB1", .thread=NULL, .sdu=&SDU1, .mrl=&rl_con1, .insert_char = 0, .mode = &mode_con1 },
-	{ .thread_name="console USB2", .thread=NULL, .sdu=&SDU2, .mrl=&rl_con2, .insert_char = 0, .mode = &mode_con2 }
+	{ .thread_name="console USB1", .thread=NULL, .sdu=&SDU1, .tl=&tl_con1, .insert_char = 0, .mode = &mode_con1 },
+	{ .thread_name="console USB2", .thread=NULL, .sdu=&SDU2, .tl=&tl_con2, .insert_char = 0, .mode = &mode_con2 }
 };
 
 /*
@@ -104,20 +104,17 @@ THD_FUNCTION(console, arg)
 
 	con = arg;
 	chRegSetThreadName(con->thread_name);
-	microrl_init(con->mrl, con, print);
-	microrl_set_execute_callback(con->mrl, execute);
-#ifdef _USE_COMPLETE
-	microrl_set_complete_callback(con->mrl, complet);
-#endif
-	microrl_set_sigint_callback(con->mrl, sigint);
+	tl_init(con->tl, tl_tokens, tl_dict, print, con);
+	tl_set_prompt(con->tl, "> ");
+	tl_set_callback(con->tl, execute);
 
 	while (1) {
 		chThdSleepMilliseconds(1);
-		microrl_insert_char(con->mrl, get_char(con));
+		tl_input(con->tl, get_char(con));
 		if(con->insert_char != 0) {
 			insert_char = con->insert_char;
 			con->insert_char = 0;
-			microrl_insert_char(con->mrl, insert_char);
+			tl_input(con->tl, insert_char);
 		}
 	}
 }

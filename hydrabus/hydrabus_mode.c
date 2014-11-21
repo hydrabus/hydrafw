@@ -16,8 +16,7 @@ limitations under the License.
 #include "string.h"
 #include "common.h"
 
-#include "microrl.h"
-#include "microrl_callback.h"
+#include "tokenline.h"
 #include "xatoi.h"
 
 #include "hydrabus.h"
@@ -128,7 +127,7 @@ void hydrabus_mode(t_hydra_console *con, int argc, const char* const* argv)
 					hydrabus_mode_conf[p_proto->bus_mode]->mode_setup(con);
 					hydrabus_mode_conf[p_proto->bus_mode]->mode_setup_exc(con);
 
-					microrl_set_prompt(con->mrl, hydrabus_mode_conf[bus_mode]->mode_str_prompt(con));
+					tl_set_prompt(con->tl, (char *)hydrabus_mode_conf[bus_mode]->mode_str_prompt(con));
 					hydrabus_mode_conf[bus_mode]->mode_print_settings(con);
 					cprintf(con, "\r\n");
 				} else {

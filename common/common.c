@@ -141,12 +141,8 @@ void DelayUs(uint32_t delay_us)
 	osalSysPolledDelayX(US2RTC(STM32_HCLK, delay_us));
 }
 
-
-void cmd_mem(t_hydra_console *con, int argc, const char* const* argv)
+void cmd_show_memory(t_hydra_console *con)
 {
-
-	(void)argc;
-	(void)argv;
 	size_t n, size;
 
 	n = chHeapStatus(NULL, &size);
@@ -156,10 +152,8 @@ void cmd_mem(t_hydra_console *con, int argc, const char* const* argv)
 
 }
 
-void cmd_threads(t_hydra_console *con, int argc, const char* const* argv)
+void cmd_show_threads(t_hydra_console *con)
 {
-	(void)argc;
-	(void)argv;
 	static const char *states[] = {CH_STATE_NAMES};
 	thread_t *tp;
 
@@ -175,16 +169,8 @@ void cmd_threads(t_hydra_console *con, int argc, const char* const* argv)
 
 }
 
-void cmd_info(t_hydra_console *con, int argc, const char* const* argv)
+void cmd_show_system(t_hydra_console *con)
 {
-	cmd_init(con, argc, argv);
-}
-
-void cmd_init(t_hydra_console *con, int argc, const char* const* argv)
-{
-	(void)argc;
-	(void)argv;
-
 	uint32_t cycles_start;
 	uint32_t cycles_stop;
 	uint32_t cycles_delta;
@@ -238,13 +224,30 @@ void cmd_init(t_hydra_console *con, int argc, const char* const* argv)
 
 }
 
+int cmd_show(t_hydra_console *con, t_tokenline_parsed p)
+{
+	if (p.tokens[1] == 0 || p.tokens[2] != 0)
+		return FALSE;
+
+	if (p.tokens[1] == T_SYSTEM)
+		cmd_show_system(con);
+	else if (p.tokens[1] == T_MEMORY)
+		cmd_show_memory(con);
+	else if (p.tokens[1] == T_THREADS)
+		cmd_show_threads(con);
+	else
+		return FALSE;
+
+	return TRUE;
+}
+
 #define waitcycles(n) ( wait_nbcycles(n) )
 /* Just debug to check Timing and accuracy with output pin */
-void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv)
+int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed p)
 {
-	(void)argc;
-	(void)argv;
 	uint8_t i;
+
+	(void)p;
 
 #if 0
 	register volatile uint16_t* gpio_set;
@@ -377,4 +380,5 @@ void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv)
 	}
 	cprintf(con, "Test dbg Out Freq end\r\n");
 
+	return TRUE;
 }

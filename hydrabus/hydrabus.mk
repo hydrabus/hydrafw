@@ -1,6 +1,6 @@
 # List of all the hydrabus related files.
 HYDRABUSSRC = hydrabus/hydrabus.c \
-            hydrabus/hydrabus_microrl.c \
+            hydrabus/commands.c \
             hydrabus/hydrabus_mode.c \
             hydrabus/hydrabus_mode_conf.c \
             hydrabus/hydrabus_mode_hiz.c \

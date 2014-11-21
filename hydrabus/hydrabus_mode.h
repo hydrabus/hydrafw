@@ -17,7 +17,6 @@ limitations under the License.
 
 #include "stdint.h"
 #include "common.h"
-#include "microrl_callback.h"
 
 #define _HYDRABUS_MODE          "m"
 #define _HYDRABUS_MODE_INFO     "i"
