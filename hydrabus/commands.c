@@ -111,8 +111,7 @@ t_token tl_tokens[] = {
 	{ T_HISTORY, 0, NULL, "Command history" },
 	{ T_CLEAR, 0, NULL, "Clear screen" },
 	{ T_SHOW, 0, tokens_show, "Show information" },
-//	{ T_SD, 0, tokens_sd, "SD card management" },
-	{ T_SD, 0, NULL, "SD card management" },
+	{ T_SD, 0, tokens_sd, "SD card management" },
 	{ T_MODE, 0, tokens_modes, "Switch to protocol mode" },
 	{ T_DEBUG, 0, NULL, "Debug mode" },
 	{ }

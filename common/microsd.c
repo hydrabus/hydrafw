@@ -317,16 +317,15 @@ int umount(void)
 	return 0;
 }
 
-void cmd_sd_mount(t_hydra_console *con, int argc, const char* const* argv)
+int cmd_sd_mount(t_hydra_console *con, t_tokenline_parsed p)
 {
-	(void)argc;
-	(void)argv;
-
 	FRESULT err;
+
+	(void)p;
 
 	if (fs_ready) {
 		cprintf(con, "File System already mounted\r\n");
-		return;
+		return FALSE;
 	}
 
 	/*
@@ -334,28 +333,29 @@ void cmd_sd_mount(t_hydra_console *con, int argc, const char* const* argv)
 	 */
 	if (sdcConnect(&SDCD1)) {
 		cprintf(con, "sdcConnect(&SDCD1) error\r\n");
-		return;
+		return FALSE;
 	}
 
 	err = f_mount(&SDC_FS, "", 0);
 	if (err != FR_OK) {
 		cprintf(con, "f_mount KO\r\n");
 		sdcDisconnect(&SDCD1);
-		return;
+		return FALSE;
 	} else {
 		cprintf(con, "f_mount OK\r\n");
 	}
 	fs_ready = TRUE;
+
+	return TRUE;
 }
 
-void cmd_sd_umount(t_hydra_console *con, int argc, const char* const* argv)
+int cmd_sd_umount(t_hydra_console *con, t_tokenline_parsed p)
 {
-	(void)argc;
-	(void)argv;
+	(void)p;
 
 	if(!fs_ready) {
 		cprintf(con, "File System already unmounted\r\n");
-		return;
+		return FALSE;
 	}
 
 	cprintf(con, "Umount filesystem...\r\n");
@@ -364,6 +364,8 @@ void cmd_sd_umount(t_hydra_console *con, int argc, const char* const* argv)
 	/* SDC Disconnect */
 	sdcDisconnect(&SDCD1);
 	fs_ready = FALSE;
+
+	return TRUE;
 }
 
 /* ls [<path>] - Directory listing */
@@ -486,7 +488,7 @@ void cmd_sd_pwd(t_hydra_console *con, int argc, const char* const* argv)
 }
 
 /* ls [<path>] - list directory */
-void cmd_sd_ls(t_hydra_console *con, int argc, const char* const* argv)
+int cmd_sd_ls(t_hydra_console *con, t_tokenline_parsed p)
 {
 	FRESULT err;
 	uint32_t clusters;
@@ -495,32 +497,20 @@ void cmd_sd_ls(t_hydra_console *con, int argc, const char* const* argv)
 	uint32_t free_size_kb;
 	uint32_t free_size_mb;
 
-	if(argc >= 2) {
-		chsnprintf((char *)fbuff, FILENAME_SIZE, "0:%s", argv[1]);
+	(void)p;
 
-		if (!fs_ready) {
-			err = mount();
-			if(err) {
-				cprintf(con, "mount error:%d\r\n", err);
-				return;
-			}
-		}
-
-	} else {
-		if (!fs_ready) {
-			err = mount();
-			if(err) {
-				cprintf(con, "mount error:%d\r\n", err);
-				return;
-			}
-		}
-
-		err = f_getcwd((char *)fbuff, sizeof(fbuff));
+	if (!fs_ready) {
+		err = mount();
 		if(err) {
-			cprintf(con, "f_getcwd error:%d\r\n", err);
+			cprintf(con, "mount error:%d\r\n", err);
+			return FALSE;
 		}
 	}
 
+	err = f_getcwd((char *)fbuff, sizeof(fbuff));
+	if(err) {
+		cprintf(con, "f_getcwd error:%d\r\n", err);
+	}
 	cprintf(con, "%s\r\n", fbuff);
 
 	err = f_getfree("/", &clusters, &fsp);
@@ -543,7 +533,7 @@ void cmd_sd_ls(t_hydra_console *con, int argc, const char* const* argv)
 		}
 	}
 
-	return;
+	return TRUE;
 }
 
 /* Call only with len=multiples of 16 (unless end of dump). */
@@ -944,6 +934,15 @@ int cmd_sd(t_hydra_console *con, t_tokenline_parsed p)
 
 	ret = TRUE;
 	switch (p.tokens[1]) {
+	case T_MOUNT:
+		ret = cmd_sd_mount(con, p);
+		break;
+	case T_UMOUNT:
+		ret = cmd_sd_umount(con, p);
+		break;
+	case T_LS:
+		ret = cmd_sd_ls(con, p);
+		break;
 	default:
 		return FALSE;
 	}

@@ -31,11 +31,6 @@ int mount(void);
 int umount(void);
 
 /* Shell commands */
-void cmd_sd_mount(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_sd_umount(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_sd_cd(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_sd_pwd(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_sd_ls(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_sd_cat(t_hydra_console *con, int argc, const char* const* argv);
 
 void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv);
