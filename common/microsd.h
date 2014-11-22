@@ -30,7 +30,4 @@ void write_file_get_last_filename(filename_t* out_filename);
 int mount(void);
 int umount(void);
 
-/* Shell commands */
-void cmd_sd_read_perfo(t_hydra_console *con, int argc, const char* const* argv);
-
 #endif /* _MICROSD_H_ */

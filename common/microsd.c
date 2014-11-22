@@ -178,24 +178,25 @@ static int sd_perf(t_hydra_console *con, int offset)
 	return ret;
 }
 
-void cmd_sd_read_perfo(t_hydra_console *con, int argc, const char* const* argv)
+int cmd_sd_test_perf(t_hydra_console *con, t_tokenline_parsed p)
 {
 	static const char *mode[] = {"SDV11", "SDV20", "MMC", NULL};
 
-	(void)argc;
-	(void)argv;
+	/* "really" */
+	if (p.tokens[2] != 0)
+		return FALSE;
 
 	/* Card presence check.*/
 	if (!blkIsInserted(&SDCD1)) {
 		cprintf(con, "Card not inserted, aborting.\r\n");
-		return;
+		return FALSE;
 	}
 
 	/* Connection to the card.*/
 	cprintf(con, "Connecting... ");
 	if (sdcConnect(&SDCD1)) {
 		cprintf(con, "failed.\r\n");
-		return;
+		return FALSE;
 	}
 	cprintf(con, "SD card info:\r\n");
 	cprintf(con, "CSD:\t  %08X %08X %08X %08X \r\n",
@@ -217,7 +218,7 @@ void cmd_sd_read_perfo(t_hydra_console *con, int argc, const char* const* argv)
 exittest:
 	sdcDisconnect(&SDCD1);
 
-	return;
+	return TRUE;
 }
 
 void write_file_get_last_filename(filename_t* out_filename)
@@ -961,6 +962,9 @@ int cmd_sd(t_hydra_console *con, t_tokenline_parsed p)
 		break;
 	case T_ERASE:
 		ret = cmd_sd_erase(con, p);
+		break;
+	case T_TESTPERF:
+		ret = cmd_sd_test_perf(con, p);
 		break;
 	default:
 		return FALSE;

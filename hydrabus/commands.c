@@ -41,7 +41,7 @@ t_token_dict tl_dict[] = {
 	{ T_HD, "hd" },
 	{ T_ERASE, "erase" },
 	{ T_REALLY, "really" },
-	{ T_TESTPERF, "test-performance" },
+	{ T_TESTPERF, "test-perf" },
 
 	{ T_MODE, "mode" },
 	{ T_SPI, "spi" },
