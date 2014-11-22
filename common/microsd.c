@@ -564,33 +564,33 @@ static void dump_hexbuf(t_hydra_console *con, uint32_t offset,
 	}
 }
 
-void cmd_sd_cat(t_hydra_console *con, int argc, const char* const* argv)
+int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed p)
 {
 #define MAX_FILE_SIZE (524288)
 	bool hex;
-	int offset, filelen;
+	int str_offset, offset, filelen;
 	uint32_t cnt;
 	FRESULT err;
 	FIL fp;
 
-	if(argc < 2) {
-		cprintf(con, "Error missing argument\r\nusage: %s <filename>\r\n", argv[0]);
-		return;
-	}
+	if (p.tokens[2] != TARG_STRING || p.tokens[4] != 0)
+		return FALSE;
+
+	memcpy(&str_offset, p.buf + p.tokens[3], sizeof(int));
+	chsnprintf(filename, FILENAME_SIZE, "0:%s", p.buf + str_offset);
 
 	if (!fs_ready) {
 		err = mount();
 		if(err) {
 			cprintf(con, "mount error:%d\r\n", err);
-			return;
+			return FALSE;
 		}
 	}
 
-	chsnprintf(filename, FILENAME_SIZE, "0:%s", argv[1]);
 	err = f_open(&fp, filename, FA_READ | FA_OPEN_EXISTING);
 	if (err != FR_OK) {
 		cprintf(con, "Error to open file %s, err:%d\r\n", filename, err);
-		return;
+		return FALSE;
 	}
 
 	filelen = fp.fsize;
@@ -600,7 +600,7 @@ void cmd_sd_cat(t_hydra_console *con, int argc, const char* const* argv)
 		cprintf(con, "Read file: %s, size=%d\r\n", filename, filelen);
 	}
 
-	hex = !strcmp(argv[0], "hd");
+	hex = p.tokens[1] == T_HD;
 	offset = 0;
 	while(filelen) {
 		if(filelen >= IN_OUT_BUF_SIZE) {
@@ -629,6 +629,8 @@ void cmd_sd_cat(t_hydra_console *con, int argc, const char* const* argv)
 	}
 	if (!hex)
 		cprintf(con, "\r\n");
+
+	return TRUE;
 }
 
 /**
@@ -946,6 +948,10 @@ int cmd_sd(t_hydra_console *con, t_tokenline_parsed p)
 		break;
 	case T_CD:
 		ret = cmd_sd_cd(con, p);
+		break;
+	case T_CAT:
+	case T_HD:
+		ret = cmd_sd_cat(con, p);
 		break;
 	default:
 		return FALSE;
