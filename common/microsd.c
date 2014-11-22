@@ -465,28 +465,28 @@ int cmd_sd_cd(t_hydra_console *con, t_tokenline_parsed *p)
 }
 
 /* pwd - Show current directory path */
-void cmd_sd_pwd(t_hydra_console *con, int argc, const char* const* argv)
+int cmd_sd_pwd(t_hydra_console *con, t_tokenline_parsed *p)
 {
-	(void)argc;
-	(void)argv;
 	FRESULT err;
+
+	(void)p;
 
 	if (!fs_ready) {
 		err = mount();
 		if(err) {
 			cprintf(con, "mount error:%d\r\n", err);
-			return;
+			return FALSE;
 		}
 	}
 
 	err = f_getcwd((char *)fbuff, sizeof(fbuff));
 	if(err) {
 		cprintf(con, "f_getcwd error:%d\r\n", err);
-		return;
+		return FALSE;
 	}
 	cprintf(con, "%s\r\n", fbuff);
 
-	return;
+	return TRUE;
 }
 
 /* ls [<path>] - list directory */
@@ -955,6 +955,9 @@ int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p)
 		break;
 	case T_CD:
 		ret = cmd_sd_cd(con, p);
+		break;
+	case T_PWD:
+		ret = cmd_sd_pwd(con, p);
 		break;
 	case T_CAT:
 	case T_HD:
