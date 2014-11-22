@@ -31,7 +31,6 @@ int mount(void);
 int umount(void);
 
 /* Shell commands */
-void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_sd_read_perfo(t_hydra_console *con, int argc, const char* const* argv);
 
 #endif /* _MICROSD_H_ */

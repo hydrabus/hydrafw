@@ -636,13 +636,17 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed p)
 /**
  * SDIO Test Destructive
  */
-void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
+int cmd_sd_erase(t_hydra_console *con, t_tokenline_parsed p)
 {
-	(void)argc;
-	(void)argv;
 	uint32_t i = 0;
 
-	cprintf(con, "SDIO Destructive test will format de SD press UBTN to continue ... ");
+	if (p.tokens[2] == 0) {
+		cprintf(con, "This will destroy the contents of the SD card. "
+				"Confirm with 'sd erase really'.\r\n");
+		return TRUE;
+	} else if (p.tokens[2] != T_REALLY || p.tokens[3] != 0) {
+		return FALSE;
+	}
 
 	while(1) {
 		if(USER_BUTTON) {
@@ -665,7 +669,7 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (sdcRead(&SDCD1, 0, inbuf, 1)) {
 			cprintf(con, "sdcRead KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		cprintf(con, " OK\r\n");
 		chThdSleepMilliseconds(10);
@@ -675,17 +679,17 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (sdcRead(&SDCD1, 0, inbuf + 1, 1)) {
 			cprintf(con, "sdcRead KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		if (sdcRead(&SDCD1, 0, inbuf + 2, 1)) {
 			cprintf(con, "sdcRead KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		if (sdcRead(&SDCD1, 0, inbuf + 3, 1)) {
 			cprintf(con, "sdcRead KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		cprintf(con, " OK\r\n");
 		chThdSleepMilliseconds(10);
@@ -698,7 +702,7 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (sdcRead(&SDCD1, 0, inbuf, SDC_BURST_SIZE)) {
 			cprintf(con, "sdcRead KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		cprintf(con, "\r\n.");
 
@@ -706,12 +710,12 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 			if (sdcRead(&SDCD1, 0, outbuf, SDC_BURST_SIZE)) {
 				cprintf(con, "sdcRead KO\r\n");
 				umount();
-				return;
+				return FALSE;
 			}
 			if (memcmp(inbuf, outbuf, SDC_BURST_SIZE * MMCSD_BLOCK_SIZE) != 0) {
 				cprintf(con, "memcmp KO\r\n");
 				umount();
-				return;
+				return FALSE;
 			}
 
 			cprintf(con, ".");
@@ -726,19 +730,19 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (sdcRead(&SDCD1, 0, inbuf + 1, SDC_BURST_SIZE)) {
 			cprintf(con, "sdcRead KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 
 		for (i=0; i<1000; i++) {
 			if (sdcRead(&SDCD1, 0, outbuf + 1, SDC_BURST_SIZE)) {
 				cprintf(con, "sdcRead KO\r\n");
 				umount();
-				return;
+				return FALSE;
 			}
 			if (memcmp(inbuf, outbuf, SDC_BURST_SIZE * MMCSD_BLOCK_SIZE) != 0) {
 				cprintf(con, "memcmp KO\r\n");
 				umount();
-				return;
+				return FALSE;
 			}
 		}
 		cprintf(con, " OK\r\n");
@@ -751,18 +755,18 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (sdcWrite(&SDCD1, 0, inbuf, 1)) {
 			cprintf(con, "sdcWrite KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		fillbuffer(0, outbuf);
 		if (sdcRead(&SDCD1, 0, outbuf, 1)) {
 			cprintf(con, "sdcRead KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		if (memcmp(inbuf, outbuf, MMCSD_BLOCK_SIZE) != 0) {
 			cprintf(con, "memcmp KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		cprintf(con, " OK\r\n");
 
@@ -772,18 +776,18 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (sdcWrite(&SDCD1, 0, inbuf+1, 1)) {
 			cprintf(con, "sdcWrite KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		fillbuffer(0, outbuf);
 		if (sdcRead(&SDCD1, 0, outbuf+1, 1)) {
 			cprintf(con, "sdcRead KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		if (memcmp(inbuf+1, outbuf+1, MMCSD_BLOCK_SIZE) != 0) {
 			cprintf(con, "memcmp KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		cprintf(con, " OK\r\n");
 
@@ -792,7 +796,7 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if(badblocks(0x10000, 0x11000, SDC_BURST_SIZE, 0xAA)) {
 			cprintf(con, "badblocks KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		cprintf(con, " OK\r\n");
 		/* DESTRUCTIVE TEST END */
@@ -814,7 +818,7 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (err != FR_OK) {
 			cprintf(con, "f_mount err:%d\r\n", err);
 			umount();
-			return;
+			return FALSE;
 		} else {
 			fs_ready = TRUE;
 			cprintf(con, "OK\r\n");
@@ -827,7 +831,7 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (err != FR_OK) {
 			cprintf(con, "f_mkfs err:%d\r\n", err);
 			umount();
-			return;
+			return FALSE;
 		} else {
 			cprintf(con, "OK\r\n");
 		}
@@ -839,7 +843,7 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (err != FR_OK) {
 			cprintf(con, "f_getfree err:%d\r\n", err);
 			umount();
-			return;
+			return FALSE;
 		}
 		cprintf(con, "OK\r\n");
 		cprintf(con,
@@ -854,7 +858,7 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (err != FR_OK) {
 			cprintf(con, "f_open err:%d\r\n", err);
 			umount();
-			return;
+			return FALSE;
 		}
 		cprintf(con, "OK\r\n");
 		cprintf(con, "Write some data in it... ");
@@ -863,7 +867,7 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (err != FR_OK) {
 			cprintf(con, "f_write err:%d\r\n", err);
 			umount();
-			return;
+			return FALSE;
 		} else
 			cprintf(con, "OK\r\n");
 
@@ -872,7 +876,7 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (err != FR_OK) {
 			cprintf(con, "f_close err:%d\r\n", err);
 			umount();
-			return;
+			return FALSE;
 		} else
 			cprintf(con, "OK\r\n");
 
@@ -882,19 +886,19 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (err != FR_OK) {
 			cprintf(con, "f_open err:%d\r\n", err);
 			umount();
-			return;
+			return FALSE;
 		}
 
 		err = f_read(&FileObject, inbuf, sizeof(teststring), (void *)&bytes_read);
 		if (err != FR_OK) {
 			cprintf(con, "f_read KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		} else {
 			if (memcmp(teststring, inbuf, sizeof(teststring)) != 0) {
 				cprintf(con, "memcmp KO\r\n");
 				umount();
-				return;
+				return FALSE;
 			} else {
 				cprintf(con, "OK\r\n");
 			}
@@ -905,7 +909,7 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (err != FR_OK) {
 			cprintf(con, "f_unlink err:%d\r\n", err);
 			umount();
-			return;
+			return FALSE;
 		}
 
 		cprintf(con, "Umount filesystem... ");
@@ -917,7 +921,7 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 		if (sdcDisconnect(&SDCD1)) {
 			cprintf(con, "sdcDisconnect KO\r\n");
 			umount();
-			return;
+			return FALSE;
 		}
 		cprintf(con, " OK\r\n");
 		cprintf(con, "------------------------------------------------------\r\n");
@@ -926,6 +930,8 @@ void cmd_sd_erase(t_hydra_console *con, int argc, const char* const* argv)
 
 		umount();
 	}
+
+	return TRUE;
 }
 
 int cmd_sd(t_hydra_console *con, t_tokenline_parsed p)
@@ -952,6 +958,9 @@ int cmd_sd(t_hydra_console *con, t_tokenline_parsed p)
 	case T_CAT:
 	case T_HD:
 		ret = cmd_sd_cat(con, p);
+		break;
+	case T_ERASE:
+		ret = cmd_sd_erase(con, p);
 		break;
 	default:
 		return FALSE;
