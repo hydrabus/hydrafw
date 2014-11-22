@@ -68,15 +68,15 @@ void token_dump(t_hydra_console *con, t_tokenline_parsed *p)
 	for (i = 0; p->tokens[i]; i++) {
 		chprintf(con->bss, "%d: ", i);
 		switch (p->tokens[i]) {
-		case TARG_INT:
+		case T_ARG_INT:
 			memcpy(&arg_int, p->buf + p->tokens[++i], sizeof(int));
 			chprintf(con->bss, "integer %d\r\n", arg_int);
 			break;
-		case TARG_FLOAT:
+		case T_ARG_FLOAT:
 			memcpy(&arg_float, p->buf + p->tokens[++i], sizeof(float));
 			chprintf(con->bss, "float %f\r\n", arg_float);
 			break;
-		case TARG_STRING:
+		case T_ARG_STRING:
 			chprintf(con->bss, "string '%s'\r\n", p->buf + p->tokens[++i]);
 			break;
 		default:

@@ -442,7 +442,7 @@ int cmd_sd_cd(t_hydra_console *con, t_tokenline_parsed *p)
 	FRESULT err;
 	int offset;
 
-	if (p->tokens[2] != TARG_STRING || p->tokens[4] != 0)
+	if (p->tokens[2] != T_ARG_STRING || p->tokens[4] != 0)
 		return FALSE;
 
 	memcpy(&offset, &p->tokens[3], sizeof(int));
@@ -574,7 +574,7 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed *p)
 	FRESULT err;
 	FIL fp;
 
-	if (p->tokens[2] != TARG_STRING || p->tokens[4] != 0)
+	if (p->tokens[2] != T_ARG_STRING || p->tokens[4] != 0)
 		return FALSE;
 
 	memcpy(&str_offset, &p->tokens[3], sizeof(int));

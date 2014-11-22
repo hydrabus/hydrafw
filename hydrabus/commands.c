@@ -65,11 +65,11 @@ t_token tokens_master_slave[] = {
 };
 
 t_token tokens_spi[] = {
-	{ T_DEVICE, TARG_INT, NULL, "SPI device (0 or 1)" },
-	{ T_MODE, TARG_TOKEN, tokens_master_slave, "Master or slave mode" },
-	{ T_FREQUENCY, TARG_FLOAT, NULL, "Read/write frequency" },
-	{ T_POLARITY, TARG_INT, NULL, "Clock polarity (0 or 1)" },
-	{ T_PHASE, TARG_INT, NULL, "Clock phase (0 or 1)" },
+	{ T_DEVICE, T_ARG_INT, NULL, "SPI device (0 or 1)" },
+	{ T_MODE, T_ARG_TOKEN, tokens_master_slave, "Master or slave mode" },
+	{ T_FREQUENCY, T_ARG_FLOAT, NULL, "Read/write frequency" },
+	{ T_POLARITY, T_ARG_INT, NULL, "Clock polarity (0 or 1)" },
+	{ T_PHASE, T_ARG_INT, NULL, "Clock phase (0 or 1)" },
 	{ T_MSB_FIRST, 0, NULL, "Send/receive MSB first" },
 	{ T_LSB_FIRST, 0, NULL, "Send/receive LSB first" },
 	{ }
@@ -90,12 +90,12 @@ t_token tokens_sd[] = {
 	{ T_MOUNT, 0, NULL, "Mount SD card" },
 	{ T_UMOUNT, 0, NULL, "Unmount SD card" },
 	{ T_ERASE, 0, NULL, "Erase and reformat SD card" },
-	{ T_CD, TARG_STRING, NULL, "Change SD card directory" },
+	{ T_CD, T_ARG_STRING, NULL, "Change SD card directory" },
 	{ T_PWD, 0, NULL, "Show current SD card directory" },
 	{ T_LS, 0, NULL, "List files on SD card" },
 	{ T_TESTPERF, 0, NULL, "Test SD card performance" },
-	{ T_CAT, TARG_STRING, NULL, "Display (ASCII) file on SD card" },
-	{ T_HD, TARG_STRING, NULL, "Hexdump file on SD card" },
+	{ T_CAT, T_ARG_STRING, NULL, "Display (ASCII) file on SD card" },
+	{ T_HD, T_ARG_STRING, NULL, "Hexdump file on SD card" },
 	{ }
 };
 
@@ -107,7 +107,7 @@ t_token tokens_show[] = {
 };
 
 t_token tl_tokens[] = {
-	{ T_HELP, TARG_HELP, NULL, "Available commands" },
+	{ T_HELP, T_ARG_HELP, NULL, "Available commands" },
 	{ T_HISTORY, 0, NULL, "Command history" },
 	{ T_CLEAR, 0, NULL, "Clear screen" },
 	{ T_SHOW, 0, tokens_show, "Show information" },
