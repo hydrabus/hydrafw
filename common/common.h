@@ -122,12 +122,12 @@ typedef struct hydra_console {
 
 void print(void *user, const char *str);
 char get_char(t_hydra_console *con);
-void execute(void *user, t_tokenline_parsed p);
+void execute(void *user, t_tokenline_parsed *p);
 
-typedef int (*cmdfunc)(t_hydra_console *con, t_tokenline_parsed p);
-int cmd_show(t_hydra_console *con, t_tokenline_parsed p);
-int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed p);
-int cmd_sd(t_hydra_console *con, t_tokenline_parsed p);
+typedef int (*cmdfunc)(t_hydra_console *con, t_tokenline_parsed *p);
+int cmd_show(t_hydra_console *con, t_tokenline_parsed *p);
+int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p);
+int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p);
 
 void print_dbg(const char *data, const uint32_t size);
 void printf_dbg(const char *fmt, ...);

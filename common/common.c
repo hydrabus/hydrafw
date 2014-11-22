@@ -224,16 +224,16 @@ void cmd_show_system(t_hydra_console *con)
 
 }
 
-int cmd_show(t_hydra_console *con, t_tokenline_parsed p)
+int cmd_show(t_hydra_console *con, t_tokenline_parsed *p)
 {
-	if (p.tokens[1] == 0 || p.tokens[2] != 0)
+	if (p->tokens[1] == 0 || p->tokens[2] != 0)
 		return FALSE;
 
-	if (p.tokens[1] == T_SYSTEM)
+	if (p->tokens[1] == T_SYSTEM)
 		cmd_show_system(con);
-	else if (p.tokens[1] == T_MEMORY)
+	else if (p->tokens[1] == T_MEMORY)
 		cmd_show_memory(con);
-	else if (p.tokens[1] == T_THREADS)
+	else if (p->tokens[1] == T_THREADS)
 		cmd_show_threads(con);
 	else
 		return FALSE;
@@ -243,7 +243,7 @@ int cmd_show(t_hydra_console *con, t_tokenline_parsed p)
 
 #define waitcycles(n) ( wait_nbcycles(n) )
 /* Just debug to check Timing and accuracy with output pin */
-int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed p)
+int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	uint8_t i;
 

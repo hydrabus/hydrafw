@@ -50,7 +50,7 @@ char get_char(t_hydra_console *con)
 	return c;
 }
 
-static int print_clear(t_hydra_console *con, t_tokenline_parsed p)
+static int print_clear(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	(void)p;
 
@@ -60,28 +60,28 @@ static int print_clear(t_hydra_console *con, t_tokenline_parsed p)
 	return TRUE;
 }
 
-void token_dump(t_hydra_console *con, t_tokenline_parsed p)
+void token_dump(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	float arg_float;
 	int arg_int, i;
 
-	for (i = 0; p.tokens[i]; i++) {
+	for (i = 0; p->tokens[i]; i++) {
 		chprintf(con->bss, "%d: ", i);
-		switch (p.tokens[i]) {
+		switch (p->tokens[i]) {
 		case TARG_INT:
-			memcpy(&arg_int, p.buf + p.tokens[++i], sizeof(int));
+			memcpy(&arg_int, p->buf + p->tokens[++i], sizeof(int));
 			chprintf(con->bss, "integer %d\r\n", arg_int);
 			break;
 		case TARG_FLOAT:
-			memcpy(&arg_float, p.buf + p.tokens[++i], sizeof(float));
+			memcpy(&arg_float, p->buf + p->tokens[++i], sizeof(float));
 			chprintf(con->bss, "float %f\r\n", arg_float);
 			break;
 		case TARG_STRING:
-			chprintf(con->bss, "string '%s'\r\n", p.buf + p.tokens[++i]);
+			chprintf(con->bss, "string '%s'\r\n", p->buf + p->tokens[++i]);
 			break;
 		default:
-			chprintf(con->bss, "token %d (%s)\r\n", p.tokens[i],
-					tl_dict[p.tokens[i]].tokenstr);
+			chprintf(con->bss, "token %d (%s)\r\n", p->tokens[i],
+					tl_dict[p->tokens[i]].tokenstr);
 		}
 	}
 }
@@ -97,14 +97,14 @@ struct cmd_map {
 	{ 0, NULL }
 };
 
-void execute(void *user, t_tokenline_parsed p)
+void execute(void *user, t_tokenline_parsed *p)
 {
 	t_hydra_console *con;
 	int i;
 
 	con = user;
 	for (i = 0; top_commands[i].token; i++) {
-		if (p.tokens[0] == top_commands[i].token) {
+		if (p->tokens[0] == top_commands[i].token) {
 			token_dump(con, p);
 			if (!top_commands[i].func(con, p))
 				chprintf(con->bss, "Command failed.\r\n");

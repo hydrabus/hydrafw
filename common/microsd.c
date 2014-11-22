@@ -178,12 +178,12 @@ static int sd_perf(t_hydra_console *con, int offset)
 	return ret;
 }
 
-int cmd_sd_test_perf(t_hydra_console *con, t_tokenline_parsed p)
+int cmd_sd_test_perf(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	static const char *mode[] = {"SDV11", "SDV20", "MMC", NULL};
 
 	/* "really" */
-	if (p.tokens[2] != 0)
+	if (p->tokens[2] != 0)
 		return FALSE;
 
 	/* Card presence check.*/
@@ -318,7 +318,7 @@ int umount(void)
 	return 0;
 }
 
-int cmd_sd_mount(t_hydra_console *con, t_tokenline_parsed p)
+int cmd_sd_mount(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	FRESULT err;
 
@@ -350,7 +350,7 @@ int cmd_sd_mount(t_hydra_console *con, t_tokenline_parsed p)
 	return TRUE;
 }
 
-int cmd_sd_umount(t_hydra_console *con, t_tokenline_parsed p)
+int cmd_sd_umount(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	(void)p;
 
@@ -437,16 +437,16 @@ static FRESULT sd_dir_list(t_hydra_console *con, char *path)
 }
 
 /* cd [<path>] - change directory */
-int cmd_sd_cd(t_hydra_console *con, t_tokenline_parsed p)
+int cmd_sd_cd(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	FRESULT err;
 	int offset;
 
-	if (p.tokens[2] != TARG_STRING || p.tokens[4] != 0)
+	if (p->tokens[2] != TARG_STRING || p->tokens[4] != 0)
 		return FALSE;
 
-	memcpy(&offset, p.buf + p.tokens[3], sizeof(int));
-	chsnprintf((char *)fbuff, FILENAME_SIZE, "0:%s", p.buf + offset);
+	memcpy(&offset, &p->tokens[3], sizeof(int));
+	chsnprintf((char *)fbuff, FILENAME_SIZE, "0:%s", p->buf + offset);
 
 	if (!fs_ready) {
 		err = mount();
@@ -490,7 +490,7 @@ void cmd_sd_pwd(t_hydra_console *con, int argc, const char* const* argv)
 }
 
 /* ls [<path>] - list directory */
-int cmd_sd_ls(t_hydra_console *con, t_tokenline_parsed p)
+int cmd_sd_ls(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	FRESULT err;
 	uint32_t clusters;
@@ -540,7 +540,7 @@ int cmd_sd_ls(t_hydra_console *con, t_tokenline_parsed p)
 
 /* Call only with len=multiples of 16 (unless end of dump). */
 static void dump_hexbuf(t_hydra_console *con, uint32_t offset,
-			const uint8_t *buf, int len)
+		const uint8_t *buf, int len)
 {
 	int b, i;
 	char asc[17];
@@ -565,7 +565,7 @@ static void dump_hexbuf(t_hydra_console *con, uint32_t offset,
 	}
 }
 
-int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed p)
+int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed *p)
 {
 #define MAX_FILE_SIZE (524288)
 	bool hex;
@@ -574,11 +574,11 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed p)
 	FRESULT err;
 	FIL fp;
 
-	if (p.tokens[2] != TARG_STRING || p.tokens[4] != 0)
+	if (p->tokens[2] != TARG_STRING || p->tokens[4] != 0)
 		return FALSE;
 
-	memcpy(&str_offset, p.buf + p.tokens[3], sizeof(int));
-	chsnprintf(filename, FILENAME_SIZE, "0:%s", p.buf + str_offset);
+	memcpy(&str_offset, &p->tokens[3], sizeof(int));
+	chsnprintf(filename, FILENAME_SIZE, "0:%s", p->buf + str_offset);
 
 	if (!fs_ready) {
 		err = mount();
@@ -601,7 +601,7 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed p)
 		cprintf(con, "Read file: %s, size=%d\r\n", filename, filelen);
 	}
 
-	hex = p.tokens[1] == T_HD;
+	hex = p->tokens[1] == T_HD;
 	offset = 0;
 	while(filelen) {
 		if(filelen >= IN_OUT_BUF_SIZE) {
@@ -637,15 +637,15 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed p)
 /**
  * SDIO Test Destructive
  */
-int cmd_sd_erase(t_hydra_console *con, t_tokenline_parsed p)
+int cmd_sd_erase(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	uint32_t i = 0;
 
-	if (p.tokens[2] == 0) {
+	if (p->tokens[2] == 0) {
 		cprintf(con, "This will destroy the contents of the SD card. "
 				"Confirm with 'sd erase really'.\r\n");
 		return TRUE;
-	} else if (p.tokens[2] != T_REALLY || p.tokens[3] != 0) {
+	} else if (p->tokens[2] != T_REALLY || p->tokens[3] != 0) {
 		return FALSE;
 	}
 
@@ -935,15 +935,15 @@ int cmd_sd_erase(t_hydra_console *con, t_tokenline_parsed p)
 	return TRUE;
 }
 
-int cmd_sd(t_hydra_console *con, t_tokenline_parsed p)
+int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	int ret;
 
-	if (p.tokens[1] == 0)
+	if (p->tokens[1] == 0)
 		return FALSE;
 
 	ret = TRUE;
-	switch (p.tokens[1]) {
+	switch (p->tokens[1]) {
 	case T_MOUNT:
 		ret = cmd_sd_mount(con, p);
 		break;
