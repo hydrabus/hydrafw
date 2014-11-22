@@ -441,15 +441,6 @@ int cmd_sd_cd(t_hydra_console *con, t_tokenline_parsed p)
 	FRESULT err;
 	int offset;
 
-	(void)p;
-	int argc = 0;
-	char **argv;
-	if(argc >= 2) {
-		snprintf((char *)fbuff, FILENAME_SIZE, "0:%s", argv[1]);
-	} else {
-		fbuff[0] = 0;
-	}
-
 	if (p.tokens[2] != TARG_STRING || p.tokens[4] != 0)
 		return FALSE;
 
