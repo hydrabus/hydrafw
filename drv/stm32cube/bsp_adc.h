@@ -1,5 +1,5 @@
 /*
-HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2014 Benjamin VERNOUX
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,17 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#ifndef _BSP_ADC_H_
+#define _BSP_ADC_H_
 
-#ifndef _HYDRABUS_MICRORL_H_
-#define _HYDRABUS_MICRORL_H_
+#include "bsp.h"
+#include "mode_config.h"
 
-#define HYDRABUS_NUM_OF_CMD (18+1)
-extern char* hydrabus_compl_world[HYDRABUS_NUM_OF_CMD + 1];
-extern microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD];
+typedef enum
+{
+	BSP_DEV_ADC1 = 0,
+	BSP_DEV_ADC_TEMPSENSOR = 1,
+	BSP_DEV_ADC_VREFINT = 2,
+	BSP_DEV_ADC_VBAT = 3,
+	BSP_DEV_ADC_END = 4
+} bsp_dev_adc_t;
 
-void hydrabus_print_help(t_hydra_console *con, int argc, const char* const* argv);
-int hydrabus_execute(t_hydra_console *con, int argc, const char* const* argv);
-void hydrabus_sigint(t_hydra_console *con);
+bsp_status_t bsp_adc_init(bsp_dev_adc_t dev_num);
+bsp_status_t bsp_adc_deinit(bsp_dev_adc_t dev_num);
 
-#endif /* _HYDRABUS_MICRORL_H_ */
+bsp_status_t bsp_adc_read_u16(bsp_dev_adc_t dev_num, uint16_t* rx_data, uint8_t nb_data);
 
+#endif /* _BSP_ADC_H_ */

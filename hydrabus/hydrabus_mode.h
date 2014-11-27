@@ -19,8 +19,10 @@ limitations under the License.
 #include "common.h"
 #include "microrl_callback.h"
 
-#define _HYDRABUS_MODE         "m"
-#define _HYDRABUS_MODE_INFO    "i"
+#define _HYDRABUS_MODE          "m"
+#define _HYDRABUS_MODE_INFO     "i"
+#define _HYDRABUS_MODE_VOLTAGE_ONE  "v"
+#define _HYDRABUS_MODE_VOLTAGE_CONT "V"
 
 #define HYDRABUS_MODE_DEV_INVALID (-1)
 #define HYDRABUS_MODE_DEV_DEFAULT_VALUE (0)
@@ -97,6 +99,7 @@ typedef struct {
 
 void hydrabus_mode(t_hydra_console *con, int argc, const char* const* argv);
 void hydrabus_mode_info(t_hydra_console *con, int argc, const char* const* argv);
+void hydrabus_mode_voltage(t_hydra_console *con, int argc, const char* const* argv);
 bool hydrabus_mode_proto_inter(t_hydra_console *con, int argc, const char* const* argv);
 long hydrabus_mode_dev_manage_arg(t_hydra_console *con, int argc, const char* const* argv,
 				  int mode_dev_nb_arg, int dev_arg_no, mode_dev_arg_t* dev_arg);

@@ -53,9 +53,6 @@
 					<Add option="-O2" />
 					<Add option="-g2" />
 				</Compiler>
-				<Assembler>
-					<Add option="-Wa,--no-warn" />
-				</Assembler>
 				<Linker>
 					<Add option="-eb_lib=n" />
 					<Add option="-Wl,--gc-sections" />
@@ -64,7 +61,7 @@
 					<Add before="python scripts/hydrafw-version.py $(PROJECT_DIR)common\hydrafw_version.hdr" />
 					<Add after="python scripts/dfu-convert.py -i $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).hex $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dfu" />
 					<Mode before="1" />
-					<Mode after="2" />
+					<Mode after="0" />
 				</ExtraCommands>
 			</Target>
 			<Target title="Release_os">
@@ -91,7 +88,7 @@
 					<Add before="python scripts/hydrafw-version.py $(PROJECT_DIR)common\hydrafw_version.hdr" />
 					<Add after="python scripts/dfu-convert.py -i $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).hex $(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dfu" />
 					<Mode before="1" />
-					<Mode after="2" />
+					<Mode after="0" />
 				</ExtraCommands>
 			</Target>
 		</Build>
@@ -104,6 +101,7 @@
 		</Device>
 		<Compiler>
 			<Add option="-mfloat-abi=hard" />
+			<Add option="-Wstrict-prototypes" />
 			<Add option="-Wformat" />
 			<Add option="-Werror-implicit-function-declaration" />
 			<Add option="-Wdiv-by-zero" />
@@ -114,8 +112,8 @@
 			<Add option="-DSTM32F405RG" />
 			<Add option="-DSTM32F4XX" />
 			<Add option="-DCORTEX_USE_FPU" />
+			<Add option="-D__FPU_USED" />
 			<Add option="-fno-strict-aliasing" />
-			<Add option="-Wstrict-prototypes" />
 			<Add directory=".\inc" />
 			<Add directory=".\src" />
 			<Add directory=".\cmsis" />
@@ -125,6 +123,8 @@
 			<Add option="-x assembler-with-cpp" />
 		</Assembler>
 		<Linker>
+			<Add option="-eb_lib=n" />
+			<Add option="-eb_use_semi" />
 			<Add option="-Wl,--gc-sections" />
 			<Add option="-Wl,--defsym=__main_stack_size__=0x400" />
 			<Add option="-Wl,--defsym=__process_stack_size__=0x400" />
@@ -473,6 +473,12 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="common\common.h" />
+		<Unit filename="common\fault_handler.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="common\fault_handler_asm.s">
+			<Option compilerVar="ASM" />
+		</Unit>
 		<Unit filename="common\ffconf.h" />
 		<Unit filename="common\halconf.h" />
 		<Unit filename="common\hydrafw_version.hdr" />
@@ -504,6 +510,11 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="drv\stm32cube\bsp.h" />
+		<Unit filename="drv\stm32cube\bsp_adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\bsp_adc.h" />
+		<Unit filename="drv\stm32cube\bsp_adc_conf.h" />
 		<Unit filename="drv\stm32cube\bsp_i2c.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -578,6 +589,9 @@
 		<Unit filename="drv\stm32cube\inc\stm32f4xx_ll_fsmc.h" />
 		<Unit filename="drv\stm32cube\inc\stm32f4xx_ll_sdmmc.h" />
 		<Unit filename="drv\stm32cube\inc\stm32f4xx_ll_usb.h" />
+		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_gpio.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -691,8 +705,8 @@
 		<Extensions>
 			<code_completion />
 			<debugger>
-				<target_debugging_settings target="Debug" active_interface="ST-link">
-					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description="STM32F40x.svd" dont_start_server="false" backoff_time="1000" options="10" reg_filter="0" active_family="STMicroelectronics">
+				<target_debugging_settings target="Release_os" active_interface="ST-link">
+					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description=".\STM32F40x.svd" dont_start_server="false" backoff_time="1000" options="10" reg_filter="0" active_family="STMicroelectronics">
 						<family_options family_id="STMicroelectronics">
 							<option opt_id="ID_JTAG_SWD" opt_value="swd" />
 							<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
@@ -715,7 +729,7 @@
 							<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
 							<option opt_id="ID_RESET_TYPE" opt_value="System" />
 							<option opt_id="ID_LOAD_PROGRAM" opt_value="1" />
-							<option opt_id="ID_SEMIHOST_CHECK" opt_value="0" />
+							<option opt_id="ID_SEMIHOST_CHECK" opt_value="1" />
 							<option opt_id="ID_RAM_EXEC" opt_value="0" />
 							<option opt_id="ID_VEC_TABLE" opt_value="1" />
 							<option opt_id="ID_DONT_CONN_RESET" opt_value="0" />
@@ -725,41 +739,24 @@
 						</family_options>
 					</debug_interface>
 				</target_debugging_settings>
-				<target_debugging_settings target="Release_os" active_interface="ST-link">
-					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description=".\STM32F40x.svd" dont_start_server="false" backoff_time="1000" options="10" reg_filter="0" active_family="STMicroelectronics">
+				<target_debugging_settings target="Debug" active_interface="ST-link">
+					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description="STM32F40x.svd" dont_start_server="false" backoff_time="1000" options="10" reg_filter="0" active_family="STMicroelectronics">
 						<family_options family_id="STMicroelectronics">
 							<option opt_id="ID_JTAG_SWD" opt_value="swd" />
 							<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
 							<option opt_id="ID_RESET_TYPE" opt_value="System" />
 							<option opt_id="ID_LOAD_PROGRAM" opt_value="1" />
-							<option opt_id="ID_SEMIHOST_CHECK" opt_value="0" />
+							<option opt_id="ID_SEMIHOST_CHECK" opt_value="1" />
 							<option opt_id="ID_RAM_EXEC" opt_value="0" />
 							<option opt_id="ID_VEC_TABLE" opt_value="1" />
 							<option opt_id="ID_DONT_CONN_RESET" opt_value="0" />
-							<option opt_id="ID_ALL_MODE_DEBUG" opt_value="0" />
+							<option opt_id="ID_ALL_MODE_DEBUG" opt_value="1" />
 							<option opt_id="ID_DEV_ADDR" opt_value="" />
 							<option opt_id="ID_VERBOSE_LEVEL" opt_value="3" />
 						</family_options>
 					</debug_interface>
 				</target_debugging_settings>
 			</debugger>
-			<target_debugging_settings target="Debug" active_interface="ST-link">
-				<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description="" dont_start_server="false" backoff_time="1000" options="0" reg_filter="0" active_family="STMicroelectronics">
-					<family_options family_id="STMicroelectronics">
-						<option opt_id="ID_JTAG_SWD" opt_value="swd" />
-						<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
-						<option opt_id="ID_RESET_TYPE" opt_value="System" />
-						<option opt_id="ID_LOAD_PROGRAM" opt_value="1" />
-						<option opt_id="ID_SEMIHOST_CHECK" opt_value="0" />
-						<option opt_id="ID_RAM_EXEC" opt_value="0" />
-						<option opt_id="ID_VEC_TABLE" opt_value="1" />
-						<option opt_id="ID_DONT_CONN_RESET" opt_value="0" />
-						<option opt_id="ID_ALL_MODE_DEBUG" opt_value="0" />
-						<option opt_id="ID_DEV_ADDR" opt_value="" />
-						<option opt_id="ID_VERBOSE_LEVEL" opt_value="3" />
-					</family_options>
-				</debug_interface>
-			</target_debugging_settings>
 			<envvars />
 			<DoxyBlocks>
 				<comment_style block="0" line="0" />

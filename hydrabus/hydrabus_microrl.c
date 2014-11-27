@@ -64,7 +64,9 @@ microrl_exec_t hydrabus_keyworld[HYDRABUS_NUM_OF_CMD] = {
 	/* 13 */ { _CMD_SD_ERASE,    &cmd_sd_erase},
 	/* 14 */ { _CMD_SD_RPERFO,   &cmd_sd_read_perfo },
 	/* 15 */ { _HYDRABUS_MODE,      &hydrabus_mode },
-	/* 16 */ { _HYDRABUS_MODE_INFO, &hydrabus_mode_info }
+	/* 16 */ { _HYDRABUS_MODE_INFO, &hydrabus_mode_info },
+	/* 17 */ { _HYDRABUS_MODE_VOLTAGE_ONE, &hydrabus_mode_voltage },
+	/* 18 */ { _HYDRABUS_MODE_VOLTAGE_CONT, &hydrabus_mode_voltage }
 };
 
 // array for completion
@@ -95,6 +97,7 @@ void hydrabus_print_help(t_hydra_console *con, int argc, const char* const* argv
 	print(con, "\n\r");
 	print(con, "m              - Change mode\n\r");
 	print(con, "i              - Mode information\n\r");
+	print(con, "v/V            - Voltage information\n\r");
 	print(con, "Protocol Interaction\n\r");
 	print(con, "----------------------------------------\n\r");
 	//print(con, "(x)\t\tMacro x\n\r");

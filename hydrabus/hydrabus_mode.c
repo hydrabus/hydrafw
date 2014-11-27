@@ -24,6 +24,9 @@ limitations under the License.
 #include "hydrabus_mode.h"
 #include "hydrabus_mode_conf.h"
 
+#include "bsp.h"
+#include "bsp_adc.h"
+
 #define HYDRABUS_MODE_DELAY_REPEAT_MAX (10000)
 
 #define HYDRABUS_MODE_START   '['
@@ -174,6 +177,146 @@ void hydrabus_mode_info(t_hydra_console *con, int argc, const char* const* argv)
 	cprintf(con, "\r\nHardware Pins:\r\n");
 	hydrabus_mode_conf[bus_mode]->mode_print_pins(con);
 	cprintf(con, "\r\n");
+}
+
+float print_adc_value_to_voltage(uint16_t value)
+{
+	return (((float)(value) * 3.3f) / 4095.0f);
+}
+
+void print_adc_info(t_hydra_console *con, uint16_t* rx_data)
+{
+	cprintf(con, "0x%04X/%d %fV\r\n",
+		rx_data[0],rx_data[0], print_adc_value_to_voltage(rx_data[0]));
+}
+
+void print_voltage_one(t_hydra_console *con)
+{
+	bsp_status_t status;
+	bsp_dev_adc_t device;
+#undef RX_DATA_SIZE
+#define RX_DATA_SIZE (1)
+	uint16_t rx_data[RX_DATA_SIZE];
+
+	device =BSP_DEV_ADC1;
+	status =bsp_adc_init(device);
+	if(status == BSP_OK) {
+		status = bsp_adc_read_u16(device, rx_data, RX_DATA_SIZE);
+		if(status == BSP_OK) {
+			cprintf(con, "ADC1: ");
+			print_adc_info(con, rx_data);
+		} else
+			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
+	} else
+		cprintf(con, "bsp_adc_init error: %d\r\n", status);
+
+	device =BSP_DEV_ADC_TEMPSENSOR;
+	status =bsp_adc_init(device);
+	if(status == BSP_OK) {
+		status = bsp_adc_read_u16(device, rx_data, RX_DATA_SIZE);
+		if(status == BSP_OK) {
+			cprintf(con, "TempSensor: ");
+			print_adc_info(con, rx_data);
+		} else
+			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
+	} else
+		cprintf(con, "bsp_adc_init error: %d\r\n", status);
+
+	device =BSP_DEV_ADC_VREFINT;
+	status =bsp_adc_init(device);
+	if(status == BSP_OK) {
+		status = bsp_adc_read_u16(device, rx_data, RX_DATA_SIZE);
+		if(status == BSP_OK) {
+			cprintf(con, "VrefInt: ");
+			print_adc_info(con, rx_data);
+		} else
+			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
+	} else
+		cprintf(con, "bsp_adc_init error: %d\r\n", status);
+
+	device =BSP_DEV_ADC_VBAT;
+	status =bsp_adc_init(device);
+	if(status == BSP_OK) {
+		status = bsp_adc_read_u16(device, rx_data, RX_DATA_SIZE);
+		if(status == BSP_OK) {
+			cprintf(con, "Vbat: ");
+			print_adc_info(con, rx_data);
+		} else
+			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
+	} else
+		cprintf(con, "bsp_adc_init error: %d\r\n", status);
+}
+
+void print_voltage_cont(t_hydra_console *con)
+{
+	bsp_status_t status;
+	bsp_dev_adc_t device;
+#undef RX_DATA_SIZE
+#define RX_DATA_SIZE (4)
+	uint16_t rx_data[RX_DATA_SIZE] =  { 0 };
+
+	device =BSP_DEV_ADC1;
+	status =bsp_adc_init(device);
+	if(status == BSP_OK) {
+		status = bsp_adc_read_u16(device, &rx_data[0], 1);
+		if(status != BSP_OK)
+			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
+	} else
+		cprintf(con, "bsp_adc_init error: %d\r\n", status);
+
+	device =BSP_DEV_ADC_TEMPSENSOR;
+	status =bsp_adc_init(device);
+	if(status == BSP_OK) {
+		status = bsp_adc_read_u16(device, &rx_data[1], 1);
+		if(status != BSP_OK)
+			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
+	} else
+		cprintf(con, "bsp_adc_init error: %d\r\n", status);
+
+	device =BSP_DEV_ADC_VREFINT;
+	status =bsp_adc_init(device);
+	if(status == BSP_OK) {
+		status = bsp_adc_read_u16(device, &rx_data[2], 1);
+		if(status != BSP_OK)
+			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
+	} else
+		cprintf(con, "bsp_adc_init error: %d\r\n", status);
+
+	device =BSP_DEV_ADC_VBAT;
+	status =bsp_adc_init(device);
+	if(status == BSP_OK) {
+		status = bsp_adc_read_u16(device, &rx_data[3], 1);
+		if(status != BSP_OK)
+			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
+	} else
+		cprintf(con, "bsp_adc_init error: %d\r\n", status);
+
+	cprintf(con, "ADC1:%fV TEMP:%fV VREF:%fV VBAT:%fV\r",
+		print_adc_value_to_voltage(rx_data[0]),
+		print_adc_value_to_voltage(rx_data[1]),
+		print_adc_value_to_voltage(rx_data[2]),
+		print_adc_value_to_voltage(rx_data[3]));
+}
+
+
+void hydrabus_mode_voltage(t_hydra_console *con, int argc, const char* const* argv)
+{
+	(void)argc;
+
+	if(argv[0][0]=='v') {
+		cprintf(con, "Voltage mode v\r\n");
+		print_voltage_one(con);
+	} else if(argv[0][0]=='V') {
+		cprintf(con, "Voltage mode V continuous(stop with UBTN)\r\n");
+		while(USER_BUTTON == 0) {
+			print_voltage_cont(con);
+			chThdSleepMilliseconds(100);
+		}
+		cprintf(con, "\r\n");
+	} else {
+		cprintf(con, "Voltage mode needs argument V or v\r\n");
+	}
+
 }
 
 /* return the number of characters found in string with value including only:

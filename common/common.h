@@ -46,6 +46,15 @@ limitations under the License.
 #undef TST_OFF
 #define TST_OFF (palClearPad(GPIOB, 3))
 
+#define BIT0    (1<<0)
+#define BIT1    (1<<1)
+#define BIT2    (1<<2)
+#define BIT3    (1<<3)
+#define BIT4    (1<<4)
+#define BIT5    (1<<5)
+#define BIT6    (1<<6)
+#define BIT7    (1<<7)
+
 void scs_dwt_cycle_counter_enabled(void);
 #define clear_cyclecounter() ( DWTBase->CYCCNT = 0 )
 #define get_cyclecounter() ( DWTBase->CYCCNT )
@@ -115,6 +124,9 @@ void cmd_init(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_mem(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_threads(t_hydra_console *con, int argc, const char* const* argv);
 void cmd_dbg(t_hydra_console *con, int argc, const char* const* argv);
+
+void print_dbg(const char *data, const uint32_t size);
+void printf_dbg(const char *fmt, ...);
 
 static inline void cprint(t_hydra_console *con, const char *data, const uint32_t size)
 {

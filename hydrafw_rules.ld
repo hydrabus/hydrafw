@@ -126,12 +126,15 @@ SECTIONS
         *(.rodata)
         *(.rodata.*)
         PROVIDE(_edata = .);
-    } > ccmram AT > flash
-
+    } > ram AT > flash
+/*
+} > ccmram AT > flash
+*/
     .bss :
     {
         . = ALIGN(4);
         PROVIDE(_bss_start = .);
+	PROVIDE(__bss_start__ = .);
         *(.bss)
         . = ALIGN(4);
         *(.bss.*)
@@ -139,11 +142,13 @@ SECTIONS
         *(COMMON)
         . = ALIGN(4);
         PROVIDE(_bss_end = .);
+	PROVIDE(__bss_end__ = .);
     } > ram
 }
 
 PROVIDE(end = .);
 _end            = .;
+__end__         = .;
 
 __heap_base__   = _end;
 __heap_end__    = __ram_end__;

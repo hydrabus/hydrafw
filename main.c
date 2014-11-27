@@ -128,6 +128,12 @@ THD_FUNCTION(console, arg)
 #define BLINK_FAST   50
 #define BLINK_SLOW   250
 
+int div_test(int a, int b)
+{
+	return a / b;
+}
+volatile int a, b, c;
+
 int main(void)
 {
 	int sleep_ms, i;
@@ -225,7 +231,20 @@ int main(void)
 		chThdSleepMilliseconds(sleep_ms);
 
 		if(USER_BUTTON)
+		{
 			sleep_ms = BLINK_FAST;
+			/*
+			{
+				SCB->CCR |= 0x10;
+
+				a = 100;
+				b = 0;
+				c = div_test(a, b);
+
+			}
+			return c;
+			*/
+		}
 		else
 			sleep_ms = BLINK_SLOW;
 		ULED_OFF;
