@@ -120,7 +120,6 @@ typedef struct hydra_console {
 		BaseSequentialStream *bss;
 	};
 	t_tokenline *tl;
-	int insert_char;
 	t_mode_config *mode;
 	int console_mode;
 } t_hydra_console;

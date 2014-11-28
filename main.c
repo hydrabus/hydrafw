@@ -46,8 +46,8 @@ t_tokenline tl_con2;
 t_mode_config mode_con2 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=MODE_CONFIG_PROTO_DEV_DEF_VAL }, .cmd={ 0 } };
 
 t_hydra_console consoles[] = {
-	{ .thread_name="console USB1", .thread=NULL, .sdu=&SDU1, .tl=&tl_con1, .insert_char = 0, .mode = &mode_con1 },
-	{ .thread_name="console USB2", .thread=NULL, .sdu=&SDU2, .tl=&tl_con2, .insert_char = 0, .mode = &mode_con2 }
+	{ .thread_name="console USB1", .sdu=&SDU1, .tl=&tl_con1, .mode = &mode_con1 },
+	{ .thread_name="console USB2", .sdu=&SDU2, .tl=&tl_con2, .mode = &mode_con2 }
 };
 
 /*
@@ -99,7 +99,6 @@ THD_FUNCTION(ThreadHydraNFC, arg)
 
 THD_FUNCTION(console, arg)
 {
-	int insert_char;
 	t_hydra_console *con;
 
 	con = arg;
@@ -109,13 +108,8 @@ THD_FUNCTION(console, arg)
 	tl_set_callback(con->tl, execute);
 
 	while (1) {
-		chThdSleepMilliseconds(1);
 		tl_input(con->tl, get_char(con));
-		if(con->insert_char != 0) {
-			insert_char = con->insert_char;
-			con->insert_char = 0;
-			tl_input(con->tl, insert_char);
-		}
+		chThdSleepMilliseconds(1);
 	}
 }
 
