@@ -105,7 +105,7 @@ THD_FUNCTION(console, arg)
 	con = arg;
 	chRegSetThreadName(con->thread_name);
 	tl_init(con->tl, tl_tokens, tl_dict, print, con);
-	tl_set_prompt(con->tl, "> ");
+	tl_set_prompt(con->tl, PROMPT);
 	tl_set_callback(con->tl, execute);
 
 	while (1) {

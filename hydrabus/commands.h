@@ -18,6 +18,7 @@
 enum {
 	T_HELP = 1,
 	T_HISTORY,
+	T_EXIT,
 	T_CLEAR,
 	T_DEBUG,
 	T_SHOW,
@@ -35,7 +36,6 @@ enum {
 	T_ERASE,
 	T_REALLY,
 	T_TESTPERF,
-
 	T_MODE,
 	T_SPI,
 	T_I2C,
@@ -47,5 +47,31 @@ enum {
 	T_PHASE,
 	T_MSB_FIRST,
 	T_LSB_FIRST,
+	T_GPIO_RESISTOR,
+	T_PULL_UP,
+	T_PULL_DOWN,
+	T_FLOATING,
+	T_ON,
+	T_OFF,
+	T_CHIP_SELECT,
+	T_CS,
+	T_PINS,
+	T_READ,
+	T_WRITE,
+
+	/* BP-compatible commands */
+	T_LEFT_SQ,
+	T_RIGHT_SQ,
+	T_LEFT_CURLY,
+	T_RIGHT_CURLY,
+	T_SLASH,
+	T_BACKSLASH,
+	T_MINUS,
+	T_UNDERSCORE,
+	T_EXCLAMATION,
+	T_CARET,
+	T_PERIOD,
+	T_AMPERSAND,
+	T_PERCENT,
 };
 

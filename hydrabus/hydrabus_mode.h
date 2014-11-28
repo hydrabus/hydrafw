@@ -56,11 +56,13 @@ extern const char hydrabus_mode_str_mul_value_u8[];
 /* "\r\n" */
 extern const char hydrabus_mode_str_mul_br[];
 
-typedef struct {
+typedef struct mode_exec_t {
 	/*
 	  Terminal parameters specific to this mode (return TRUE if mode configured with success else FALSE)
 	*/
-	bool (*mode_cmd)(t_hydra_console *con, int argc, const char* const* argv);
+	int (*mode_cmd)(t_hydra_console *con, t_tokenline_parsed *p);
+	int (*mode_cmd_exec)(t_hydra_console *con, t_tokenline_parsed *p,
+			int token_pos);
 	void (*mode_start)(t_hydra_console *con); /* Start command '[' */
 	void (*mode_startR)(t_hydra_console *con); /* Start Read command '{' */
 	void (*mode_stop)(t_hydra_console *con); /* Stop command ']' */
@@ -82,7 +84,7 @@ typedef struct {
 	void (*mode_cleanup)(t_hydra_console *con); /* Exit mode, disable device enter safe mode HiZ... */
 	void (*mode_print_param)(t_hydra_console *con); /* Print Mode parameters */
 	void (*mode_print_pins)(t_hydra_console *con); /* Print Pins used */
-	void (*mode_print_settings)(t_hydra_console *con); /* Settings string */
+	void (*mode_print_settings)(t_hydra_console *con, t_tokenline_parsed *p); /* Settings string */
 	void (*mode_print_name)(t_hydra_console *con);  /* Print Mode name */
 	const char* (*mode_str_prompt)(t_hydra_console *con); /* Prompt name string */
 } mode_exec_t;

@@ -25,7 +25,7 @@
 #include "common.h"
 
 extern t_token_dict tl_dict[];
-
+extern t_token tokens_mode_spi[];
 
 void print(void *user, const char *str)
 {
@@ -61,9 +61,23 @@ static int print_clear(t_hydra_console *con, t_tokenline_parsed *p)
 	return TRUE;
 }
 
+int mode_exit(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	int ret;
+
+	(void)p;
+
+	con->console_mode = MODE_TOP;
+	tl_set_prompt(con->tl, PROMPT);
+	ret = tl_mode_pop(con->tl);
+
+	return ret;
+}
+
 void token_dump(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	float arg_float;
+	uint32_t arg_uint;
 	int arg_int, i;
 
 	for (i = 0; p->tokens[i]; i++) {
@@ -74,11 +88,16 @@ void token_dump(t_hydra_console *con, t_tokenline_parsed *p)
 			chprintf(con->bss, "integer %d\r\n", arg_int);
 			break;
 		case T_ARG_FLOAT:
+		case T_ARG_FREQ:
 			memcpy(&arg_float, p->buf + p->tokens[++i], sizeof(float));
 			chprintf(con->bss, "float %f\r\n", arg_float);
 			break;
 		case T_ARG_STRING:
 			chprintf(con->bss, "string '%s'\r\n", p->buf + p->tokens[++i]);
+			break;
+		case T_ARG_TOKEN_SUFFIX_INT:
+			memcpy(&arg_uint, p->buf + p->tokens[++i], sizeof(uint32_t));
+			chprintf(con->bss, "token-suffixed integer %d\r\n", arg_uint);
 			break;
 		default:
 			chprintf(con->bss, "token %d (%s)\r\n", p->tokens[i],
@@ -95,6 +114,7 @@ struct cmd_map {
 	{ T_DEBUG, cmd_debug_timing },
 	{ T_SHOW, cmd_show },
 	{ T_SD, cmd_sd },
+	{ T_MODE, cmd_mode_init },
 	{ 0, NULL }
 };
 
@@ -104,16 +124,19 @@ void execute(void *user, t_tokenline_parsed *p)
 	int i;
 
 	con = user;
-	for (i = 0; top_commands[i].token; i++) {
-		if (p->tokens[0] == top_commands[i].token) {
-			token_dump(con, p);
-			if (!top_commands[i].func(con, p))
-				chprintf(con->bss, "Command failed.\r\n");
-			break;
+	if (con->console_mode)
+		cmd_mode_exec(con, p);
+	else {
+		for (i = 0; top_commands[i].token; i++) {
+			if (p->tokens[0] == top_commands[i].token) {
+				if (!top_commands[i].func(con, p))
+					chprintf(con->bss, "Command failed.\r\n");
+				break;
+			}
 		}
-	}
-	if (!top_commands[i].token) {
-		chprintf(con->bss, "Command mapping not found.\r\n");
+		if (!top_commands[i].token) {
+			chprintf(con->bss, "Command mapping not found.\r\n");
+		}
 	}
 }
 

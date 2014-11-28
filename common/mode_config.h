@@ -48,6 +48,8 @@ typedef struct {
 	mode_dev_gpio_pull_t dev_gpio_pull; /* GPIO Pull for SPI, I2C ...*/
 	long dev_mode;
 	long dev_speed;
+	long dev_polarity; /* For SPI */
+	long dev_phase; /* For SPI */
 	long dev_cpol_cpha; /* For SPI */
 	long dev_numbits;
 	long dev_bit_lsb_msb; /* For SPI */
@@ -73,8 +75,9 @@ typedef struct {
 	uint32_t cmd; /* command defined in hydrabus_mode_cmd() */
 } mode_config_command_t;
 
-typedef struct {
+typedef struct t_mode_config {
 	mode_config_proto_t proto;
+	const struct mode_exec_t *exec;
 	mode_config_command_t cmd;
 } t_mode_config;
 

@@ -1,5 +1,6 @@
 /*
-HydraBus/HydraNFC - Copyright (C) 2014 Benjamin VERNOUX
+	HydraBus/HydraNFC - Copyright (C) 2014 Benjamin VERNOUX
+	Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,28 +22,27 @@ limitations under the License.
 
 #include "hydrabus.h"
 #include "hydrabus_mode.h"
-#include "hydrabus_mode_conf.h"
-
 #include "bsp.h"
 #include "bsp_adc.h"
+#include "mode_config.h"
 
-#define HYDRABUS_MODE_DELAY_REPEAT_MAX (10000)
+#define MAYBE_CALL(x) { if (x) x(con); }
+static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
+		int token_pos);
+static int hydrabus_mode_read(t_hydra_console *con, t_tokenline_parsed *p,
+		int token_pos);
 
-#define HYDRABUS_MODE_START   '['
-#define HYDRABUS_MODE_STOP    ']'
-#define HYDRABUS_MODE_STARTR  '{'
-#define HYDRABUS_MODE_STOPTR  '}'
-#define HYDRABUS_MODE_READ    'r'
-#define HYDRABUS_MODE_CLK_HI  '/'
-#define HYDRABUS_MODE_CLK_LO  '\\'
-#define HYDRABUS_MODE_CLK_TK  '^'
-#define HYDRABUS_MODE_DAT_HI  '-'
-#define HYDRABUS_MODE_DAT_LO  '_'
-#define HYDRABUS_MODE_DAT_RD  '.'
-#define HYDRABUS_MODE_BIT_RD  '!'
+extern t_token_dict tl_dict[];
+extern const mode_exec_t mode_spi_exec;
+extern t_token tokens_mode_spi[];
 
-#define HYDRABUS_DELAY_MICROS  '&'
-#define HYDRABUS_DELAY_MILLIS  '%'
+static struct {
+	int token;
+	t_token *tokens;
+	const mode_exec_t *exec;
+} modes[] = {
+	{ T_SPI, tokens_mode_spi, &mode_spi_exec },
+};
 
 const char hydrabus_mode_str_cs_enabled[] =  "/CS ENABLED\r\n";
 const char hydrabus_mode_str_cs_disabled[] = "/CS DISABLED\r\n";
@@ -62,11 +62,6 @@ static const char mode_str_write_error[] =  "WRITE error:%d\r\n";
 static const char mode_str_read_error[] = "READ error:%d\r\n";
 static const char mode_str_write_read_error[] = "WRITE/READ error:%d\r\n";
 
-static const char mode_not_configured[] = "Mode not configured, configure mode with 'm'\r\n";
-static const char mode_repeat_too_long[] =  "Error max size for 'arg:arg' shall be >0 & <%d\r\n";
-static const char mode_repeat_before_error[] =  "Error parameter before ':' shall be between %d & %d\r\n";
-static const char mode_repeat_after_error[] =  "Error parameter after ':' shall be between %d & %d\r\n";
-
 static void hydrabus_mode_read_error(t_hydra_console *con, uint32_t mode_status)
 {
 	cprintf(con, mode_str_read_error, mode_status);
@@ -82,100 +77,117 @@ static void hydrabus_mode_write_read_error(t_hydra_console *con, uint32_t mode_s
 	cprintf(con, mode_str_write_read_error, mode_status);
 }
 
-void hydrabus_mode_help(t_hydra_console *con)
+int cmd_mode_init(t_hydra_console *con, t_tokenline_parsed *p)
 {
-	int i;
+	unsigned int i;
 
-	cprintf(con, "%d=", 1);
-	hydrabus_mode_conf[0]->mode_print_name(con);
-	for(i = 1; i < HYDRABUS_MODE_NB_CONF; i++) {
-		cprintf(con, ", %d=", i+1);
-		hydrabus_mode_conf[i]->mode_print_name(con);
+	if (!p->tokens[1])
+		return FALSE;
+
+	for (i = 0; i < ARRAY_SIZE(modes); i++) {
+		if (p->tokens[1] != modes[i].token)
+			continue;
+		con->mode->exec = modes[i].exec;
+		/* TODO tokens used */
+		con->mode->exec->mode_cmd(con, p);
+		if (!tl_mode_push(con->tl, modes[i].tokens))
+			return FALSE;
+		con->console_mode = modes[i].token;
+		tl_set_prompt(con->tl, (char *)con->mode->exec->mode_str_prompt(con));
+		MAYBE_CALL(con->mode->exec->mode_setup);
+		MAYBE_CALL(con->mode->exec->mode_setup_exc);
 	}
-	cprintf(con, "\r\n");
+
+	return TRUE;
 }
 
-void hydrabus_mode(t_hydra_console *con, int argc, const char* const* argv)
+int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 {
-	bool res;
-	int32_t bus_mode;
-	mode_config_proto_t* p_proto = &con->mode->proto;
-	long old_dev_num;
-	long new_dev_num;
+	uint32_t usec;
+	int t, factor, ret;
+	bool done;
 
-	bus_mode = 0;
-	if(argc > 1) {
-		if(xatoi((char**)&argv[1], &bus_mode)) {
-			bus_mode--;
-			if((bus_mode >= 0) &&
-			    (bus_mode < HYDRABUS_MODE_NB_CONF)) {
-				/* Execute mode command of the protocol */
-				old_dev_num = p_proto->dev_num;
-				res = hydrabus_mode_conf[bus_mode]->mode_cmd(con, (argc-2), &argv[2]);
-				if(res == TRUE) {
-					new_dev_num = p_proto->dev_num;
-
-					/* Cleanup previous/old mode */
-					p_proto->dev_num = old_dev_num;
-					hydrabus_mode_conf[p_proto->bus_mode]->mode_cleanup(con);
-
-					/* Update mode with new mode / dev_num */
-					p_proto->bus_mode = bus_mode;
-					p_proto->dev_num = new_dev_num;
-
-					/* Setup new mode */
-					hydrabus_mode_conf[p_proto->bus_mode]->mode_setup(con);
-					hydrabus_mode_conf[p_proto->bus_mode]->mode_setup_exc(con);
-
-					tl_set_prompt(con->tl, (char *)hydrabus_mode_conf[bus_mode]->mode_str_prompt(con));
-					hydrabus_mode_conf[bus_mode]->mode_print_settings(con);
-					cprintf(con, "\r\n");
-				} else {
-					/* Restore history previous line(to avoid user press key Up) */
-					con->insert_char = 16;
-				}
-				return;
+	ret = TRUE;
+	done = FALSE;
+	for (t = 0; !done && p->tokens[t]; t++) {
+		switch (p->tokens[t]) {
+		case T_SHOW:
+			con->mode->exec->mode_print_settings(con, p);
+			done = TRUE;
+			break;
+		case T_LEFT_SQ:
+			con->mode->proto.wwr = 0;
+			MAYBE_CALL(con->mode->exec->mode_start);
+			break;
+		case T_RIGHT_SQ:
+			con->mode->proto.wwr = 0;
+			MAYBE_CALL(con->mode->exec->mode_stop);
+			break;
+		case T_LEFT_CURLY:
+			con->mode->proto.wwr = 1;
+			MAYBE_CALL(con->mode->exec->mode_startR);
+			break;
+		case T_RIGHT_CURLY:
+			con->mode->proto.wwr = 0;
+			MAYBE_CALL(con->mode->exec->mode_stopR);
+			break;
+		case T_SLASH:
+			MAYBE_CALL(con->mode->exec->mode_clkh);
+			break;
+		case T_BACKSLASH:
+			MAYBE_CALL(con->mode->exec->mode_clkl);
+			break;
+		case T_MINUS:
+			MAYBE_CALL(con->mode->exec->mode_dath);
+			break;
+		case T_UNDERSCORE:
+			MAYBE_CALL(con->mode->exec->mode_datl);
+			break;
+		case T_EXCLAMATION:
+			MAYBE_CALL(con->mode->exec->mode_dats);
+			break;
+		case T_CARET:
+			MAYBE_CALL(con->mode->exec->mode_clk);
+			break;
+		case T_PERIOD:
+			MAYBE_CALL(con->mode->exec->mode_bitr);
+			break;
+		case T_AMPERSAND:
+		case T_PERCENT:
+			if (p->tokens[t] == T_PERCENT)
+				factor = 1000;
+			else
+				factor = 1;
+			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
+				t += 2;
+				memcpy(&usec, p->buf + p->tokens[t], sizeof(int));
 			} else {
-				// Invalid mode
+				usec = 1;
 			}
-		} else {
-			// Invalid mode
+			usec *= factor;
+			DelayUs(usec);
+			break;
+
+		case T_READ:
+			t += hydrabus_mode_read(con, p, t);
+			break;
+		case T_WRITE:
+			t += hydrabus_mode_write(con, p, t + 1);
+			break;
+		case T_ARG_INT:
+			t += hydrabus_mode_write(con, p, t);
+			break;
+		case T_EXIT:
+			con->mode->exec->mode_cleanup(con);
+			mode_exit(con, p);
+			break;
+		default:
+			/* Mode-specific commands. */
+			t += con->mode->exec->mode_cmd_exec(con, p, t);
 		}
-	} else {
-		// Invalid mode
 	}
 
-	// Invalid mode
-	cprintf(con, "Invalid mode\r\n");
-	hydrabus_mode_help(con);
-}
-
-void hydrabus_mode_info(t_hydra_console *con, int argc, const char* const* argv)
-{
-	(void)argc;
-	(void)argv;
-	uint32_t bus_mode;
-	bus_mode = con->mode->proto.bus_mode;
-
-	if(con->mode->proto.valid != MODE_CONFIG_PROTO_VALID) {
-		cprintf(con, mode_not_configured);
-		return;
-	}
-
-	cprintf(con, "Mode Info: m %d ",
-		bus_mode+1);
-	hydrabus_mode_conf[bus_mode]->mode_print_param(con);
-
-	cprintf(con, "\r\nMode: %d=",
-		bus_mode+1);
-	hydrabus_mode_conf[bus_mode]->mode_print_name(con);
-
-	cprintf(con, "\r\n");
-	hydrabus_mode_conf[bus_mode]->mode_print_settings(con);
-
-	cprintf(con, "\r\nHardware Pins:\r\n");
-	hydrabus_mode_conf[bus_mode]->mode_print_pins(con);
-	cprintf(con, "\r\n");
+	return ret;
 }
 
 float print_adc_value_to_voltage(uint16_t value)
@@ -318,391 +330,103 @@ void hydrabus_mode_voltage(t_hydra_console *con, int argc, const char* const* ar
 
 }
 
-/* return the number of characters found in string with value including only:
- '0' to '9', 'a' to 'f', 'A' to 'F', 'x', 'b', ' ' */
-static uint32_t repeat_len(const char *str, int len)
+static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,
+		int token_pos)
 {
-	char car;
-	int i;
+	mode_config_proto_t* p_proto = &con->mode->proto;
+	int arg_int, t, i;
 
-	for(i = 0; i < len; i++) {
-		car = str[i];
-		if( car >= '0' && car <= '9')
-			continue;
-
-		if( car >= 'a' && car <= 'f')
-			continue;
-
-		if( car >= 'A' && car <= 'F')
-			continue;
-
-		switch(car) {
-		case 'x':
-		case 'b':
-		case ':':
-		case ' ':
-			continue;
-
-		default:
-			/* Error other char invalid return actual pos */
-			return i;
+	t = token_pos;
+	i = 0;
+	while (p->tokens[t] == T_ARG_INT) {
+		t++;
+		memcpy(&arg_int, p->buf + p->tokens[t++], sizeof(int));
+		if (arg_int > 0xff) {
+			cprintf(con, "Please specify one byte at a time.\r\n");
+			return 0;
 		}
+		p_proto->buffer_tx[i++] = arg_int;
 	}
+
 	return i;
 }
 
 /*
- Copy str_src to str_dst until end of string or max_len:
- When ':' is found replace it by 0 in str_dst
- During copy Hexadecimal upper case 'A' to 'F' are converted in lower case.
- Return pos of ':'+1 (2nd string)
-*/
-static uint32_t repeat_strncpy(const char* str_src, char* str_dst, int max_len)
+ * This function can be called for either T_WRITE or a free-standing
+ * T_ARG_INT, so it's called with t pointing to the first token after
+ * T_WRITE, or the first T_ARG_INT in the free-standing case.
+ *
+ * Returns the number of tokens eaten.
+ */
+static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
+		int t)
 {
-	char char_src;
-	int i;
-	int pos_repeat;
-
-	pos_repeat = -1;
-	for(i = 0; i < max_len; i++) {
-		char_src = str_src[i];
-
-		/* Convert Hexadecimal Upper case to Lower case */
-		if(char_src >= 'A' && char_src <= 'F')
-			char_src += 0x20;
-
-		if(char_src == 0)
-			break;
-
-		if(char_src == ':') {
-			pos_repeat = i;
-			str_dst[i] = 0; /* Set end of string  */
-		} else {
-			str_dst[i] = char_src;
-		}
-	}
-	/* Set end of string  */
-	str_dst[i] = 0;
-	return (pos_repeat+1);
-}
-
-/* Return TRUE if success or FALSE if error (out of range or invalid value)
-   val_before_min & val_before_max are used to check min & max value before ':' which is mandatory
-   val_after_min & val_after_max  are used to check min & max value after ':'.
-   nb_arg_car_used means number of characters used (including before + ':' + after)
-   write_cmd is TRUE when both val_before &  val_after are used
-   write_cmd is FALSE when only val_after
-   val_after is optional (equal to 0 if not found).
-*/
-static bool repeat_cmd(t_hydra_console *con, const char* const* argv,
-		       long val_before_min, long val_before_max, long* val_before,
-		       long val_after_min, long val_after_max, long* val_after,
-		       int* nb_arg_car_used, bool write_cmd)
-{
-	long val;
-	uint32_t len;
-	uint32_t pos_val;
-	char* tmp_argv[] = { 0, 0 };
-	const char* str;
-#define TMP_VAL_STRING_MAX_SIZE (10)
-	char tmp_val_string[TMP_VAL_STRING_MAX_SIZE+1];
-	*nb_arg_car_used = 0;
-
-	len = strlen(&argv[0][0]);
-	if(len < 1) {
-		return FALSE;
-	}
-
-	if(write_cmd == TRUE) {
-		str = &argv[0][0];
-	} else {
-		/* Command with 1 char + optional ':' repeat */
-		str = &argv[0][1]; /* Remove 1st car which is the command */
-		if(str[0] != ':') { /* If no optional repeat command */
-			*val_after = 0;
-			*nb_arg_car_used = 1;
-			return TRUE;
-		}
-	}
-
-	/* Search string len for repeat command */
-	len = repeat_len(str, len);
-	if( ((len == 0) && (write_cmd == TRUE)) ) {
-		return FALSE; /* Invalid command */
-	}
-
-	if(len > TMP_VAL_STRING_MAX_SIZE) {
-		cprintf(con, mode_repeat_too_long, TMP_VAL_STRING_MAX_SIZE);
-		return FALSE;
-	}
-
-	pos_val = repeat_strncpy(str, tmp_val_string, len);
-	*nb_arg_car_used = len;
-	if(write_cmd == TRUE) {
-		/* 1st param (before ':') */
-		*val_before = 0;
-		*tmp_argv = tmp_val_string;
-		if(xatoi(tmp_argv, &val)) {
-			if( (val >= val_before_min) && (val <= val_before_max) ) {
-				*val_before = val;
-			} else {
-				cprintf(con, mode_repeat_before_error, val_before_min, val_before_max);
-				return FALSE;
-			}
-		} else {
-			cprintf(con, mode_repeat_before_error, val_before_min, val_before_max);
-			return FALSE;
-		}
-	} else {
-		*nb_arg_car_used += 1; /* Add 1st car which is the command */
-	}
-
-	/* 2nd param (after ':') */
-	*val_after = 0;
-	if(pos_val > 0) {
-		*tmp_argv = &tmp_val_string[pos_val];
-		if(xatoi(tmp_argv, &val)) {
-			if((val >= val_after_min) && (val <= val_after_max)) {
-				*val_after = val;
-			} else {
-				cprintf(con, mode_repeat_after_error, val_after_min, val_after_max);
-				return FALSE;
-			}
-		} else {
-			cprintf(con, mode_repeat_after_error, val_after_min, val_after_max);
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-
-/* Return TRUE if success or FALSE in case of error */
-static bool hydrabus_mode_write(t_hydra_console *con, const char* const* argv, int* nb_arg_car_used)
-{
-	bool ret_repeat_cmd;
-	int i;
-	long val;
-	long nb_repeat;
-	uint32_t mode_status;
-	uint32_t bus_mode;
 	mode_config_proto_t* p_proto = &con->mode->proto;
+	uint32_t mode_status;
+	int count, num_bytes, tokens_used, i;
 
-	bus_mode = p_proto->bus_mode;
-
-	ret_repeat_cmd = repeat_cmd(con, argv,
-				    0, 255, &val,
-				    1, MODE_CONFIG_PROTO_BUFFER_SIZE-1, &nb_repeat,
-				    nb_arg_car_used, TRUE);
-	if(ret_repeat_cmd == FALSE) {
-		return FALSE;
+	if (p->tokens[t] == T_ARG_TOKEN_SUFFIX_INT) {
+		t += 2;
+		memcpy(&count, p->buf + p->tokens[t], sizeof(int));
+	} else {
+		count = 1;
 	}
+
+	if (p->tokens[t] != T_ARG_INT) {
+		cprintf(con, "No bytes to write.\r\n");
+		return 0;
+	}
+
+	tokens_used = chomp_integers(con, p, t);
+	if (!tokens_used)
+		return 0;
+	t += tokens_used;
+	num_bytes = tokens_used;
+
 	/* TODO manage write string (only value(s) are supported in actual version) */
 
-	if(nb_repeat == 0) {
-		p_proto->buffer_tx[0] = val;
-		/* Write 1 time */
-		if(p_proto->wwr == 1) { /* Write & Read ? */
+	for (i = 0; i < count; i++) {
+		if (p_proto->wwr == 1) {
 			/* Write & Read */
-			mode_status = hydrabus_mode_conf[bus_mode]->mode_write_read(con, p_proto->buffer_tx, p_proto->buffer_rx, 1);
+			mode_status = con->mode->exec->mode_write_read(con,
+					p_proto->buffer_tx, p_proto->buffer_rx, num_bytes);
 			if(mode_status != HYDRABUS_MODE_STATUS_OK)
 				hydrabus_mode_write_read_error(con, mode_status);
 		} else {
 			/* Write only */
-			mode_status = hydrabus_mode_conf[bus_mode]->mode_write(con, p_proto->buffer_tx, 1);
-			if(mode_status != HYDRABUS_MODE_STATUS_OK)
-				hydrabus_mode_write_error(con, mode_status);
-		}
-	} else {
-		/* Write multiple times the same value */
-		for(i = 0; i < nb_repeat; i++) {
-			p_proto->buffer_tx[i] = val;
-		}
-
-		if(p_proto->wwr == 1) { /* Write & Read ? */
-			/* Write & Read */
-			mode_status = hydrabus_mode_conf[bus_mode]->mode_write_read(con, p_proto->buffer_tx, p_proto->buffer_rx, nb_repeat);
-			if(mode_status != HYDRABUS_MODE_STATUS_OK)
-				hydrabus_mode_write_read_error(con, mode_status);
-		} else {
-			/* Write only */
-			mode_status = hydrabus_mode_conf[bus_mode]->mode_write(con, p_proto->buffer_tx, nb_repeat);
+			mode_status = con->mode->exec->mode_write(con,
+					p_proto->buffer_tx, num_bytes);
 			if(mode_status != HYDRABUS_MODE_STATUS_OK)
 				hydrabus_mode_write_error(con, mode_status);
 		}
 	}
-	return TRUE;
+
+	return t;
 }
 
-/* Return TRUE if success or FALSE in case of error */
-static bool hydrabus_mode_read(t_hydra_console *con, const char* const* argv, int* nb_arg_car_used)
+/* Returns the number of tokens eaten. */
+static int hydrabus_mode_read(t_hydra_console *con, t_tokenline_parsed *p,
+		int token_pos)
 {
-	bool ret_repeat_cmd;
-	long nb_repeat;
-	uint32_t mode_status;
 	mode_config_proto_t* p_proto;
-	uint32_t bus_mode;
+	uint32_t mode_status;
+	int count, t;
 
 	p_proto = &con->mode->proto;
-	bus_mode = p_proto->bus_mode;
 
-	ret_repeat_cmd = repeat_cmd(con, argv,
-				    0, 0, NULL,
-				    1, MODE_CONFIG_PROTO_BUFFER_SIZE-1, &nb_repeat,
-				    nb_arg_car_used, FALSE);
-	if(ret_repeat_cmd == FALSE) {
-		return FALSE;
-	}
-	if(nb_repeat == 0) {
-		/* Read 1 time */
-		mode_status = hydrabus_mode_conf[bus_mode]->mode_read(con, p_proto->buffer_rx, 1);
+	t = token_pos;
+	if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
+		t += 2;
+		memcpy(&count, p->buf + p->tokens[t], sizeof(int));
 	} else {
-		/* Read multiple times */
-		mode_status = hydrabus_mode_conf[bus_mode]->mode_read(con, p_proto->buffer_rx, nb_repeat);
+		count = 1;
 	}
 
+	mode_status = con->mode->exec->mode_read(con, p_proto->buffer_rx, count);
 	if(mode_status != HYDRABUS_MODE_STATUS_OK)
 		hydrabus_mode_read_error(con, mode_status);
 
-	return TRUE;
-}
-
-/* Return TRUE if success or FALSE in case of error */
-static bool hydrabus_mode_delay(t_hydra_console *con, const char* const* argv, int* nb_arg_car_used)
-{
-	bool ret_repeat_cmd;
-	long nb_repeat;
-
-	ret_repeat_cmd = repeat_cmd(con, argv,
-				    0, 0, NULL,
-				    1, HYDRABUS_MODE_DELAY_REPEAT_MAX, &nb_repeat,
-				    nb_arg_car_used, FALSE);
-	if(ret_repeat_cmd == FALSE) {
-		return FALSE;
-	}
-
-	if(nb_repeat == 0)
-		nb_repeat = 1;
-
-	if(argv[0][0] == HYDRABUS_DELAY_MICROS) {
-		cprintf(con, mode_str_delay_us, nb_repeat);
-		DelayUs(nb_repeat);
-	} else {
-		cprintf(con, mode_str_delay_ms, nb_repeat);
-		DelayUs((nb_repeat*1000));
-	}
-	return TRUE;
-}
-
-/*
-Protocol Interaction commands
-Return TRUE if command found(or in case Error message already written) else return FALSE
-*/
-bool hydrabus_mode_proto_inter(t_hydra_console *con, int argc, const char* const* argv)
-{
-	bool cmd_found;
-	uint32_t bus_mode;
-	mode_config_proto_t* p_proto;
-	int arg_pos;
-	int nb_arg_car_used;
-	char arg;
-	char* tmp_argv[] = { 0, 0 };
-	cmd_found = FALSE;
-
-	if(argc < 1) {
-		return cmd_found;
-	}
-
-	p_proto = &con->mode->proto;
-	bus_mode = p_proto->bus_mode;
-
-	if(p_proto->valid != MODE_CONFIG_PROTO_VALID) {
-		cprintf(con, mode_not_configured);
-		return TRUE;
-	}
-
-	arg_pos = 0;
-	arg = argv[0][arg_pos];
-	*tmp_argv = (char*)&argv[0][arg_pos];
-	while(arg != 0) { /* loop until end of string */
-		cmd_found = TRUE;
-		nb_arg_car_used = 0;
-		switch(arg) {
-		case HYDRABUS_MODE_START:
-			p_proto->wwr = 0;
-			hydrabus_mode_conf[bus_mode]->mode_start(con);
-			break;
-
-		case HYDRABUS_MODE_STOP:
-			p_proto->wwr = 0;
-			hydrabus_mode_conf[bus_mode]->mode_stop(con);
-			break;
-
-		case HYDRABUS_MODE_STARTR:
-			/* Enable Write with Read */
-			p_proto->wwr = 1;
-			hydrabus_mode_conf[bus_mode]->mode_startR(con);
-			break;
-
-		case HYDRABUS_MODE_STOPTR:
-			p_proto->wwr = 0;
-			hydrabus_mode_conf[bus_mode]->mode_stopR(con);
-			break;
-
-		case HYDRABUS_MODE_READ:
-			cmd_found = hydrabus_mode_read(con, (const char* const*)tmp_argv, &nb_arg_car_used);
-			break;
-
-		case HYDRABUS_MODE_CLK_HI: /* Set CLK High (x-WIRE or other raw mode ...) */
-			hydrabus_mode_conf[bus_mode]->mode_clkh(con);
-			break;
-
-		case HYDRABUS_MODE_CLK_LO: /* Set CLK Low (x-WIRE or other raw mode ...) */
-			hydrabus_mode_conf[bus_mode]->mode_clkl(con);
-			break;
-
-		case HYDRABUS_MODE_CLK_TK: /* CLK Tick (x-WIRE or other raw mode ...) */
-			hydrabus_mode_conf[bus_mode]->mode_clk(con);
-			break;
-
-		case HYDRABUS_MODE_DAT_HI: /* Set DAT High (x-WIRE or other raw mode ...) */
-			hydrabus_mode_conf[bus_mode]->mode_dath(con);
-			break;
-
-		case HYDRABUS_MODE_DAT_LO: /* Set DAT Low (x-WIRE or other raw mode ...) */
-			hydrabus_mode_conf[bus_mode]->mode_datl(con);
-			break;
-
-		case HYDRABUS_MODE_DAT_RD: /* DAT Read (x-WIRE or other raw mode ...) */
-			hydrabus_mode_conf[bus_mode]->mode_bitr(con);
-			break;
-
-		case HYDRABUS_MODE_BIT_RD: /* Read Bit (x-WIRE or other raw mode ...) */
-			hydrabus_mode_conf[bus_mode]->mode_bitr(con);
-			break;
-
-		case HYDRABUS_DELAY_MICROS:
-		case HYDRABUS_DELAY_MILLIS:
-			cmd_found = hydrabus_mode_delay(con, (const char* const*)tmp_argv, &nb_arg_car_used);
-			break;
-
-		default: /* Check if it is a valid value to Write */
-			cmd_found = hydrabus_mode_write(con, (const char* const*)tmp_argv, &nb_arg_car_used);
-			break;
-		}
-
-		if(cmd_found == FALSE)
-			return cmd_found;
-
-		if(nb_arg_car_used > 0)
-			arg_pos += nb_arg_car_used;
-		else
-			arg_pos++;
-
-		arg = argv[0][arg_pos];
-		*tmp_argv = (char*)&argv[0][arg_pos];
-	} /* while(arg != 0) */
-
-	return cmd_found;
+	return t - token_pos;
 }
 
 static void hydrabus_mode_dev_set(t_hydra_console *con, mode_config_dev_t param, long value)

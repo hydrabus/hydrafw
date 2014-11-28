@@ -109,6 +109,9 @@ typedef struct {
 /* How much thread working area to allocate per console. */
 #define CONSOLE_WA_SIZE 2048
 
+#define PROMPT "> "
+
+struct t_mode_config;
 typedef struct hydra_console {
 	char *thread_name;
 	thread_t *thread;
@@ -119,16 +122,27 @@ typedef struct hydra_console {
 	t_tokenline *tl;
 	int insert_char;
 	t_mode_config *mode;
+	int console_mode;
 } t_hydra_console;
+
+enum console_modes {
+	MODE_TOP,
+	MODE_SPI,
+	MODE_I2C,
+};
 
 void print(void *user, const char *str);
 char get_char(t_hydra_console *con);
 void execute(void *user, t_tokenline_parsed *p);
+int cmd_mode_init(t_hydra_console *con, t_tokenline_parsed *p);
+int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p);
 
 typedef int (*cmdfunc)(t_hydra_console *con, t_tokenline_parsed *p);
+int mode_exit(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_show(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p);
+void token_dump(t_hydra_console *con, t_tokenline_parsed *p);
 
 void print_dbg(const char *data, const uint32_t size);
 void printf_dbg(const char *fmt, ...);

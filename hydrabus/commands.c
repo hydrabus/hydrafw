@@ -25,6 +25,7 @@ t_token_dict tl_dict[] = {
 	{ /* Dummy entry */ },
 	{ T_HELP, "help" },
 	{ T_HISTORY, "history" },
+	{ T_EXIT, "exit" },
 	{ T_CLEAR, "clear" },
 	{ T_DEBUG, "debug" },
 	{ T_SHOW, "show" },
@@ -42,7 +43,6 @@ t_token_dict tl_dict[] = {
 	{ T_ERASE, "erase" },
 	{ T_REALLY, "really" },
 	{ T_TESTPERF, "test-perf" },
-
 	{ T_MODE, "mode" },
 	{ T_SPI, "spi" },
 	{ T_I2C, "i2c" },
@@ -54,9 +54,38 @@ t_token_dict tl_dict[] = {
 	{ T_PHASE, "phase" },
 	{ T_MSB_FIRST, "msb-first" },
 	{ T_LSB_FIRST, "lsb-first" },
+	{ T_GPIO_RESISTOR, "gpio-resistor" },
+	{ T_PULL_UP, "pull-up" },
+	{ T_PULL_DOWN, "pull-down" },
+	{ T_FLOATING, "floating" },
+	{ T_ON, "on" },
+	{ T_OFF, "off" },
+	{ T_CHIP_SELECT, "chip-select" },
+	{ T_CS, "cs" },
+	{ T_PINS, "pins" },
+	{ T_READ, "read" },
+	{ T_WRITE, "write" },
+	{ T_LEFT_SQ, "[" },
+	{ T_RIGHT_SQ, "]" },
+	{ T_LEFT_CURLY, "{" },
+	{ T_RIGHT_CURLY, "}" },
+	{ T_SLASH, "/" },
+	{ T_BACKSLASH, "\\" },
+	{ T_MINUS, "-" },
+	{ T_UNDERSCORE, "_" },
+	{ T_EXCLAMATION, "!" },
+	{ T_CARET, "^" },
+	{ T_PERIOD, "." },
+	{ T_AMPERSAND, "&" },
+	{ T_PERCENT, "%" },
 	{ }
 };
 
+t_token tokens_on_off[] = {
+	{ T_ON },
+	{ T_OFF },
+	{ }
+};
 
 t_token tokens_master_slave[] = {
 	{ T_MASTER },
@@ -64,19 +93,93 @@ t_token tokens_master_slave[] = {
 	{ }
 };
 
+t_token tokens_gpio_resistance[] = {
+	{ T_PULL_UP },
+	{ T_PULL_DOWN },
+	{ T_FLOATING },
+	{ }
+};
+
+#define SPI_PARAMETERS \
+	{ T_DEVICE, \
+		.arg_type = T_ARG_INT, \
+		.help = "SPI device (1 or 2)" }, \
+	{ T_GPIO_RESISTOR, \
+		.arg_type = T_ARG_TOKEN, \
+		.subtokens = tokens_gpio_resistance, \
+		.help = "GPIO resistance" }, \
+	{ T_MODE, \
+		.arg_type = T_ARG_TOKEN, \
+		.subtokens = tokens_master_slave, \
+			.help = "Master or slave mode" }, \
+	{ T_FREQUENCY, \
+		.arg_type = T_ARG_FREQ, \
+		.help = "Read/write frequency" }, \
+	{ T_POLARITY, \
+		.arg_type = T_ARG_INT, \
+		.help = "Clock polarity (0 or 1)" }, \
+	{ T_PHASE, \
+		.arg_type = T_ARG_INT, \
+		.help = "Clock phase (0 or 1)" }, \
+	{ T_MSB_FIRST, \
+		.help = "Send/receive MSB first" }, \
+	{ T_LSB_FIRST, \
+		.help = "Send/receive LSB first" },
+
+t_token tokens_mode_show[] = {
+	{ T_PINS,
+		.help = "Show SPI pins" },
+	{ }
+};
+
+t_token tokens_mode_spi[] = {
+	{ T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show SPI parameters" },
+	SPI_PARAMETERS
+	/* SPI-specific commands */
+	{ T_CHIP_SELECT,
+		.arg_type = T_ARG_TOKEN,
+		.subtokens = tokens_on_off,
+		.help = "Chip select (CS)" },
+	{ T_CS,
+		.arg_type = T_ARG_TOKEN,
+		.subtokens = tokens_on_off,
+		.help = "Alias for \"chip-select\"" },
+	{ T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)" },
+	{ T_WRITE,
+		.arg_type = T_ARG_INT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)" },
+	{ T_ARG_INT,
+		.help = "Write byte (repeat with :<num>)" },
+	/* BP commands */
+	{ T_LEFT_SQ,
+		.help = "Alias for \"chip-select on\"" },
+	{ T_RIGHT_SQ,
+		.help = "Alias for \"chip-select off\"" },
+	{ T_AMPERSAND,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 usec (repeat with :<num>)" },
+	{ T_PERCENT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 msec (repeat with :<num>)" },
+	{ T_EXIT,
+		.help = "Exit SPI mode" },
+	{ }
+};
+
 t_token tokens_spi[] = {
-	{ T_DEVICE, T_ARG_INT, NULL, "SPI device (0 or 1)" },
-	{ T_MODE, T_ARG_TOKEN, tokens_master_slave, "Master or slave mode" },
-	{ T_FREQUENCY, T_ARG_FLOAT, NULL, "Read/write frequency" },
-	{ T_POLARITY, T_ARG_INT, NULL, "Clock polarity (0 or 1)" },
-	{ T_PHASE, T_ARG_INT, NULL, "Clock phase (0 or 1)" },
-	{ T_MSB_FIRST, 0, NULL, "Send/receive MSB first" },
-	{ T_LSB_FIRST, 0, NULL, "Send/receive LSB first" },
+	SPI_PARAMETERS
 	{ }
 };
 
 t_token tokens_modes[] = {
-	{ T_SPI, 0, tokens_spi, "SPI mode" },
+	{ T_SPI,
+		.subtokens = tokens_spi,
+		.help = "SPI mode" },
 	{ T_I2C },
 	{ }
 };
@@ -87,15 +190,27 @@ t_token tokens_really[] = {
 };
 
 t_token tokens_sd[] = {
-	{ T_MOUNT, 0, NULL, "Mount SD card" },
-	{ T_UMOUNT, 0, NULL, "Unmount SD card" },
-	{ T_ERASE, 0, NULL, "Erase and reformat SD card" },
-	{ T_CD, T_ARG_STRING, NULL, "Change SD card directory" },
-	{ T_PWD, 0, NULL, "Show current SD card directory" },
-	{ T_LS, 0, NULL, "List files on SD card" },
-	{ T_TESTPERF, 0, NULL, "Test SD card performance" },
-	{ T_CAT, T_ARG_STRING, NULL, "Display (ASCII) file on SD card" },
-	{ T_HD, T_ARG_STRING, NULL, "Hexdump file on SD card" },
+	{ T_MOUNT,
+		.help = "Mount SD card" },
+	{ T_UMOUNT,
+		.help = "Unmount SD card" },
+	{ T_ERASE,
+		.help = "Erase and reformat SD card" },
+	{ T_CD,
+		.arg_type = T_ARG_STRING,
+		.help = "Change SD card directory" },
+	{ T_PWD,
+		.help = "Show current SD card directory" },
+	{ T_LS,
+		.help = "List files on SD card" },
+	{ T_TESTPERF,
+		.help = "Test SD card performance" },
+	{ T_CAT,
+		.arg_type = T_ARG_STRING,
+		.help = "Display (ASCII) file on SD card" },
+	{ T_HD,
+		.arg_type = T_ARG_STRING,
+		.help = "Hexdump file on SD card" },
 	{ }
 };
 
@@ -107,13 +222,24 @@ t_token tokens_show[] = {
 };
 
 t_token tl_tokens[] = {
-	{ T_HELP, T_ARG_HELP, NULL, "Available commands" },
-	{ T_HISTORY, 0, NULL, "Command history" },
-	{ T_CLEAR, 0, NULL, "Clear screen" },
-	{ T_SHOW, 0, tokens_show, "Show information" },
-	{ T_SD, 0, tokens_sd, "SD card management" },
-	{ T_MODE, 0, tokens_modes, "Switch to protocol mode" },
-	{ T_DEBUG, 0, NULL, "Debug mode" },
+	{ T_HELP,
+			.arg_type = T_ARG_HELP,
+		.help = "Available commands" },
+	{ T_HISTORY,
+		.help = "Command history" },
+	{ T_CLEAR,
+		.help = "Clear screen" },
+	{ T_SHOW,
+		.subtokens = tokens_show,
+		.help = "Show information" },
+	{ T_SD,
+		.subtokens = tokens_sd,
+		.help = "SD card management" },
+	{ T_MODE,
+		.subtokens = tokens_modes,
+		.help = "Switch to protocol mode" },
+	{ T_DEBUG,
+		.help = "Debug mode" },
 	{ }
 };
 
