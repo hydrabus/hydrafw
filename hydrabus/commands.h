@@ -59,6 +59,9 @@ enum {
 	T_PINS,
 	T_READ,
 	T_WRITE,
+	T_START,
+	T_RESTART,
+	T_STOP,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

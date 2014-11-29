@@ -66,6 +66,10 @@ t_token_dict tl_dict[] = {
 	{ T_PINS, "pins" },
 	{ T_READ, "read" },
 	{ T_WRITE, "write" },
+	{ T_START, "start" },
+	{ T_RESTART, "restart" },
+	{ T_STOP, "stop" },
+
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
 	{ T_LEFT_CURLY, "{" },
@@ -101,6 +105,68 @@ t_token tokens_gpio_resistance[] = {
 	{ }
 };
 
+t_token tokens_mode_show[] = {
+	{ T_PINS,
+		.help = "Show pins used in this mode" },
+	{ }
+};
+
+t_token tokens_mode_i2c[] = {
+	{ T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show I2C parameters" },
+	{ T_GPIO_RESISTOR, \
+		.arg_type = T_ARG_TOKEN, \
+		.subtokens = tokens_gpio_resistance, \
+		.help = "GPIO resistance" }, \
+	{ T_FREQUENCY, \
+		.arg_type = T_ARG_FREQ, \
+		.help = "Read/write frequency" }, \
+	/* I2C-specific commands */
+	{ T_START,
+		.help = "Start" },
+	{ T_RESTART,
+		.help = "Restart" },
+	{ T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)" },
+	{ T_WRITE,
+		.arg_type = T_ARG_INT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)" },
+	{ T_ARG_INT,
+		.help = "Write byte (repeat with :<num>)" },
+	/* BP commands */
+	{ T_LEFT_SQ,
+		.help = "Alias for \"start\"" },
+	{ T_LEFT_CURLY,
+		.help = "Alias for \"restart\"" },
+	{ T_RIGHT_SQ,
+		.help = "Alias for \"stop\"" },
+	{ T_RIGHT_CURLY,
+		.help = "Alias for \"stop\"" },
+	{ T_AMPERSAND,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 usec (repeat with :<num>)" },
+	{ T_PERCENT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 msec (repeat with :<num>)" },
+	{ T_EXIT,
+		.help = "Exit SPI mode" },
+	{ }
+};
+
+t_token tokens_i2c[] = {
+	{ T_GPIO_RESISTOR, \
+		.arg_type = T_ARG_TOKEN, \
+		.subtokens = tokens_gpio_resistance, \
+		.help = "GPIO resistance" }, \
+	{ T_FREQUENCY, \
+		.arg_type = T_ARG_FREQ, \
+		.help = "Read/write frequency" }, \
+	{ }
+};
+
 #define SPI_PARAMETERS \
 	{ T_DEVICE, \
 		.arg_type = T_ARG_INT, \
@@ -126,12 +192,6 @@ t_token tokens_gpio_resistance[] = {
 		.help = "Send/receive MSB first" }, \
 	{ T_LSB_FIRST, \
 		.help = "Send/receive LSB first" },
-
-t_token tokens_mode_show[] = {
-	{ T_PINS,
-		.help = "Show SPI pins" },
-	{ }
-};
 
 t_token tokens_mode_spi[] = {
 	{ T_SHOW,
@@ -182,7 +242,7 @@ t_token tokens_modes[] = {
 		.subtokens = tokens_spi,
 		.help = "SPI mode" },
 	{ T_I2C,
-		.subtokens = tokens_spi,
+		.subtokens = tokens_i2c,
 		.help = "I2C mode" },
 	{ }
 };

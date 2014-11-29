@@ -2,6 +2,7 @@
  * HydraBus/HydraNFC
  *
  * Copyright (C) 2012-2014 Benjamin VERNOUX
+ * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +22,14 @@
 #include "bsp_i2c.h"
 #include <string.h>
 
+/* TODO support Slave mode (by default only Master) */
+
+/* TODO I2C Addr number of bits mode 7 or 10 */
+
 #define I2C_DEV_NUM (1)
 
-static const char* str_pins_i2c1= { "I2C1 SCL=PB6, SDA=PB7" };
-static const char* str_name_i2c= { "I2C" };
-static const char* str_prompt_i2c1= { "i2c1> " };
+static const char* str_pins_i2c1= { "SCL: PB6\r\nSDA: PB7\r\n" };
+static const char* str_prompt_i2c1= { "i2c1" PROMPT };
 
 static const char* str_i2c_start_br = { "I2C START\r\n" };
 static const char* str_i2c_stop_br = { "I2C STOP\r\n" };
@@ -34,105 +38,71 @@ static const char* str_i2c_ack_br = { "ACK\r\n" };
 static const char* str_i2c_nack = { "NACK" };
 static const char* str_i2c_nack_br = { "NACK\r\n" };
 
-const mode_exec_t mode_i2c_exec = {
-	.mode_cmd          = &mode_cmd_i2c,       /* Terminal parameters specific to this mode */
-	.mode_start        = &mode_start_i2c,     /* Start command '[' */
-	.mode_startR       = &mode_startR_i2c,    /* Start Read command '{' */
-	.mode_stop         = &mode_stop_i2c,      /* Stop command ']' */
-	.mode_stopR        = &mode_stopR_i2c,     /* Stop Read command '}' */
-	.mode_write        = &mode_write_i2c,     /* Write/Send 1 data */
-	.mode_read         = &mode_read_i2c,      /* Read 1 data command 'r' */
-	.mode_write_read   = &mode_write_read_i2c,/* Write & Read 1 data implicitely with mode_write command */
-	.mode_clkh         = &mode_clkh_i2c,      /* Set CLK High (x-WIRE or other raw mode ...) command '/' */
-	.mode_clkl         = &mode_clkl_i2c,      /* Set CLK Low (x-WIRE or other raw mode ...) command '\' */
-	.mode_dath         = &mode_dath_i2c,      /* Set DAT High (x-WIRE or other raw mode ...) command '-' */
-	.mode_datl         = &mode_datl_i2c,      /* Set DAT Low (x-WIRE or other raw mode ...) command '_' */
-	.mode_dats         = &mode_dats_i2c,      /* Read Bit (x-WIRE or other raw mode ...) command '!' */
-	.mode_clk          = &mode_clk_i2c,       /* CLK Tick (x-WIRE or other raw mode ...) command '^' */
-	.mode_bitr         = &mode_bitr_i2c,      /* DAT Read (x-WIRE or other raw mode ...) command '.' */
-	.mode_periodic     = &mode_periodic_i2c,  /* Periodic service called (like UART sniffer...) */
-	.mode_macro        = &mode_macro_i2c,     /* Macro command "(x)", "(0)" List current macros */
-	.mode_setup        = &mode_setup_i2c,     /* Configure the device internal params with user parameters (before Power On) */
-	.mode_setup_exc    = &mode_setup_exc_i2c, /* Configure the physical device after Power On (command 'W') */
-	.mode_cleanup      = &mode_cleanup_i2c,   /* Exit mode, disable device enter safe mode I2C... */
-	.mode_print_param    = &mode_print_param_i2c,    /* Print Mode parameters */
-	.mode_print_pins     = &mode_print_pins_i2c,     /* Print Pins used */
-	.mode_print_settings = &mode_print_settings_i2c, /* Settings string */
-	.mode_print_name     = &mode_print_name_i2c,      /* Print Mode name */
-	.mode_str_prompt   = &mode_str_prompt_i2c    /* Prompt name string */
+static uint32_t speeds[] = {
+	50000,
+	100000,
+	400000,
+	1000000,
 };
 
-/* TODO support Slave mode (by default only Master) */
-/*
-static const char* str_dev_param_mode[2]=
+int mode_cmd_i2c_init(t_hydra_console *con, t_tokenline_parsed *p)
 {
- "1=Slave",
- "2=Master"
-};
-static const char* str_dev_arg_mode[]={
- "Choose I2C Mode: 1=Slave, 2=Master\r\n" };
-*/
+	mode_config_proto_t* proto = &con->mode->proto;
+	int tokens_used;
 
-static const char* str_dev_arg_gpio_pull[]= {
-	"Choose I2C SCL/SDA Pull(~40Kohm) mode:\r\n1=NoPull(External Pull), 2=PullUp(Common), 3=PullDown\r\n"
-};
-static const char* str_dev_param_gpio_pull[]= {
-	"1=SCL/SDA NoPull",
-	"2=SCL/SDA PullUp",
-	"3=SCL/SDA PullDown"
-};
+	/* Defaults */
+	proto->dev_num = I2C_DEV_NUM;
+	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
+	proto->dev_speed = 1;
 
-static const char* str_dev_arg_speed[] = {
-	"Choose I2C1 Freq:\r\n1=50KHz, 2=100KHz, 3=400KHz, 4=1MHz\r\n"
-};
-static const char* str_dev_param_speed[]= {
-	/* I2C1 */
-	/* 0  */ "1=50KHz",
-	/* 1  */ "2=100KHz",
-	/* 2  */ "3=400KHz",
-	/* 3  */ "4=1MHz"
-};
+	/* Process cmdline arguments, skipping "mode i2c". */
+	tokens_used = 2 + mode_cmd_i2c_exec(con, p, 2);
 
-/*
-TODO I2C Addr number of bits mode 7 or 10
-static const char* str_dev_numbits[]={
- "Choose I2C Addr number of bits\r\n1=7 bits, 2=10 bits\r\n" };
-*/
+	return tokens_used;
+}
 
-static const mode_dev_arg_t mode_dev_arg[] = {
-	/* argv0 */ { .min=1, .max=3, .dec_val=TRUE, .param=DEV_GPIO_PULL, .argc_help=ARRAY_SIZE(str_dev_arg_gpio_pull), .argv_help=str_dev_arg_gpio_pull },
-	/* argv1 */ { .min=1, .max=4, .dec_val=TRUE, .param=DEV_SPEED, .argc_help=ARRAY_SIZE(str_dev_arg_speed), .argv_help=str_dev_arg_speed }
-};
-#define MODE_DEV_NB_ARGC ((int)ARRAY_SIZE(mode_dev_arg)) /* Number of arguments/parameters for this mode */
-
-/* Terminal parameters management specific to this mode */
-/* Return TRUE if success else FALSE */
-bool mode_cmd_i2c(t_hydra_console *con, int argc, const char* const* argv)
+int mode_cmd_i2c_exec(t_hydra_console *con, t_tokenline_parsed *p,
+		int token_pos)
 {
-	long dev_val;
-	int arg_no;
+	mode_config_proto_t* proto = &con->mode->proto;
+	float arg_float;
+	int t, i;
 
-	if(argc == 0) {
-		hydrabus_mode_dev_manage_arg(con, 0, NULL, 0, 0, (mode_dev_arg_t*)&mode_dev_arg);
-		return FALSE;
-	}
-
-	/* Ignore additional parameters */
-	if(argc > MODE_DEV_NB_ARGC)
-		argc = MODE_DEV_NB_ARGC;
-
-	for(arg_no = 0; arg_no < argc; arg_no++) {
-		dev_val = hydrabus_mode_dev_manage_arg(con, argc, argv, MODE_DEV_NB_ARGC, arg_no, (mode_dev_arg_t*)&mode_dev_arg);
-		if(dev_val == HYDRABUS_MODE_DEV_INVALID) {
-			return FALSE;
+	for (t = token_pos; p->tokens[t]; t++) {
+		switch (p->tokens[t]) {
+		case T_GPIO_RESISTOR:
+			switch (p->tokens[++t]) {
+			case T_PULL_UP:
+				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
+				break;
+			case T_PULL_DOWN:
+				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
+				break;
+			case T_FLOATING:
+				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+				break;
+			}
+			break;
+		case T_FREQUENCY:
+			t += 2;
+			memcpy(&arg_float, p->buf + p->tokens[t], sizeof(float));
+			for (i = 0; i < 8; i++) {
+				if (arg_float == speeds[i]) {
+					proto->dev_speed = i;
+					break;
+				}
+			}
+			if (i == 8) {
+				cprintf(con, "Invalid frequency.\r\n");
+				return t;
+			}
+			break;
+		default:
+			return 0;
 		}
 	}
 
-	if(argc == MODE_DEV_NB_ARGC) {
-		return TRUE;
-	} else {
-		return FALSE;
-	}
+	return t + 1;
 }
 
 /* Start command '[' */
@@ -199,9 +169,9 @@ uint32_t mode_write_i2c(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 
 	status = BSP_ERROR;
 	for(i = 0; i < nb_data; i++) {
-		status = bsp_i2c_master_write_u8(I2C_DEV_NUM, tx_data[0], &tx_ack_flag);
+		status = bsp_i2c_master_write_u8(I2C_DEV_NUM, tx_data[i], &tx_ack_flag);
 		/* Write 1 data */
-		cprintf(con, hydrabus_mode_str_mul_value_u8, tx_data[0]);
+		cprintf(con, hydrabus_mode_str_mul_value_u8, tx_data[i]);
 		/* Print received ACK or NACK */
 		if(tx_ack_flag)
 			cprintf(con, str_i2c_ack);
@@ -245,89 +215,6 @@ uint32_t mode_read_i2c(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return status;
 }
 
-/* Write & Read x data return status 0=BSP_OK */
-uint32_t mode_write_read_i2c(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data)
-{
-	(void)con;
-	(void)tx_data;
-	(void)rx_data;
-	(void)nb_data;
-	/* Write/Read not supported in I2C */
-	return BSP_ERROR;
-}
-
-/* Set CLK High (x-WIRE or other raw mode ...) command '/' */
-void mode_clkh_i2c(t_hydra_console *con)
-{
-	(void)con;
-	/* Nothing to do in I2C mode */
-}
-
-/* Set CLK Low (x-WIRE or other raw mode ...) command '\' */
-void mode_clkl_i2c(t_hydra_console *con)
-{
-	(void)con;
-	/* Nothing to do in I2C mode */
-}
-
-/* Set DAT High (x-WIRE or other raw mode ...) command '-' */
-void mode_dath_i2c(t_hydra_console *con)
-{
-	(void)con;
-	/* Nothing to do in I2C mode */
-}
-
-/* Set DAT Low (x-WIRE or other raw mode ...) command '_' */
-void mode_datl_i2c(t_hydra_console *con)
-{
-	(void)con;
-	/* Nothing to do in I2C mode */
-}
-
-/* Read Bit (x-WIRE or other raw mode ...) command '!' */
-void mode_dats_i2c(t_hydra_console *con)
-{
-	(void)con;
-	/* Nothing to do in I2C mode */
-}
-
-/* CLK Tick (x-WIRE or other raw mode ...) command '^' */
-void mode_clk_i2c(t_hydra_console *con)
-{
-	(void)con;
-	/* Nothing to do in I2C mode */
-}
-
-/* DAT Read (x-WIRE or other raw mode ...) command '.' */
-void mode_bitr_i2c(t_hydra_console *con)
-{
-	(void)con;
-	/* Nothing to do in I2C mode */
-}
-
-/* Periodic service called (like UART sniffer...) */
-uint32_t mode_periodic_i2c(t_hydra_console *con)
-{
-	(void)con;
-	/* Nothing to do in I2C mode */
-	return 0;
-}
-
-/* Macro command "(x)", "(0)" List current macros */
-void mode_macro_i2c(t_hydra_console *con, uint32_t macro_num)
-{
-	(void)con;
-	(void)macro_num;
-	/* TODO mode_i2c Macro command "(x)" */
-}
-
-/* Configure the device internal params with user parameters (before Power On) */
-void mode_setup_i2c(t_hydra_console *con)
-{
-	(void)con;
-	/* Nothing to do in I2C mode */
-}
-
 /* Configure the physical device after Power On (command 'W') */
 void mode_setup_exc_i2c(t_hydra_console *con)
 {
@@ -346,35 +233,49 @@ void mode_cleanup_i2c(t_hydra_console *con)
 	bsp_i2c_deinit(proto->dev_num);
 }
 
-/* Mode parameters string (does not include m & bus_mode) */
-void mode_print_param_i2c(t_hydra_console *con)
+static void print_freq(t_hydra_console *con, uint32_t freq)
 {
+	float f;
+	char *suffix;
 
-	cprintf(con, "%d %d",
-		con->mode->proto.dev_gpio_pull+1,
-		con->mode->proto.dev_speed+1);
+	f = freq;
+	if (f > 1000000000L) {
+		f /= 1000000000L;
+		suffix = "ghz";
+	} else if (f > 1000000) {
+		f /= 1000000;
+		suffix = "mhz";
+	} else if (f > 1000) {
+		f /= 1000;
+		suffix = "khz";
+	} else
+		suffix = "";
+	cprintf(con, "%.2f%s", f, suffix);
 }
 
-/* Print pins used */
-void mode_print_pins_i2c(t_hydra_console *con)
-{
-	cprint(con, str_pins_i2c1, strlen(str_pins_i2c1));
-}
-
-/* Print settings */
-void mode_print_settings_i2c(t_hydra_console *con)
+static void show(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
+	unsigned int cnt, i;
 
-	cprintf(con, "GPIO Pull: %s\r\nSpeed: %s",
-		str_dev_param_gpio_pull[proto->dev_gpio_pull],
-		str_dev_param_speed[proto->dev_speed]);
-}
-
-/* Print mode name */
-void mode_print_name_i2c(t_hydra_console *con)
-{
-	cprint(con, str_name_i2c, strlen(str_name_i2c));
+	if (p->tokens[1] == T_PINS) {
+		cprint(con, str_pins_i2c1, strlen(str_pins_i2c1));
+	} else {
+		cprintf(con, "GPIO resistor: %s\r\nFrequency: ",
+				proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+				proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+			   "floating");
+		print_freq(con, speeds[proto->dev_speed]);
+		cprintf(con, " (");
+		for (i = 0, cnt = 0; i < ARRAY_SIZE(speeds); i++) {
+			if (proto->dev_speed == (int)i)
+				continue;
+			if (cnt++)
+				cprintf(con, ", ");
+			print_freq(con, speeds[i]);
+		}
+		cprintf(con, ")\r\n");
+	}
 }
 
 /* Return Prompt name */
@@ -383,3 +284,19 @@ const char* mode_str_prompt_i2c(t_hydra_console *con)
 	(void)con;
 	return str_prompt_i2c1;
 }
+
+const mode_exec_t mode_i2c_exec = {
+	.mode_cmd          = &mode_cmd_i2c_init,  /* Terminal parameters specific to this mode */
+	.mode_cmd_exec     = &mode_cmd_i2c_exec,
+	.mode_start        = &mode_start_i2c,     /* Start command '[' */
+	.mode_startR       = &mode_startR_i2c,    /* Start Read command '{' */
+	.mode_stop         = &mode_stop_i2c,      /* Stop command ']' */
+	.mode_stopR        = &mode_stopR_i2c,     /* Stop Read command '}' */
+	.mode_write        = &mode_write_i2c,     /* Write/Send 1 data */
+	.mode_read         = &mode_read_i2c,      /* Read 1 data command 'r' */
+	.mode_setup_exc    = &mode_setup_exc_i2c, /* Configure the physical device after Power On (command 'W') */
+	.mode_cleanup      = &mode_cleanup_i2c,   /* Exit mode, disable device enter safe mode I2C... */
+	.mode_print_settings = &show, /* Settings string */
+	.mode_str_prompt   = &mode_str_prompt_i2c    /* Prompt name string */
+};
+

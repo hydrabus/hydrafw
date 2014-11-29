@@ -36,7 +36,9 @@ static int hydrabus_mode_read(t_hydra_console *con, t_tokenline_parsed *p,
 
 extern t_token_dict tl_dict[];
 extern const mode_exec_t mode_spi_exec;
+extern const mode_exec_t mode_i2c_exec;
 extern t_token tokens_mode_spi[];
+extern t_token tokens_mode_i2c[];
 
 static struct {
 	int token;
@@ -44,6 +46,7 @@ static struct {
 	const mode_exec_t *exec;
 } modes[] = {
 	{ T_SPI, tokens_mode_spi, &mode_spi_exec },
+	{ T_I2C, tokens_mode_i2c, &mode_i2c_exec },
 };
 
 const char hydrabus_mode_str_cs_enabled[] =  "/CS ENABLED\r\n";
