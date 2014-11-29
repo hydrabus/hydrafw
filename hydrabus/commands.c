@@ -69,6 +69,13 @@ t_token_dict tl_dict[] = {
 	{ T_START, "start" },
 	{ T_RESTART, "restart" },
 	{ T_STOP, "stop" },
+	{ T_UART, "uart" },
+	{ T_SPEED, "speed" },
+	{ T_PARITY, "parity" },
+	{ T_NONE, "none" },
+	{ T_EVEN, "even" },
+	{ T_ODD, "odd" },
+	{ T_STOP_BITS, "stop-bits" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -111,17 +118,78 @@ t_token tokens_mode_show[] = {
 	{ }
 };
 
+t_token tokens_parity[] = {
+	{ T_NONE },
+	{ T_EVEN },
+	{ T_ODD },
+};
+
+t_token tokens_mode_uart[] = {
+	{ T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show UART parameters" },
+	{ T_DEVICE,
+		.arg_type = T_ARG_INT,
+		.help = "UART device (1 or 2)" },
+	{ T_SPEED,
+		.arg_type = T_ARG_INT,
+		.help = "Bitrate" },
+	{ T_PARITY,
+		.arg_type = T_ARG_TOKEN,
+		.subtokens = tokens_parity,
+		.help = "" },
+	{ T_STOP_BITS,
+		.arg_type = T_ARG_INT,
+		.help = "Stop bits" },
+	/* UART-specific commands */
+	{ T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)" },
+	{ T_WRITE,
+		.arg_type = T_ARG_INT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)" },
+	{ T_ARG_INT,
+		.help = "Write byte (repeat with :<num>)" },
+	/* BP commands */
+	{ T_AMPERSAND,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 usec (repeat with :<num>)" },
+	{ T_PERCENT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 msec (repeat with :<num>)" },
+	{ T_EXIT,
+		.help = "Exit UART mode" },
+	{ }
+};
+
+t_token tokens_uart[] = {
+	{ T_DEVICE,
+		.arg_type = T_ARG_INT,
+		.help = "UART device (1 or 2)" },
+	{ T_SPEED,
+		.arg_type = T_ARG_INT,
+		.help = "Bitrate" },
+	{ T_PARITY,
+		.arg_type = T_ARG_TOKEN,
+		.subtokens = tokens_parity,
+		.help = "" },
+	{ T_STOP_BITS,
+		.arg_type = T_ARG_INT,
+		.help = "Stop bits" },
+};
+
 t_token tokens_mode_i2c[] = {
 	{ T_SHOW,
 		.subtokens = tokens_mode_show,
 		.help = "Show I2C parameters" },
-	{ T_GPIO_RESISTOR, \
-		.arg_type = T_ARG_TOKEN, \
-		.subtokens = tokens_gpio_resistance, \
-		.help = "GPIO resistance" }, \
-	{ T_FREQUENCY, \
-		.arg_type = T_ARG_FREQ, \
-		.help = "Read/write frequency" }, \
+	{ T_GPIO_RESISTOR,
+		.arg_type = T_ARG_TOKEN,
+		.subtokens = tokens_gpio_resistance,
+		.help = "GPIO resistance" },
+	{ T_FREQUENCY,
+		.arg_type = T_ARG_FREQ,
+		.help = "Read/write frequency" },
 	/* I2C-specific commands */
 	{ T_START,
 		.help = "Start" },
@@ -157,13 +225,13 @@ t_token tokens_mode_i2c[] = {
 };
 
 t_token tokens_i2c[] = {
-	{ T_GPIO_RESISTOR, \
-		.arg_type = T_ARG_TOKEN, \
-		.subtokens = tokens_gpio_resistance, \
-		.help = "GPIO resistance" }, \
-	{ T_FREQUENCY, \
-		.arg_type = T_ARG_FREQ, \
-		.help = "Read/write frequency" }, \
+	{ T_GPIO_RESISTOR,
+		.arg_type = T_ARG_TOKEN,
+		.subtokens = tokens_gpio_resistance,
+		.help = "GPIO resistance" },
+	{ T_FREQUENCY,
+		.arg_type = T_ARG_FREQ,
+		.help = "Read/write frequency" },
 	{ }
 };
 
@@ -244,6 +312,9 @@ t_token tokens_modes[] = {
 	{ T_I2C,
 		.subtokens = tokens_i2c,
 		.help = "I2C mode" },
+	{ T_UART,
+		.subtokens = tokens_uart,
+		.help = "UART mode" },
 	{ }
 };
 

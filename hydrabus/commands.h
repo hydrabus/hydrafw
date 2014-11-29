@@ -62,6 +62,13 @@ enum {
 	T_START,
 	T_RESTART,
 	T_STOP,
+	T_UART,
+	T_SPEED,
+	T_PARITY,
+	T_NONE,
+	T_EVEN,
+	T_ODD,
+	T_STOP_BITS,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

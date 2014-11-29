@@ -27,32 +27,6 @@ Warning in order to use this driver all GPIOs peripherals shall be enabled.
 static UART_HandleTypeDef uart_handle[NB_UART];
 static mode_config_proto_t* uart_mode_conf[NB_UART];
 
-const uint32_t dev_param_speed[] = {
-	/* 0 */ 300,
-	/* 1 */ 1200,
-	/* 2 */ 2400,
-	/* 3 */ 4800,
-	/* 4 */ 9600,
-	/* 5 */ 19200,
-	/* 6 */ 38400,
-	/* 7 */ 57600,
-	/* 8 */ 115200,
-	/* 9 */ 31250
-};
-#define DEV_PARAM_SPEED ARRAY_SIZE(dev_param_speed)
-
-uint32_t mode_uart_get_baudrate(mode_config_proto_t *proto)
-{
-	long baudrate;
-	baudrate = proto->dev_speed;
-
-	if(baudrate < (long)DEV_PARAM_SPEED) {
-		return dev_param_speed[baudrate];
-	} else {
-		return (baudrate+1);
-	}
-}
-
 /**
   * @brief  Init low level hardware: GPIO, CLOCK, NVIC...
   * @param  dev_num: UART dev num
@@ -169,7 +143,7 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 	} else { /* UART2 */
 		huart->Instance = BSP_UART2;
 	}
-	huart->Init.BaudRate = mode_uart_get_baudrate(mode_conf);
+	huart->Init.BaudRate = mode_conf->dev_speed;
 	/*
 	  TODO bsp_uart_init() manage 8 or 9bits data
 	  if((mode_conf->dev_numbits == 0)
