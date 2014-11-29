@@ -83,7 +83,8 @@ int mode_cmd_spi_init(t_hydra_console *con, t_tokenline_parsed *p)
 	return tokens_used;
 }
 
-int mode_cmd_spi_exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
+int mode_cmd_spi_exec(t_hydra_console *con, t_tokenline_parsed *p,
+		int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	float arg_float;
@@ -126,7 +127,6 @@ int mode_cmd_spi_exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos
 			for (i = 0; i < 8; i++) {
 				if (arg_float == speeds[proto->dev_num][i]) {
 					proto->dev_speed = i;
-					cprintf(con, "speed now %d\r\n", proto->dev_speed);
 					break;
 				}
 			}
