@@ -117,6 +117,7 @@ struct cmd_map {
 	{ T_SHOW, cmd_show },
 	{ T_SD, cmd_sd },
 	{ T_MODE, cmd_mode_init },
+	{ T_ADC, cmd_adc },
 	{ 0, NULL }
 };
 

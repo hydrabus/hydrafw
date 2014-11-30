@@ -69,6 +69,14 @@ enum {
 	T_EVEN,
 	T_ODD,
 	T_STOP_BITS,
+	T_ADC,
+	T_ADC1,
+	T_TEMPSENSOR,
+	T_VREFINT,
+	T_VBAT,
+	T_SAMPLES,
+	T_PERIOD,
+	T_CONTINUOUS,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,
@@ -81,7 +89,7 @@ enum {
 	T_UNDERSCORE,
 	T_EXCLAMATION,
 	T_CARET,
-	T_PERIOD,
+	T_DOT,
 	T_AMPERSAND,
 	T_PERCENT,
 };

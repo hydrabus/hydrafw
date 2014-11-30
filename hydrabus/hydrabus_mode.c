@@ -2,6 +2,7 @@
  * HydraBus/HydraNFC
  *
  * Copyright (C) 2012-2014 Benjamin VERNOUX
+ * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +25,6 @@
 
 #include "hydrabus.h"
 #include "hydrabus_mode.h"
-#include "bsp.h"
-#include "bsp_adc.h"
 #include "mode_config.h"
 
 #define MAYBE_CALL(x) { if (x) x(con); }
@@ -157,7 +156,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 		case T_CARET:
 			MAYBE_CALL(con->mode->exec->mode_clk);
 			break;
-		case T_PERIOD:
+		case T_DOT:
 			MAYBE_CALL(con->mode->exec->mode_bitr);
 			break;
 		case T_AMPERSAND:
@@ -196,146 +195,6 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 	}
 
 	return ret;
-}
-
-float print_adc_value_to_voltage(uint16_t value)
-{
-	return (((float)(value) * 3.3f) / 4095.0f);
-}
-
-void print_adc_info(t_hydra_console *con, uint16_t* rx_data)
-{
-	cprintf(con, "0x%04X/%d %fV\r\n",
-		rx_data[0],rx_data[0], print_adc_value_to_voltage(rx_data[0]));
-}
-
-void print_voltage_one(t_hydra_console *con)
-{
-	bsp_status_t status;
-	bsp_dev_adc_t device;
-#undef RX_DATA_SIZE
-#define RX_DATA_SIZE (1)
-	uint16_t rx_data[RX_DATA_SIZE];
-
-	device =BSP_DEV_ADC1;
-	status =bsp_adc_init(device);
-	if(status == BSP_OK) {
-		status = bsp_adc_read_u16(device, rx_data, RX_DATA_SIZE);
-		if(status == BSP_OK) {
-			cprintf(con, "ADC1: ");
-			print_adc_info(con, rx_data);
-		} else
-			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
-	} else
-		cprintf(con, "bsp_adc_init error: %d\r\n", status);
-
-	device =BSP_DEV_ADC_TEMPSENSOR;
-	status =bsp_adc_init(device);
-	if(status == BSP_OK) {
-		status = bsp_adc_read_u16(device, rx_data, RX_DATA_SIZE);
-		if(status == BSP_OK) {
-			cprintf(con, "TempSensor: ");
-			print_adc_info(con, rx_data);
-		} else
-			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
-	} else
-		cprintf(con, "bsp_adc_init error: %d\r\n", status);
-
-	device =BSP_DEV_ADC_VREFINT;
-	status =bsp_adc_init(device);
-	if(status == BSP_OK) {
-		status = bsp_adc_read_u16(device, rx_data, RX_DATA_SIZE);
-		if(status == BSP_OK) {
-			cprintf(con, "VrefInt: ");
-			print_adc_info(con, rx_data);
-		} else
-			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
-	} else
-		cprintf(con, "bsp_adc_init error: %d\r\n", status);
-
-	device =BSP_DEV_ADC_VBAT;
-	status =bsp_adc_init(device);
-	if(status == BSP_OK) {
-		status = bsp_adc_read_u16(device, rx_data, RX_DATA_SIZE);
-		if(status == BSP_OK) {
-			cprintf(con, "Vbat: ");
-			print_adc_info(con, rx_data);
-		} else
-			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
-	} else
-		cprintf(con, "bsp_adc_init error: %d\r\n", status);
-}
-
-void print_voltage_cont(t_hydra_console *con)
-{
-	bsp_status_t status;
-	bsp_dev_adc_t device;
-#undef RX_DATA_SIZE
-#define RX_DATA_SIZE (4)
-	uint16_t rx_data[RX_DATA_SIZE] =  { 0 };
-
-	device =BSP_DEV_ADC1;
-	status =bsp_adc_init(device);
-	if(status == BSP_OK) {
-		status = bsp_adc_read_u16(device, &rx_data[0], 1);
-		if(status != BSP_OK)
-			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
-	} else
-		cprintf(con, "bsp_adc_init error: %d\r\n", status);
-
-	device =BSP_DEV_ADC_TEMPSENSOR;
-	status =bsp_adc_init(device);
-	if(status == BSP_OK) {
-		status = bsp_adc_read_u16(device, &rx_data[1], 1);
-		if(status != BSP_OK)
-			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
-	} else
-		cprintf(con, "bsp_adc_init error: %d\r\n", status);
-
-	device =BSP_DEV_ADC_VREFINT;
-	status =bsp_adc_init(device);
-	if(status == BSP_OK) {
-		status = bsp_adc_read_u16(device, &rx_data[2], 1);
-		if(status != BSP_OK)
-			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
-	} else
-		cprintf(con, "bsp_adc_init error: %d\r\n", status);
-
-	device =BSP_DEV_ADC_VBAT;
-	status =bsp_adc_init(device);
-	if(status == BSP_OK) {
-		status = bsp_adc_read_u16(device, &rx_data[3], 1);
-		if(status != BSP_OK)
-			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
-	} else
-		cprintf(con, "bsp_adc_init error: %d\r\n", status);
-
-	cprintf(con, "ADC1:%fV TEMP:%fV VREF:%fV VBAT:%fV\r",
-		print_adc_value_to_voltage(rx_data[0]),
-		print_adc_value_to_voltage(rx_data[1]),
-		print_adc_value_to_voltage(rx_data[2]),
-		print_adc_value_to_voltage(rx_data[3]));
-}
-
-
-void hydrabus_mode_voltage(t_hydra_console *con, int argc, const char* const* argv)
-{
-	(void)argc;
-
-	if(argv[0][0]=='v') {
-		cprintf(con, "Voltage mode v\r\n");
-		print_voltage_one(con);
-	} else if(argv[0][0]=='V') {
-		cprintf(con, "Voltage mode V continuous(stop with UBTN)\r\n");
-		while(USER_BUTTON == 0) {
-			print_voltage_cont(con);
-			chThdSleepMilliseconds(100);
-		}
-		cprintf(con, "\r\n");
-	} else {
-		cprintf(con, "Voltage mode needs argument V or v\r\n");
-	}
-
 }
 
 static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,

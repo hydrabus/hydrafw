@@ -144,6 +144,7 @@ int mode_exit(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_show(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p);
+int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p);
 void token_dump(t_hydra_console *con, t_tokenline_parsed *p);
 
 void print_dbg(const char *data, const uint32_t size);

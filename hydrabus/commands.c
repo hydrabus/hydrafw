@@ -76,6 +76,14 @@ t_token_dict tl_dict[] = {
 	{ T_EVEN, "even" },
 	{ T_ODD, "odd" },
 	{ T_STOP_BITS, "stop-bits" },
+	{ T_ADC, "adc" },
+	{ T_ADC1, "adc1" },
+	{ T_TEMPSENSOR, "tempsensor" },
+	{ T_VREFINT, "vrefint" },
+	{ T_VBAT, "vbat" },
+	{ T_SAMPLES, "samples" },
+	{ T_PERIOD, "period" },
+	{ T_CONTINUOUS, "continuous" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -87,7 +95,7 @@ t_token_dict tl_dict[] = {
 	{ T_UNDERSCORE, "_" },
 	{ T_EXCLAMATION, "!" },
 	{ T_CARET, "^" },
-	{ T_PERIOD, "." },
+	{ T_DOT, "." },
 	{ T_AMPERSAND, "&" },
 	{ T_PERCENT, "%" },
 	{ }
@@ -318,6 +326,26 @@ t_token tokens_modes[] = {
 	{ }
 };
 
+t_token tokens_adc[] = {
+	{ T_ADC1,
+		.help = "ADC1" },
+	{ T_TEMPSENSOR,
+		.help = "Temperature sensor" },
+	{ T_VREFINT,
+		.help = "Internal reference voltage" },
+	{ T_VBAT,
+		.help = "VBAT voltage" },
+	{ T_SAMPLES,
+		.arg_type = T_ARG_INT,
+		.help = "Number of samples" },
+	{ T_PERIOD,
+		.arg_type = T_ARG_INT,
+		.help = "Delay between samples (msec)" },
+	{ T_CONTINUOUS,
+		.help = "Read continuously" },
+	{ }
+};
+
 t_token tokens_really[] = {
 	{ T_REALLY },
 	{ }
@@ -369,6 +397,9 @@ t_token tl_tokens[] = {
 	{ T_SD,
 		.subtokens = tokens_sd,
 		.help = "SD card management" },
+	{ T_ADC,
+		.subtokens = tokens_adc,
+		.help = "Read analog values" },
 	{ T_MODE,
 		.subtokens = tokens_modes,
 		.help = "Switch to protocol mode" },

@@ -22,11 +22,6 @@
 #include "stdint.h"
 #include "common.h"
 
-#define _HYDRABUS_MODE          "m"
-#define _HYDRABUS_MODE_INFO     "i"
-#define _HYDRABUS_MODE_VOLTAGE_ONE  "v"
-#define _HYDRABUS_MODE_VOLTAGE_CONT "V"
-
 #define HYDRABUS_MODE_DEV_INVALID (-1)
 #define HYDRABUS_MODE_DEV_DEFAULT_VALUE (0)
 
