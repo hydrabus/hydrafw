@@ -179,24 +179,24 @@ void cmd_show_system(t_hydra_console *con)
 	uint32_t cycles_start;
 	uint32_t cycles_stop;
 	uint32_t cycles_delta;
+	char *s;
 
 	cprintf(con, "%s\r\n", HYDRAFW_VERSION);
 
 	cycles_start = get_cyclecounter();
 	DelayUs(10000);
 	cycles_stop = get_cyclecounter();
-	cycles_delta = cycles_stop-cycles_start;
-	cprintf(con, "Test DelayUs(10000) start=%d end=%d delta=%d\r\nTime=%dus (@168MHz)\r\n", cycles_start, cycles_stop, cycles_delta, (cycles_delta/168));
-	cprintf(con, "\r\n");
+	cycles_delta = cycles_stop - cycles_start;
+	cprintf(con, "10ms delay: %d cycles.\r\n\r\n", cycles_delta);
 
 	cprintf(con, "MCU Info\r\n");
 	cprintf(con, "DBGMCU_IDCODE:0x%X\r\n", *((uint32_t*)0xE0042000));
-	cprintf(con, "MCU CPUID:    0x%X\r\n", *((uint32_t*)0xE000ED00));
-	cprintf(con, "MCU FlashUID: 0x%X 0x%X 0x%X\r\n", *((uint32_t*)0x1FFF7A10), *((uint32_t*)0x1FFF7A14), *((uint32_t*)0x1FFF7A18));
-	cprintf(con, "MCU FlashSize:%dKB\r\n", *((uint16_t*)0x1FFF7A22));
+	cprintf(con, "CPUID:        0x%X\r\n", *((uint32_t*)0xE000ED00));
+	cprintf(con, "Flash UID:    0x%X 0x%X 0x%X\r\n", *((uint32_t*)0x1FFF7A10), *((uint32_t*)0x1FFF7A14), *((uint32_t*)0x1FFF7A18));
+	cprintf(con, "Flash Size:   %dKB\r\n", *((uint16_t*)0x1FFF7A22));
 	cprintf(con, "\r\n");
 
-	cprintf(con, "Kernel:       %s\r\n", CH_KERNEL_VERSION);
+	cprintf(con, "Kernel:       ChibiOS %s\r\n", CH_KERNEL_VERSION);
 #ifdef PORT_COMPILER_NAME
 	cprintf(con, "Compiler:     %s\r\n", PORT_COMPILER_NAME);
 #endif
@@ -219,13 +219,13 @@ void cmd_show_system(t_hydra_console *con)
 #endif
 #endif
 
+	cprintf(con, "Shield:       ");
+	s = "None";
 #ifdef HYDRANFC
-	if(hydranfc_is_detected() == FALSE) {
-		cprintf(con, "HydraNFC Shield not present/not detected\r\n");
-	} else {
-		cprintf(con, "HydraNFC Shield detected\r\n");
-	}
+	if(hydranfc_is_detected() == FALSE)
+		s = "HydraNFC";
 #endif
+	cprintf(con, "%s\r\n", s);
 
 }
 
