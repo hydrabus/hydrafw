@@ -37,9 +37,11 @@ extern t_token_dict tl_dict[];
 extern const mode_exec_t mode_spi_exec;
 extern const mode_exec_t mode_i2c_exec;
 extern const mode_exec_t mode_uart_exec;
+extern const mode_exec_t mode_nfc_exec;
 extern t_token tokens_mode_spi[];
 extern t_token tokens_mode_i2c[];
 extern t_token tokens_mode_uart[];
+extern t_token tokens_mode_nfc[];
 
 static struct {
 	int token;
@@ -49,6 +51,7 @@ static struct {
 	{ T_SPI, tokens_mode_spi, &mode_spi_exec },
 	{ T_I2C, tokens_mode_i2c, &mode_i2c_exec },
 	{ T_UART, tokens_mode_uart, &mode_uart_exec },
+	{ T_NFC, tokens_mode_nfc, &mode_nfc_exec },
 };
 
 const char hydrabus_mode_str_cs_enabled[] =  "/CS ENABLED\r\n";
@@ -95,7 +98,6 @@ int cmd_mode_init(t_hydra_console *con, t_tokenline_parsed *p)
 		if (p->tokens[1] != modes[i].token)
 			continue;
 		con->mode->exec = modes[i].exec;
-		/* TODO tokens used */
 		con->mode->exec->mode_cmd(con, p);
 		if (!tl_mode_push(con->tl, modes[i].tokens))
 			return FALSE;
@@ -185,7 +187,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			t += hydrabus_mode_write(con, p, t);
 			break;
 		case T_EXIT:
-			con->mode->exec->mode_cleanup(con);
+			MAYBE_CALL(con->mode->exec->mode_cleanup);
 			mode_exit(con, p);
 			break;
 		default:

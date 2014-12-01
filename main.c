@@ -86,7 +86,7 @@ THD_FUNCTION(ThreadHydraNFC, arg)
 					D2_OFF;
 					chThdSleepMilliseconds(25);
 				}
-				cmd_nfc_sniff_14443A(NULL, 0, NULL);
+				cmd_nfc_sniff_14443A(NULL);
 			}
 
 			if(K4_BUTTON)
@@ -145,12 +145,6 @@ int main(void)
 	scs_dwt_cycle_counter_enabled();
 
 	hydrabus_init();
-
-#ifdef HYDRANFC
-	if(hydranfc_init() == FALSE)
-		/* Reinit HydraBus */
-		hydrabus_init();
-#endif
 
 	/*
 	 * Initializes a serial-over-USB CDC driver.

@@ -2,6 +2,7 @@
  * HydraBus/HydraNFC
  *
  * Copyright (C) 2012-2014 Benjamin VERNOUX
+ * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +23,16 @@
 #include "common.h"
 #include "mcu.h"
 
-extern volatile int nb_irq;
-extern volatile int irq;
-extern volatile int irq_end_rx;
+#define MIFARE_DATA_MAX     20
+/* Does not managed UID > 4+BCC to be done later ... */
+#define MIFARE_UID_MAX      5
+#define VICINITY_UID_MAX    16
 
-bool hydranfc_init(void);
 bool hydranfc_is_detected(void);
+int mode_cmd_nfc_exec(t_hydra_console *con, t_tokenline_parsed *p,
+		int token_pos);
 
-void cmd_nfc_vicinity(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_nfc_mifare(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_nfc_dump_regs(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_nfc_sniff_14443A(t_hydra_console *con, int argc, const char* const* argv);
-void cmd_microrl_select_nfc_low_level(t_hydra_console *con, int argc, const char* const* argv);
-
+void cmd_nfc_sniff_14443A(t_hydra_console *con);
 
 #endif /* _HYDRANFC_H_ */
 

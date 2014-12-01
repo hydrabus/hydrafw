@@ -3,9 +3,7 @@ HYDRANFCSRC = hydranfc/hydranfc.c \
               hydranfc/hydranfc_cmd_sniff.c \
               hydranfc/hydranfc_cmd_sniff_downsampling.c \
               hydranfc/hydranfc_cmd_sniff_iso14443.c \
-              hydranfc/hydranfc_microrl.c \
-              hydranfc/low_level/hydranfc_cmd_transparent.c \
-              hydranfc/low_level/hydranfc_low_microrl.c
+              hydranfc/low_level/hydranfc_cmd_transparent.c
 
 # Required include directories
 HYDRANFCINC = ./hydranfc \

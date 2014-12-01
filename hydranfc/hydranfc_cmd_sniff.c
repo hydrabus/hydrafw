@@ -454,11 +454,9 @@ void sniff_write_8b_ASCII_HEX(uint8_t data, bool add_space)
 	}
 }
 
-void cmd_nfc_sniff_14443A(t_hydra_console *con, int argc, const char* const* argv)
+void cmd_nfc_sniff_14443A(t_hydra_console *con)
 {
 	(void)con;
-	(void)argc;
-	(void)argv;
 
 	uint8_t  ds_data, tmp_u8_data, tmp_u8_data_nb_bit;
 	uint32_t f_data, lsh_bit, rsh_bit;

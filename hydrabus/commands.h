@@ -77,6 +77,12 @@ enum {
 	T_SAMPLES,
 	T_PERIOD,
 	T_CONTINUOUS,
+	T_NFC,
+	T_MIFARE,
+	T_VICINITY,
+	T_REGISTERS,
+	T_SCAN,
+	T_SNIFF,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

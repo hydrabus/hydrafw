@@ -84,6 +84,12 @@ t_token_dict tl_dict[] = {
 	{ T_SAMPLES, "samples" },
 	{ T_PERIOD, "period" },
 	{ T_CONTINUOUS, "continuous" },
+	{ T_NFC, "nfc" },
+	{ T_MIFARE, "mifare" },
+	{ T_VICINITY, "vicinity" },
+	{ T_REGISTERS, "registers" },
+	{ T_SCAN, "scan" },
+	{ T_SNIFF, "sniff" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -123,6 +129,44 @@ t_token tokens_gpio_resistance[] = {
 t_token tokens_mode_show[] = {
 	{ T_PINS,
 		.help = "Show pins used in this mode" },
+	{ }
+};
+
+t_token tokens_mode_nfc_show[] = {
+	{ T_REGISTERS,
+		.help = "Show NFC registers" },
+	{ }
+};
+
+t_token tokens_mode_nfc_scan[] = {
+	{ T_CONTINUOUS,
+		.help = "Scan until interrupted" },
+	{ }
+};
+
+t_token tokens_mode_nfc[] = {
+	{ T_SHOW,
+		.subtokens = tokens_mode_nfc_show,
+		.help = "Show NFC parameters" },
+	{ T_MIFARE,
+		.help = "MIFARE (ISO14443A)" },
+	{ T_VICINITY,
+		.help = "Vicinity (ISO/IEC 15693)" },
+	{ T_SCAN,
+		.subtokens = tokens_mode_nfc_scan,
+		.help = "Scan" },
+	{ T_SNIFF,
+		.help = "Sniff (ISO14443A only)" },
+	{ T_EXIT,
+		.help = "Exit NFC mode" },
+	{ }
+};
+
+t_token tokens_nfc[] = {
+	{ T_MIFARE,
+		.help = "MIFARE (ISO14443A)" },
+	{ T_VICINITY,
+		.help = "Vicinity (ISO/IEC 15693)" },
 	{ }
 };
 
@@ -323,6 +367,9 @@ t_token tokens_modes[] = {
 	{ T_UART,
 		.subtokens = tokens_uart,
 		.help = "UART mode" },
+	{ T_NFC,
+		.subtokens = tokens_nfc,
+		.help = "NFC mode" },
 	{ }
 };
 
