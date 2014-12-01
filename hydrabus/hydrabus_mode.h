@@ -22,9 +22,6 @@
 #include "stdint.h"
 #include "common.h"
 
-#define HYDRABUS_MODE_DEV_INVALID (-1)
-#define HYDRABUS_MODE_DEV_DEFAULT_VALUE (0)
-
 #define HYDRABUS_MODE_STATUS_OK (0)
 
 /* Common string for hydrabus mode */
@@ -87,22 +84,6 @@ typedef struct mode_exec_t {
 	void (*mode_print_name)(t_hydra_console *con);  /* Print Mode name */
 	const char* (*mode_str_prompt)(t_hydra_console *con); /* Prompt name string */
 } mode_exec_t;
-
-typedef struct {
-	mode_config_dev_t param; /* "mode_config_proto_t" parameter to update (corresponding to arg) */
-	long min; /* arg min value included */
-	long max; /* arg max value included */
-	bool dec_val; /* If TRUE decrement 'arg value' before to store it in pt_val else do nothing */
-	int argc_help; /* argc help (nb device included in argv_help) */
-	const char* const* argv_help; /* argv help string (when arg is invalid/missing) */
-} mode_dev_arg_t;
-
-void hydrabus_mode(t_hydra_console *con, int argc, const char* const* argv);
-void hydrabus_mode_info(t_hydra_console *con, int argc, const char* const* argv);
-void hydrabus_mode_voltage(t_hydra_console *con, int argc, const char* const* argv);
-bool hydrabus_mode_proto_inter(t_hydra_console *con, int argc, const char* const* argv);
-long hydrabus_mode_dev_manage_arg(t_hydra_console *con, int argc, const char* const* argv,
-				  int mode_dev_nb_arg, int dev_arg_no, mode_dev_arg_t* dev_arg);
 
 #endif /* _HYDRABUS_MODE_H_ */
 
