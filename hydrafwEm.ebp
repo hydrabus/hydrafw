@@ -3,7 +3,7 @@
 	<EmBlocksVersion release="2.30" revision="1" />
 	<FileVersion major="1" minor="0" />
 	<Project>
-		<Option title="hydrafwEm" />
+		<Option title="hydrafwEm_biot_lt2" />
 		<Option pch_mode="2" />
 		<Option compiler="armgcc_eb" />
 		<Build>
@@ -473,6 +473,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="common\common.h" />
+		<Unit filename="common\common.mk" />
+		<Unit filename="common\exec.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="common\fault_handler.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -484,9 +488,6 @@
 		<Unit filename="common\hydrafw_version.hdr" />
 		<Unit filename="common\mcuconf.h" />
 		<Unit filename="common\microrl_callback.h" />
-		<Unit filename="common\microrl_common.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="common\microrl_common.h" />
 		<Unit filename="common\microrl_config.h" />
 		<Unit filename="common\microsd.c">
@@ -515,6 +516,10 @@
 		</Unit>
 		<Unit filename="drv\stm32cube\bsp_adc.h" />
 		<Unit filename="drv\stm32cube\bsp_adc_conf.h" />
+		<Unit filename="drv\stm32cube\bsp_gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\bsp_gpio.h" />
 		<Unit filename="drv\stm32cube\bsp_i2c.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -617,11 +622,15 @@
 		<Unit filename="fatfs\src\option\ccsbcs.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="hydrabus\commands.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\commands.h" />
 		<Unit filename="hydrabus\hydrabus.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydrabus\hydrabus.h" />
-		<Unit filename="hydrabus\hydrabus_microrl.c">
+		<Unit filename="hydrabus\hydrabus_adc.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydrabus\hydrabus_microrl.h" />
@@ -629,9 +638,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydrabus\hydrabus_mode.h" />
-		<Unit filename="hydrabus\hydrabus_mode_conf.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="hydrabus\hydrabus_mode_conf.h" />
 		<Unit filename="hydrabus\hydrabus_mode_hiz.c">
 			<Option compilerVar="CC" />
@@ -666,25 +672,17 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydranfc\hydranfc_cmd_sniff_iso14443.h" />
-		<Unit filename="hydranfc\hydranfc_microrl.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="hydranfc\hydranfc_microrl.h" />
-		<Unit filename="hydranfc\low_level\hydranfc_cmd_transparent.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="hydranfc\low_level\hydranfc_cmd_transparent.h" />
-		<Unit filename="hydranfc\low_level\hydranfc_low_microrl.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="hydranfc\low_level\hydranfc_low_microrl.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="microrl\src\microrl.c">
+		<Unit filename="microrl\src\microrl.h" />
+		<Unit filename="tokenline\tokenline.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="microrl\src\microrl.h" />
+		<Unit filename="tokenline\tokenline.h" />
 		<Unit filename="trf7970a\include\mcu.h" />
 		<Unit filename="trf7970a\include\tools.h" />
 		<Unit filename="trf7970a\include\trf797x.h" />
@@ -705,8 +703,8 @@
 		<Extensions>
 			<code_completion />
 			<debugger>
-				<target_debugging_settings target="Release_os" active_interface="ST-link">
-					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description=".\STM32F40x.svd" dont_start_server="false" backoff_time="1000" options="10" reg_filter="0" active_family="STMicroelectronics">
+				<target_debugging_settings target="Debug" active_interface="ST-link">
+					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description="STM32F40x.svd" dont_start_server="false" backoff_time="1000" options="10" reg_filter="0" active_family="STMicroelectronics">
 						<family_options family_id="STMicroelectronics">
 							<option opt_id="ID_JTAG_SWD" opt_value="swd" />
 							<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
@@ -739,8 +737,8 @@
 						</family_options>
 					</debug_interface>
 				</target_debugging_settings>
-				<target_debugging_settings target="Debug" active_interface="ST-link">
-					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description="STM32F40x.svd" dont_start_server="false" backoff_time="1000" options="10" reg_filter="0" active_family="STMicroelectronics">
+				<target_debugging_settings target="Release_os" active_interface="ST-link">
+					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBLOCKS}\share\contrib" executable="STLinkGDB.exe" description=".\STM32F40x.svd" dont_start_server="false" backoff_time="1000" options="10" reg_filter="0" active_family="STMicroelectronics">
 						<family_options family_id="STMicroelectronics">
 							<option opt_id="ID_JTAG_SWD" opt_value="swd" />
 							<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />

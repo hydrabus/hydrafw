@@ -42,12 +42,19 @@ typedef enum {
 	MODE_CONFIG_DEV_GPIO_PULLDOWN = 2
 } mode_dev_gpio_pull_t;
 
+typedef enum {
+	MODE_CONFIG_DEV_GPIO_IN = 0,
+	MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL = 1,
+	MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN = 2
+} mode_dev_gpio_mode_t;
+
 #define MODE_CONFIG_PROTO_DEV_DEF_VAL (0) /* mode_config_proto_t for dev_xxx default safe value */
 #define MODE_CONFIG_PROTO_BUFFER_SIZE (256)
 typedef struct {
 	mode_config_proto_valid_t valid;
 	long bus_mode;
 	long dev_num;
+	mode_dev_gpio_mode_t dev_gpio_mode; /* GPIO mode IN, OUT PP/OD for GPIO ...*/
 	mode_dev_gpio_pull_t dev_gpio_pull; /* GPIO Pull for SPI, I2C ...*/
 	long dev_mode;
 	long dev_speed;
