@@ -50,7 +50,8 @@ typedef enum {
 
 
 /* mode_conf use only members dev_gpio_pull & dev_gpio_mode */
-bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, uint16_t gpio_pin, mode_config_proto_t* mode_conf);
+bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, int gpio_pin,
+		int mode, int pull);
 bsp_status_t bsp_gpio_deinit(bsp_gpio_port_t gpio_port, uint16_t gpio_pin);
 
 void bsp_gpio_set(bsp_gpio_port_t gpio_port, uint16_t gpio_pin);

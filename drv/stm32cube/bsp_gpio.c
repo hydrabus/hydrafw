@@ -24,7 +24,8 @@ limitations under the License.
  * \return bsp_status_t status of the init.
  *
  */
-bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, uint16_t gpio_pin, mode_config_proto_t* mode_conf)
+bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, int gpio_pin,
+		int mode, int pull)
 {
 	uint32_t gpio_mode;
 	uint32_t gpio_pull;
@@ -36,7 +37,7 @@ bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, uint16_t gpio_pin, mode_co
 	HAL_GPIO_DeInit(hal_gpio_port, gpio_pin);
 
 	/* Init the GPIO */
-	switch(mode_conf->dev_gpio_mode) {
+	switch (mode) {
 	case MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL:
 		gpio_mode = GPIO_MODE_OUTPUT_PP;
 		break;
@@ -51,7 +52,7 @@ bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, uint16_t gpio_pin, mode_co
 		break;
 	}
 
-	switch(mode_conf->dev_gpio_pull) {
+	switch (pull) {
 	case MODE_CONFIG_DEV_GPIO_PULLUP:
 		gpio_pull = GPIO_PULLUP;
 		break;
