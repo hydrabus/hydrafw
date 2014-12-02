@@ -25,12 +25,12 @@
 #include <ctype.h>
 
 static const char *str_pin_error = "Invalid pin '%s'. Select one or more "
-		"of PA0-15, PB0-11, PC0-15.\r\n";
+				   "of PA0-15, PB0-11, PC0-15.\r\n";
 
-static int ports[] = {
+static uint32_t ports[] = {
 	BSP_GPIO_PORTA,
 	BSP_GPIO_PORTB,
-	BSP_GPIO_PORTC,
+	BSP_GPIO_PORTC
 };
 
 static void read_continuous(t_hydra_console *con, uint16_t *gpio, int period)
@@ -43,7 +43,7 @@ static void read_continuous(t_hydra_console *con, uint16_t *gpio, int period)
 		for (pin = 0; pin < 16; pin++) {
 			if (gpio[port] & (1 << pin))
 				cprintf(con, "P%c%d%s ", port + 'A', pin,
-						pin < 10 ? " " : "");
+					pin < 10 ? " " : "");
 		}
 	}
 	cprint(con, "\r\n", 2);
@@ -80,9 +80,13 @@ static void read_once(t_hydra_console *con, uint16_t *gpio)
 int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	uint16_t gpio[3] = { 0 };
+
 	int mode, pull, state, port, pin, read, period, continuous, t;
+	bool mode_changed, pull_changed;
 	char *str, *s;
 
+	mode_changed = false;
+	pull_changed = false;
 	t = 1;
 	mode = MODE_CONFIG_DEV_GPIO_IN;
 	pull = MODE_CONFIG_DEV_GPIO_NOPULL;
@@ -104,6 +108,7 @@ int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 				mode = MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN;
 				break;
 			}
+			mode_changed = true;
 			break;
 		case T_PULL:
 			switch (p->tokens[++t]) {
@@ -117,6 +122,7 @@ int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 				pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 				break;
 			}
+			pull_changed = true;
 			break;
 		case T_ON:
 		case T_OFF:
@@ -158,7 +164,7 @@ int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 			port = str[1] - 'A';
 			pin = strtoul(str + 2, &s, 10);
 			if (*s || pin < 0 || pin > 15
-					|| (port == 1 && pin > 11)) {
+			    || (port == 1 && pin > 11)) {
 				cprintf(con, str_pin_error, str);
 				return FALSE;
 			}
@@ -178,11 +184,13 @@ int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 		return FALSE;
 	}
 
-	for (port = 0; port < 3; port++) {
-		for (pin = 0; pin < 16; pin++) {
-			if (!(gpio[port] & (1 << pin)))
-				continue;
-			bsp_gpio_init(port, pin, mode, pull);
+	if((mode_changed == true) || (pull_changed == true)) {
+		for (port = 0; port < 3; port++) {
+			for (pin = 0; pin < 16; pin++) {
+				if (!(gpio[port] & (1 << pin)))
+					continue;
+				bsp_gpio_init(ports[port], pin, mode, pull);
+			}
 		}
 	}
 

@@ -23,18 +23,17 @@ typedef enum {
 	BSP_GPIO_PIN_1	/* Pin Set */
 } bsp_gpio_pinstate;
 
+/* Values for gpio_port */
 typedef enum {
-	BSP_GPIO_PORTA = (0x40020000+0x0000),
-	BSP_GPIO_PORTB = (0x40020000+0x0400),
-	BSP_GPIO_PORTC = (0x40020000+0x0800),
-	BSP_GPIO_PORTD = (0x40020000+0x0C00),
-	BSP_GPIO_PORTH = (0x40020000+0x1C00)
+	BSP_GPIO_PORTA = (0x40020000),
+	BSP_GPIO_PORTB = (0x40020400),
+	BSP_GPIO_PORTC = (0x40020800),
+	BSP_GPIO_PORTD = (0x40020C00)
 } bsp_gpio_port_t;
 
-
 /* mode_conf use only members dev_gpio_pull & dev_gpio_mode */
-bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, int gpio_pin,
-		int mode, int pull);
+bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, uint16_t gpio_pin,
+		uint32_t mode, uint32_t pull);
 bsp_status_t bsp_gpio_deinit(bsp_gpio_port_t gpio_port, uint16_t gpio_pin);
 
 void bsp_gpio_set(bsp_gpio_port_t gpio_port, uint16_t gpio_pin);

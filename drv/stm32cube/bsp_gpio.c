@@ -24,8 +24,8 @@ limitations under the License.
  * \return bsp_status_t status of the init.
  *
  */
-bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, int gpio_pin,
-		int mode, int pull)
+bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, uint16_t gpio_pin,
+			   uint32_t mode, uint32_t pull)
 {
 	uint32_t gpio_mode;
 	uint32_t gpio_pull;
@@ -90,7 +90,7 @@ void bsp_gpio_set(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
 	GPIO_TypeDef *hal_gpio_port;
 
 	hal_gpio_port = (GPIO_TypeDef *)gpio_port;
-	hal_gpio_port->BSRRH = 1 << gpio_pin;
+	hal_gpio_port->BSRRL = 1 << gpio_pin;
 }
 
 
@@ -105,12 +105,12 @@ void bsp_gpio_clr(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
 	GPIO_TypeDef *hal_gpio_port;
 
 	hal_gpio_port = (GPIO_TypeDef *)gpio_port;
-	hal_gpio_port->BSRRL = 1 << gpio_pin;
+	hal_gpio_port->BSRRH = 1 << gpio_pin;
 }
 
 /** \brief Read only one gpio_pin (see BSP_GPIO_PINx) for the corresponding gpio_port
  *
- * \param gpio_port bsp_gpio_port_t
+ * \param gpio_port bsp_gpio_port_t GPIO port to configure
  * \param gpio_pin uint16_t
  *
  * \return bsp_gpio_pinstate
@@ -132,7 +132,7 @@ bsp_gpio_pinstate bsp_gpio_pin_read(bsp_gpio_port_t gpio_port, uint16_t gpio_pin
 
 /** \brief Read all gpio_pin(s) (see BSP_GPIO_PINx) for the corresponding gpio_port
  *
- * \param gpio_port bsp_gpio_port_t
+ * \param gpio_port bsp_gpio_port_t GPIO port to configure
  *
  * \return bsp_gpio_pinstate
  */
