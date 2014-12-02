@@ -118,6 +118,7 @@ struct cmd_map {
 	{ T_SD, cmd_sd },
 	{ T_MODE, cmd_mode_init },
 	{ T_ADC, cmd_adc },
+	{ T_GPIO, cmd_gpio },
 	{ 0, NULL }
 };
 

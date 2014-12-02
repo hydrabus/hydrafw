@@ -90,6 +90,10 @@ t_token_dict tl_dict[] = {
 	{ T_REGISTERS, "registers" },
 	{ T_SCAN, "scan" },
 	{ T_SNIFF, "sniff" },
+	{ T_GPIO, "gpio" },
+	{ T_IN, "in" },
+	{ T_OUT, "out" },
+	{ T_OPEN, "open" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -120,9 +124,12 @@ t_token tokens_master_slave[] = {
 };
 
 t_token tokens_gpio_pull[] = {
-	{ T_UP },
-	{ T_DOWN },
-	{ T_FLOATING },
+	{ T_UP,
+		.help = "Pull up" },
+	{ T_DOWN,
+		.help = "Pull down" },
+	{ T_FLOATING,
+		.help = "Floating (default)" },
 	{ }
 };
 
@@ -373,6 +380,41 @@ t_token tokens_modes[] = {
 	{ }
 };
 
+t_token tokens_gpio_mode[] = {
+	{ T_IN,
+		.help = "Configure GPIO as input" },
+	{ T_OUT,
+		.help = "Configure GPIO as output" },
+	{ T_OPEN,
+		.help = "Configure GPIO pin as open drain (default)" },
+	{ }
+};
+
+t_token tokens_gpio[] = {
+	{ T_ARG_STRING,
+		.help = "One or more GPIO pins (PA0-15, PB0-11, PC0-15)" },
+	{ T_MODE,
+		.arg_type = T_ARG_TOKEN,
+		.subtokens = tokens_gpio_mode,
+		.help = "Configure as input, output or open drain" },
+	{ T_PULL,
+		.arg_type = T_ARG_TOKEN,
+		.subtokens = tokens_gpio_pull,
+		.help = "GPIO pull up, down or floating" },
+	{ T_ON,
+		.help = "Set GPIO pin" },
+	{ T_OFF,
+		.help = "Clear GPIO pin" },
+	{ T_READ,
+		.help = "Read GPIO values" },
+	{ T_PERIOD,
+		.arg_type = T_ARG_INT,
+		.help = "Delay between reads (msec)" },
+	{ T_CONTINUOUS,
+		.help = "Read continuously" },
+	{ }
+};
+
 t_token tokens_adc[] = {
 	{ T_ADC1,
 		.help = "ADC1" },
@@ -447,6 +489,9 @@ t_token tl_tokens[] = {
 	{ T_ADC,
 		.subtokens = tokens_adc,
 		.help = "Read analog values" },
+	{ T_GPIO,
+		.subtokens = tokens_gpio,
+		.help = "Get or set GPIO pins" },
 	{ T_MODE,
 		.subtokens = tokens_modes,
 		.help = "Switch to protocol mode" },

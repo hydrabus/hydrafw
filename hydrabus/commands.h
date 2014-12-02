@@ -83,6 +83,10 @@ enum {
 	T_REGISTERS,
 	T_SCAN,
 	T_SNIFF,
+	T_GPIO,
+	T_IN,
+	T_OUT,
+	T_OPEN,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

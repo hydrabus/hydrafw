@@ -2,6 +2,7 @@
 HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/commands.c \
 			hydrabus/hydrabus_adc.c \
+			hydrabus/gpio.c \
             hydrabus/hydrabus_mode.c \
             hydrabus/hydrabus_mode_spi.c \
             hydrabus/hydrabus_mode_uart.c \
