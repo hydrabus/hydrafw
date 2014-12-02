@@ -18,23 +18,6 @@ limitations under the License.
 #include "bsp.h"
 #include "mode_config.h"
 
-#define	BSP_GPIO_PIN0  (0x0001)
-#define	BSP_GPIO_PIN1  (0x0002)
-#define	BSP_GPIO_PIN2  (0x0004)
-#define	BSP_GPIO_PIN3  (0x0008)
-#define	BSP_GPIO_PIN4  (0x0010)
-#define	BSP_GPIO_PIN5  (0x0020)
-#define	BSP_GPIO_PIN6  (0x0040)
-#define	BSP_GPIO_PIN7  (0x0080)
-#define	BSP_GPIO_PIN8  (0x0100)
-#define	BSP_GPIO_PIN9  (0x0200)
-#define	BSP_GPIO_PIN10 (0x0400)
-#define	BSP_GPIO_PIN11 (0x0800)
-#define	BSP_GPIO_PIN12 (0x1000)
-#define	BSP_GPIO_PIN13 (0x2000)
-#define	BSP_GPIO_PIN14 (0x4000)
-#define	BSP_GPIO_PIN15 (0x8000)
-
 typedef enum {
 	BSP_GPIO_PIN_0 = 0,	/* Pin Clear */
 	BSP_GPIO_PIN_1	/* Pin Set */

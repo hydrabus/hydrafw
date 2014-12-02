@@ -34,7 +34,7 @@ bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, int gpio_pin,
 
 	hal_gpio_port =(GPIO_TypeDef*)gpio_port;
 	/* Safe mode for GPIO */
-	HAL_GPIO_DeInit(hal_gpio_port, gpio_pin);
+	HAL_GPIO_DeInit(hal_gpio_port, 1 << gpio_pin);
 
 	/* Init the GPIO */
 	switch (mode) {
@@ -69,7 +69,7 @@ bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, int gpio_pin,
 
 	/* GPIO pins configuration */
 	gpio_init.Mode = gpio_mode;
-	gpio_init.Pin = gpio_pin;
+	gpio_init.Pin = 1 << gpio_pin;
 	gpio_init.Speed = GPIO_SPEED_HIGH;
 	gpio_init.Pull = gpio_pull;
 	gpio_init.Alternate = 0; /* Not used */
@@ -90,7 +90,7 @@ void bsp_gpio_set(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
 	GPIO_TypeDef *hal_gpio_port;
 
 	hal_gpio_port = (GPIO_TypeDef *)gpio_port;
-	hal_gpio_port->BSRRH = gpio_pin;
+	hal_gpio_port->BSRRH = 1 << gpio_pin;
 }
 
 
@@ -98,7 +98,6 @@ void bsp_gpio_set(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
  *
  * \param gpio_port bsp_gpio_port_t GPIO port to configure
  * \param uint16_t gpio_pin GPIO pin(s) corresponding to port to configure
- * \return void
  *
  */
 void bsp_gpio_clr(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
@@ -106,15 +105,15 @@ void bsp_gpio_clr(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
 	GPIO_TypeDef *hal_gpio_port;
 
 	hal_gpio_port = (GPIO_TypeDef *)gpio_port;
-	hal_gpio_port->BSRRL = gpio_pin;
+	hal_gpio_port->BSRRL = 1 << gpio_pin;
 }
 
 /** \brief Read only one gpio_pin (see BSP_GPIO_PINx) for the corresponding gpio_port
  *
  * \param gpio_port bsp_gpio_port_t
  * \param gpio_pin uint16_t
- * \return bsp_gpio_pinstate
  *
+ * \return bsp_gpio_pinstate
  */
 bsp_gpio_pinstate bsp_gpio_pin_read(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
 {
@@ -122,20 +121,20 @@ bsp_gpio_pinstate bsp_gpio_pin_read(bsp_gpio_port_t gpio_port, uint16_t gpio_pin
 	bsp_gpio_pinstate pin_state;
 
 	hal_gpio_port = (GPIO_TypeDef *)gpio_port;
-	if((hal_gpio_port->IDR & gpio_pin) == gpio_pin) {
+	if((hal_gpio_port->IDR & (1 << gpio_pin))) {
 		pin_state = BSP_GPIO_PIN_1;
 	} else {
 		pin_state = BSP_GPIO_PIN_0;
 	}
+
 	return pin_state;
 }
 
 /** \brief Read all gpio_pin(s) (see BSP_GPIO_PINx) for the corresponding gpio_port
  *
  * \param gpio_port bsp_gpio_port_t
- * \param gpio_pin uint16_t
- * \return bsp_gpio_pinstate
  *
+ * \return bsp_gpio_pinstate
  */
 /* Read all pins of a port */
 uint16_t bsp_gpio_port_read(bsp_gpio_port_t gpio_port)
@@ -143,5 +142,6 @@ uint16_t bsp_gpio_port_read(bsp_gpio_port_t gpio_port)
 	GPIO_TypeDef *hal_gpio_port;
 
 	hal_gpio_port = (GPIO_TypeDef *)gpio_port;
+
 	return hal_gpio_port->IDR;
 }
