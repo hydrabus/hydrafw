@@ -55,9 +55,9 @@ t_token_dict tl_dict[] = {
 	{ T_PHASE, "phase" },
 	{ T_MSB_FIRST, "msb-first" },
 	{ T_LSB_FIRST, "lsb-first" },
-	{ T_GPIO_RESISTOR, "gpio-resistor" },
-	{ T_PULL_UP, "pull-up" },
-	{ T_PULL_DOWN, "pull-down" },
+	{ T_PULL, "pull" },
+	{ T_UP, "up" },
+	{ T_DOWN, "down" },
 	{ T_FLOATING, "floating" },
 	{ T_ON, "on" },
 	{ T_OFF, "off" },
@@ -119,9 +119,9 @@ t_token tokens_master_slave[] = {
 	{ }
 };
 
-t_token tokens_gpio_resistance[] = {
-	{ T_PULL_UP },
-	{ T_PULL_DOWN },
+t_token tokens_gpio_pull[] = {
+	{ T_UP },
+	{ T_DOWN },
 	{ T_FLOATING },
 	{ }
 };
@@ -235,10 +235,10 @@ t_token tokens_mode_i2c[] = {
 	{ T_SHOW,
 		.subtokens = tokens_mode_show,
 		.help = "Show I2C parameters" },
-	{ T_GPIO_RESISTOR,
+	{ T_PULL,
 		.arg_type = T_ARG_TOKEN,
-		.subtokens = tokens_gpio_resistance,
-		.help = "GPIO resistance" },
+		.subtokens = tokens_gpio_pull,
+		.help = "GPIO pull" },
 	{ T_FREQUENCY,
 		.arg_type = T_ARG_FREQ,
 		.help = "Read/write frequency" },
@@ -277,10 +277,10 @@ t_token tokens_mode_i2c[] = {
 };
 
 t_token tokens_i2c[] = {
-	{ T_GPIO_RESISTOR,
+	{ T_PULL,
 		.arg_type = T_ARG_TOKEN,
-		.subtokens = tokens_gpio_resistance,
-		.help = "GPIO resistance" },
+		.subtokens = tokens_gpio_pull,
+		.help = "GPIO pull" },
 	{ T_FREQUENCY,
 		.arg_type = T_ARG_FREQ,
 		.help = "Read/write frequency" },
@@ -291,10 +291,10 @@ t_token tokens_i2c[] = {
 	{ T_DEVICE, \
 		.arg_type = T_ARG_INT, \
 		.help = "SPI device (1 or 2)" }, \
-	{ T_GPIO_RESISTOR, \
+	{ T_PULL, \
 		.arg_type = T_ARG_TOKEN, \
-		.subtokens = tokens_gpio_resistance, \
-		.help = "GPIO resistance" }, \
+		.subtokens = tokens_gpio_pull, \
+		.help = "GPIO pull" }, \
 	{ T_MODE, \
 		.arg_type = T_ARG_TOKEN, \
 		.subtokens = tokens_master_slave, \

@@ -70,12 +70,12 @@ int mode_cmd_i2c_exec(t_hydra_console *con, t_tokenline_parsed *p,
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
-		case T_GPIO_RESISTOR:
+		case T_PULL:
 			switch (p->tokens[++t]) {
-			case T_PULL_UP:
+			case T_UP:
 				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 				break;
-			case T_PULL_DOWN:
+			case T_DOWN:
 				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
 				break;
 			case T_FLOATING:
