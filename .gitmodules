@@ -1,9 +1,6 @@
 [submodule "chibios"]
 	path = chibios
 	url = https://github.com/bvernoux/ChibiOS-RT
-[submodule "microrl"]
-	path = microrl
-	url = https://github.com/bvernoux/microrl.git
 [submodule "tokenline"]
 	path = tokenline
 	url = https://github.com/biot/tokenline.git
