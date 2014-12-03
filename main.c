@@ -34,10 +34,6 @@
 #include "microsd.h"
 #include "hydrabus.h"
 
-#ifdef HYDRANFC
-#include "hydranfc.h"
-#endif
-
 extern t_token tl_tokens[];
 extern t_token_dict tl_dict[];
 
@@ -52,53 +48,6 @@ t_hydra_console consoles[] = {
 	{ .thread_name="console USB1", .sdu=&SDU1, .tl=&tl_con1, .mode = &mode_con1 },
 	{ .thread_name="console USB2", .sdu=&SDU2, .tl=&tl_con2, .mode = &mode_con2 }
 };
-
-/*
-* This is a periodic thread that manage hydranfc sniffer
-*/
-#ifdef HYDRANFC
-THD_WORKING_AREA(waThreadHydraNFC, 2048);
-THD_FUNCTION(ThreadHydraNFC, arg)
-{
-	int i;
-	(void)arg;
-	chRegSetThreadName("ThreadHydraNFC");
-
-	if(hydranfc_is_detected() == TRUE) {
-		while(1) {
-			chThdSleepMilliseconds(100);
-
-			if(K1_BUTTON)
-				D4_ON;
-			else
-				D4_OFF;
-
-			if(K2_BUTTON)
-				D3_ON;
-			else
-				D3_OFF;
-
-			if(K3_BUTTON) {
-				/* Blink Fast */
-				for(i=0; i<4; i++) {
-					D2_ON;
-					chThdSleepMilliseconds(25);
-					D2_OFF;
-					chThdSleepMilliseconds(25);
-				}
-				cmd_nfc_sniff_14443A(NULL);
-			}
-
-			if(K4_BUTTON)
-				D5_ON;
-			else
-				D5_OFF;
-
-		}
-	}
-	return 0;
-}
-#endif
 
 THD_FUNCTION(console, arg)
 {
@@ -182,14 +131,6 @@ int main(void)
 	/* Wait for USB Enumeration. */
 	chThdSleepMilliseconds(100);
 
-	/*
-	 * Creates HydraNFC Sniffer thread.
-	 */
-#ifdef HYDRANFC
-	if(hydranfc_is_detected() == TRUE)
-		chThdCreateStatic(waThreadHydraNFC, sizeof(waThreadHydraNFC),
-				  NORMALPRIO, ThreadHydraNFC, NULL);
-#endif
 	/*
 	* Normal main() thread activity.
 	*/

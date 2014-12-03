@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "ch.h"
 #include "common.h"
 #include "tokenline.h"
 #include "hydrabus.h"
@@ -28,6 +29,7 @@
 static void extcb1(EXTDriver *extp, expchannel_t channel);
 
 volatile bool hydranfc_is_detected_flag = FALSE;
+static thread_t *key_sniff_thread;
 volatile int irq;
 volatile int irq_count;
 volatile int irq_end_rx;
@@ -432,6 +434,50 @@ static void scan(t_hydra_console *con)
 		scan_vicinity(con);
 }
 
+THD_WORKING_AREA(key_sniff_mem, 2048);
+THD_FUNCTION(key_sniff, arg)
+{
+	int i;
+
+	(void)arg;
+
+	chRegSetThreadName("HydraNFC key-sniff");
+	while (TRUE) {
+		if(K1_BUTTON)
+			D4_ON;
+		else
+			D4_OFF;
+
+		if(K2_BUTTON)
+			D3_ON;
+		else
+			D3_OFF;
+
+		if(K3_BUTTON) {
+			/* Blink Fast */
+			for(i = 0; i < 4; i++) {
+				D2_ON;
+				chThdSleepMilliseconds(25);
+				D2_OFF;
+				chThdSleepMilliseconds(25);
+			}
+			cmd_nfc_sniff_14443A(NULL);
+		}
+
+		if(K4_BUTTON)
+			D5_ON;
+		else
+			D5_OFF;
+
+		if (chThdShouldTerminateX())
+			return 0;
+
+		chThdSleepMilliseconds(100);
+	}
+
+	return 0;
+}
+
 int mode_cmd_nfc_exec(t_hydra_console *con, t_tokenline_parsed *p,
 		int token_pos)
 {
@@ -558,6 +604,9 @@ void mode_setup_exc_nfc(t_hydra_console *con)
 	 * Activates the EXT driver 1.
 	 */
 	extStart(&EXTD1, &extcfg);
+
+	key_sniff_thread = chThdCreateStatic(key_sniff_mem,
+			sizeof(key_sniff_mem), NORMALPRIO, key_sniff, NULL);
 }
 
 void show_registers(t_hydra_console *con)
@@ -593,6 +642,13 @@ static void show(t_hydra_console *con, t_tokenline_parsed *p)
 	}
 }
 
+static void cleanup(t_hydra_console *con)
+{
+	(void)con;
+
+	chThdTerminate(key_sniff_thread);
+}
+
 const char* mode_str_prompt_nfc(t_hydra_console *con)
 {
 	(void)con;
@@ -604,6 +660,7 @@ const mode_exec_t mode_nfc_exec = {
 	.mode_cmd          = &mode_cmd_nfc_init,
 	.mode_cmd_exec     = &mode_cmd_nfc_exec,
 	.mode_setup_exc    = &mode_setup_exc_nfc, /* Configure the physical device after Power On (command 'W') */
+	.mode_cleanup      = &cleanup,
 	.mode_print_settings = &show, /* Settings string */
 	.mode_str_prompt   = &mode_str_prompt_nfc    /* Prompt name string */
 };
