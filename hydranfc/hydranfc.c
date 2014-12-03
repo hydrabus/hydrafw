@@ -29,8 +29,8 @@
 static void extcb1(EXTDriver *extp, expchannel_t channel);
 
 static thread_t *key_sniff_thread;
+static volatile int irq_count;
 volatile int irq;
-volatile int irq_count;
 volatile int irq_end_rx;
 
 /* Configure TRF7970A IRQ on GPIO A1 Rising Edge */
@@ -62,7 +62,7 @@ static const EXTConfig extcfg = {
 	}
 };
 
-struct {
+static struct {
 	int reg;
 	char *name;
 } registers[] = {
@@ -120,7 +120,7 @@ static void extcb1(EXTDriver *extp, expchannel_t channel)
 	irq = 1;
 }
 
-bool hydranfc_test_shield(void)
+static bool hydranfc_test_shield(void)
 {
 	int init_ms;
 	int err;
@@ -130,14 +130,14 @@ bool hydranfc_test_shield(void)
 
 	/* Software Init TRF7970A */
 	init_ms = Trf797xInitialSettings();
-	if(init_ms == TRF7970A_INIT_TIMEOUT)
+	if (init_ms == TRF7970A_INIT_TIMEOUT)
 		return FALSE;
 
 	Trf797xReset();
 
 	data_buf[0] = CHIP_STATE_CONTROL;
 	Trf797xReadSingle(data_buf, 1);
-	if(data_buf[0] != 0x01)
+	if (data_buf[0] != 0x01)
 		err++;
 
 	return err == 0;
@@ -156,7 +156,7 @@ int mode_cmd_nfc_init(t_hydra_console *con, t_tokenline_parsed *p)
 	return tokens_used;
 }
 
-void scan_mifare(t_hydra_console *con)
+static void scan_mifare(t_hydra_console *con)
 {
 	int init_ms;
 	uint8_t fifo_size;
@@ -315,7 +315,7 @@ void scan_mifare(t_hydra_console *con)
 	cprintf(con, "Test nfm ISO14443-A/Mifare end\r\n");
 }
 
-void scan_vicinity(t_hydra_console *con)
+static void scan_vicinity(t_hydra_console *con)
 {
 	static uint8_t data_buf[VICINITY_UID_MAX];
 	uint8_t fifo_size;
@@ -337,8 +337,8 @@ void scan_vicinity(t_hydra_console *con)
 
 	data_buf[0] = MODULATOR_CONTROL;
 	Trf797xReadSingle(data_buf, 1);
-	if(data_buf[0] != 0x31) {
-		cprintf(con, "Error Modulator Control Register read=0x%.2lX (shall be 0x31)\r\n", (uint32_t)data_buf[0]);
+	if (data_buf[0] != 0x31) {
+		cprintf(con, "Error Modulator Control Register read=0x%02lX (shall be 0x31)\r\n", (uint32_t)data_buf[0]);
 	}
 	/* Configure Mode ISO Control Register (0x01) to 0x02 (ISO15693 high bit rate, one subcarrier, 1 out of 4) */
 	data_buf[0] = ISO_CONTROL;
@@ -347,8 +347,8 @@ void scan_vicinity(t_hydra_console *con)
 
 	data_buf[0] = ISO_CONTROL;
 	Trf797xReadSingle(data_buf, 1);
-	if(data_buf[0] != 0x02) {
-		cprintf(con, "Error ISO Control Register read=0x%.2lX (shall be 0x02)\r\n", (uint32_t)data_buf[0]);
+	if (data_buf[0] != 0x02) {
+		cprintf(con, "Error ISO Control Register read=0x%02lX (shall be 0x02)\r\n", (uint32_t)data_buf[0]);
 	}
 	/* Configure Test Settings 1 to BIT6/0x40 => MOD Pin becomes receiver subcarrier output (Digital Output for RX/TX) */
 	/*
@@ -358,9 +358,9 @@ void scan_vicinity(t_hydra_console *con)
 
 	    data_buf[0] = TEST_SETTINGS_1;
 	    Trf797xReadSingle(data_buf, 1);
-	    if(data_buf[0] != 0x40)
+	    if (data_buf[0] != 0x40)
 	    {
-	      cprintf(con, "Error Test Settings Register(0x1A) read=0x%.2lX (shall be 0x40)\r\n", (uint32_t)data_buf[0]);
+	      cprintf(con, "Error Test Settings Register(0x1A) read=0x%02lX (shall be 0x40)\r\n", (uint32_t)data_buf[0]);
 	      err++;
 	    }
 	*/
@@ -373,7 +373,7 @@ void scan_vicinity(t_hydra_console *con)
 	/* Read back (Chip Status Control Register (0x00) shall be set to RF ON */
 	data_buf[0] = CHIP_STATE_CONTROL;
 	Trf797xReadSingle(data_buf, 1);
-	cprintf(con, "RF ON Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
+	cprintf(con, "RF ON Chip Status(Reg0) 0x%02lX\r\n", (uint32_t)data_buf[0]);
 
 	/* Send Inventory(3B) and receive data + UID */
 	data_buf[0] = 0x26; /* Request Flags */
@@ -388,16 +388,16 @@ void scan_vicinity(t_hydra_console *con)
 		// fifo_size shall be equal to 0x0A (10 bytes availables)
 		cprintf(con, "RX (contains UID):");
 		for(i=0; i<fifo_size; i++)
-			cprintf(con, " 0x%.2lX", (uint32_t)data_buf[i]);
+			cprintf(con, " 0x%02lX", (uint32_t)data_buf[i]);
 		cprintf(con, "\r\n");
 
 		/* Read RSSI levels and oscillator status(0x0F/0x4F) */
 		data_buf[0] = RSSI_LEVELS;                       // read RSSI levels
 		Trf797xReadSingle(data_buf, 1);
-		cprintf(con, "RSSI data: 0x%.2lX\r\n", (uint32_t)data_buf[0]);
+		cprintf(con, "RSSI data: 0x%02lX\r\n", (uint32_t)data_buf[0]);
 		// data_buf[0] shall be equal to value > 0x40
-		if(data_buf[0] < 0x40) {
-			cprintf(con, "Error RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
+		if (data_buf[0] < 0x40) {
+			cprintf(con, "Error RSSI data: 0x%02lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
 		}
 	} else {
 		cprintf(con, "No data in RX FIFO\r\n");
@@ -409,10 +409,10 @@ void scan_vicinity(t_hydra_console *con)
 	/* Read back (Chip Status Control Register (0x00) shall be set to RF OFF */
 	data_buf[0] = CHIP_STATE_CONTROL;
 	Trf797xReadSingle(data_buf, 1);
-	cprintf(con, "RF OFF Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
+	cprintf(con, "RF OFF Chip Status(Reg0) 0x%02lX\r\n", (uint32_t)data_buf[0]);
 	//  data_buf[0] shall be equal to value 0x00
 
-	cprintf(con, "irq_count: 0x%.2ld\r\n", (uint32_t)irq_count);
+	cprintf(con, "irq_count: 0x%02ld\r\n", (uint32_t)irq_count);
 	irq_count = 0;
 
 	cprintf(con, "Test nfv ISO15693/Vicinity end\r\n");
@@ -437,17 +437,17 @@ THD_FUNCTION(key_sniff, arg)
 
 	chRegSetThreadName("HydraNFC key-sniff");
 	while (TRUE) {
-		if(K1_BUTTON)
+		if (K1_BUTTON)
 			D4_ON;
 		else
 			D4_OFF;
 
-		if(K2_BUTTON)
+		if (K2_BUTTON)
 			D3_ON;
 		else
 			D3_OFF;
 
-		if(K3_BUTTON) {
+		if (K3_BUTTON) {
 			/* Blink Fast */
 			for(i = 0; i < 4; i++) {
 				D2_ON;
@@ -458,7 +458,7 @@ THD_FUNCTION(key_sniff, arg)
 			cmd_nfc_sniff_14443A(NULL);
 		}
 
-		if(K4_BUTTON)
+		if (K4_BUTTON)
 			D5_ON;
 		else
 			D5_OFF;
@@ -512,7 +512,7 @@ int mode_cmd_nfc_exec(t_hydra_console *con, t_tokenline_parsed *p,
 	return t + 1;
 }
 
-void mode_setup_exc_nfc(t_hydra_console *con)
+static void mode_setup_exc_nfc(t_hydra_console *con)
 {
 	(void)con;
 
@@ -598,16 +598,14 @@ void mode_setup_exc_nfc(t_hydra_console *con)
 	palSetPadMode(GPIOB, 4, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
 	palSetPadMode(GPIOB, 5, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
 
-	/*
-	 * Activates the EXT driver 1.
-	 */
+	/* Activates the EXT driver 1. */
 	extStart(&EXTD1, &extcfg);
 
 	key_sniff_thread = chThdCreateStatic(key_sniff_mem,
 			sizeof(key_sniff_mem), NORMALPRIO, key_sniff, NULL);
 }
 
-void show_registers(t_hydra_console *con)
+static void show_registers(t_hydra_console *con)
 {
 	unsigned int i;
 	static uint8_t data_buf;
@@ -647,7 +645,7 @@ static void cleanup(t_hydra_console *con)
 	chThdTerminate(key_sniff_thread);
 }
 
-const char* mode_str_prompt_nfc(t_hydra_console *con)
+static const char* mode_str_prompt_nfc(t_hydra_console *con)
 {
 	(void)con;
 
