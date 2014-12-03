@@ -179,7 +179,6 @@ void cmd_show_system(t_hydra_console *con)
 	uint32_t cycles_start;
 	uint32_t cycles_stop;
 	uint32_t cycles_delta;
-	char *s;
 
 	cprintf(con, "%s\r\n", HYDRAFW_VERSION);
 
@@ -218,15 +217,6 @@ void cmd_show_system(t_hydra_console *con)
 	cprintf(con, "Build time:   %s%s%s\r\n", __DATE__, " - ", __TIME__);
 #endif
 #endif
-
-	cprintf(con, "Shield:       ");
-	s = "None";
-#ifdef HYDRANFC
-	if(hydranfc_is_detected() == FALSE)
-		s = "HydraNFC";
-#endif
-	cprintf(con, "%s\r\n", s);
-
 }
 
 int cmd_show(t_hydra_console *con, t_tokenline_parsed *p)

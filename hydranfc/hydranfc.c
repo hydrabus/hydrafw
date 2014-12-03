@@ -28,7 +28,6 @@
 
 static void extcb1(EXTDriver *extp, expchannel_t channel);
 
-volatile bool hydranfc_is_detected_flag = FALSE;
 static thread_t *key_sniff_thread;
 volatile int irq;
 volatile int irq_count;
@@ -142,11 +141,6 @@ bool hydranfc_test_shield(void)
 		err++;
 
 	return err == 0;
-}
-
-bool hydranfc_is_detected(void)
-{
-	return hydranfc_is_detected_flag;
 }
 
 int mode_cmd_nfc_init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -582,7 +576,11 @@ void mode_setup_exc_nfc(t_hydra_console *con)
 	/* After setting EN=1 wait at least 21ms */
 	McuDelayMillisecond(21);
 
-	hydranfc_is_detected_flag = hydranfc_test_shield();
+	if (!hydranfc_test_shield()) {
+		/* TODO: clean up */
+		cprintf(con, "HydraNFC not found.\r\n?");
+		return;
+	}
 
 	/* Configure K1/2/3/4 Buttons as Input */
 	palSetPadMode(GPIOB, 7, PAL_MODE_INPUT);
