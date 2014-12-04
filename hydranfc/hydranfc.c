@@ -435,8 +435,11 @@ int mode_cmd_nfc_exec(t_hydra_console *con, t_tokenline_parsed *p,
 		int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	int t;
+	int action, period, continuous, t;
 
+	action = 0;
+	period = 1000;
+	continuous = FALSE;
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
 		case T_MIFARE:
@@ -445,27 +448,40 @@ int mode_cmd_nfc_exec(t_hydra_console *con, t_tokenline_parsed *p,
 		case T_VICINITY:
 			proto->dev_mode = NFC_MODE_VICINITY;
 			break;
-		case T_SCAN:
-			if (proto->dev_mode == NFC_MODE_NONE) {
-				cprintf(con, "Please select MIFARE or Vicinity mode first.\r\n");
-				return 0;
-			}
-			if (p->tokens[t + 1] == T_CONTINUOUS) {
-				cprintf(con, "Scanning with 1s delay. Press button to stop.\r\n");
-				t++;
-				while (!USER_BUTTON) {
-					scan(con);
-					cprint(con, "\r\n", 2);
-					chThdSleepMilliseconds(1000);
-				}
-			} else {
-				scan(con);
-			}
+		case T_PERIOD:
+			t += 2;
+			memcpy(&period, p->buf + p->tokens[t], sizeof(int));
 			break;
+		case T_CONTINUOUS:
+			continuous = TRUE;
+			break;
+		case T_SCAN:
 		case T_SNIFF:
-			cmd_nfc_sniff_14443A(con);
+			action = p->tokens[t];
 			break;
 		}
+	}
+
+	if (action == T_SCAN) {
+		if (proto->dev_mode == NFC_MODE_NONE) {
+			cprintf(con, "Please select MIFARE or Vicinity mode first.\r\n");
+			return 0;
+		}
+
+		if (continuous) {
+			cprintf(con, "Scanning %s ",
+					proto->dev_mode == NFC_MODE_MIFARE ? "MIFARE" : "Vicinity");
+			cprintf(con, "with 1s delay. Press user button to stop.\r\n");
+			t++;
+			while (!USER_BUTTON) {
+				scan(con);
+				chThdSleepMilliseconds(period);
+			}
+		} else {
+			scan(con);
+		}
+	} else if (action == T_SNIFF) {
+		cmd_nfc_sniff_14443A(con);
 	}
 
 	return t + 1;

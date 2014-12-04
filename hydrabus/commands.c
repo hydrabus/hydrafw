@@ -146,6 +146,9 @@ t_token tokens_mode_nfc_show[] = {
 };
 
 t_token tokens_mode_nfc_scan[] = {
+	{ T_PERIOD,
+		.arg_type = T_ARG_INT,
+		.help = "Delay between scans (msec)" },
 	{ T_CONTINUOUS,
 		.help = "Scan until interrupted" },
 	{ }
