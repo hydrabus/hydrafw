@@ -158,40 +158,40 @@ int mode_cmd_nfc_init(t_hydra_console *con, t_tokenline_parsed *p)
 
 static void scan_mifare(t_hydra_console *con)
 {
-	int init_ms;
 	uint8_t fifo_size;
 	uint8_t data_buf[MIFARE_DATA_MAX];
 	uint8_t uid_buf[MIFARE_UID_MAX];
-	uint8_t i;
+	uint8_t bcc, i;
 
 	/* End Test delay */
 	irq_count = 0;
 
 	/* Test ISO14443-A/Mifare read UID */
-	init_ms = Trf797xInitialSettings();
+	Trf797xInitialSettings();
 	Trf797xReset();
 
-	cprintf(con, "Test nf ISO14443-A/Mifare read UID(4bytes only) start, init_ms=%d ms\r\n", init_ms);
-
-	/* Write Modulator and SYS_CLK Control Register (0x09) (13.56Mhz SYS_CLK and default Clock 13.56Mhz)) */
+	/*
+	 * Write Modulator and SYS_CLK Control Register (0x09) (13.56Mhz SYS_CLK
+	 * and default Clock 13.56Mhz))
+	 */
 	data_buf[0] = MODULATOR_CONTROL;
 	data_buf[1] = 0x31;
 	Trf797xWriteSingle(data_buf, 2);
 
-	data_buf[0] = MODULATOR_CONTROL;
-	Trf797xReadSingle(data_buf, 1);
-	cprintf(con, "Modulator Control Register read=0x%.2lX (shall be 0x31)\r\n", (uint32_t)data_buf[0]);
-
-	/* Configure Mode ISO Control Register (0x01) to 0x88 (ISO14443A RX bit rate, 106 kbps) and no RX CRC (CRC is not present in the response)) */
+	/*
+	 * Configure Mode ISO Control Register (0x01) to 0x88 (ISO14443A RX bit
+	 * rate, 106 kbps) and no RX CRC (CRC is not present in the response))
+	 */
 	data_buf[0] = ISO_CONTROL;
 	data_buf[1] = 0x88;
 	Trf797xWriteSingle(data_buf, 2);
 
 	data_buf[0] = ISO_CONTROL;
 	Trf797xReadSingle(data_buf, 1);
-	if(data_buf[0] != 0x88) {
-		cprintf(con, "Error ISO Control Register read=0x%.2lX (shall be 0x88)\r\n", (uint32_t)data_buf[0]);
-	}
+	if (data_buf[0] != 0x88)
+		cprintf(con, "Error ISO Control Register read=0x%02lX (should be 0x88)\r\n",
+				(uint32_t)data_buf[0]);
+
 	/* Configure Test Settings 1 to BIT6/0x40 => MOD Pin becomes receiver subcarrier output (Digital Output for RX/TX) */
 	/*
 	    data_buf[0] = TEST_SETTINGS_1;
@@ -200,9 +200,9 @@ static void scan_mifare(t_hydra_console *con)
 
 	    data_buf[0] = TEST_SETTINGS_1;
 	    Trf797xReadSingle(data_buf, 1);
-	    if(data_buf[0] != 0x40)
+	    if (data_buf[0] != 0x40)
 	    {
-	      cprintf(con, "Error Test Settings Register(0x1A) read=0x%.2lX (shall be 0x40)\r\n", (uint32_t)data_buf[0]);
+	      cprintf(con, "Error Test Settings Register(0x1A) read=0x%02lX (shall be 0x40)\r\n", (uint32_t)data_buf[0]);
 	      err++;
 	    }
 	*/
@@ -210,146 +210,121 @@ static void scan_mifare(t_hydra_console *con)
 	/* Turn RF ON (Chip Status Control Register (0x00)) */
 	Trf797xTurnRfOn();
 
-	/* Read back (Chip Status Control Register (0x00) shall be set to RF ON */
-	data_buf[0] = CHIP_STATE_CONTROL;
-	Trf797xReadSingle(data_buf, 1);
-	cprintf(con, "RF ON Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
-
-	/* Send REQA(7bits) and receive ATQA(2bytes) */
+	/* Send REQA (7 bits) and receive ATQA (2 bytes) */
 	data_buf[0] = 0x26; /* REQA (7bits) */
 	fifo_size = Trf797x_transceive_bits(data_buf[0], 7, data_buf, MIFARE_DATA_MAX,
 					    10, /* 10ms TX/RX Timeout */
 					    0); /* TX CRC disabled */
 	/* Re-send REQA */
-	if(fifo_size == 0) {
-		/* Send REQA(7bits) and receive ATQA(2bytes) */
-		data_buf[0] = 0x26; /* REQA (7bits) */
+	if (fifo_size == 0) {
+		/* Send REQA (7 bits) and receive ATQA (2 bytes) */
+		data_buf[0] = 0x26; /* REQA (7 bits) */
 		fifo_size = Trf797x_transceive_bits(data_buf[0], 7, data_buf, MIFARE_DATA_MAX,
 						    10, /* 10ms TX/RX Timeout */
 						    0); /* TX CRC disabled */
 	}
 	if (fifo_size > 0) {
-		cprintf(con, "RX data(ATQA):");
-		for(i=0; i<fifo_size; i++)
-			cprintf(con, " 0x%.2lX", (uint32_t)data_buf[i]);
+		cprintf(con, "ATQA:");
+		for (i = 0; i < fifo_size; i++)
+			cprintf(con, " %02X", (uint32_t)data_buf[i]);
 		cprintf(con, "\r\n");
 
-		data_buf[0] = RSSI_LEVELS;                       // read RSSI levels
-		Trf797xReadSingle(data_buf, 1);
-		cprintf(con, "RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
-
-		/* Send AntiColl(2Bytes) and receive UID+BCC(5bytes) */
+		/* Send AntiColl (2 bytes) and receive UID+BCC (5 bytes) */
 		data_buf[0] = 0x93;
 		data_buf[1] = 0x20;
-		fifo_size = Trf797x_transceive_bytes(data_buf, 2, uid_buf, MIFARE_UID_MAX, 10/* 10ms TX/RX Timeout */, 0/* TX CRC disabled */);
+		fifo_size = Trf797x_transceive_bytes(data_buf, 2, uid_buf, MIFARE_UID_MAX,
+				10, /* 10ms TX/RX Timeout */
+				0); /* TX CRC disabled */
 		if (fifo_size > 0) {
-			cprintf(con, "RX data(UID+BCC):");
-			for(i=0; i<fifo_size; i++)
-				cprintf(con, " 0x%.2lX", (uint32_t)uid_buf[i]);
-			cprintf(con, "\r\n");
-
-			data_buf[0] = RSSI_LEVELS;                       // read RSSI levels
-			Trf797xReadSingle(data_buf, 1);
-			cprintf(con, "RSSI data: 0x%.2lX\r\n", (uint32_t)data_buf[0]);
-			if(data_buf[0] < 0x40) {
-				cprintf(con, "Error RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
+			cprintf(con, "UID: ");
+			bcc = 0;
+			for (i = 0; i < fifo_size - 1; i++) {
+				cprintf(con, " %02lX", (uint32_t)uid_buf[i]);
+				bcc ^= uid_buf[i];
 			}
+			cprintf(con, " (BCC %02lX %s)\r\n", (uint32_t)uid_buf[i],
+				bcc == uid_buf[i] ? "ok" : "NOT OK");
 
-			/* Select RX with CRC_A */
-			/* Configure Mode ISO Control Register (0x01) to 0x08 (ISO14443A RX bit rate, 106 kbps) and RX CRC (CRC is present in the response) */
+			data_buf[0] = RSSI_LEVELS;
+			Trf797xReadSingle(data_buf, 1);
+			if (data_buf[0] < 0x40)
+				cprintf(con, "RSSI error: 0x%02lX (should be > 0x40)\r\n", (uint32_t)data_buf[0]);
+
+			/*
+			 * Select RX with CRC_A
+			 * Configure Mode ISO Control Register (0x01) to 0x08
+			 * (ISO14443A RX bit rate, 106 kbps) and RX CRC (CRC
+			 * is present in the response)
+			 */
 			data_buf[0] = ISO_CONTROL;
 			data_buf[1] = 0x08;
 			Trf797xWriteSingle(data_buf, 2);
 
-			/* Send SelUID(6Bytes) and receive ATQA(2bytes) */
+			/* Send SelUID (6 bytes) and receive ATQA (2 bytes) */
 			data_buf[0] = 0x93;
 			data_buf[1] = 0x70;
-			for(i=0; i<MIFARE_UID_MAX; i++) {
-				data_buf[2+i] = uid_buf[i];
+			for (i = 0; i < MIFARE_UID_MAX; i++) {
+				data_buf[2 + i] = uid_buf[i];
 			}
-			fifo_size = Trf797x_transceive_bytes(data_buf, (2+MIFARE_UID_MAX),  data_buf, MIFARE_DATA_MAX, 10/* 10ms TX/RX Timeout */, 1 /* TX CRC enabled */);
+			fifo_size = Trf797x_transceive_bytes(data_buf, (2 + MIFARE_UID_MAX),  data_buf, MIFARE_DATA_MAX,
+				10, /* 10ms TX/RX Timeout */
+				1); /* TX CRC enabled */
 			if (fifo_size > 0) {
-				cprintf(con, "RX data(SAK):");
-				for(i=0; i<fifo_size; i++)
-					cprintf(con, " 0x%.2lX", (uint32_t)data_buf[i]);
+				cprintf(con, "SAK: ");
+				for (i = 0; i < fifo_size; i++)
+					cprintf(con, " %02lX", (uint32_t)data_buf[i]);
 				cprintf(con, "\r\n");
-
-				data_buf[0] = RSSI_LEVELS;                       // read RSSI levels
-				Trf797xReadSingle(data_buf, 1);
-				cprintf(con, "RSSI data: 0x%.2lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
 
 				/* Send Halt(2Bytes+CRC) */
 				data_buf[0] = 0x50;
 				data_buf[1] = 0x00;
-				fifo_size = Trf797x_transceive_bytes(data_buf, (2+MIFARE_UID_MAX), data_buf, MIFARE_DATA_MAX, 5 /* 5ms TX/RX Timeout => shall not receive answer */, 1/* TX CRC enabled */);
+				fifo_size = Trf797x_transceive_bytes(data_buf,
+						(2 + MIFARE_UID_MAX), data_buf, MIFARE_DATA_MAX,
+						5, /* 5ms TX/RX Timeout => shall not receive answer */
+						1); /* TX CRC enabled */
 				if (fifo_size > 0) {
-					cprintf(con, "RX data(HALT):");
-					for(i=0; i<fifo_size; i++)
-						cprintf(con, " 0x%.2lX", (uint32_t)data_buf[i]);
+					cprintf(con, "HALT:");
+					for (i = 0; i < fifo_size; i++)
+						cprintf(con, " %02lX", (uint32_t)data_buf[i]);
 					cprintf(con, "\r\n");
-				} else {
-					cprintf(con, "Send HALT(No Answer OK)\r\n");
 				}
-			} else {
-				cprintf(con, "No data(SAK) in RX FIFO\r\n");
 			}
-		} else {
-			cprintf(con, "No data(UID) in RX FIFO\r\n");
 		}
-	} else {
-		cprintf(con, "No data(ATQA) in RX FIFO\r\n");
+		cprint(con, "\r\n", 2);
 	}
 
 	/* Turn RF OFF (Chip Status Control Register (0x00)) */
 	Trf797xTurnRfOff();
 
-	/* Read back (Chip Status Control Register (0x00) shall be set to RF OFF */
-	data_buf[0] = CHIP_STATE_CONTROL;
-	Trf797xReadSingle(data_buf, 1);
-	cprintf(con, "RF OFF Chip Status(Reg0) 0x%.2lX\r\n", (uint32_t)data_buf[0]);
-	//  data_buf[0] shall be equal to value 0x00
-
-	cprintf(con, "irq_count: 0x%.2ld\r\n", (uint32_t)irq_count);
+	/*
+	cprintf(con, "irq_count: 0x%02ld\r\n", (uint32_t)irq_count);
 	irq_count = 0;
-
-	cprintf(con, "Test nfm ISO14443-A/Mifare end\r\n");
+	*/
 }
 
 static void scan_vicinity(t_hydra_console *con)
 {
 	static uint8_t data_buf[VICINITY_UID_MAX];
 	uint8_t fifo_size;
-	int init_ms, i;
+	int i;
 
 	/* End Test delay */
 	irq_count = 0;
 
 	/* Test ISO15693 read UID */
-	init_ms = Trf797xInitialSettings();
+	Trf797xInitialSettings();
 	Trf797xReset();
-
-	cprintf(con, "Test nf ISO15693/Vicinity (high speed) read UID start, init_ms=%d ms\r\n", init_ms);
 
 	/* Write Modulator and SYS_CLK Control Register (0x09) (13.56Mhz SYS_CLK and default Clock 13.56Mhz)) */
 	data_buf[0] = MODULATOR_CONTROL;
 	data_buf[1] = 0x31;
 	Trf797xWriteSingle(data_buf, 2);
 
-	data_buf[0] = MODULATOR_CONTROL;
-	Trf797xReadSingle(data_buf, 1);
-	if (data_buf[0] != 0x31) {
-		cprintf(con, "Error Modulator Control Register read=0x%02lX (shall be 0x31)\r\n", (uint32_t)data_buf[0]);
-	}
 	/* Configure Mode ISO Control Register (0x01) to 0x02 (ISO15693 high bit rate, one subcarrier, 1 out of 4) */
 	data_buf[0] = ISO_CONTROL;
 	data_buf[1] = 0x02;
 	Trf797xWriteSingle(data_buf, 2);
 
-	data_buf[0] = ISO_CONTROL;
-	Trf797xReadSingle(data_buf, 1);
-	if (data_buf[0] != 0x02) {
-		cprintf(con, "Error ISO Control Register read=0x%02lX (shall be 0x02)\r\n", (uint32_t)data_buf[0]);
-	}
 	/* Configure Test Settings 1 to BIT6/0x40 => MOD Pin becomes receiver subcarrier output (Digital Output for RX/TX) */
 	/*
 	    data_buf[0] = TEST_SETTINGS_1;
@@ -370,52 +345,36 @@ static void scan_vicinity(t_hydra_console *con)
 
 	McuDelayMillisecond(10);
 
-	/* Read back (Chip Status Control Register (0x00) shall be set to RF ON */
-	data_buf[0] = CHIP_STATE_CONTROL;
-	Trf797xReadSingle(data_buf, 1);
-	cprintf(con, "RF ON Chip Status(Reg0) 0x%02lX\r\n", (uint32_t)data_buf[0]);
-
 	/* Send Inventory(3B) and receive data + UID */
 	data_buf[0] = 0x26; /* Request Flags */
 	data_buf[1] = 0x01; /* Inventory Command */
 	data_buf[2] = 0x00; /* Mask */
 
-	fifo_size = Trf797x_transceive_bytes(data_buf, 3, data_buf,
-			VICINITY_UID_MAX,
-			10, /* 10ms TX/RX Timeout (shall be less than 10ms(6ms) in High Speed) */
+	fifo_size = Trf797x_transceive_bytes(data_buf, 3, data_buf, VICINITY_UID_MAX,
+			10, /* 10ms TX/RX Timeout (shall be less than 10ms (6ms) in High Speed) */
 			1); /* CRC enabled */
 	if (fifo_size > 0) {
-		// fifo_size shall be equal to 0x0A (10 bytes availables)
-		cprintf(con, "RX (contains UID):");
-		for(i=0; i<fifo_size; i++)
+		/* fifo_size should be 10. */
+		cprintf(con, "UID:");
+		for (i = 0; i < fifo_size; i++)
 			cprintf(con, " 0x%02lX", (uint32_t)data_buf[i]);
 		cprintf(con, "\r\n");
 
 		/* Read RSSI levels and oscillator status(0x0F/0x4F) */
-		data_buf[0] = RSSI_LEVELS;                       // read RSSI levels
+		data_buf[0] = RSSI_LEVELS;
 		Trf797xReadSingle(data_buf, 1);
-		cprintf(con, "RSSI data: 0x%02lX\r\n", (uint32_t)data_buf[0]);
-		// data_buf[0] shall be equal to value > 0x40
 		if (data_buf[0] < 0x40) {
-			cprintf(con, "Error RSSI data: 0x%02lX (shall be > 0x40)\r\n", (uint32_t)data_buf[0]);
+			cprintf(con, "RSSI error: 0x%02lX (should be > 0x40)\r\n", (uint32_t)data_buf[0]);
 		}
-	} else {
-		cprintf(con, "No data in RX FIFO\r\n");
 	}
 
 	/* Turn RF OFF (Chip Status Control Register (0x00)) */
 	Trf797xTurnRfOff();
 
-	/* Read back (Chip Status Control Register (0x00) shall be set to RF OFF */
-	data_buf[0] = CHIP_STATE_CONTROL;
-	Trf797xReadSingle(data_buf, 1);
-	cprintf(con, "RF OFF Chip Status(Reg0) 0x%02lX\r\n", (uint32_t)data_buf[0]);
-	//  data_buf[0] shall be equal to value 0x00
-
+	/*
 	cprintf(con, "irq_count: 0x%02ld\r\n", (uint32_t)irq_count);
 	irq_count = 0;
-
-	cprintf(con, "Test nfv ISO15693/Vicinity end\r\n");
+	*/
 }
 
 static void scan(t_hydra_console *con)
