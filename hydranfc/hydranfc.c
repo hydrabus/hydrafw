@@ -150,8 +150,8 @@ int mode_cmd_nfc_init(t_hydra_console *con, t_tokenline_parsed *p)
 
 	proto->dev_mode = NFC_MODE_NONE;
 
-	/* Process cmdline arguments, skipping "mode nfc". */
-	tokens_used = 2 + mode_cmd_nfc_exec(con, p, 2);
+	/* Process cmdline arguments, skipping "nfc". */
+	tokens_used = 1 + mode_cmd_nfc_exec(con, p, 1);
 
 	return tokens_used;
 }

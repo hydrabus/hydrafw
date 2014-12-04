@@ -47,8 +47,8 @@ int mode_cmd_uart_init(t_hydra_console *con, t_tokenline_parsed *p)
 	proto->dev_parity = 0;
 	proto->dev_stop_bit = 1;
 
-	/* Process cmdline arguments, skipping "mode i2c". */
-	tokens_used = 2 + mode_cmd_uart_exec(con, p, 2);
+	/* Process cmdline arguments, skipping "i2c". */
+	tokens_used = 1 + mode_cmd_uart_exec(con, p, 1);
 
 	return tokens_used;
 }

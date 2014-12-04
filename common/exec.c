@@ -116,7 +116,10 @@ struct cmd_map {
 	{ T_DEBUG, cmd_debug_timing },
 	{ T_SHOW, cmd_show },
 	{ T_SD, cmd_sd },
-	{ T_MODE, cmd_mode_init },
+	{ T_SPI, cmd_mode_init },
+	{ T_I2C, cmd_mode_init },
+	{ T_UART, cmd_mode_init },
+	{ T_NFC, cmd_mode_init },
 	{ T_ADC, cmd_adc },
 	{ T_GPIO, cmd_gpio },
 	{ 0, NULL }

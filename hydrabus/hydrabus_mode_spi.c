@@ -77,8 +77,8 @@ int mode_cmd_spi_init(t_hydra_console *con, t_tokenline_parsed *p)
 	proto->dev_phase = 0;
 	proto->dev_bit_lsb_msb = SPI_MSB_FIRST;
 
-	/* Process cmdline arguments, skipping "mode spi". */
-	tokens_used = 2 + mode_cmd_spi_exec(con, p, 2);
+	/* Process cmdline arguments, skipping "spi". */
+	tokens_used = 1 + mode_cmd_spi_exec(con, p, 1);
 
 	return tokens_used;
 }

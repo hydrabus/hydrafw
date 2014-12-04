@@ -91,11 +91,8 @@ int cmd_mode_init(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	unsigned int i;
 
-	if (!p->tokens[1])
-		return FALSE;
-
 	for (i = 0; i < ARRAY_SIZE(modes); i++) {
-		if (p->tokens[1] != modes[i].token)
+		if (p->tokens[0] != modes[i].token)
 			continue;
 		con->mode->exec = modes[i].exec;
 		con->mode->exec->mode_cmd(con, p);

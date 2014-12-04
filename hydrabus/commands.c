@@ -367,22 +367,6 @@ t_token tokens_spi[] = {
 	{ }
 };
 
-t_token tokens_modes[] = {
-	{ T_SPI,
-		.subtokens = tokens_spi,
-		.help = "SPI mode" },
-	{ T_I2C,
-		.subtokens = tokens_i2c,
-		.help = "I2C mode" },
-	{ T_UART,
-		.subtokens = tokens_uart,
-		.help = "UART mode" },
-	{ T_NFC,
-		.subtokens = tokens_nfc,
-		.help = "NFC mode" },
-	{ }
-};
-
 t_token tokens_gpio_mode[] = {
 	{ T_IN,
 		.help = "Configure GPIO as input" },
@@ -495,9 +479,18 @@ t_token tl_tokens[] = {
 	{ T_GPIO,
 		.subtokens = tokens_gpio,
 		.help = "Get or set GPIO pins" },
-	{ T_MODE,
-		.subtokens = tokens_modes,
-		.help = "Switch to protocol mode" },
+	{ T_SPI,
+		.subtokens = tokens_spi,
+		.help = "SPI mode" },
+	{ T_I2C,
+		.subtokens = tokens_i2c,
+		.help = "I2C mode" },
+	{ T_UART,
+		.subtokens = tokens_uart,
+		.help = "UART mode" },
+	{ T_NFC,
+		.subtokens = tokens_nfc,
+		.help = "NFC mode" },
 	{ T_DEBUG,
 		.help = "Debug mode" },
 	{ }

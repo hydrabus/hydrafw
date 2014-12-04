@@ -55,8 +55,8 @@ int mode_cmd_i2c_init(t_hydra_console *con, t_tokenline_parsed *p)
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 	proto->dev_speed = 1;
 
-	/* Process cmdline arguments, skipping "mode i2c". */
-	tokens_used = 2 + mode_cmd_i2c_exec(con, p, 2);
+	/* Process cmdline arguments, skipping "i2c". */
+	tokens_used = 1 + mode_cmd_i2c_exec(con, p, 1);
 
 	return tokens_used;
 }
