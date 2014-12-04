@@ -83,26 +83,27 @@ void token_dump(t_hydra_console *con, t_tokenline_parsed *p)
 	int arg_int, i;
 
 	for (i = 0; p->tokens[i]; i++) {
-		chprintf(con->bss, "%d: ", i);
+		cprintf(con, "%d: ", i);
 		switch (p->tokens[i]) {
 		case T_ARG_INT:
 			memcpy(&arg_int, p->buf + p->tokens[++i], sizeof(int));
-			chprintf(con->bss, "integer %d\r\n", arg_int);
+			cprintf(con, "T_ARG_INT\r\n%d: integer %d\r\n", i, arg_int);
 			break;
 		case T_ARG_FLOAT:
 		case T_ARG_FREQ:
 			memcpy(&arg_float, p->buf + p->tokens[++i], sizeof(float));
-			chprintf(con->bss, "float %f\r\n", arg_float);
+			cprintf(con, "T_ARG_FLOAT\r\n%d: float %f\r\n", i, arg_float);
 			break;
 		case T_ARG_STRING:
-			chprintf(con->bss, "string '%s'\r\n", p->buf + p->tokens[++i]);
+			i++;
+			cprintf(con, "T_ARG_STRING\r\n%d: string '%s'\r\n", i, p->buf + p->tokens[i]);
 			break;
 		case T_ARG_TOKEN_SUFFIX_INT:
 			memcpy(&arg_uint, p->buf + p->tokens[++i], sizeof(uint32_t));
-			chprintf(con->bss, "token-suffixed integer %d\r\n", arg_uint);
+			cprintf(con, "T_ARG_TOKEN_SUFFIX_INT\r\n%d: token-suffixed integer %d\r\n", i, arg_uint);
 			break;
 		default:
-			chprintf(con->bss, "token %d (%s)\r\n", p->tokens[i],
+			cprintf(con, "token %d (%s)\r\n", p->tokens[i],
 					tl_dict[p->tokens[i]].tokenstr);
 		}
 	}
