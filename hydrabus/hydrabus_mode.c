@@ -181,7 +181,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			t += hydrabus_mode_write(con, p, t + 1);
 			break;
 		case T_ARG_INT:
-			t += hydrabus_mode_write(con, p, t);
+			t += hydrabus_mode_write(con, p, t) - 1;
 			break;
 		case T_EXIT:
 			MAYBE_CALL(con->mode->exec->mode_cleanup);
@@ -243,11 +243,10 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 		return 0;
 	}
 
-	tokens_used = chomp_integers(con, p, t);
+	num_bytes = chomp_integers(con, p, t);
+	tokens_used = num_bytes * 2;
 	if (!tokens_used)
 		return 0;
-	t += tokens_used;
-	num_bytes = tokens_used;
 
 	/* TODO manage write string (only value(s) are supported in actual version) */
 
@@ -267,7 +266,7 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 		}
 	}
 
-	return t;
+	return tokens_used;
 }
 
 /* Returns the number of tokens eaten. */
