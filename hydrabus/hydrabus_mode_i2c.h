@@ -21,9 +21,5 @@
 
 #include "hydrabus_mode.h"
 
-int mode_cmd_i2c_init(t_hydra_console *con, t_tokenline_parsed *p);
-int mode_cmd_i2c_exec(t_hydra_console *con, t_tokenline_parsed *p,
-		int token_pos);
-
 #endif /* _HYDRABUS_MODE_I2C_H_ */
 

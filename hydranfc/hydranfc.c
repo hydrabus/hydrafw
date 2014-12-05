@@ -27,6 +27,7 @@
 #include <string.h>
 
 static void extcb1(EXTDriver *extp, expchannel_t channel);
+static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 
 static thread_t *key_sniff_thread;
 static volatile int irq_count;
@@ -283,7 +284,7 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	proto->dev_mode = NFC_MODE_NONE;
 
 	/* Process cmdline arguments, skipping "nfc". */
-	tokens_used = 1 + mode_cmd_nfc_exec(con, p, 1);
+	tokens_used = 1 + exec(con, p, 1);
 
 	configure_gpio(con);
 
@@ -524,8 +525,7 @@ static void scan(t_hydra_console *con)
 		scan_vicinity(con);
 }
 
-int mode_cmd_nfc_exec(t_hydra_console *con, t_tokenline_parsed *p,
-		int token_pos)
+static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int action, period, continuous, t;
@@ -630,7 +630,7 @@ static const char* mode_str_prompt_nfc(t_hydra_console *con)
 
 const mode_exec_t mode_nfc_exec = {
 	.init = &init,
-	.mode_cmd_exec     = &mode_cmd_nfc_exec,
+	.exec = &exec,
 	.cleanup = &cleanup,
 	.mode_print_settings = &show, /* Settings string */
 	.mode_str_prompt   = &mode_str_prompt_nfc    /* Prompt name string */

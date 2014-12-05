@@ -29,8 +29,6 @@
 #define VICINITY_UID_MAX    16
 
 bool hydranfc_is_detected(void);
-int mode_cmd_nfc_exec(t_hydra_console *con, t_tokenline_parsed *p,
-		int token_pos);
 
 void cmd_nfc_sniff_14443A(t_hydra_console *con);
 

@@ -54,7 +54,7 @@ extern const char hydrabus_mode_str_mul_br[];
 
 typedef struct mode_exec_t {
 	int (*init)(t_hydra_console *con, t_tokenline_parsed *p);
-	int (*mode_cmd_exec)(t_hydra_console *con, t_tokenline_parsed *p,
+	int (*exec)(t_hydra_console *con, t_tokenline_parsed *p,
 			int token_pos);
 	void (*mode_start)(t_hydra_console *con); /* Start command '[' */
 	void (*mode_startR)(t_hydra_console *con); /* Start Read command '{' */

@@ -26,6 +26,8 @@
 
 /* TODO I2C Addr number of bits mode 7 or 10 */
 
+static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
+
 #define I2C_DEV_NUM (1)
 
 static const char* str_pins_i2c1= { "SCL: PB6\r\nSDA: PB7\r\n" };
@@ -57,15 +59,14 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	proto->ack_pending = 0;
 
 	/* Process cmdline arguments, skipping "i2c". */
-	tokens_used = 1 + mode_cmd_i2c_exec(con, p, 1);
+	tokens_used = 1 + exec(con, p, 1);
 
 	bsp_i2c_init(proto->dev_num, proto);
 
 	return tokens_used;
 }
 
-int mode_cmd_i2c_exec(t_hydra_console *con, t_tokenline_parsed *p,
-		int token_pos)
+static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	float arg_float;
@@ -278,8 +279,8 @@ const char* mode_str_prompt_i2c(t_hydra_console *con)
 }
 
 const mode_exec_t mode_i2c_exec = {
-	.init = &init,  /* Terminal parameters specific to this mode */
-	.mode_cmd_exec     = &mode_cmd_i2c_exec,
+	.init = &init,
+	.exec = &exec,
 	.mode_start        = &mode_start_i2c,     /* Start command '[' */
 	.mode_startR       = &mode_startR_i2c,    /* Start Read command '{' */
 	.mode_stop         = &mode_stop_i2c,      /* Stop command ']' */

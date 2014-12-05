@@ -21,6 +21,8 @@
 #include "bsp_spi.h"
 #include <string.h>
 
+static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
+
 static const char* str_pins_spi1= {
 	"CS:   PA15\r\nSCK:  PB3\r\nMISO: PB4\r\nMOSI: PB5\r\n"
 };
@@ -78,15 +80,14 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	proto->dev_bit_lsb_msb = SPI_MSB_FIRST;
 
 	/* Process cmdline arguments, skipping "spi". */
-	tokens_used = 1 + mode_cmd_spi_exec(con, p, 1);
+	tokens_used = 1 + exec(con, p, 1);
 
 	bsp_spi_init(proto->dev_num, proto);
 
 	return tokens_used;
 }
 
-int mode_cmd_spi_exec(t_hydra_console *con, t_tokenline_parsed *p,
-		int token_pos)
+static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	float arg_float;
@@ -347,7 +348,7 @@ const char* mode_str_prompt_spi(t_hydra_console *con)
 
 const mode_exec_t mode_spi_exec = {
 	.init = &init,
-	.mode_cmd_exec     = &mode_cmd_spi_exec,
+	.exec = &exec,
 	.mode_start        = &mode_start_spi,     /* Start command '[' */
 	.mode_stop         = &mode_stop_spi,      /* Stop command ']' */
 	.mode_write        = &mode_write_spi,     /* Write/Send 1 data */

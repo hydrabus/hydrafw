@@ -21,6 +21,8 @@
 #include "bsp_uart.h"
 #include <string.h>
 
+static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
+
 static const char* str_pins_uart[] = {
 	"TX: PA9\r\nRX: PA10\r\n",
 	"TX: PA2\r\nRX: PA3\r\n",
@@ -48,15 +50,14 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	proto->dev_stop_bit = 1;
 
 	/* Process cmdline arguments, skipping "i2c". */
-	tokens_used = 1 + mode_cmd_uart_exec(con, p, 1);
+	tokens_used = 1 + exec(con, p, 1);
 
 	bsp_uart_init(proto->dev_num, proto);
 
 	return tokens_used;
 }
 
-int mode_cmd_uart_exec(t_hydra_console *con, t_tokenline_parsed *p,
-		int token_pos)
+static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int arg_int, t;
@@ -213,7 +214,7 @@ const char* mode_str_prompt_uart(t_hydra_console *con)
 
 const mode_exec_t mode_uart_exec = {
 	.init = &init,  /* Terminal parameters specific to this mode */
-	.mode_cmd_exec     = &mode_cmd_uart_exec,  /* Terminal parameters specific to this mode */
+	.exec = &exec,
 	.mode_write        = &mode_write_uart,     /* Write/Send 1 data */
 	.mode_read         = &mode_read_uart,      /* Read 1 data command 'r' */
 	.mode_write_read   = &mode_write_read_uart,/* Write & Read 1 data implicitely with mode_write command */

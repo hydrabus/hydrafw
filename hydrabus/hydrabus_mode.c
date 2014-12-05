@@ -187,7 +187,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			break;
 		default:
 			/* Mode-specific commands. */
-			t += con->mode->exec->mode_cmd_exec(con, p, t);
+			t += con->mode->exec->exec(con, p, t);
 		}
 	}
 
