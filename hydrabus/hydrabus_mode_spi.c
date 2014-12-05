@@ -272,8 +272,7 @@ void mode_macro_spi(t_hydra_console *con, uint32_t macro_num)
 	/* TODO mode_spi Macro command "(x)" */
 }
 
-/* Exit mode, disable device safe mode SPI... */
-void mode_cleanup_spi(t_hydra_console *con)
+static void cleanup(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -355,7 +354,7 @@ const mode_exec_t mode_spi_exec = {
 	.mode_read         = &mode_read_spi,      /* Read 1 data command 'r' */
 	.mode_write_read   = &mode_write_read_spi,/* Write & Read 1 data implicitely with mode_write command */
 	.mode_macro        = &mode_macro_spi,     /* Macro command "(x)", "(0)" List current macros */
-	.mode_cleanup      = &mode_cleanup_spi,   /* Exit mode, disable device enter safe mode SPI... */
+	.cleanup      = &cleanup,
 	.mode_print_settings = &show, /* Settings string */
 	.mode_str_prompt   = &mode_str_prompt_spi    /* Prompt name string */
 };

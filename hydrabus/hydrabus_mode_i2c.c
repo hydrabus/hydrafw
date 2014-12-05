@@ -218,8 +218,7 @@ uint32_t mode_read_i2c(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return status;
 }
 
-/* Exit mode, disable device safe mode I2C... */
-void mode_cleanup_i2c(t_hydra_console *con)
+static void cleanup(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -287,7 +286,7 @@ const mode_exec_t mode_i2c_exec = {
 	.mode_stopR        = &mode_stopR_i2c,     /* Stop Read command '}' */
 	.mode_write        = &mode_write_i2c,     /* Write/Send 1 data */
 	.mode_read         = &mode_read_i2c,      /* Read 1 data command 'r' */
-	.mode_cleanup      = &mode_cleanup_i2c,   /* Exit mode, disable device enter safe mode I2C... */
+	.cleanup = &cleanup,
 	.mode_print_settings = &show, /* Settings string */
 	.mode_str_prompt   = &mode_str_prompt_i2c    /* Prompt name string */
 };

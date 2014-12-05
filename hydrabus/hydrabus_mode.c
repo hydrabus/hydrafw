@@ -182,7 +182,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			t += hydrabus_mode_write(con, p, t) - 1;
 			break;
 		case T_EXIT:
-			MAYBE_CALL(con->mode->exec->mode_cleanup);
+			MAYBE_CALL(con->mode->exec->cleanup);
 			mode_exit(con, p);
 			break;
 		default:

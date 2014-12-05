@@ -75,7 +75,7 @@ typedef struct mode_exec_t {
 	void (*mode_bitr)(t_hydra_console *con); /* DAT Read (x-WIRE or other raw mode ...) command '.' */
 	uint32_t (*mode_periodic)(t_hydra_console *con); /* Periodic service called (like UART sniffer...) */
 	void (*mode_macro)(t_hydra_console *con, uint32_t macro_num); /* Macro command "(x)", "(0)" List current macros */
-	void (*mode_cleanup)(t_hydra_console *con); /* Exit mode, disable device enter safe mode HiZ... */
+	void (*cleanup)(t_hydra_console *con); /* Exit mode, disable device enter safe mode HiZ... */
 	void (*mode_print_param)(t_hydra_console *con); /* Print Mode parameters */
 	void (*mode_print_pins)(t_hydra_console *con); /* Print Pins used */
 	void (*mode_print_settings)(t_hydra_console *con, t_tokenline_parsed *p); /* Settings string */

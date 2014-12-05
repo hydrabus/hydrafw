@@ -618,6 +618,7 @@ static void cleanup(t_hydra_console *con)
 	(void)con;
 
 	chThdTerminate(key_sniff_thread);
+	/* TODO deinit GPIO config */
 }
 
 static const char* mode_str_prompt_nfc(t_hydra_console *con)
@@ -630,7 +631,7 @@ static const char* mode_str_prompt_nfc(t_hydra_console *con)
 const mode_exec_t mode_nfc_exec = {
 	.init = &init,
 	.mode_cmd_exec     = &mode_cmd_nfc_exec,
-	.mode_cleanup      = &cleanup,
+	.cleanup = &cleanup,
 	.mode_print_settings = &show, /* Settings string */
 	.mode_str_prompt   = &mode_str_prompt_nfc    /* Prompt name string */
 };
