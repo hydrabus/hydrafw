@@ -162,13 +162,22 @@ int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 				return FALSE;
 			}
 			port = str[1] - 'A';
-			pin = strtoul(str + 2, &s, 10);
-			if (*s || pin < 0 || pin > 15
-			    || (port == 1 && pin > 11)) {
-				cprintf(con, str_pin_error, str);
-				return FALSE;
+			if(str[2] == '*') {
+				if(port == 1)
+					 /* 0 to 11 for PortB */
+					gpio[port] = 0x0FFF;
+				else
+					 /* 0 to 15 */
+					gpio[port] = 0xFFFF;
+			} else {
+				pin = strtoul(str + 2, &s, 10);
+				if (*s || pin < 0 || pin > 15
+				    || (port == 1 && pin > 11)) {
+					cprintf(con, str_pin_error, str);
+					return FALSE;
+				}
+				gpio[port] |= 1 << pin;
 			}
-			gpio[port] |= 1 << pin;
 			break;
 		}
 		t++;

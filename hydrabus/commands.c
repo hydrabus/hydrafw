@@ -379,7 +379,7 @@ t_token tokens_gpio_mode[] = {
 
 t_token tokens_gpio[] = {
 	{ T_ARG_STRING,
-		.help = "One or more GPIO pins (PA0-15, PB0-11, PC0-15)" },
+		.help = "One or more GPIO pins (PA0-15, PB0-11, PC0-15, PA* ...)" },
 	{ T_MODE,
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_gpio_mode,
