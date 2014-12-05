@@ -93,7 +93,7 @@ t_token_dict tl_dict[] = {
 	{ T_GPIO, "gpio" },
 	{ T_IN, "in" },
 	{ T_OUT, "out" },
-	{ T_OPEN, "open" },
+	{ T_OPEN_DRAIN, "open-drain" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -372,7 +372,7 @@ t_token tokens_gpio_mode[] = {
 		.help = "Configure GPIO as input" },
 	{ T_OUT,
 		.help = "Configure GPIO as output" },
-	{ T_OPEN,
+	{ T_OPEN_DRAIN,
 		.help = "Configure GPIO pin as open drain (default)" },
 	{ }
 };
@@ -388,17 +388,17 @@ t_token tokens_gpio[] = {
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_gpio_pull,
 		.help = "GPIO pull up, down or floating" },
+	{ T_PERIOD,
+		.arg_type = T_ARG_INT,
+		.help = "Delay between reads, in milliseconds" },
+	{ T_CONTINUOUS,
+		.help = "Read continuously" },
 	{ T_ON,
 		.help = "Set GPIO pin" },
 	{ T_OFF,
 		.help = "Clear GPIO pin" },
 	{ T_READ,
 		.help = "Read GPIO values" },
-	{ T_PERIOD,
-		.arg_type = T_ARG_INT,
-		.help = "Delay between reads (msec)" },
-	{ T_CONTINUOUS,
-		.help = "Read continuously" },
 	{ }
 };
 

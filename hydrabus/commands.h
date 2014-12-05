@@ -86,7 +86,7 @@ enum {
 	T_GPIO,
 	T_IN,
 	T_OUT,
-	T_OPEN,
+	T_OPEN_DRAIN,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

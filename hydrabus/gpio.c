@@ -104,7 +104,7 @@ int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 			case T_OUT:
 				mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
 				break;
-			case T_OPEN:
+			case T_OPEN_DRAIN:
 				mode = MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN;
 				break;
 			}
