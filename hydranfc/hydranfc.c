@@ -143,6 +143,138 @@ static bool hydranfc_test_shield(void)
 	return err == 0;
 }
 
+static void configure_gpio(t_hydra_console *con)
+{
+	/* PA7 as Input connected to TRF7970A MOD Pin */
+	// palSetPadMode(GPIOA, 7, PAL_MODE_INPUT);
+
+	/* Configure NFC/TRF7970A in SPI mode with Chip Select */
+	/* TRF7970A IO0 (To set to "0" for SPI) */
+	palClearPad(GPIOA, 3);
+	palSetPadMode(GPIOA, 3, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+
+	/* TRF7970A IO1 (To set to "1" for SPI) */
+	palSetPad(GPIOA, 2);
+	palSetPadMode(GPIOA, 2, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+
+	/* TRF7970A IO2 (To set to "1" for SPI) */
+	palSetPad(GPIOC, 0);
+	palSetPadMode(GPIOC, 0, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+
+	/*
+	 * Initializes the SPI driver 1. The SPI1 signals are routed as follows:
+	 * Shall be configured as SPI Slave for TRF7970A NFC data sampling on MOD pin.
+	 * NSS. (Not used use Software).
+	 * PA5 - SCK.(AF5)  => Connected to TRF7970A SYS_CLK pin
+	 * PA6 - MISO.(AF5) (Not Used)
+	 * PA7 - MOSI.(AF5) => Connected to TRF7970A MOD pin
+	 */
+	/* spiStart() is done in sniffer see sniffer.c */
+	/* SCK.     */
+	palSetPadMode(GPIOA, 5, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
+	/* MISO. Not used/Not connected */
+	palSetPadMode(GPIOA, 6, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
+	/* MOSI. connected to TRF7970A MOD Pin */
+	palSetPadMode(GPIOA, 7, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
+
+	/*
+	 * Initializes the SPI driver 2. The SPI2 signals are routed as follow:
+	 * PC1 - NSS.
+	 * PB10 - SCK.
+	 * PC2 - MISO.
+	 * PC3 - MOSI.
+	 * Used for communication with TRF7970A in SPI mode with NSS.
+	 */
+	spiStart(&SPID2, &spi2cfg);
+	/* NSS - ChipSelect. */
+	palSetPad(GPIOC, 1);
+	palSetPadMode(GPIOC, 1, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+	/* SCK.     */
+	palSetPadMode(GPIOB, 10, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
+	/* MISO.    */
+	palSetPadMode(GPIOC, 2, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
+	/* MOSI.    */
+	palSetPadMode(GPIOC, 3, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
+
+	/* Enable TRF7970A EN=1 (EN2 is already equal to GND) */
+	palClearPad(GPIOB, 11);
+	palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+	McuDelayMillisecond(2);
+
+	palSetPad(GPIOB, 11);
+	/* After setting EN=1 wait at least 21ms */
+	McuDelayMillisecond(21);
+
+	if (!hydranfc_test_shield()) {
+		/* TODO: clean up */
+		cprintf(con, "HydraNFC not found.\r\n?");
+		return;
+	}
+
+	/* Configure K1/2/3/4 Buttons as Input */
+	palSetPadMode(GPIOB, 7, PAL_MODE_INPUT);
+	palSetPadMode(GPIOB, 6, PAL_MODE_INPUT);
+	palSetPadMode(GPIOB, 8, PAL_MODE_INPUT);
+	palSetPadMode(GPIOB, 9, PAL_MODE_INPUT);
+
+	/* Configure D2/3/4/5 LEDs as Output */
+	D2_OFF;
+	D3_OFF;
+	D4_OFF;
+	D5_OFF;
+	palSetPadMode(GPIOB, 0, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+	palSetPadMode(GPIOB, 3, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+	palSetPadMode(GPIOB, 4, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+	palSetPadMode(GPIOB, 5, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+
+	/* Activates the EXT driver 1. */
+	extStart(&EXTD1, &extcfg);
+}
+
+THD_WORKING_AREA(key_sniff_mem, 2048);
+THD_FUNCTION(key_sniff, arg)
+{
+	int i;
+
+	(void)arg;
+
+	chRegSetThreadName("HydraNFC key-sniff");
+	while (TRUE) {
+		if (K1_BUTTON)
+			D4_ON;
+		else
+			D4_OFF;
+
+		if (K2_BUTTON)
+			D3_ON;
+		else
+			D3_OFF;
+
+		if (K3_BUTTON) {
+			/* Blink Fast */
+			for(i = 0; i < 4; i++) {
+				D2_ON;
+				chThdSleepMilliseconds(25);
+				D2_OFF;
+				chThdSleepMilliseconds(25);
+			}
+			cmd_nfc_sniff_14443A(NULL);
+		}
+
+		if (K4_BUTTON)
+			D5_ON;
+		else
+			D5_OFF;
+
+		if (chThdShouldTerminateX())
+			return 0;
+
+		chThdSleepMilliseconds(100);
+	}
+
+	return 0;
+}
+
 int mode_cmd_nfc_init(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -152,6 +284,11 @@ int mode_cmd_nfc_init(t_hydra_console *con, t_tokenline_parsed *p)
 
 	/* Process cmdline arguments, skipping "nfc". */
 	tokens_used = 1 + mode_cmd_nfc_exec(con, p, 1);
+
+	configure_gpio(con);
+
+	key_sniff_thread = chThdCreateStatic(key_sniff_mem,
+			sizeof(key_sniff_mem), NORMALPRIO, key_sniff, NULL);
 
 	return tokens_used;
 }
@@ -387,50 +524,6 @@ static void scan(t_hydra_console *con)
 		scan_vicinity(con);
 }
 
-THD_WORKING_AREA(key_sniff_mem, 2048);
-THD_FUNCTION(key_sniff, arg)
-{
-	int i;
-
-	(void)arg;
-
-	chRegSetThreadName("HydraNFC key-sniff");
-	while (TRUE) {
-		if (K1_BUTTON)
-			D4_ON;
-		else
-			D4_OFF;
-
-		if (K2_BUTTON)
-			D3_ON;
-		else
-			D3_OFF;
-
-		if (K3_BUTTON) {
-			/* Blink Fast */
-			for(i = 0; i < 4; i++) {
-				D2_ON;
-				chThdSleepMilliseconds(25);
-				D2_OFF;
-				chThdSleepMilliseconds(25);
-			}
-			cmd_nfc_sniff_14443A(NULL);
-		}
-
-		if (K4_BUTTON)
-			D5_ON;
-		else
-			D5_OFF;
-
-		if (chThdShouldTerminateX())
-			return 0;
-
-		chThdSleepMilliseconds(100);
-	}
-
-	return 0;
-}
-
 int mode_cmd_nfc_exec(t_hydra_console *con, t_tokenline_parsed *p,
 		int token_pos)
 {
@@ -487,99 +580,6 @@ int mode_cmd_nfc_exec(t_hydra_console *con, t_tokenline_parsed *p,
 	return t + 1;
 }
 
-static void mode_setup_exc_nfc(t_hydra_console *con)
-{
-	(void)con;
-
-	/* PA7 as Input connected to TRF7970A MOD Pin */
-	// palSetPadMode(GPIOA, 7, PAL_MODE_INPUT);
-
-	/* Configure NFC/TRF7970A in SPI mode with Chip Select */
-	/* TRF7970A IO0 (To set to "0" for SPI) */
-	palClearPad(GPIOA, 3);
-	palSetPadMode(GPIOA, 3, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
-
-	/* TRF7970A IO1 (To set to "1" for SPI) */
-	palSetPad(GPIOA, 2);
-	palSetPadMode(GPIOA, 2, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
-
-	/* TRF7970A IO2 (To set to "1" for SPI) */
-	palSetPad(GPIOC, 0);
-	palSetPadMode(GPIOC, 0, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
-
-	/*
-	 * Initializes the SPI driver 1. The SPI1 signals are routed as follows:
-	 * Shall be configured as SPI Slave for TRF7970A NFC data sampling on MOD pin.
-	 * NSS. (Not used use Software).
-	 * PA5 - SCK.(AF5)  => Connected to TRF7970A SYS_CLK pin
-	 * PA6 - MISO.(AF5) (Not Used)
-	 * PA7 - MOSI.(AF5) => Connected to TRF7970A MOD pin
-	 */
-	/* spiStart() is done in sniffer see sniffer.c */
-	/* SCK.     */
-	palSetPadMode(GPIOA, 5, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
-	/* MISO. Not used/Not connected */
-	palSetPadMode(GPIOA, 6, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
-	/* MOSI. connected to TRF7970A MOD Pin */
-	palSetPadMode(GPIOA, 7, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
-
-	/*
-	 * Initializes the SPI driver 2. The SPI2 signals are routed as follow:
-	 * PC1 - NSS.
-	 * PB10 - SCK.
-	 * PC2 - MISO.
-	 * PC3 - MOSI.
-	 * Used for communication with TRF7970A in SPI mode with NSS.
-	 */
-	spiStart(&SPID2, &spi2cfg);
-	/* NSS - ChipSelect. */
-	palSetPad(GPIOC, 1);
-	palSetPadMode(GPIOC, 1, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
-	/* SCK.     */
-	palSetPadMode(GPIOB, 10, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
-	/* MISO.    */
-	palSetPadMode(GPIOC, 2, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
-	/* MOSI.    */
-	palSetPadMode(GPIOC, 3, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
-
-	/* Enable TRF7970A EN=1 (EN2 is already equal to GND) */
-	palClearPad(GPIOB, 11);
-	palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
-	McuDelayMillisecond(2);
-
-	palSetPad(GPIOB, 11);
-	/* After setting EN=1 wait at least 21ms */
-	McuDelayMillisecond(21);
-
-	if (!hydranfc_test_shield()) {
-		/* TODO: clean up */
-		cprintf(con, "HydraNFC not found.\r\n?");
-		return;
-	}
-
-	/* Configure K1/2/3/4 Buttons as Input */
-	palSetPadMode(GPIOB, 7, PAL_MODE_INPUT);
-	palSetPadMode(GPIOB, 6, PAL_MODE_INPUT);
-	palSetPadMode(GPIOB, 8, PAL_MODE_INPUT);
-	palSetPadMode(GPIOB, 9, PAL_MODE_INPUT);
-
-	/* Configure D2/3/4/5 LEDs as Output */
-	D2_OFF;
-	D3_OFF;
-	D4_OFF;
-	D5_OFF;
-	palSetPadMode(GPIOB, 0, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
-	palSetPadMode(GPIOB, 3, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
-	palSetPadMode(GPIOB, 4, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
-	palSetPadMode(GPIOB, 5, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
-
-	/* Activates the EXT driver 1. */
-	extStart(&EXTD1, &extcfg);
-
-	key_sniff_thread = chThdCreateStatic(key_sniff_mem,
-			sizeof(key_sniff_mem), NORMALPRIO, key_sniff, NULL);
-}
-
 static void show_registers(t_hydra_console *con)
 {
 	unsigned int i;
@@ -630,7 +630,6 @@ static const char* mode_str_prompt_nfc(t_hydra_console *con)
 const mode_exec_t mode_nfc_exec = {
 	.mode_cmd          = &mode_cmd_nfc_init,
 	.mode_cmd_exec     = &mode_cmd_nfc_exec,
-	.mode_setup_exc    = &mode_setup_exc_nfc, /* Configure the physical device after Power On (command 'W') */
 	.mode_cleanup      = &cleanup,
 	.mode_print_settings = &show, /* Settings string */
 	.mode_str_prompt   = &mode_str_prompt_nfc    /* Prompt name string */

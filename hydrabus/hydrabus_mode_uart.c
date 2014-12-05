@@ -50,6 +50,8 @@ int mode_cmd_uart_init(t_hydra_console *con, t_tokenline_parsed *p)
 	/* Process cmdline arguments, skipping "i2c". */
 	tokens_used = 1 + mode_cmd_uart_exec(con, p, 1);
 
+	bsp_uart_init(proto->dev_num, proto);
+
 	return tokens_used;
 }
 
@@ -178,14 +180,6 @@ uint32_t mode_write_read_uart(t_hydra_console *con, uint8_t *tx_data, uint8_t *r
 	return status;
 }
 
-/* Configure the physical device after Power On (command 'W') */
-void mode_setup_exc_uart(t_hydra_console *con)
-{
-	mode_config_proto_t* proto = &con->mode->proto;
-
-	bsp_uart_init(proto->dev_num, proto);
-}
-
 /* Exit mode, disable device safe mode UART... */
 void mode_cleanup_uart(t_hydra_console *con)
 {
@@ -224,7 +218,6 @@ const mode_exec_t mode_uart_exec = {
 	.mode_write        = &mode_write_uart,     /* Write/Send 1 data */
 	.mode_read         = &mode_read_uart,      /* Read 1 data command 'r' */
 	.mode_write_read   = &mode_write_read_uart,/* Write & Read 1 data implicitely with mode_write command */
-	.mode_setup_exc    = &mode_setup_exc_uart, /* Configure the physical device after Power On (command 'W') */
 	.mode_cleanup      = &mode_cleanup_uart,   /* Exit mode, disable device enter safe mode UART... */
 	.mode_print_settings = &show, /* Settings string */
 	.mode_str_prompt   = &mode_str_prompt_uart    /* Prompt name string */

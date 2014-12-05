@@ -100,8 +100,6 @@ int cmd_mode_init(t_hydra_console *con, t_tokenline_parsed *p)
 			return FALSE;
 		con->console_mode = modes[i].token;
 		tl_set_prompt(con->tl, (char *)con->mode->exec->mode_str_prompt(con));
-		MAYBE_CALL(con->mode->exec->mode_setup);
-		MAYBE_CALL(con->mode->exec->mode_setup_exc);
 	}
 
 	return TRUE;

@@ -54,9 +54,12 @@ int mode_cmd_i2c_init(t_hydra_console *con, t_tokenline_parsed *p)
 	proto->dev_num = I2C_DEV_NUM;
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 	proto->dev_speed = 1;
+	proto->ack_pending = 0;
 
 	/* Process cmdline arguments, skipping "i2c". */
 	tokens_used = 1 + mode_cmd_i2c_exec(con, p, 1);
+
+	bsp_i2c_init(proto->dev_num, proto);
 
 	return tokens_used;
 }
@@ -215,16 +218,6 @@ uint32_t mode_read_i2c(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return status;
 }
 
-/* Configure the physical device after Power On (command 'W') */
-void mode_setup_exc_i2c(t_hydra_console *con)
-{
-	mode_config_proto_t* proto = &con->mode->proto;
-
-	proto->dev_num = 0;
-	proto->ack_pending = 0;
-	bsp_i2c_init(proto->dev_num, proto);
-}
-
 /* Exit mode, disable device safe mode I2C... */
 void mode_cleanup_i2c(t_hydra_console *con)
 {
@@ -294,7 +287,6 @@ const mode_exec_t mode_i2c_exec = {
 	.mode_stopR        = &mode_stopR_i2c,     /* Stop Read command '}' */
 	.mode_write        = &mode_write_i2c,     /* Write/Send 1 data */
 	.mode_read         = &mode_read_i2c,      /* Read 1 data command 'r' */
-	.mode_setup_exc    = &mode_setup_exc_i2c, /* Configure the physical device after Power On (command 'W') */
 	.mode_cleanup      = &mode_cleanup_i2c,   /* Exit mode, disable device enter safe mode I2C... */
 	.mode_print_settings = &show, /* Settings string */
 	.mode_str_prompt   = &mode_str_prompt_i2c    /* Prompt name string */

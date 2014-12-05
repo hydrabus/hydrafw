@@ -80,6 +80,8 @@ int mode_cmd_spi_init(t_hydra_console *con, t_tokenline_parsed *p)
 	/* Process cmdline arguments, skipping "spi". */
 	tokens_used = 1 + mode_cmd_spi_exec(con, p, 1);
 
+	bsp_spi_init(proto->dev_num, proto);
+
 	return tokens_used;
 }
 
@@ -270,14 +272,6 @@ void mode_macro_spi(t_hydra_console *con, uint32_t macro_num)
 	/* TODO mode_spi Macro command "(x)" */
 }
 
-/* Configure the physical device after Power On (command 'W') */
-void mode_setup_exc_spi(t_hydra_console *con)
-{
-	mode_config_proto_t* proto = &con->mode->proto;
-
-	bsp_spi_init(proto->dev_num, proto);
-}
-
 /* Exit mode, disable device safe mode SPI... */
 void mode_cleanup_spi(t_hydra_console *con)
 {
@@ -361,7 +355,6 @@ const mode_exec_t mode_spi_exec = {
 	.mode_read         = &mode_read_spi,      /* Read 1 data command 'r' */
 	.mode_write_read   = &mode_write_read_spi,/* Write & Read 1 data implicitely with mode_write command */
 	.mode_macro        = &mode_macro_spi,     /* Macro command "(x)", "(0)" List current macros */
-	.mode_setup_exc    = &mode_setup_exc_spi, /* Configure the physical device after Power On (command 'W') */
 	.mode_cleanup      = &mode_cleanup_spi,   /* Exit mode, disable device enter safe mode SPI... */
 	.mode_print_settings = &show, /* Settings string */
 	.mode_str_prompt   = &mode_str_prompt_spi    /* Prompt name string */
