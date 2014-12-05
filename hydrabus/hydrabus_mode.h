@@ -56,7 +56,7 @@ typedef struct mode_exec_t {
 	/*
 	  Terminal parameters specific to this mode (return TRUE if mode configured with success else FALSE)
 	*/
-	int (*mode_cmd)(t_hydra_console *con, t_tokenline_parsed *p);
+	int (*init)(t_hydra_console *con, t_tokenline_parsed *p);
 	int (*mode_cmd_exec)(t_hydra_console *con, t_tokenline_parsed *p,
 			int token_pos);
 	void (*mode_start)(t_hydra_console *con); /* Start command '[' */

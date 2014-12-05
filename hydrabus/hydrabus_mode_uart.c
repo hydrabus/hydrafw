@@ -36,7 +36,7 @@ static const char* str_dev_param_parity[]= {
 	"odd"
 };
 
-int mode_cmd_uart_init(t_hydra_console *con, t_tokenline_parsed *p)
+static int init(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int tokens_used;
@@ -213,7 +213,7 @@ const char* mode_str_prompt_uart(t_hydra_console *con)
 }
 
 const mode_exec_t mode_uart_exec = {
-	.mode_cmd          = &mode_cmd_uart_init,  /* Terminal parameters specific to this mode */
+	.init = &init,  /* Terminal parameters specific to this mode */
 	.mode_cmd_exec     = &mode_cmd_uart_exec,  /* Terminal parameters specific to this mode */
 	.mode_write        = &mode_write_uart,     /* Write/Send 1 data */
 	.mode_read         = &mode_read_uart,      /* Read 1 data command 'r' */

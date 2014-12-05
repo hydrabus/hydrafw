@@ -63,7 +63,7 @@ static uint32_t speeds[2][8] = {
 	}
 };
 
-int mode_cmd_spi_init(t_hydra_console *con, t_tokenline_parsed *p)
+static int init(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int tokens_used;
@@ -347,7 +347,7 @@ const char* mode_str_prompt_spi(t_hydra_console *con)
 }
 
 const mode_exec_t mode_spi_exec = {
-	.mode_cmd          = &mode_cmd_spi_init,
+	.init = &init,
 	.mode_cmd_exec     = &mode_cmd_spi_exec,
 	.mode_start        = &mode_start_spi,     /* Start command '[' */
 	.mode_stop         = &mode_stop_spi,      /* Stop command ']' */

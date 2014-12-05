@@ -21,7 +21,6 @@
 
 #include "hydrabus_mode.h"
 
-int mode_cmd_uart_init(t_hydra_console *con, t_tokenline_parsed *p);
 int mode_cmd_uart_exec(t_hydra_console *con, t_tokenline_parsed *p,
 		int token_pos);
 

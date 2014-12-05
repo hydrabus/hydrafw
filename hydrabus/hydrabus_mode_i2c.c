@@ -45,7 +45,7 @@ static uint32_t speeds[] = {
 	1000000,
 };
 
-int mode_cmd_i2c_init(t_hydra_console *con, t_tokenline_parsed *p)
+static int init(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int tokens_used;
@@ -279,7 +279,7 @@ const char* mode_str_prompt_i2c(t_hydra_console *con)
 }
 
 const mode_exec_t mode_i2c_exec = {
-	.mode_cmd          = &mode_cmd_i2c_init,  /* Terminal parameters specific to this mode */
+	.init = &init,  /* Terminal parameters specific to this mode */
 	.mode_cmd_exec     = &mode_cmd_i2c_exec,
 	.mode_start        = &mode_start_i2c,     /* Start command '[' */
 	.mode_startR       = &mode_startR_i2c,    /* Start Read command '{' */

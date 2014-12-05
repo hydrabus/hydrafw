@@ -31,7 +31,6 @@ enum {
 	SPI_LSB_FIRST,
 };
 
-int mode_cmd_spi_init(t_hydra_console *con, t_tokenline_parsed *p);
 int mode_cmd_spi_exec(t_hydra_console *con, t_tokenline_parsed *p,
 		int token_pos);
 

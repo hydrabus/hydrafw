@@ -275,7 +275,7 @@ THD_FUNCTION(key_sniff, arg)
 	return 0;
 }
 
-int mode_cmd_nfc_init(t_hydra_console *con, t_tokenline_parsed *p)
+static int init(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int tokens_used;
@@ -628,7 +628,7 @@ static const char* mode_str_prompt_nfc(t_hydra_console *con)
 }
 
 const mode_exec_t mode_nfc_exec = {
-	.mode_cmd          = &mode_cmd_nfc_init,
+	.init = &init,
 	.mode_cmd_exec     = &mode_cmd_nfc_exec,
 	.mode_cleanup      = &cleanup,
 	.mode_print_settings = &show, /* Settings string */
