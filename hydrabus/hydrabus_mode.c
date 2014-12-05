@@ -255,13 +255,13 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 			/* Write & Read */
 			mode_status = con->mode->exec->mode_write_read(con,
 					p_proto->buffer_tx, p_proto->buffer_rx, num_bytes);
-			if(mode_status != HYDRABUS_MODE_STATUS_OK)
+			if (mode_status != HYDRABUS_MODE_STATUS_OK)
 				hydrabus_mode_write_read_error(con, mode_status);
 		} else {
 			/* Write only */
 			mode_status = con->mode->exec->mode_write(con,
 					p_proto->buffer_tx, num_bytes);
-			if(mode_status != HYDRABUS_MODE_STATUS_OK)
+			if (mode_status != HYDRABUS_MODE_STATUS_OK)
 				hydrabus_mode_write_error(con, mode_status);
 		}
 	}
@@ -288,7 +288,7 @@ static int hydrabus_mode_read(t_hydra_console *con, t_tokenline_parsed *p,
 	}
 
 	mode_status = con->mode->exec->mode_read(con, p_proto->buffer_rx, count);
-	if(mode_status != HYDRABUS_MODE_STATUS_OK)
+	if (mode_status != HYDRABUS_MODE_STATUS_OK)
 		hydrabus_mode_read_error(con, mode_status);
 
 	return t - token_pos;

@@ -200,11 +200,11 @@ uint32_t mode_write_spi(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	status = bsp_spi_write_u8(proto->dev_num, tx_data, nb_data);
-	if(status == BSP_OK) {
-		if(nb_data == 1) {
+	if (status == BSP_OK) {
+		if (nb_data == 1) {
 			/* Write 1 data */
 			cprintf(con, hydrabus_mode_str_write_one_u8, tx_data[0]);
-		} else if(nb_data > 1) {
+		} else if (nb_data > 1) {
 			/* Write n data */
 			cprintf(con, hydrabus_mode_str_mul_write);
 			for(i = 0; i < nb_data; i++) {
@@ -224,11 +224,11 @@ uint32_t mode_read_spi(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	status = bsp_spi_read_u8(proto->dev_num, rx_data, nb_data);
-	if(status == BSP_OK) {
-		if(nb_data == 1) {
+	if (status == BSP_OK) {
+		if (nb_data == 1) {
 			/* Read 1 data */
 			cprintf(con, hydrabus_mode_str_read_one_u8, rx_data[0]);
-		} else if(nb_data > 1) {
+		} else if (nb_data > 1) {
 			/* Read n data */
 			cprintf(con, hydrabus_mode_str_mul_read);
 			for(i = 0; i < nb_data; i++) {
@@ -248,11 +248,11 @@ uint32_t mode_write_read_spi(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	status = bsp_spi_write_read_u8(proto->dev_num, tx_data, rx_data, nb_data);
-	if(status == BSP_OK) {
-		if(nb_data == 1) {
+	if (status == BSP_OK) {
+		if (nb_data == 1) {
 			/* Write & Read 1 data */
 			cprintf(con, hydrabus_mode_str_write_read_u8, tx_data[0], rx_data[0]);
-		} else if(nb_data > 1) {
+		} else if (nb_data > 1) {
 			/* Write & Read n data */
 			for(i = 0; i < nb_data; i++) {
 				cprintf(con, hydrabus_mode_str_write_read_u8, tx_data[i], rx_data[i]);
@@ -312,7 +312,7 @@ static void show(t_hydra_console *con, t_tokenline_parsed *p)
 	int cnt, i;
 
 	if (p->tokens[1] == T_PINS) {
-		if(proto->dev_num == 0)
+		if (proto->dev_num == 0)
 			cprint(con, str_pins_spi1, strlen(str_pins_spi1));
 		else
 			cprint(con, str_pins_spi2, strlen(str_pins_spi2));
@@ -346,7 +346,7 @@ const char* mode_str_prompt_spi(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	if(proto->dev_num == 0) {
+	if (proto->dev_num == 0) {
 		return str_prompt_spi1;
 	} else
 		return str_prompt_spi2;

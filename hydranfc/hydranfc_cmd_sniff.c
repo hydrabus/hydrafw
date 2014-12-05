@@ -99,7 +99,7 @@ void initSPI1(void)
 
 void tprint_str(const char *data, uint32_t size)
 {
-	if(size > 0) {
+	if (size > 0) {
 		if (SDU1.config->usbp->state == USB_ACTIVE)
 			chSequentialStreamWrite((BaseSequentialStream*)&SDU1, (uint8_t *)data, size);
 
@@ -224,24 +224,23 @@ __attribute__ ((always_inline)) static inline uint32_t WaitGetDMABuffer(void)
 	uint32_t cr, new_buf_no;
 	uint32_t val_u32;
 
-	while(1) {
+	while (1) {
 		cr = (SPID1.dmarx->stream->CR);
-		if( (cr&DMA_SxCR_CT)>0 ) {
+		if ( (cr&DMA_SxCR_CT)>0 ) {
 			/* Current DMA memory Target1 */
 			new_buf_no = 0; /* Read the Target0 */
 		} else {
 			/* Current DMA memory Target0 */
 			new_buf_no = 1; /* Read the Target1 */
 		}
-		if(new_buf_no != buf_no) {
+		if (new_buf_no != buf_no) {
 			buf_no = new_buf_no;
 			val_u32 = *((uint32_t*)(&spi_rx_dma_buf[buf_no][0]));
 			return( SWAP32(val_u32) ); /* Swap 32bits Data for Little Endian */
 		}
 
-		if(K4_BUTTON) {
+		if (K4_BUTTON || USER_BUTTON)
 			break; // ABORT
-		}
 	}
 	return 0;
 }
@@ -254,17 +253,17 @@ int sniff_write_file(uint8_t* buffer, uint32_t size)
 	FIL FileObject;
 	uint32_t bytes_written;
 
-	if(size == 0) {
+	if (size == 0) {
 		return -1;
 	}
 
-	if(is_fs_ready()==FALSE) {
-		if(mount() != 0) {
+	if (is_fs_ready()==FALSE) {
+		if (mount() != 0) {
 			return -5;
 		}
 	} else {
 		umount();
-		if(mount() != 0) {
+		if (mount() != 0) {
 			return -5;
 		}
 	}
@@ -273,13 +272,13 @@ int sniff_write_file(uint8_t* buffer, uint32_t size)
 	for(i=0; i<999; i++) {
 		sprintf(write_filename.filename, "0:nfc_sniff_%ld.txt", i);
 		err = f_open(&FileObject, write_filename.filename, FA_WRITE | FA_CREATE_NEW);
-		if(err == FR_OK) {
+		if (err == FR_OK) {
 			break;
 		}
 	}
-	if(err == FR_OK) {
+	if (err == FR_OK) {
 		err = f_write(&FileObject, buffer, size, (void *)&bytes_written);
-		if(err != FR_OK) {
+		if (err != FR_OK) {
 			f_close(&FileObject);
 			umount();
 			return -3;
@@ -312,7 +311,7 @@ void sniff_log(void)
 	D4_OFF;
 	D5_OFF;
 
-	if( sniff_write_file(sniffer_get_buffer(), sniffer_get_size()) < 0 ) {
+	if ( sniff_write_file(sniffer_get_buffer(), sniffer_get_size()) < 0 ) {
 		/* Display sniffed data */
 		tprintf("Sniffed data:\r\n");
 		tprint_str( (char*)sniffer_get_buffer(), sniffer_get_size() );
@@ -360,16 +359,16 @@ __attribute__ ((always_inline)) static inline
 bool sniff_wait_data_change_or_exit(void)
 {
 	/* Wait until data change */
-	while(TRUE) {
+	while (TRUE) {
 		u32_data = WaitGetDMABuffer();
 		/* Search for an edge/data */
-		if(old_u32_data != u32_data) {
+		if (old_u32_data != u32_data) {
 			break;
 		} else {
 			old_data_bit = (uint32_t)(u32_data&1);
 		}
 
-		if(K4_BUTTON) {
+		if ( (K4_BUTTON) || (USER_BUTTON) ) {
 			sniff_log();
 			return TRUE;
 		}
@@ -446,7 +445,7 @@ void sniff_write_8b_ASCII_HEX(uint8_t data, bool add_space)
 	i = g_sbuf_idx;
 	g_sbuf[i+0] = htoa[(data & 0xF0) >> 4];
 	g_sbuf[i+1] = htoa[(data & 0x0F)];
-	if(add_space == TRUE) {
+	if (add_space == TRUE) {
 		g_sbuf[i+2] = ' ';
 		g_sbuf_idx +=3;
 	} else {
@@ -481,12 +480,12 @@ void cmd_nfc_sniff_14443A(t_hydra_console *con)
 	chSysLock();
 
 	/* Main Loop */
-	while(TRUE) {
+	while (TRUE) {
 		lsh_bit = 0;
 		rsh_bit = 0;
 		irq_no = 0;
 
-		while(TRUE) {
+		while (TRUE) {
 			D4_OFF;
 			old_data_bit = 0;
 			f_data = 0;
@@ -496,7 +495,7 @@ void cmd_nfc_sniff_14443A(t_hydra_console *con)
 			old_u32_data = u32_data;
 
 			/* Wait until data change or K4 is pressed to stop/exit */
-			if(sniff_wait_data_change_or_exit() == TRUE) {
+			if (sniff_wait_data_change_or_exit() == TRUE) {
 				return;
 			}
 
@@ -560,7 +559,7 @@ void cmd_nfc_sniff_14443A(t_hydra_console *con)
 				/* If previous protocol was Manchester now it should be Miller Modified
 				  (it is a supposition and because Miller modified start after manchester)
 				*/
-				if( MANCHESTER_106KHZ == old_protocol_found ) {
+				if ( MANCHESTER_106KHZ == old_protocol_found ) {
 					old_protocol_found = MILLER_MODIFIED_106KHZ;
 					protocol_found = MILLER_MODIFIED_106KHZ;
 					/* RE Synchronize bit stream to start of bit from (00000000) 11111111 to 00111111 (2 to 3 us at level 0 are not seen) */
@@ -587,8 +586,8 @@ void cmd_nfc_sniff_14443A(t_hydra_console *con)
 			old_u32_data = f_data;
 			old_data_counter = 0;
 			nb_data = 0;
-			while(1) {
-				if(K4_BUTTON) {
+			while (1) {
+				if ( (K4_BUTTON) || (USER_BUTTON) ) {
 					break;
 				}
 
@@ -603,15 +602,15 @@ void cmd_nfc_sniff_14443A(t_hydra_console *con)
 				f_data |= u32_data>>rsh_bit;
 
 				/* In New Data 32bits */
-				if(u32_data != old_u32_data) {
+				if (u32_data != old_u32_data) {
 					old_u32_data = u32_data;
 					old_data_counter = 0;
 				} else {
 					old_u32_data = u32_data;
 					/* No new data */
-					if( (u32_data==0xFFFFFFFF) || (u32_data==0x00000000) ) {
+					if ( (u32_data==0xFFFFFFFF) || (u32_data==0x00000000) ) {
 						old_data_counter++;
-						if(old_data_counter>1) {
+						if (old_data_counter>1) {
 							/* No new data => End Of Frame detected => Wait new data & synchro */
 							break;
 						}
@@ -630,7 +629,7 @@ void cmd_nfc_sniff_14443A(t_hydra_console *con)
 
 				switch(protocol_found) {
 				case MILLER_MODIFIED_106KHZ:
-					if(tmp_u8_data_nb_bit < 8) {
+					if (tmp_u8_data_nb_bit < 8) {
 						tmp_u8_data |= (miller_modified_106kb[ds_data])<<tmp_u8_data_nb_bit;
 						tmp_u8_data_nb_bit++;
 					} else {
@@ -644,7 +643,7 @@ void cmd_nfc_sniff_14443A(t_hydra_console *con)
 					break;
 
 				case MANCHESTER_106KHZ:
-					if(tmp_u8_data_nb_bit < 8) {
+					if (tmp_u8_data_nb_bit < 8) {
 						tmp_u8_data |= (manchester_106kb[ds_data])<<tmp_u8_data_nb_bit;
 						tmp_u8_data_nb_bit++;
 					} else {
@@ -664,20 +663,20 @@ void cmd_nfc_sniff_14443A(t_hydra_console *con)
 					break;
 				}
 				/* For safety to avoid potential buffer overflow ... */
-				if(g_sbuf_idx >= NB_SBUFFER) {
+				if (g_sbuf_idx >= NB_SBUFFER) {
 					g_sbuf_idx = NB_SBUFFER;
 				}
 			}
 
 			/* End of Frame detected check if incomplete byte (at least 4bit) is present to write it as output */
-			if(tmp_u8_data_nb_bit>3) {
+			if (tmp_u8_data_nb_bit>3) {
 				/* Convert Hex to ASCII + Space */
 				sniff_write_8b_ASCII_HEX(tmp_u8_data, FALSE);
 			}
 
 #if 0
 			/* Send data if data are available (at least 4bytes) */
-			if( g_sbuf_idx >= 4 ) {
+			if ( g_sbuf_idx >= 4 ) {
 
 				chSysUnlock();
 				tprint_str( "%s\r\n", &g_sbuf[0]);
@@ -693,7 +692,7 @@ void cmd_nfc_sniff_14443A(t_hydra_console *con)
 			}
 #endif
 			/* For safety to avoid buffer overflow ... */
-			if(g_sbuf_idx >= NB_SBUFFER) {
+			if (g_sbuf_idx >= NB_SBUFFER) {
 				g_sbuf_idx = NB_SBUFFER;
 			}
 			TST_OFF;

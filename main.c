@@ -151,7 +151,7 @@ int main(void)
 		}
 
 		/* For test purpose HydraBus ULED blink */
-		if(USER_BUTTON)
+		if (USER_BUTTON)
 			sleep_ms = BLINK_FAST;
 		else
 			sleep_ms = BLINK_SLOW;
@@ -159,8 +159,7 @@ int main(void)
 
 		chThdSleepMilliseconds(sleep_ms);
 
-		if(USER_BUTTON)
-		{
+		if (USER_BUTTON) {
 			sleep_ms = BLINK_FAST;
 			/*
 			{
@@ -173,8 +172,7 @@ int main(void)
 			}
 			return c;
 			*/
-		}
-		else
+		} else
 			sleep_ms = BLINK_SLOW;
 		ULED_OFF;
 

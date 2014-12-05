@@ -120,7 +120,7 @@ void scs_dwt_cycle_counter_enabled(void)
 
 void wait_nbcycles(uint32_t nbcycles)
 {
-	if(nbcycles < 10) {
+	if (nbcycles < 10) {
 		return;
 	} else
 		nbcycles-=10; /* Remove 10 cycles because of code overhead */
@@ -130,7 +130,7 @@ void wait_nbcycles(uint32_t nbcycles)
 
 	clear_cyclecounter();
 
-	while( get_cyclecounter() < nbcycles );
+	while ( get_cyclecounter() < nbcycles );
 
 	/* Enable IRQ globally */
 	__asm__("cpsie i");
@@ -267,9 +267,9 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 	cprintf(con, "Test dbg Out Freq Max 84Mhz(11.9ns),10MHz(100ns/2),3.39MHz(295ns/2),1MHz(1us/2)\r\nPress User Button to exit\r\n");
 	chThdSleepMilliseconds(1);
 
-	while(1) {
+	while (1) {
 		/* Exit if User Button is pressed */
-		if(USER_BUTTON) {
+		if (USER_BUTTON) {
 			break;
 		}
 
