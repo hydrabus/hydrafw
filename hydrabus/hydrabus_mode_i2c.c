@@ -113,8 +113,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	return t + 1;
 }
 
-/* Start command '[' */
-void mode_start_i2c(t_hydra_console *con)
+static void start(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -129,14 +128,12 @@ void mode_start_i2c(t_hydra_console *con)
 	cprintf(con, str_i2c_start_br);
 }
 
-/* Start Read command '{' => Same as Start for I2C */
-void mode_startR_i2c(t_hydra_console *con)
+static void startR(t_hydra_console *con)
 {
-	mode_start_i2c(con);
+	start(con);
 }
 
-/* Stop command ']' */
-void mode_stop_i2c(t_hydra_console *con)
+static void stop(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -150,16 +147,12 @@ void mode_stop_i2c(t_hydra_console *con)
 	cprintf(con, str_i2c_stop_br);
 }
 
-/* Stop Read command '}' => Same as Stop for I2C */
-void mode_stopR_i2c(t_hydra_console *con)
+static void stopR(t_hydra_console *con)
 {
-	mode_stop_i2c(con);
+	stop(con);
 }
 
-/* Write/Send x data return status 0=BSP_OK
-   Nota nb_data shall be only equal to 1 multiple byte is not managed
-*/
-uint32_t mode_write_i2c(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
+static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
 	int i;
 	uint32_t status;
@@ -195,8 +188,7 @@ uint32_t mode_write_i2c(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 	return status;
 }
 
-/* Read x data command 'r' return status 0=BSP_OK */
-uint32_t mode_read_i2c(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
+static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 {
 	int i;
 	uint32_t status;
@@ -284,12 +276,12 @@ static const char *get_prompt(t_hydra_console *con)
 const mode_exec_t mode_i2c_exec = {
 	.init = &init,
 	.exec = &exec,
-	.mode_start        = &mode_start_i2c,     /* Start command '[' */
-	.mode_startR       = &mode_startR_i2c,    /* Start Read command '{' */
-	.mode_stop         = &mode_stop_i2c,      /* Stop command ']' */
-	.mode_stopR        = &mode_stopR_i2c,     /* Stop Read command '}' */
-	.mode_write        = &mode_write_i2c,     /* Write/Send 1 data */
-	.mode_read         = &mode_read_i2c,      /* Read 1 data command 'r' */
+	.start = &start,
+	.startR = &startR,
+	.stop = &stop,
+	.stopR = &stopR,
+	.write = &write,
+	.read = &read,
 	.cleanup = &cleanup,
 	.get_prompt = &get_prompt,
 };

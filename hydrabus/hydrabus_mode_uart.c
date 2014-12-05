@@ -115,8 +115,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	return t + 1;
 }
 
-/* Write/Send x data return status 0=OK */
-uint32_t mode_write_uart(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
+static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
 	int i;
 	uint32_t status;
@@ -139,8 +138,7 @@ uint32_t mode_write_uart(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data
 	return status;
 }
 
-/* Read x data command 'r' return status 0=OK */
-uint32_t mode_read_uart(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
+static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 {
 	int i;
 	uint32_t status;
@@ -163,8 +161,7 @@ uint32_t mode_read_uart(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return status;
 }
 
-/* Write & Read x data return status 0=OK */
-uint32_t mode_write_read_uart(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data)
+static uint32_t write_read(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data)
 {
 	int i;
 	uint32_t status;
@@ -192,7 +189,6 @@ static void cleanup(t_hydra_console *con)
 	bsp_uart_deinit(proto->dev_num);
 }
 
-/* Print settings */
 static void show(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -216,11 +212,11 @@ static const char *get_prompt(t_hydra_console *con)
 }
 
 const mode_exec_t mode_uart_exec = {
-	.init = &init,  /* Terminal parameters specific to this mode */
+	.init = &init,
 	.exec = &exec,
-	.mode_write        = &mode_write_uart,     /* Write/Send 1 data */
-	.mode_read         = &mode_read_uart,      /* Read 1 data command 'r' */
-	.mode_write_read   = &mode_write_read_uart,/* Write & Read 1 data implicitely with mode_write command */
+	.write = &write,
+	.read = &read,
+	.write_read = &write_read,
 	.cleanup = &cleanup,
 	.get_prompt = &get_prompt,
 };

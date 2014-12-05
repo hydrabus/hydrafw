@@ -169,9 +169,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_CHIP_SELECT:
 		case T_CS:
 			if (p->tokens[1] == T_ON)
-				con->mode->exec->mode_start(con);
+				con->mode->exec->start(con);
 			else
-				con->mode->exec->mode_stop(con);
+				con->mode->exec->stop(con);
 			break;
 		default:
 			return 0;
@@ -181,8 +181,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	return t + 1;
 }
 
-/* Start command '[' */
-void mode_start_spi(t_hydra_console *con)
+static void start(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -190,8 +189,7 @@ void mode_start_spi(t_hydra_console *con)
 	cprintf(con, hydrabus_mode_str_cs_enabled);
 }
 
-/* Stop command ']' */
-void mode_stop_spi(t_hydra_console *con)
+static void stop(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -199,8 +197,7 @@ void mode_stop_spi(t_hydra_console *con)
 	cprintf(con, hydrabus_mode_str_cs_disabled);
 }
 
-/* Write/Send x data return status 0=OK */
-uint32_t mode_write_spi(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
+static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
 	int i;
 	uint32_t status;
@@ -223,8 +220,7 @@ uint32_t mode_write_spi(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 	return status;
 }
 
-/* Read x data command 'r' return status 0=OK */
-uint32_t mode_read_spi(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
+static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 {
 	int i;
 	uint32_t status;
@@ -247,8 +243,7 @@ uint32_t mode_read_spi(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return status;
 }
 
-/* Write & Read x data return status 0=OK */
-uint32_t mode_write_read_spi(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data)
+static uint32_t write_read(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data)
 {
 	int i;
 	uint32_t status;
@@ -269,8 +264,7 @@ uint32_t mode_write_read_spi(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx
 	return status;
 }
 
-/* Macro command "(x)", "(0)" List current macros */
-void mode_macro_spi(t_hydra_console *con, uint32_t macro_num)
+static void macro(t_hydra_console *con, uint32_t macro_num)
 {
 	(void)con;
 	(void)macro_num;
@@ -352,12 +346,12 @@ static const char *get_prompt(t_hydra_console *con)
 const mode_exec_t mode_spi_exec = {
 	.init = &init,
 	.exec = &exec,
-	.mode_start        = &mode_start_spi,     /* Start command '[' */
-	.mode_stop         = &mode_stop_spi,      /* Stop command ']' */
-	.mode_write        = &mode_write_spi,     /* Write/Send 1 data */
-	.mode_read         = &mode_read_spi,      /* Read 1 data command 'r' */
-	.mode_write_read   = &mode_write_read_spi,/* Write & Read 1 data implicitely with mode_write command */
-	.mode_macro        = &mode_macro_spi,     /* Macro command "(x)", "(0)" List current macros */
+	.start = &start,
+	.stop = &stop,
+	.write = &write,
+	.read = &read,
+	.write_read = &write_read,
+	.macro = &macro,
 	.cleanup = &cleanup,
 	.get_prompt = &get_prompt,
 };

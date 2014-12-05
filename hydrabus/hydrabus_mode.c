@@ -117,40 +117,40 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 		switch (p->tokens[t]) {
 		case T_LEFT_SQ:
 			con->mode->proto.wwr = 0;
-			MAYBE_CALL(con->mode->exec->mode_start);
+			MAYBE_CALL(con->mode->exec->start);
 			break;
 		case T_RIGHT_SQ:
 			con->mode->proto.wwr = 0;
-			MAYBE_CALL(con->mode->exec->mode_stop);
+			MAYBE_CALL(con->mode->exec->stop);
 			break;
 		case T_LEFT_CURLY:
 			con->mode->proto.wwr = 1;
-			MAYBE_CALL(con->mode->exec->mode_startR);
+			MAYBE_CALL(con->mode->exec->startR);
 			break;
 		case T_RIGHT_CURLY:
 			con->mode->proto.wwr = 0;
-			MAYBE_CALL(con->mode->exec->mode_stopR);
+			MAYBE_CALL(con->mode->exec->stopR);
 			break;
 		case T_SLASH:
-			MAYBE_CALL(con->mode->exec->mode_clkh);
+			MAYBE_CALL(con->mode->exec->clkh);
 			break;
 		case T_BACKSLASH:
-			MAYBE_CALL(con->mode->exec->mode_clkl);
+			MAYBE_CALL(con->mode->exec->clkl);
 			break;
 		case T_MINUS:
-			MAYBE_CALL(con->mode->exec->mode_dath);
+			MAYBE_CALL(con->mode->exec->dath);
 			break;
 		case T_UNDERSCORE:
-			MAYBE_CALL(con->mode->exec->mode_datl);
+			MAYBE_CALL(con->mode->exec->datl);
 			break;
 		case T_EXCLAMATION:
-			MAYBE_CALL(con->mode->exec->mode_dats);
+			MAYBE_CALL(con->mode->exec->dats);
 			break;
 		case T_CARET:
-			MAYBE_CALL(con->mode->exec->mode_clk);
+			MAYBE_CALL(con->mode->exec->clk);
 			break;
 		case T_DOT:
-			MAYBE_CALL(con->mode->exec->mode_bitr);
+			MAYBE_CALL(con->mode->exec->bitr);
 			break;
 		case T_AMPERSAND:
 		case T_PERCENT:
@@ -247,13 +247,13 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 	for (i = 0; i < count; i++) {
 		if (p_proto->wwr == 1) {
 			/* Write & Read */
-			mode_status = con->mode->exec->mode_write_read(con,
+			mode_status = con->mode->exec->write_read(con,
 					p_proto->buffer_tx, p_proto->buffer_rx, num_bytes);
 			if (mode_status != HYDRABUS_MODE_STATUS_OK)
 				hydrabus_mode_write_read_error(con, mode_status);
 		} else {
 			/* Write only */
-			mode_status = con->mode->exec->mode_write(con,
+			mode_status = con->mode->exec->write(con,
 					p_proto->buffer_tx, num_bytes);
 			if (mode_status != HYDRABUS_MODE_STATUS_OK)
 				hydrabus_mode_write_error(con, mode_status);
@@ -281,7 +281,7 @@ static int hydrabus_mode_read(t_hydra_console *con, t_tokenline_parsed *p,
 		count = 1;
 	}
 
-	mode_status = con->mode->exec->mode_read(con, p_proto->buffer_rx, count);
+	mode_status = con->mode->exec->read(con, p_proto->buffer_rx, count);
 	if (mode_status != HYDRABUS_MODE_STATUS_OK)
 		hydrabus_mode_read_error(con, mode_status);
 
