@@ -73,7 +73,7 @@ typedef struct mode_exec_t {
 	uint32_t (*mode_periodic)(t_hydra_console *con); /* Periodic service called (like UART sniffer...) */
 	void (*mode_macro)(t_hydra_console *con, uint32_t macro_num); /* Macro command "(x)", "(0)" List current macros */
 	void (*cleanup)(t_hydra_console *con); /* Exit mode, disable device enter safe mode HiZ... */
-	const char* (*mode_str_prompt)(t_hydra_console *con); /* Prompt name string */
+	const char* (*get_prompt)(t_hydra_console *con); /* Prompt name string */
 } mode_exec_t;
 
 #endif /* _HYDRABUS_MODE_H_ */

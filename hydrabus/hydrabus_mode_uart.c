@@ -208,8 +208,7 @@ static void show(t_hydra_console *con, t_tokenline_parsed *p)
 	}
 }
 
-/* Return Prompt name */
-const char* mode_str_prompt_uart(t_hydra_console *con)
+static const char *get_prompt(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -223,6 +222,6 @@ const mode_exec_t mode_uart_exec = {
 	.mode_read         = &mode_read_uart,      /* Read 1 data command 'r' */
 	.mode_write_read   = &mode_write_read_uart,/* Write & Read 1 data implicitely with mode_write command */
 	.cleanup = &cleanup,
-	.mode_str_prompt   = &mode_str_prompt_uart    /* Prompt name string */
+	.get_prompt = &get_prompt,
 };
 

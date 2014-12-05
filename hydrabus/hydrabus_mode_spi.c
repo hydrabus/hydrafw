@@ -339,8 +339,7 @@ static void show(t_hydra_console *con, t_tokenline_parsed *p)
 	}
 }
 
-/* Return Prompt name */
-const char* mode_str_prompt_spi(t_hydra_console *con)
+static const char *get_prompt(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -360,6 +359,6 @@ const mode_exec_t mode_spi_exec = {
 	.mode_write_read   = &mode_write_read_spi,/* Write & Read 1 data implicitely with mode_write command */
 	.mode_macro        = &mode_macro_spi,     /* Macro command "(x)", "(0)" List current macros */
 	.cleanup = &cleanup,
-	.mode_str_prompt   = &mode_str_prompt_spi    /* Prompt name string */
+	.get_prompt = &get_prompt,
 };
 

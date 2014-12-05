@@ -275,8 +275,7 @@ static void show(t_hydra_console *con, t_tokenline_parsed *p)
 	}
 }
 
-/* Return Prompt name */
-const char* mode_str_prompt_i2c(t_hydra_console *con)
+static const char *get_prompt(t_hydra_console *con)
 {
 	(void)con;
 	return str_prompt_i2c1;
@@ -292,6 +291,6 @@ const mode_exec_t mode_i2c_exec = {
 	.mode_write        = &mode_write_i2c,     /* Write/Send 1 data */
 	.mode_read         = &mode_read_i2c,      /* Read 1 data command 'r' */
 	.cleanup = &cleanup,
-	.mode_str_prompt   = &mode_str_prompt_i2c    /* Prompt name string */
+	.get_prompt = &get_prompt,
 };
 

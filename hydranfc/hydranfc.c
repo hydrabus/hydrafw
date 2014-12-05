@@ -625,7 +625,7 @@ static void cleanup(t_hydra_console *con)
 	/* TODO deinit GPIO config */
 }
 
-static const char* mode_str_prompt_nfc(t_hydra_console *con)
+static const char *get_prompt(t_hydra_console *con)
 {
 	(void)con;
 
@@ -636,7 +636,7 @@ const mode_exec_t mode_nfc_exec = {
 	.init = &init,
 	.exec = &exec,
 	.cleanup = &cleanup,
-	.mode_str_prompt   = &mode_str_prompt_nfc    /* Prompt name string */
+	.get_prompt = &get_prompt,
 };
 
 
