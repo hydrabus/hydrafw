@@ -27,6 +27,7 @@
 /* TODO I2C Addr number of bits mode 7 or 10 */
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
+static void show(t_hydra_console *con, t_tokenline_parsed *p);
 
 #define I2C_DEV_NUM (1)
 
@@ -74,6 +75,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
+		case T_SHOW:
+			show(con, p);
+			break;
 		case T_PULL:
 			switch (p->tokens[++t]) {
 			case T_UP:
@@ -288,7 +292,6 @@ const mode_exec_t mode_i2c_exec = {
 	.mode_write        = &mode_write_i2c,     /* Write/Send 1 data */
 	.mode_read         = &mode_read_i2c,      /* Read 1 data command 'r' */
 	.cleanup = &cleanup,
-	.mode_print_settings = &show, /* Settings string */
 	.mode_str_prompt   = &mode_str_prompt_i2c    /* Prompt name string */
 };
 

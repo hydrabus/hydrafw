@@ -22,6 +22,7 @@
 #include <string.h>
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
+static void show(t_hydra_console *con, t_tokenline_parsed *p);
 
 static const char* str_pins_spi1= {
 	"CS:   PA15\r\nSCK:  PB3\r\nMISO: PB4\r\nMOSI: PB5\r\n"
@@ -95,6 +96,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
+		case T_SHOW:
+			show(con, p);
+			break;
 		case T_DEVICE:
 			/* Integer parameter. */
 			t += 2;
@@ -355,8 +359,7 @@ const mode_exec_t mode_spi_exec = {
 	.mode_read         = &mode_read_spi,      /* Read 1 data command 'r' */
 	.mode_write_read   = &mode_write_read_spi,/* Write & Read 1 data implicitely with mode_write command */
 	.mode_macro        = &mode_macro_spi,     /* Macro command "(x)", "(0)" List current macros */
-	.cleanup      = &cleanup,
-	.mode_print_settings = &show, /* Settings string */
+	.cleanup = &cleanup,
 	.mode_str_prompt   = &mode_str_prompt_spi    /* Prompt name string */
 };
 

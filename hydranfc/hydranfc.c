@@ -28,6 +28,7 @@
 
 static void extcb1(EXTDriver *extp, expchannel_t channel);
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
+static void show(t_hydra_console *con, t_tokenline_parsed *p);
 
 static thread_t *key_sniff_thread;
 static volatile int irq_count;
@@ -535,6 +536,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	continuous = FALSE;
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
+		case T_SHOW:
+			show(con, p);
+			break;
 		case T_MIFARE:
 			proto->dev_mode = NFC_MODE_MIFARE;
 			break;
@@ -632,7 +636,6 @@ const mode_exec_t mode_nfc_exec = {
 	.init = &init,
 	.exec = &exec,
 	.cleanup = &cleanup,
-	.mode_print_settings = &show, /* Settings string */
 	.mode_str_prompt   = &mode_str_prompt_nfc    /* Prompt name string */
 };
 
