@@ -53,26 +53,46 @@ extern const char hydrabus_mode_str_mul_value_u8[];
 extern const char hydrabus_mode_str_mul_br[];
 
 typedef struct mode_exec_t {
+	/* Initialize mode hardware. */
 	int (*init)(t_hydra_console *con, t_tokenline_parsed *p);
+	/* Execute mode commands. */
 	int (*exec)(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
-	void (*start)(t_hydra_console *con); /* Start command '[' */
-	void (*startR)(t_hydra_console *con); /* Start Read command '{' */
-	void (*stop)(t_hydra_console *con); /* Stop command ']' */
-	void (*stopR)(t_hydra_console *con); /* Stop Read command '}' */
-	uint32_t (*write)(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data); /* Write/Send x data (return status 0=OK) */
-	uint32_t (*read)(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data); /* Read x data command 'r' or 'r:x' (return status 0=OK) */
-	uint32_t (*write_read)(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data); /* Write & Read x data (return status 0=OK) */
-	void (*clkh)(t_hydra_console *con); /* Set CLK High (x-WIRE or other raw mode ...) command '/' */
-	void (*clkl)(t_hydra_console *con); /* Set CLK Low (x-WIRE or other raw mode ...) command '\' */
-	void (*dath)(t_hydra_console *con); /* Set DAT High (x-WIRE or other raw mode ...) command '-' */
-	void (*datl)(t_hydra_console *con); /* Set DAT Low (x-WIRE or other raw mode ...) command '_' */
-	void (*dats)(t_hydra_console *con); /* Read Bit (x-WIRE or other raw mode ...) command '!' */
-	void (*clk)(t_hydra_console *con); /* CLK Tick (x-WIRE or other raw mode ...) command '^' */
-	void (*bitr)(t_hydra_console *con); /* DAT Read (x-WIRE or other raw mode ...) command '.' */
-	uint32_t (*periodic)(t_hydra_console *con); /* Periodic service called (like UART sniffer...) */
-	void (*macro)(t_hydra_console *con, uint32_t macro_num); /* Macro command "(x)", "(0)" List current macros */
-	void (*cleanup)(t_hydra_console *con); /* Exit mode, disable device enter safe mode HiZ... */
-	const char* (*get_prompt)(t_hydra_console *con); /* Prompt name string */
+	/* Start command '[' */
+	void (*start)(t_hydra_console *con);
+	/* Start Read command '{' */
+	void (*startR)(t_hydra_console *con);
+	/* Stop command ']' */
+	void (*stop)(t_hydra_console *con);
+	/* Stop Read command '}' */
+	void (*stopR)(t_hydra_console *con);
+	/* Write/Send data (return status 0=OK) */
+	uint32_t (*write)(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data);
+	/* Read data command 'read' or 'read:n' (return status 0=OK) */
+	uint32_t (*read)(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
+	/* Write & Read data (return status 0=OK) */
+	uint32_t (*write_read)(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data);
+	/* Set CLK High (x-WIRE or other raw mode) command '/' */
+	void (*clkh)(t_hydra_console *con);
+	/* Set CLK Low (x-WIRE or other raw mode) command '\' */
+	void (*clkl)(t_hydra_console *con);
+	/* Set DAT High (x-WIRE or other raw mode) command '-' */
+	void (*dath)(t_hydra_console *con);
+	/* Set DAT Low (x-WIRE or other raw mode) command '_' */
+	void (*datl)(t_hydra_console *con);
+	/* Read Bit (x-WIRE or other raw mode) command '!' */
+	void (*dats)(t_hydra_console *con);
+	/* CLK Tick (x-WIRE or other raw mode) command '^' */
+	void (*clk)(t_hydra_console *con);
+	/* DAT Read (x-WIRE or other raw mode) command '.' */
+	void (*bitr)(t_hydra_console *con);
+	/* Periodic service called (like UART sniffer) */
+	uint32_t (*periodic)(t_hydra_console *con);
+	/* Macro command "(x)", "(0)" List current macros */
+	void (*macro)(t_hydra_console *con, uint32_t macro_num);
+	/* Exit mode, disable hardware. */
+	void (*cleanup)(t_hydra_console *con);
+	/* Return prompt name. */
+	const char* (*get_prompt)(t_hydra_console *con);
 } mode_exec_t;
 
 #endif /* _HYDRABUS_MODE_H_ */
