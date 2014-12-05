@@ -450,7 +450,7 @@ int cmd_sd_cd(t_hydra_console *con, t_tokenline_parsed *p)
 		return FALSE;
 
 	memcpy(&offset, &p->tokens[3], sizeof(int));
-	chsnprintf((char *)fbuff, FILENAME_SIZE, "0:%s", p->buf + offset);
+	snprintf((char *)fbuff, FILENAME_SIZE, "0:%s", p->buf + offset);
 
 	if (!fs_ready) {
 		err = mount();
@@ -582,7 +582,7 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed *p)
 		return FALSE;
 
 	memcpy(&str_offset, &p->tokens[3], sizeof(int));
-	chsnprintf(filename, FILENAME_SIZE, "0:%s", p->buf + str_offset);
+	snprintf(filename, FILENAME_SIZE, "0:%s", p->buf + str_offset);
 
 	if (!fs_ready) {
 		err = mount();
