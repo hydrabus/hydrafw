@@ -53,9 +53,6 @@ extern const char hydrabus_mode_str_mul_value_u8[];
 extern const char hydrabus_mode_str_mul_br[];
 
 typedef struct mode_exec_t {
-	/*
-	  Terminal parameters specific to this mode (return TRUE if mode configured with success else FALSE)
-	*/
 	int (*init)(t_hydra_console *con, t_tokenline_parsed *p);
 	int (*mode_cmd_exec)(t_hydra_console *con, t_tokenline_parsed *p,
 			int token_pos);
@@ -76,10 +73,7 @@ typedef struct mode_exec_t {
 	uint32_t (*mode_periodic)(t_hydra_console *con); /* Periodic service called (like UART sniffer...) */
 	void (*mode_macro)(t_hydra_console *con, uint32_t macro_num); /* Macro command "(x)", "(0)" List current macros */
 	void (*cleanup)(t_hydra_console *con); /* Exit mode, disable device enter safe mode HiZ... */
-	void (*mode_print_param)(t_hydra_console *con); /* Print Mode parameters */
-	void (*mode_print_pins)(t_hydra_console *con); /* Print Pins used */
 	void (*mode_print_settings)(t_hydra_console *con, t_tokenline_parsed *p); /* Settings string */
-	void (*mode_print_name)(t_hydra_console *con);  /* Print Mode name */
 	const char* (*mode_str_prompt)(t_hydra_console *con); /* Prompt name string */
 } mode_exec_t;
 
