@@ -257,6 +257,8 @@ t_token tokens_mode_i2c[] = {
 		.help = "Start" },
 	{ T_RESTART,
 		.help = "Restart" },
+	{ T_STOP,
+		.help = "Stop" },
 	{ T_READ,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Read byte (repeat with :<num>)" },

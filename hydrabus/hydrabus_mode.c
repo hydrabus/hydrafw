@@ -115,10 +115,12 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 	done = FALSE;
 	for (t = 0; !done && p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
+		case T_START:
 		case T_LEFT_SQ:
 			con->mode->proto.wwr = 0;
 			MAYBE_CALL(con->mode->exec->start);
 			break;
+		case T_STOP:
 		case T_RIGHT_SQ:
 			con->mode->proto.wwr = 0;
 			MAYBE_CALL(con->mode->exec->stop);
