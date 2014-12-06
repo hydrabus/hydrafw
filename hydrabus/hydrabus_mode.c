@@ -171,11 +171,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			break;
 
 		case T_READ:
-			tokens_used = hydrabus_mode_read(con, p, t);
-			if (!tokens_used)
-				done = TRUE;
-			else
-				t += tokens_used;
+			t += hydrabus_mode_read(con, p, t);
 			break;
 		case T_WRITE:
 			tokens_used = hydrabus_mode_write(con, p, t + 1);
