@@ -108,7 +108,7 @@ int cmd_mode_init(t_hydra_console *con, t_tokenline_parsed *p)
 int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	uint32_t usec;
-	int t, factor, ret;
+	int t, tokens_used, factor, ret;
 	bool done;
 
 	ret = TRUE;
@@ -240,9 +240,9 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 	}
 
 	num_bytes = chomp_integers(con, p, t);
-	tokens_used = num_bytes * 2;
-	if (!tokens_used)
+	if (!num_bytes)
 		return 0;
+	tokens_used += num_bytes * 2;
 
 	/* TODO manage write string (only value(s) are supported in actual version) */
 
