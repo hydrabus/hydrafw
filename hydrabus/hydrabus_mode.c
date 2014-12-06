@@ -169,13 +169,30 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			break;
 
 		case T_READ:
-			t += hydrabus_mode_read(con, p, t);
+			tokens_used = hydrabus_mode_read(con, p, t);
+			if (!tokens_used)
+				done = TRUE;
+			else
+				t += tokens_used;
 			break;
 		case T_WRITE:
-			t += hydrabus_mode_write(con, p, t + 1);
+			tokens_used = hydrabus_mode_write(con, p, t + 1);
+			if (!tokens_used)
+				done = TRUE;
+			else
+				t += tokens_used;
 			break;
 		case T_ARG_INT:
-			t += hydrabus_mode_write(con, p, t) - 1;
+			tokens_used = hydrabus_mode_write(con, p, t);
+			if (!tokens_used)
+				done = TRUE;
+			else
+				/*
+				 * Less one because we didn't start on a "real"
+				 * token, and the t++ at the end of this loop
+				 * needs to take us to the next token.
+				 */
+				t += tokens_used - 1;
 			break;
 		case T_EXIT:
 			MAYBE_CALL(con->mode->exec->cleanup);
