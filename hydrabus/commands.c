@@ -67,7 +67,6 @@ t_token_dict tl_dict[] = {
 	{ T_READ, "read" },
 	{ T_WRITE, "write" },
 	{ T_START, "start" },
-	{ T_RESTART, "restart" },
 	{ T_STOP, "stop" },
 	{ T_UART, "uart" },
 	{ T_SPEED, "speed" },
@@ -255,8 +254,6 @@ t_token tokens_mode_i2c[] = {
 	/* I2C-specific commands */
 	{ T_START,
 		.help = "Start" },
-	{ T_RESTART,
-		.help = "Restart" },
 	{ T_STOP,
 		.help = "Stop" },
 	{ T_READ,

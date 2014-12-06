@@ -60,7 +60,6 @@ enum {
 	T_READ,
 	T_WRITE,
 	T_START,
-	T_RESTART,
 	T_STOP,
 	T_UART,
 	T_SPEED,
