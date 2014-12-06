@@ -59,12 +59,8 @@ typedef struct mode_exec_t {
 	int (*exec)(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 	/* Start command '[' */
 	void (*start)(t_hydra_console *con);
-	/* Start Read command '{' */
-	void (*startR)(t_hydra_console *con);
 	/* Stop command ']' */
 	void (*stop)(t_hydra_console *con);
-	/* Stop Read command '}' */
-	void (*stopR)(t_hydra_console *con);
 	/* Write/Send data (return status 0=OK) */
 	uint32_t (*write)(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data);
 	/* Read data command 'read' or 'read:n' (return status 0=OK) */

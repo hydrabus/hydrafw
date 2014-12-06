@@ -120,18 +120,15 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			con->mode->proto.wwr = 0;
 			MAYBE_CALL(con->mode->exec->start);
 			break;
-		case T_STOP:
-		case T_RIGHT_SQ:
-			con->mode->proto.wwr = 0;
-			MAYBE_CALL(con->mode->exec->stop);
-			break;
 		case T_LEFT_CURLY:
 			con->mode->proto.wwr = 1;
-			MAYBE_CALL(con->mode->exec->startR);
+			MAYBE_CALL(con->mode->exec->start);
 			break;
+		case T_STOP:
+		case T_RIGHT_SQ:
 		case T_RIGHT_CURLY:
 			con->mode->proto.wwr = 0;
-			MAYBE_CALL(con->mode->exec->stopR);
+			MAYBE_CALL(con->mode->exec->stop);
 			break;
 		case T_SLASH:
 			MAYBE_CALL(con->mode->exec->clkh);
