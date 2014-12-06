@@ -128,11 +128,6 @@ static void start(t_hydra_console *con)
 	cprintf(con, str_i2c_start_br);
 }
 
-static void startR(t_hydra_console *con)
-{
-	start(con);
-}
-
 static void stop(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -145,11 +140,6 @@ static void stop(t_hydra_console *con)
 	}
 	bsp_i2c_stop(I2C_DEV_NUM);
 	cprintf(con, str_i2c_stop_br);
-}
-
-static void stopR(t_hydra_console *con)
-{
-	stop(con);
 }
 
 static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
@@ -277,9 +267,7 @@ const mode_exec_t mode_i2c_exec = {
 	.init = &init,
 	.exec = &exec,
 	.start = &start,
-	.startR = &startR,
 	.stop = &stop,
-	.stopR = &stopR,
 	.write = &write,
 	.read = &read,
 	.cleanup = &cleanup,
