@@ -225,9 +225,11 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 	uint32_t mode_status;
 	int count, num_bytes, tokens_used, i;
 
+	tokens_used = 0;
 	if (p->tokens[t] == T_ARG_TOKEN_SUFFIX_INT) {
-		t += 2;
-		memcpy(&count, p->buf + p->tokens[t], sizeof(int));
+		t++;
+		memcpy(&count, p->buf + p->tokens[t++], sizeof(int));
+		tokens_used += 2;
 	} else {
 		count = 1;
 	}
