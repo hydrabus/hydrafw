@@ -268,8 +268,6 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 	if (!num_bytes)
 		return 0;
 
-	/* TODO manage write string (only value(s) are supported in actual version) */
-
 	for (i = 0; i < count; i++) {
 		if (p_proto->wwr == 1) {
 			/* Write & Read */

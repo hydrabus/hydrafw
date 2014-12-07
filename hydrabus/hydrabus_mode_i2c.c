@@ -22,10 +22,6 @@
 #include "bsp_i2c.h"
 #include <string.h>
 
-/* TODO support Slave mode (by default only Master) */
-
-/* TODO I2C Addr number of bits mode 7 or 10 */
-
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static void show(t_hydra_console *con, t_tokenline_parsed *p);
 

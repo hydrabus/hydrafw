@@ -33,12 +33,6 @@ static const char* str_pins_spi2= {
 static const char* str_prompt_spi1= { "spi1" PROMPT };
 static const char* str_prompt_spi2= { "spi2" PROMPT };
 
-/*
-TODO SPI Number of bits mode
-static const char* str_dev_numbits[]={
- "Choose SPI Number of bits\r\n1=8 bits, 2=16 bits\r\n" };
-*/
-
 #define MODE_DEV_NB_ARGC ((int)ARRAY_SIZE(mode_dev_arg)) /* Number of arguments/parameters for this mode */
 
 static uint32_t speeds[2][8] = {
