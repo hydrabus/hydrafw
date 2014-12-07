@@ -258,13 +258,6 @@ static uint32_t write_read(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_d
 	return status;
 }
 
-static void macro(t_hydra_console *con, uint32_t macro_num)
-{
-	(void)con;
-	(void)macro_num;
-	/* TODO mode_spi Macro command "(x)" */
-}
-
 static void cleanup(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -345,7 +338,6 @@ const mode_exec_t mode_spi_exec = {
 	.write = &write,
 	.read = &read,
 	.write_read = &write_read,
-	.macro = &macro,
 	.cleanup = &cleanup,
 	.get_prompt = &get_prompt,
 };
