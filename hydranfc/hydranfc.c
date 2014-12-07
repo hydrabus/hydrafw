@@ -254,7 +254,15 @@ THD_FUNCTION(key_sniff, arg)
 		else
 			D3_OFF;
 
-		if (K3_BUTTON) {
+		/* If K3_BUTTON is pressed */
+		if (K3_BUTTON)
+		{
+			/* Wait Until K3_BUTTON is released */
+			while(K3_BUTTON)
+			{
+				chThdSleepMilliseconds(100);
+			}
+
 			/* Blink Fast */
 			for(i = 0; i < 4; i++) {
 				D2_ON;
@@ -571,7 +579,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		if (continuous) {
 			cprintf(con, "Scanning %s ",
 					proto->dev_mode == NFC_MODE_MIFARE ? "MIFARE" : "Vicinity");
-			cprintf(con, "with 1s delay. Press user button to stop.\r\n");
+			cprintf(con, "with %dms period. Press user button to stop.\r\n", period);
 			t++;
 			while (!USER_BUTTON) {
 				scan(con);
