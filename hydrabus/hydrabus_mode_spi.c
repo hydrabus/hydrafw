@@ -172,7 +172,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		}
 	}
 
-	return t + 1;
+	return t - token_pos;
 }
 
 static void start(t_hydra_console *con)
