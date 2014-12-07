@@ -268,11 +268,7 @@ t_token tokens_mode_i2c[] = {
 	/* BP commands */
 	{ T_LEFT_SQ,
 		.help = "Alias for \"start\"" },
-	{ T_LEFT_CURLY,
-		.help = "Alias for \"restart\"" },
 	{ T_RIGHT_SQ,
-		.help = "Alias for \"stop\"" },
-	{ T_RIGHT_CURLY,
 		.help = "Alias for \"stop\"" },
 	{ T_AMPERSAND,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
