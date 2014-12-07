@@ -203,13 +203,13 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 }
 
 static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,
-		int token_pos)
+		int token_pos, unsigned int *num_bytes)
 {
 	mode_config_proto_t* p_proto = &con->mode->proto;
-	int arg_int, t, i;
+	int arg_int, count, t, i;
 
 	t = token_pos;
-	i = 0;
+	*num_bytes = 0;
 	while (p->tokens[t] == T_ARG_INT) {
 		t++;
 		memcpy(&arg_int, p->buf + p->tokens[t++], sizeof(int));
@@ -217,10 +217,22 @@ static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,
 			cprintf(con, "Please specify one byte at a time.\r\n");
 			return 0;
 		}
-		p_proto->buffer_tx[i++] = arg_int;
+		p_proto->buffer_tx[(*num_bytes)++] = arg_int;
+
+		if (p->tokens[t] == T_ARG_TOKEN_SUFFIX_INT) {
+			t++;
+			memcpy(&count, p->buf + p->tokens[t++], sizeof(int));
+			if (*num_bytes + count > sizeof(p_proto->buffer_tx)) {
+				cprintf(con, "Repeat count exceeds buffer size.\r\n");
+				return 0;
+			}
+			/* We added one already. */
+			for (i = 0; i < count - 1; i++)
+				p_proto->buffer_tx[(*num_bytes)++] = arg_int;
+		}
 	}
 
-	return i;
+	return t - token_pos;
 }
 
 /*
@@ -235,7 +247,8 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 {
 	mode_config_proto_t* p_proto = &con->mode->proto;
 	uint32_t mode_status;
-	int count, num_bytes, tokens_used, i;
+	unsigned int num_bytes;
+	int count, tokens_used, i;
 
 	tokens_used = 0;
 	if (p->tokens[t] == T_ARG_TOKEN_SUFFIX_INT) {
@@ -251,10 +264,9 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 		return 0;
 	}
 
-	num_bytes = chomp_integers(con, p, t);
+	tokens_used += chomp_integers(con, p, t, &num_bytes);
 	if (!num_bytes)
 		return 0;
-	tokens_used += num_bytes * 2;
 
 	/* TODO manage write string (only value(s) are supported in actual version) */
 
