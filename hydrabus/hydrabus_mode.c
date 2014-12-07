@@ -95,7 +95,8 @@ int cmd_mode_init(t_hydra_console *con, t_tokenline_parsed *p)
 		if (p->tokens[0] != modes[i].token)
 			continue;
 		con->mode->exec = modes[i].exec;
-		con->mode->exec->init(con, p);
+		if (con->mode->exec->init(con, p) == 0)
+			return FALSE;
 		if (!tl_mode_push(con->tl, modes[i].tokens))
 			return FALSE;
 		con->console_mode = modes[i].token;

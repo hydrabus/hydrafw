@@ -145,7 +145,7 @@ static bool hydranfc_test_shield(void)
 	return err == 0;
 }
 
-static void configure_gpio(t_hydra_console *con)
+static bool configure_gpio(t_hydra_console *con)
 {
 	/* PA7 as Input connected to TRF7970A MOD Pin */
 	// palSetPadMode(GPIOA, 7, PAL_MODE_INPUT);
@@ -209,8 +209,8 @@ static void configure_gpio(t_hydra_console *con)
 
 	if (!hydranfc_test_shield()) {
 		/* TODO: clean up */
-		cprintf(con, "HydraNFC not found.\r\n?");
-		return;
+		cprintf(con, "HydraNFC not found.\r\n");
+		return FALSE;
 	}
 
 	/* Configure K1/2/3/4 Buttons as Input */
@@ -231,6 +231,8 @@ static void configure_gpio(t_hydra_console *con)
 
 	/* Activates the EXT driver 1. */
 	extStart(&EXTD1, &extcfg);
+
+	return TRUE;
 }
 
 THD_WORKING_AREA(key_sniff_mem, 2048);
@@ -287,7 +289,8 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	/* Process cmdline arguments, skipping "nfc". */
 	tokens_used = 1 + exec(con, p, 1);
 
-	configure_gpio(con);
+	if (!configure_gpio(con))
+		return 0;
 
 	key_sniff_thread = chThdCreateStatic(key_sniff_mem,
 			sizeof(key_sniff_mem), NORMALPRIO, key_sniff, NULL);
