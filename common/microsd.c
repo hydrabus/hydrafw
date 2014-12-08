@@ -939,6 +939,46 @@ int cmd_sd_erase(t_hydra_console *con, t_tokenline_parsed *p)
 	return TRUE;
 }
 
+int cmd_sd_rm(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	FRESULT err;
+	int offset;
+
+	if (!fs_ready && (err = mount())) {
+		cprintf(con, "mount error: %d\r\n", err);
+		return FALSE;
+	}
+
+	memcpy(&offset, &p->tokens[3], sizeof(int));
+	snprintf((char *)fbuff, FILENAME_SIZE, "0:%s", p->buf + offset);
+	if ((err = f_unlink((char *)fbuff))) {
+		cprintf(con, "f_unlink error: %d\r\n", err);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+int cmd_sd_mkdir(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	FRESULT err;
+	int offset;
+
+	if (!fs_ready && (err = mount())) {
+		cprintf(con, "mount error: %d\r\n", err);
+		return FALSE;
+	}
+
+	memcpy(&offset, &p->tokens[3], sizeof(int));
+	snprintf((char *)fbuff, FILENAME_SIZE, "0:%s", p->buf + offset);
+	if ((err = f_mkdir((char *)fbuff))) {
+		cprintf(con, "f_mkdir error: %d\r\n", err);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	int ret;
@@ -972,6 +1012,12 @@ int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p)
 		break;
 	case T_TESTPERF:
 		ret = cmd_sd_test_perf(con, p);
+		break;
+	case T_RM:
+		ret = cmd_sd_rm(con, p);
+		break;
+	case T_MKDIR:
+		ret = cmd_sd_mkdir(con, p);
 		break;
 	default:
 		return FALSE;

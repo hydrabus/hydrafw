@@ -95,6 +95,8 @@ t_token_dict tl_dict[] = {
 	{ T_OPEN_DRAIN, "open-drain" },
 	{ T_TOKENLINE, "tokenline" },
 	{ T_TIMING, "timing" },
+	{ T_RM, "rm" },
+	{ T_MKDIR, "mkdir" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -446,6 +448,12 @@ t_token tokens_sd[] = {
 	{ T_HD,
 		.arg_type = T_ARG_STRING,
 		.help = "Hexdump file on SD card" },
+	{ T_RM,
+		.arg_type = T_ARG_STRING,
+		.help = "Remove file or directory" },
+	{ T_MKDIR,
+		.arg_type = T_ARG_STRING,
+		.help = "Create new directory" },
 	{ }
 };
 

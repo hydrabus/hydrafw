@@ -88,6 +88,8 @@ enum {
 	T_OPEN_DRAIN,
 	T_TOKENLINE,
 	T_TIMING,
+	T_RM,
+	T_MKDIR,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,
