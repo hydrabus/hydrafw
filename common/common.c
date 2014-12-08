@@ -40,6 +40,8 @@ SerialUSBDriver SDU1;
 /* USB2: Virtual serial port over USB.*/
 SerialUSBDriver SDU2;
 
+extern uint32_t debug_flags;
+
 /** \brief print debug through Semi Hosting(SWD debug) & SWV
  *
  * \param data const char*
@@ -213,6 +215,14 @@ void cmd_show_system(t_hydra_console *con)
 #endif
 }
 
+static void cmd_show_debug(t_hydra_console *con)
+{
+	if (debug_flags & DEBUG_TOKENLINE)
+		cprintf(con, "Tokenline debugging is enabled.\r\n");
+	else
+		cprintf(con, "Debugging is disabled.\r\n");
+}
+
 int cmd_show(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	if (p->tokens[1] == 0 || p->tokens[2] != 0)
@@ -224,6 +234,8 @@ int cmd_show(t_hydra_console *con, t_tokenline_parsed *p)
 		cmd_show_memory(con);
 	else if (p->tokens[1] == T_THREADS)
 		cmd_show_threads(con);
+	else if (p->tokens[1] == T_DEBUG)
+		cmd_show_debug(con);
 	else
 		return FALSE;
 

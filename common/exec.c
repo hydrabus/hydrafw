@@ -26,6 +26,7 @@
 
 #include "common.h"
 
+uint32_t debug_flags = 0;
 extern t_token_dict tl_dict[];
 extern t_token tokens_mode_spi[];
 
@@ -109,12 +110,45 @@ void token_dump(t_hydra_console *con, t_tokenline_parsed *p)
 	}
 }
 
-struct cmd_map {
+static int cmd_debug(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	uint32_t tmp_debug;
+	int action, t;
+
+	tmp_debug = 0;
+	action = 0;
+	for (t = 0; p->tokens[t]; t++) {
+		switch (p->tokens[t]) {
+		case T_TOKENLINE:
+			tmp_debug |= DEBUG_TOKENLINE;
+			break;
+		case T_TIMING:
+			cmd_debug_timing(con, p);
+			break;
+		case T_ON:
+		case T_OFF:
+			action = p->tokens[t];
+			break;
+		}
+	}
+	if (tmp_debug && !action) {
+		cprintf(con, "Please specify either 'on' or 'off'.");
+		return FALSE;
+	}
+	if (action == T_ON)
+		debug_flags |= tmp_debug;
+	else
+		debug_flags &= ~tmp_debug;
+
+	return TRUE;
+}
+
+static struct cmd_map {
 	int token;
 	cmdfunc func;
 } top_commands[] = {
 	{ T_CLEAR, print_clear },
-	{ T_DEBUG, cmd_debug_timing },
+	{ T_DEBUG, cmd_debug },
 	{ T_SHOW, cmd_show },
 	{ T_SD, cmd_sd },
 	{ T_SPI, cmd_mode_init },
@@ -132,6 +166,8 @@ void execute(void *user, t_tokenline_parsed *p)
 	int i;
 
 	con = user;
+	if (debug_flags & DEBUG_TOKENLINE)
+		token_dump(con, p);
 	if (con->console_mode)
 		cmd_mode_exec(con, p);
 	else {

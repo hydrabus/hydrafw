@@ -109,6 +109,10 @@ typedef struct {
 #define MIN(a, b) (a < b ? a : b)
 #endif
 
+#ifndef BIT
+#define BIT(x) (1 << x)
+#endif
+
 /* How much thread working area to allocate per console. */
 #define CONSOLE_WA_SIZE 2048
 
@@ -131,6 +135,10 @@ enum console_modes {
 	MODE_TOP,
 	MODE_SPI,
 	MODE_I2C,
+};
+
+enum {
+	DEBUG_TOKENLINE = BIT(0),
 };
 
 void print(void *user, const char *str);

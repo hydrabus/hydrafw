@@ -93,6 +93,8 @@ t_token_dict tl_dict[] = {
 	{ T_IN, "in" },
 	{ T_OUT, "out" },
 	{ T_OPEN_DRAIN, "open-drain" },
+	{ T_TOKENLINE, "tokenline" },
+	{ T_TIMING, "timing" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -451,6 +453,19 @@ t_token tokens_show[] = {
 	{ T_SYSTEM },
 	{ T_MEMORY },
 	{ T_THREADS },
+	{ T_DEBUG },
+	{ }
+};
+
+t_token tokens_debug[] = {
+	{ T_TOKENLINE,
+		.help = "Tokenline dump for every command" },
+	{ T_TIMING,
+		.help = "Mysterious timing function" },
+	{ T_ON,
+		.help = "Enable" },
+	{ T_OFF,
+		.help = "Disable" },
 	{ }
 };
 
@@ -487,6 +502,7 @@ t_token tl_tokens[] = {
 		.subtokens = tokens_nfc,
 		.help = "NFC mode" },
 	{ T_DEBUG,
+		.subtokens = tokens_debug,
 		.help = "Debug mode" },
 	{ }
 };
