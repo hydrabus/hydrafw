@@ -81,7 +81,7 @@ int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	uint16_t gpio[3] = { 0 };
 
-	int mode, pull, state, port, pin, read, period, continuous, t;
+	int mode, pull, state, port, pin, read, period, continuous, t, max;
 	bool mode_changed, pull_changed;
 	char *str, *s;
 
@@ -144,7 +144,7 @@ int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 			break;
 		case T_ARG_STRING:
 			str = p->buf + p->tokens[++t];
-			if (strlen(str) < 3 || strlen(str) > 4) {
+			if (strlen(str) < 3) {
 				cprintf(con, str_pin_error, str);
 				return FALSE;
 			}
@@ -162,21 +162,32 @@ int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 				return FALSE;
 			}
 			port = str[1] - 'A';
-			if(str[2] == '*') {
-				if(port == 1)
-					 /* 0 to 11 for PortB */
+			if (str[2] == '*') {
+				if (port == 1)
+					 /* 0 to 11 for port B */
 					gpio[port] = 0x0FFF;
 				else
 					 /* 0 to 15 */
 					gpio[port] = 0xFFFF;
 			} else {
 				pin = strtoul(str + 2, &s, 10);
-				if (*s || pin < 0 || pin > 15
+				if ((*s != 0 && *s != '-') || pin < 0 || pin > 15
 				    || (port == 1 && pin > 11)) {
 					cprintf(con, str_pin_error, str);
 					return FALSE;
 				}
 				gpio[port] |= 1 << pin;
+				if (*s == '-') {
+					/* Range */
+					max = strtoul(s + 1, &s, 10);
+					if (max <= pin || max > 15 ||
+							(port == 1 && max > 11)) {
+						cprintf(con, str_pin_error, str);
+						return FALSE;
+					}
+					while (pin <= max)
+						gpio[port] |= 1 << pin++;
+				}
 			}
 			break;
 		}
