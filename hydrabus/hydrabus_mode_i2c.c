@@ -44,16 +44,21 @@ static uint32_t speeds[] = {
 	1000000,
 };
 
-static int init(t_hydra_console *con, t_tokenline_parsed *p)
+static void init_proto_default(t_hydra_console *con)
 {
-	mode_config_proto_t* proto = &con->mode->proto;
-	int tokens_used;
-
 	/* Defaults */
 	proto->dev_num = I2C_DEV_NUM;
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 	proto->dev_speed = 1;
 	proto->ack_pending = 0;
+}
+
+static int init(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+	int tokens_used;
+
+	init_proto_default(con);
 
 	/* Process cmdline arguments, skipping "i2c". */
 	tokens_used = 1 + exec(con, p, 1);
