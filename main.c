@@ -34,6 +34,11 @@
 #include "microsd.h"
 #include "hydrabus.h"
 
+/* USB1: Virtual serial port over USB.*/
+SerialUSBDriver SDU1;
+/* USB2: Virtual serial port over USB.*/
+SerialUSBDriver SDU2;
+
 extern t_token tl_tokens[];
 extern t_token_dict tl_dict[];
 

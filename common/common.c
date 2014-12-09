@@ -35,11 +35,6 @@ uint8_t fbuff[2048] __attribute__ ((section(".ccm")));
 uint32_t g_sbuf_idx;
 uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));
 
-/* USB1: Virtual serial port over USB.*/
-SerialUSBDriver SDU1;
-/* USB2: Virtual serial port over USB.*/
-SerialUSBDriver SDU2;
-
 extern uint32_t debug_flags;
 
 /** \brief print debug through Semi Hosting(SWD debug) & SWV
