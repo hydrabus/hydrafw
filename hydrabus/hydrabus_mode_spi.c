@@ -33,9 +33,12 @@ static const char* str_pins_spi2= {
 static const char* str_prompt_spi1= { "spi1" PROMPT };
 static const char* str_prompt_spi2= { "spi2" PROMPT };
 
+static const char* str_bsp_init_err= { "bsp_spi_init() error %d\r\n" };
+
 #define MODE_DEV_NB_ARGC ((int)ARRAY_SIZE(mode_dev_arg)) /* Number of arguments/parameters for this mode */
 
-static uint32_t speeds[2][8] = {
+#define SPEED_NB (8)
+static uint32_t speeds[2][SPEED_NB] = {
 	/* SPI1 */
 	{
 		320000,
@@ -60,10 +63,9 @@ static uint32_t speeds[2][8] = {
 	}
 };
 
-static int init(t_hydra_console *con, t_tokenline_parsed *p)
+static void init_proto_default(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	int tokens_used;
 
 	/* Defaults */
 	proto->dev_num = 0;
@@ -73,11 +75,50 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	proto->dev_polarity = 0;
 	proto->dev_phase = 0;
 	proto->dev_bit_lsb_msb = SPI_MSB_FIRST;
+}
+
+static void show_params(t_hydra_console *con)
+{
+	int i, cnt;
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	cprintf(con, "Device: SPI%d\r\nGPIO resistor: %s\r\nMode: %s\r\n"
+		"Frequency: ",
+		proto->dev_num + 1,
+		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+		"floating",
+		proto->dev_mode == SPI_MODE_MASTER ? "master" : "slave");
+
+	print_freq(con, speeds[proto->dev_num][proto->dev_speed]);
+	cprintf(con, " (");
+	for (i = 0, cnt = 0; i < SPEED_NB; i++) {
+		if (proto->dev_speed == i)
+			continue;
+		if (cnt++)
+			cprintf(con, ", ");
+		print_freq(con, speeds[proto->dev_num][i]);
+	}
+	cprintf(con, ")\r\n");
+	cprintf(con, "Polarity: %d\r\nPhase: %d\r\nBit order: %s first\r\n",
+		proto->dev_polarity,
+		proto->dev_phase,
+		proto->dev_bit_lsb_msb == SPI_MSB_FIRST ? "MSB" : "LSB");
+}
+
+static int init(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+	int tokens_used;
+
+	init_proto_default(con);
 
 	/* Process cmdline arguments, skipping "spi". */
 	tokens_used = 1 + exec(con, p, 1);
 
 	bsp_spi_init(proto->dev_num, proto);
+
+	show_params(con);
 
 	return tokens_used;
 }
@@ -87,6 +128,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	mode_config_proto_t* proto = &con->mode->proto;
 	float arg_float;
 	int arg_int, t, i;
+	bsp_status_t bsp_status;
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
@@ -101,8 +143,14 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "SPI device must be 1 or 2.\r\n");
 				return t;
 			}
+			init_proto_default(con);
 			proto->dev_num = arg_int - 1;
-			bsp_spi_init(proto->dev_num, proto);
+			bsp_status = bsp_spi_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
+			cprintf(con, "Note: SPI parameters are reset to default value.\r\n");
 			break;
 		case T_PULL:
 			switch (p->tokens[++t]) {
@@ -116,7 +164,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 				break;
 			}
-			bsp_spi_init(proto->dev_num, proto);
+			bsp_status = bsp_spi_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
 			break;
 		case T_MODE:
 			if (p->tokens[++t] == T_MASTER)
@@ -124,12 +176,16 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			else
 				proto->dev_mode = SPI_MODE_SLAVE;
 
-			bsp_spi_init(proto->dev_num, proto);
+			bsp_status = bsp_spi_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
 			break;
 		case T_FREQUENCY:
 			t += 2;
 			memcpy(&arg_float, p->buf + p->tokens[t], sizeof(float));
-			for (i = 0; i < 8; i++) {
+			for (i = 0; i < SPEED_NB; i++) {
 				if (arg_float == speeds[proto->dev_num][i]) {
 					proto->dev_speed = i;
 					break;
@@ -139,7 +195,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Invalid frequency.\r\n");
 				return t;
 			}
-			bsp_spi_init(proto->dev_num, proto);
+			bsp_status = bsp_spi_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
 			break;
 		case T_POLARITY:
 			t += 2;
@@ -149,7 +209,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			proto->dev_polarity = arg_int;
-			bsp_spi_init(proto->dev_num, proto);
+			bsp_status = bsp_spi_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
 			break;
 		case T_PHASE:
 			t += 2;
@@ -163,11 +227,19 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_MSB_FIRST:
 			proto->dev_bit_lsb_msb = SPI_MSB_FIRST;
-			bsp_spi_init(proto->dev_num, proto);
+			bsp_status = bsp_spi_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
 			break;
 		case T_LSB_FIRST:
 			proto->dev_bit_lsb_msb = SPI_LSB_FIRST;
-			bsp_spi_init(proto->dev_num, proto);
+			bsp_status = bsp_spi_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
 			break;
 		case T_CHIP_SELECT:
 		case T_CS:
@@ -277,7 +349,6 @@ static void cleanup(t_hydra_console *con)
 static void show(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	int cnt, i;
 
 	if (p->tokens[1] == T_PINS) {
 		if (proto->dev_num == 0)
@@ -285,27 +356,7 @@ static void show(t_hydra_console *con, t_tokenline_parsed *p)
 		else
 			cprint(con, str_pins_spi2, strlen(str_pins_spi2));
 	} else {
-		cprintf(con, "Device: SPI%d\r\nGPIO resistor: %s\r\nMode: %s\r\n"
-				"Frequency: ",
-				proto->dev_num + 1,
-				proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
-					proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
-					"floating",
-				proto->dev_mode == SPI_MODE_MASTER ? "master" : "slave");
-		print_freq(con, speeds[proto->dev_num][proto->dev_speed]);
-		cprintf(con, " (");
-		for (i = 0, cnt = 0; i < 8; i++) {
-			if (proto->dev_speed == i)
-				continue;
-			if (cnt++)
-				cprintf(con, ", ");
-			print_freq(con, speeds[proto->dev_num][i]);
-		}
-		cprintf(con, ")\r\n");
-		cprintf(con, "Polarity: %d\r\nPhase: %d\r\nBit order: %s first\r\n",
-				proto->dev_polarity,
-				proto->dev_phase,
-				proto->dev_bit_lsb_msb == SPI_MSB_FIRST ? "MSB" : "LSB");
+		show_params(con);
 	}
 }
 
