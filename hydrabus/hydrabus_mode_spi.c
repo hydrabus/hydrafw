@@ -102,6 +102,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			proto->dev_num = arg_int - 1;
+			bsp_spi_init(proto->dev_num, proto);
 			break;
 		case T_PULL:
 			switch (p->tokens[++t]) {
@@ -115,12 +116,15 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 				break;
 			}
+			bsp_spi_init(proto->dev_num, proto);
 			break;
 		case T_MODE:
 			if (p->tokens[++t] == T_MASTER)
 				proto->dev_mode = SPI_MODE_MASTER;
 			else
 				proto->dev_mode = SPI_MODE_SLAVE;
+
+			bsp_spi_init(proto->dev_num, proto);
 			break;
 		case T_FREQUENCY:
 			t += 2;
@@ -135,6 +139,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Invalid frequency.\r\n");
 				return t;
 			}
+			bsp_spi_init(proto->dev_num, proto);
 			break;
 		case T_POLARITY:
 			t += 2;
@@ -144,6 +149,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			proto->dev_polarity = arg_int;
+			bsp_spi_init(proto->dev_num, proto);
 			break;
 		case T_PHASE:
 			t += 2;
@@ -153,12 +159,15 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			proto->dev_phase = arg_int;
+			bsp_spi_init(proto->dev_num, proto);
 			break;
 		case T_MSB_FIRST:
 			proto->dev_bit_lsb_msb = SPI_MSB_FIRST;
+			bsp_spi_init(proto->dev_num, proto);
 			break;
 		case T_LSB_FIRST:
 			proto->dev_bit_lsb_msb = SPI_LSB_FIRST;
+			bsp_spi_init(proto->dev_num, proto);
 			break;
 		case T_CHIP_SELECT:
 		case T_CS:
