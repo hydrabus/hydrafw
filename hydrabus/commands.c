@@ -127,59 +127,89 @@ t_token tokens_master_slave[] = {
 };
 
 t_token tokens_gpio_pull[] = {
-	{ T_UP,
-		.help = "Pull up" },
-	{ T_DOWN,
-		.help = "Pull down" },
-	{ T_FLOATING,
-		.help = "Floating (default)" },
+	{
+		T_UP,
+		.help = "Pull up"
+	},
+	{
+		T_DOWN,
+		.help = "Pull down"
+	},
+	{
+		T_FLOATING,
+		.help = "Floating (default)"
+	},
 	{ }
 };
 
 t_token tokens_mode_show[] = {
-	{ T_PINS,
-		.help = "Show pins used in this mode" },
+	{
+		T_PINS,
+		.help = "Show pins used in this mode"
+	},
 	{ }
 };
 
 t_token tokens_mode_nfc_show[] = {
-	{ T_REGISTERS,
-		.help = "Show NFC registers" },
+	{
+		T_REGISTERS,
+		.help = "Show NFC registers"
+	},
 	{ }
 };
 
 t_token tokens_mode_nfc_scan[] = {
-	{ T_PERIOD,
+	{
+		T_PERIOD,
 		.arg_type = T_ARG_INT,
-		.help = "Delay between scans (msec)" },
-	{ T_CONTINUOUS,
-		.help = "Scan until interrupted" },
+		.help = "Delay between scans (msec)"
+	},
+	{
+		T_CONTINUOUS,
+		.help = "Scan until interrupted"
+	},
 	{ }
 };
 
 t_token tokens_mode_nfc[] = {
-	{ T_SHOW,
+	{
+		T_SHOW,
 		.subtokens = tokens_mode_nfc_show,
-		.help = "Show NFC parameters" },
-	{ T_MIFARE,
-		.help = "MIFARE (ISO14443A)" },
-	{ T_VICINITY,
-		.help = "Vicinity (ISO/IEC 15693)" },
-	{ T_SCAN,
+		.help = "Show NFC parameters"
+	},
+	{
+		T_MIFARE,
+		.help = "MIFARE (ISO14443A)"
+	},
+	{
+		T_VICINITY,
+		.help = "Vicinity (ISO/IEC 15693)"
+	},
+	{
+		T_SCAN,
 		.subtokens = tokens_mode_nfc_scan,
-		.help = "Scan" },
-	{ T_SNIFF,
-		.help = "Sniff (ISO14443A only)" },
-	{ T_EXIT,
-		.help = "Exit NFC mode" },
+		.help = "Scan"
+	},
+	{
+		T_SNIFF,
+		.help = "Sniff (ISO14443A only)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit NFC mode"
+	},
 	{ }
 };
 
 t_token tokens_nfc[] = {
-	{ T_MIFARE,
-		.help = "MIFARE (ISO14443A)" },
-	{ T_VICINITY,
-		.help = "Vicinity (ISO/IEC 15693)" },
+	{
+		T_MIFARE,
+		.help = "MIFARE (ISO14443A)"
+	},
+	{
+		T_VICINITY,
+		.help = "Vicinity (ISO/IEC 15693)"
+	},
 	{ }
 };
 
@@ -190,109 +220,169 @@ t_token tokens_parity[] = {
 };
 
 t_token tokens_mode_uart[] = {
-	{ T_SHOW,
+	{
+		T_SHOW,
 		.subtokens = tokens_mode_show,
-		.help = "Show UART parameters" },
-	{ T_DEVICE,
+		.help = "Show UART parameters"
+	},
+	{
+		T_DEVICE,
 		.arg_type = T_ARG_INT,
-		.help = "UART device (1 or 2)" },
-	{ T_SPEED,
+		.help = "UART device (1 or 2)"
+	},
+	{
+		T_SPEED,
 		.arg_type = T_ARG_INT,
-		.help = "Bitrate" },
-	{ T_PARITY,
+		.help = "Bitrate"
+	},
+	{
+		T_PARITY,
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_parity,
-		.help = "" },
-	{ T_STOP_BITS,
+		.help = "Parity (none/even/odd)"
+	},
+	{
+		T_STOP_BITS,
 		.arg_type = T_ARG_INT,
-		.help = "Stop bits" },
+		.help = "Stop bits (1 or 2)"
+	},
 	/* UART-specific commands */
-	{ T_READ,
+	{
+		T_READ,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Read byte (repeat with :<num>)" },
-	{ T_WRITE,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_WRITE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Write byte (repeat with :<num>)" },
-	{ T_ARG_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_INT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Write byte (repeat with :<num>)" },
+		.help = "Write byte (repeat with :<num>)"
+	},
 	/* BP commands */
-	{ T_AMPERSAND,
+	{
+		T_AMPERSAND,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Delay 1 usec (repeat with :<num>)" },
-	{ T_PERCENT,
+		.help = "Delay 1 usec (repeat with :<num>)"
+	},
+	{
+		T_PERCENT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Delay 1 msec (repeat with :<num>)" },
-	{ T_EXIT,
-		.help = "Exit UART mode" },
+		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit UART mode"
+	},
 	{ }
 };
 
 t_token tokens_uart[] = {
-	{ T_DEVICE,
+	{
+		T_DEVICE,
 		.arg_type = T_ARG_INT,
-		.help = "UART device (1 or 2)" },
-	{ T_SPEED,
+		.help = "UART device (1 or 2)"
+	},
+	{
+		T_SPEED,
 		.arg_type = T_ARG_INT,
-		.help = "Bitrate" },
-	{ T_PARITY,
+		.help = "Bitrate"
+	},
+	{
+		T_PARITY,
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_parity,
-		.help = "" },
-	{ T_STOP_BITS,
+		.help = "Parity (none/even/odd)"
+	},
+	{
+		T_STOP_BITS,
 		.arg_type = T_ARG_INT,
-		.help = "Stop bits" },
+		.help = "Stop bits (1 or 2)"
+	},
 };
 
 t_token tokens_mode_i2c[] = {
-	{ T_SHOW,
+	{
+		T_SHOW,
 		.subtokens = tokens_mode_show,
-		.help = "Show I2C parameters" },
-	{ T_PULL,
+		.help = "Show I2C parameters"
+	},
+	{
+		T_PULL,
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_gpio_pull,
-		.help = "GPIO pull" },
-	{ T_FREQUENCY,
+		.help = "GPIO pull"
+	},
+	{
+		T_FREQUENCY,
 		.arg_type = T_ARG_FREQ,
-		.help = "Read/write frequency" },
+		.help = "Read/write frequency"
+	},
 	/* I2C-specific commands */
-	{ T_START,
-		.help = "Start" },
-	{ T_STOP,
-		.help = "Stop" },
-	{ T_READ,
+	{
+		T_START,
+		.help = "Start"
+	},
+	{
+		T_STOP,
+		.help = "Stop"
+	},
+	{
+		T_READ,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Read byte (repeat with :<num>)" },
-	{ T_WRITE,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_WRITE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Write byte (repeat with :<num>)" },
-	{ T_ARG_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_INT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Write byte (repeat with :<num>)" },
+		.help = "Write byte (repeat with :<num>)"
+	},
 	/* BP commands */
-	{ T_LEFT_SQ,
-		.help = "Alias for \"start\"" },
-	{ T_RIGHT_SQ,
-		.help = "Alias for \"stop\"" },
-	{ T_AMPERSAND,
+	{
+		T_LEFT_SQ,
+		.help = "Alias for \"start\""
+	},
+	{
+		T_RIGHT_SQ,
+		.help = "Alias for \"stop\""
+	},
+	{
+		T_AMPERSAND,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Delay 1 usec (repeat with :<num>)" },
-	{ T_PERCENT,
+		.help = "Delay 1 usec (repeat with :<num>)"
+	},
+	{
+		T_PERCENT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Delay 1 msec (repeat with :<num>)" },
-	{ T_EXIT,
-		.help = "Exit SPI mode" },
+		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit SPI mode"
+	},
 	{ }
 };
 
 t_token tokens_i2c[] = {
-	{ T_PULL,
+	{
+		T_PULL,
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_gpio_pull,
-		.help = "GPIO pull" },
-	{ T_FREQUENCY,
+		.help = "GPIO pull"
+	},
+	{
+		T_FREQUENCY,
 		.arg_type = T_ARG_FREQ,
-		.help = "Read/write frequency" },
+		.help = "Read/write frequency"
+	},
 	{ }
 };
 
@@ -323,41 +413,63 @@ t_token tokens_i2c[] = {
 		.help = "Send/receive LSB first" },
 
 t_token tokens_mode_spi[] = {
-	{ T_SHOW,
+	{
+		T_SHOW,
 		.subtokens = tokens_mode_show,
-		.help = "Show SPI parameters" },
+		.help = "Show SPI parameters"
+	},
 	SPI_PARAMETERS
 	/* SPI-specific commands */
-	{ T_CHIP_SELECT,
+	{
+		T_CHIP_SELECT,
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_on_off,
-		.help = "Chip select (CS)" },
-	{ T_CS,
+		.help = "Chip select (CS)"
+	},
+	{
+		T_CS,
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_on_off,
-		.help = "Alias for \"chip-select\"" },
-	{ T_READ,
+		.help = "Alias for \"chip-select\""
+	},
+	{
+		T_READ,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Read byte (repeat with :<num>)" },
-	{ T_WRITE,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_WRITE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Write byte (repeat with :<num>)" },
-	{ T_ARG_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_INT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Write byte (repeat with :<num>)" },
+		.help = "Write byte (repeat with :<num>)"
+	},
 	/* BP commands */
-	{ T_LEFT_SQ,
-		.help = "Alias for \"chip-select on\"" },
-	{ T_RIGHT_SQ,
-		.help = "Alias for \"chip-select off\"" },
-	{ T_AMPERSAND,
+	{
+		T_LEFT_SQ,
+		.help = "Alias for \"chip-select on\""
+	},
+	{
+		T_RIGHT_SQ,
+		.help = "Alias for \"chip-select off\""
+	},
+	{
+		T_AMPERSAND,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Delay 1 usec (repeat with :<num>)" },
-	{ T_PERCENT,
+		.help = "Delay 1 usec (repeat with :<num>)"
+	},
+	{
+		T_PERCENT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Delay 1 msec (repeat with :<num>)" },
-	{ T_EXIT,
-		.help = "Exit SPI mode" },
+		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit SPI mode"
+	},
 	{ }
 };
 
@@ -367,57 +479,93 @@ t_token tokens_spi[] = {
 };
 
 t_token tokens_gpio_mode[] = {
-	{ T_IN,
-		.help = "Configure GPIO as input" },
-	{ T_OUT,
-		.help = "Configure GPIO as output" },
-	{ T_OPEN_DRAIN,
-		.help = "Configure GPIO pin as open drain (default)" },
+	{
+		T_IN,
+		.help = "Configure GPIO as input"
+	},
+	{
+		T_OUT,
+		.help = "Configure GPIO as output"
+	},
+	{
+		T_OPEN_DRAIN,
+		.help = "Configure GPIO pin as open drain (default)"
+	},
 	{ }
 };
 
 t_token tokens_gpio[] = {
-	{ T_ARG_STRING,
-		.help = "One or more GPIO pins (PA0-15, PB0-11, PC0-15, PA* ...)" },
-	{ T_MODE,
+	{
+		T_ARG_STRING,
+		.help = "One or more GPIO pins (PA0-15, PB0-11, PC0-15, PA* ...)"
+	},
+	{
+		T_MODE,
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_gpio_mode,
-		.help = "Configure as input, output or open drain" },
-	{ T_PULL,
+		.help = "Configure as input, output or open drain"
+	},
+	{
+		T_PULL,
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_gpio_pull,
-		.help = "GPIO pull up, down or floating" },
-	{ T_PERIOD,
+		.help = "GPIO pull up, down or floating"
+	},
+	{
+		T_PERIOD,
 		.arg_type = T_ARG_INT,
-		.help = "Delay between reads, in milliseconds" },
-	{ T_CONTINUOUS,
-		.help = "Read continuously" },
-	{ T_ON,
-		.help = "Set GPIO pin" },
-	{ T_OFF,
-		.help = "Clear GPIO pin" },
-	{ T_READ,
-		.help = "Read GPIO values" },
+		.help = "Delay between reads, in milliseconds"
+	},
+	{
+		T_CONTINUOUS,
+		.help = "Read continuously"
+	},
+	{
+		T_ON,
+		.help = "Set GPIO pin"
+	},
+	{
+		T_OFF,
+		.help = "Clear GPIO pin"
+	},
+	{
+		T_READ,
+		.help = "Read GPIO values"
+	},
 	{ }
 };
 
 t_token tokens_adc[] = {
-	{ T_ADC1,
-		.help = "ADC1" },
-	{ T_TEMPSENSOR,
-		.help = "Temperature sensor" },
-	{ T_VREFINT,
-		.help = "Internal reference voltage" },
-	{ T_VBAT,
-		.help = "VBAT voltage" },
-	{ T_SAMPLES,
+	{
+		T_ADC1,
+		.help = "ADC1"
+	},
+	{
+		T_TEMPSENSOR,
+		.help = "Temperature sensor"
+	},
+	{
+		T_VREFINT,
+		.help = "Internal reference voltage"
+	},
+	{
+		T_VBAT,
+		.help = "VBAT voltage"
+	},
+	{
+		T_SAMPLES,
 		.arg_type = T_ARG_INT,
-		.help = "Number of samples" },
-	{ T_PERIOD,
+		.help = "Number of samples"
+	},
+	{
+		T_PERIOD,
 		.arg_type = T_ARG_INT,
-		.help = "Delay between samples (msec)" },
-	{ T_CONTINUOUS,
-		.help = "Read continuously" },
+		.help = "Delay between samples (msec)"
+	},
+	{
+		T_CONTINUOUS,
+		.help = "Read continuously"
+	},
 	{ }
 };
 
@@ -427,33 +575,55 @@ t_token tokens_really[] = {
 };
 
 t_token tokens_sd[] = {
-	{ T_MOUNT,
-		.help = "Mount SD card" },
-	{ T_UMOUNT,
-		.help = "Unmount SD card" },
-	{ T_ERASE,
-		.help = "Erase and reformat SD card" },
-	{ T_CD,
+	{
+		T_MOUNT,
+		.help = "Mount SD card"
+	},
+	{
+		T_UMOUNT,
+		.help = "Unmount SD card"
+	},
+	{
+		T_ERASE,
+		.help = "Erase and reformat SD card"
+	},
+	{
+		T_CD,
 		.arg_type = T_ARG_STRING,
-		.help = "Change SD card directory" },
-	{ T_PWD,
-		.help = "Show current SD card directory" },
-	{ T_LS,
-		.help = "List files on SD card" },
-	{ T_TESTPERF,
-		.help = "Test SD card performance" },
-	{ T_CAT,
+		.help = "Change SD card directory"
+	},
+	{
+		T_PWD,
+		.help = "Show current SD card directory"
+	},
+	{
+		T_LS,
+		.help = "List files on SD card"
+	},
+	{
+		T_TESTPERF,
+		.help = "Test SD card performance"
+	},
+	{
+		T_CAT,
 		.arg_type = T_ARG_STRING,
-		.help = "Display (ASCII) file on SD card" },
-	{ T_HD,
+		.help = "Display (ASCII) file on SD card"
+	},
+	{
+		T_HD,
 		.arg_type = T_ARG_STRING,
-		.help = "Hexdump file on SD card" },
-	{ T_RM,
+		.help = "Hexdump file on SD card"
+	},
+	{
+		T_RM,
 		.arg_type = T_ARG_STRING,
-		.help = "Remove file or directory" },
-	{ T_MKDIR,
+		.help = "Remove file or directory"
+	},
+	{
+		T_MKDIR,
 		.arg_type = T_ARG_STRING,
-		.help = "Create new directory" },
+		.help = "Create new directory"
+	},
 	{ }
 };
 
@@ -466,52 +636,84 @@ t_token tokens_show[] = {
 };
 
 t_token tokens_debug[] = {
-	{ T_TOKENLINE,
-		.help = "Tokenline dump for every command" },
-	{ T_TIMING,
-		.help = "Mysterious timing function" },
-	{ T_ON,
-		.help = "Enable" },
-	{ T_OFF,
-		.help = "Disable" },
+	{
+		T_TOKENLINE,
+		.help = "Tokenline dump for every command"
+	},
+	{
+		T_TIMING,
+		.help = "Mysterious timing function"
+	},
+	{
+		T_ON,
+		.help = "Enable"
+	},
+	{
+		T_OFF,
+		.help = "Disable"
+	},
 	{ }
 };
 
 t_token tl_tokens[] = {
-	{ T_HELP,
-			.arg_type = T_ARG_HELP,
-		.help = "Available commands" },
-	{ T_HISTORY,
-		.help = "Command history" },
-	{ T_CLEAR,
-		.help = "Clear screen" },
-	{ T_SHOW,
+	{
+		T_HELP,
+		.arg_type = T_ARG_HELP,
+		.help = "Available commands"
+	},
+	{
+		T_HISTORY,
+		.help = "Command history"
+	},
+	{
+		T_CLEAR,
+		.help = "Clear screen"
+	},
+	{
+		T_SHOW,
 		.subtokens = tokens_show,
-		.help = "Show information" },
-	{ T_SD,
+		.help = "Show information"
+	},
+	{
+		T_SD,
 		.subtokens = tokens_sd,
-		.help = "SD card management" },
-	{ T_ADC,
+		.help = "SD card management"
+	},
+	{
+		T_ADC,
 		.subtokens = tokens_adc,
-		.help = "Read analog values" },
-	{ T_GPIO,
+		.help = "Read analog values"
+	},
+	{
+		T_GPIO,
 		.subtokens = tokens_gpio,
-		.help = "Get or set GPIO pins" },
-	{ T_SPI,
+		.help = "Get or set GPIO pins"
+	},
+	{
+		T_SPI,
 		.subtokens = tokens_spi,
-		.help = "SPI mode" },
-	{ T_I2C,
+		.help = "SPI mode"
+	},
+	{
+		T_I2C,
 		.subtokens = tokens_i2c,
-		.help = "I2C mode" },
-	{ T_UART,
+		.help = "I2C mode"
+	},
+	{
+		T_UART,
 		.subtokens = tokens_uart,
-		.help = "UART mode" },
-	{ T_NFC,
+		.help = "UART mode"
+	},
+	{
+		T_NFC,
 		.subtokens = tokens_nfc,
-		.help = "NFC mode" },
-	{ T_DEBUG,
+		.help = "NFC mode"
+	},
+	{
+		T_DEBUG,
 		.subtokens = tokens_debug,
-		.help = "Debug mode" },
+		.help = "Debug mode"
+	},
 	{ }
 };
 
