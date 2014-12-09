@@ -210,26 +210,6 @@ static void cleanup(t_hydra_console *con)
 	bsp_i2c_deinit(proto->dev_num);
 }
 
-static void print_freq(t_hydra_console *con, uint32_t freq)
-{
-	float f;
-	char *suffix;
-
-	f = freq;
-	if (f > 1000000000L) {
-		f /= 1000000000L;
-		suffix = "ghz";
-	} else if (f > 1000000) {
-		f /= 1000000;
-		suffix = "mhz";
-	} else if (f > 1000) {
-		f /= 1000;
-		suffix = "khz";
-	} else
-		suffix = "";
-	cprintf(con, "%.2f%s", f, suffix);
-}
-
 static void show(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;

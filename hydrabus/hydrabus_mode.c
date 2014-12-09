@@ -87,6 +87,37 @@ static void hydrabus_mode_write_read_error(t_hydra_console *con, uint32_t mode_s
 	cprintf(con, mode_str_write_read_error, mode_status);
 }
 
+
+void print_freq(t_hydra_console *con, uint32_t freq)
+{
+	#define PRINT_FREQ_1GHZ	(1000000000L)
+	#define PRINT_FREQ_1MHZ	(1000000)
+	#define PRINT_FREQ_1KHZ	(1000)
+	uint32_t freq_int_part;
+	uint32_t freq_dec_part;
+	char *suffix;
+
+	freq_int_part = freq;
+	freq_dec_part = 0;
+	if (freq > PRINT_FREQ_1GHZ) {
+		freq_int_part /= PRINT_FREQ_1GHZ;
+		freq_dec_part = (freq - (freq_int_part * PRINT_FREQ_1GHZ)) / (PRINT_FREQ_1MHZ*10);
+		suffix = "ghz";
+	} else if (freq > PRINT_FREQ_1MHZ) {
+		freq_int_part /= PRINT_FREQ_1MHZ;
+		freq_dec_part = (freq - (freq_int_part * PRINT_FREQ_1MHZ)) / (PRINT_FREQ_1KHZ*10);
+		suffix = "mhz";
+	} else if (freq > PRINT_FREQ_1KHZ) {
+		freq_int_part /= PRINT_FREQ_1KHZ;
+		freq_dec_part = (freq - (freq_int_part * PRINT_FREQ_1KHZ)) / 10;
+		suffix = "khz";
+	} else
+		suffix = "";
+
+	cprintf(con, "%d.%02d%s", freq_int_part, freq_dec_part, suffix);
+}
+
+
 int cmd_mode_init(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	unsigned int i;
