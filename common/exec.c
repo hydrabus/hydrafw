@@ -38,10 +38,12 @@ void print(void *user, const char *str)
 	if (!str)
 		return;
 
-	con = user;
 	len = strlen(str);
-	if (len > 0 && len < 1024)
-		chSequentialStreamWrite(con->bss, (uint8_t *)str, len);
+	if (!len)
+		return;
+
+	con = user;
+	chSequentialStreamWrite(con->bss, (uint8_t *)str, len);
 }
 
 char get_char(t_hydra_console *con)
