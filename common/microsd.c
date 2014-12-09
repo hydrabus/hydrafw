@@ -148,7 +148,7 @@ static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offse
 	} while (chVTIsSystemTimeWithin(start, end));
 
 	total = (float)n * MMCSD_BLOCK_SIZE / (1024 * 1024 * seconds);
-	cprintf(con, "%6D sectors/s, %5D KB/s %4.2f MB/s\r\n", n / seconds,
+	cprintf(con, "%6D sectors/s, %5D KiB/s %4.2f MiB/s\r\n", n / seconds,
 		(n * MMCSD_BLOCK_SIZE) / (1024 * seconds), total);
 
 	return TRUE;
@@ -163,7 +163,7 @@ static int sd_perf(t_hydra_console *con, int offset)
 	cprintf(con, "\r\n%sligned sequential reads:\r\n", offset ? "Una" : "A");
 
 	/* Single block read performance. */
-	cprintf(con, "0.5KB blocks: ");
+	cprintf(con, "0.5KiB blocks: ");
 	if (!(ret = sd_perf_run(con, PERFRUN_SECONDS, 1, offset)))
 		return ret;
 
@@ -171,7 +171,7 @@ static int sd_perf(t_hydra_console *con, int offset)
 
 	for(nb_sectors = 2; nb_sectors <= G_SBUF_SDC_BURST_SIZE; nb_sectors=nb_sectors*2) {
 		/* Multiple sequential blocks read performance, aligned.*/
-		cprintf(con, "%3DKB blocks: ", nb_sectors/2 );
+		cprintf(con, "%3DKiB blocks: ", nb_sectors/2 );
 		ret = sd_perf_run(con, PERFRUN_SECONDS, nb_sectors, offset);
 		if(ret == FALSE)
 			return ret;
@@ -208,7 +208,7 @@ int cmd_sd_test_perf(t_hydra_console *con, t_tokenline_parsed *p)
 	cprintf(con, "CID:\t  %08X %08X %08X %08X \r\n",
 		SDCD1.cid[3], SDCD1.cid[2], SDCD1.cid[1], SDCD1.cid[0]);
 	cprintf(con, "Mode:\t  %s\r\n", mode[ (SDCD1.cardmode&0x03)]);
-	cprintf(con, "Capacity: %DMB\r\n", SDCD1.capacity / 2048);
+	cprintf(con, "Capacity: %DMiB\r\n", SDCD1.capacity / 2048);
 	chThdSleepMilliseconds(1);
 
 	if (!sd_perf(con, 0))
@@ -329,7 +329,7 @@ int cmd_sd_mount(t_hydra_console *con, t_tokenline_parsed *p)
 	(void)p;
 
 	if (fs_ready) {
-		cprintf(con, "File System already mounted\r\n");
+		cprintf(con, "SD card already mounted.\r\n");
 		return FALSE;
 	}
 
@@ -337,17 +337,17 @@ int cmd_sd_mount(t_hydra_console *con, t_tokenline_parsed *p)
 	 * SDC initialization and FS mount.
 	 */
 	if (sdcConnect(&SDCD1)) {
-		cprintf(con, "sdcConnect(&SDCD1) error\r\n");
+		cprintf(con, "Failed to connect to SD card.\r\n");
 		return FALSE;
 	}
 
 	err = f_mount(&SDC_FS, "", 0);
 	if (err != FR_OK) {
-		cprintf(con, "f_mount KO\r\n");
+		cprintf(con, "SD card mount failed.\r\n");
 		sdcDisconnect(&SDCD1);
 		return FALSE;
 	} else {
-		cprintf(con, "f_mount OK\r\n");
+		cprintf(con, "SD card mounted.\r\n");
 	}
 	fs_ready = TRUE;
 
@@ -359,16 +359,16 @@ int cmd_sd_umount(t_hydra_console *con, t_tokenline_parsed *p)
 	(void)p;
 
 	if(!fs_ready) {
-		cprintf(con, "File System already unmounted\r\n");
+		cprintf(con, "SD card not mounted.\r\n");
 		return FALSE;
 	}
 
-	cprintf(con, "Umount filesystem...\r\n");
 	f_mount(NULL, "", 0);
 
 	/* SDC Disconnect */
 	sdcDisconnect(&SDCD1);
 	fs_ready = FALSE;
+	cprintf(con, "SD card unmounted.\r\n");
 
 	return TRUE;
 }
@@ -391,7 +391,7 @@ static FRESULT sd_dir_list(t_hydra_console *con, char *path)
 
 	res = f_opendir(&dir, path);
 	if(res) {
-		cprintf(con, "f_opendir() error %d\r\n", res);
+		cprintf(con, "Failed to open directory: error %d.\r\n", res);
 		return res;
 	}
 	nb_files = 0;
@@ -433,7 +433,7 @@ static FRESULT sd_dir_list(t_hydra_console *con, char *path)
 	}
 
 	file_size_mb = (uint32_t)(file_size/(uint64_t)(1024*1024));
-	cprintf(con, "%4u File(s),%10lu MB total %4u Dir(s)\r\n", nb_files, file_size_mb, nb_dirs);
+	cprintf(con, "%4u File(s),%10lu MiB total %4u Dir(s)\r\n", nb_files, file_size_mb, nb_dirs);
 
 	chThdSleepMilliseconds(1);
 
@@ -455,14 +455,14 @@ int cmd_sd_cd(t_hydra_console *con, t_tokenline_parsed *p)
 	if (!fs_ready) {
 		err = mount();
 		if(err) {
-			cprintf(con, "mount error:%d\r\n", err);
+			cprintf(con, "Mount failed: error %d.\r\n", err);
 			return FALSE;
 		}
 	}
 
 	err = f_chdir((char *)fbuff);
 	if(err) {
-		cprintf(con, "f_chdir error:%d\r\n", err);
+		cprintf(con, "Failed: error %d.\r\n", err);
 	}
 
 	return TRUE;
@@ -478,14 +478,14 @@ int cmd_sd_pwd(t_hydra_console *con, t_tokenline_parsed *p)
 	if (!fs_ready) {
 		err = mount();
 		if(err) {
-			cprintf(con, "mount error:%d\r\n", err);
+			cprintf(con, "Mount failed: error %d.\r\n", err);
 			return FALSE;
 		}
 	}
 
 	err = f_getcwd((char *)fbuff, sizeof(fbuff));
 	if(err) {
-		cprintf(con, "f_getcwd error:%d\r\n", err);
+		cprintf(con, "Failed: error %d.\r\n", err);
 		return FALSE;
 	}
 	cprintf(con, "%s\r\n", fbuff);
@@ -508,35 +508,29 @@ int cmd_sd_ls(t_hydra_console *con, t_tokenline_parsed *p)
 	if (!fs_ready) {
 		err = mount();
 		if(err) {
-			cprintf(con, "mount error:%d\r\n", err);
+			cprintf(con, "Mount failed: error %d.\r\n", err);
 			return FALSE;
 		}
 	}
 
-	err = f_getcwd((char *)fbuff, sizeof(fbuff));
-	if(err) {
-		cprintf(con, "f_getcwd error:%d\r\n", err);
-	}
-	cprintf(con, "%s\r\n", fbuff);
+	if ((err = f_getcwd((char *)fbuff, sizeof(fbuff))))
+		cprintf(con, "Failed to change directory: error %d.\r\n", err);
 
-	err = f_getfree("/", &clusters, &fsp);
-	if (err != FR_OK) {
-		cprintf(con, "FS: f_getfree() failed\r\n");
-	} else {
+	if ((err = f_getfree("/", &clusters, &fsp)) == FR_OK) {
 		free_size_bytes = (uint64_t)(clusters * SDC_FS.csize) * (uint64_t)MMCSD_BLOCK_SIZE;
 		free_size_kb = (uint32_t)(free_size_bytes/(uint64_t)1024);
 		free_size_mb = (uint32_t)(free_size_kb/1024);
-		cprintf(con,
-			"FS: %lu free clusters, %lu sectors/cluster, %lu bytes/sector\r\n",
+		cprintf(con, "%lu free clusters, %lu sectors/cluster, %lu bytes/sector\r\n",
 			clusters, (uint32_t)SDC_FS.csize, (uint32_t)MMCSD_BLOCK_SIZE);
-		cprintf(con,
-			"FS: %lu KBytes free (%lu MBytes free)\r\n",
+		cprintf(con, "%lu KiBytes free (%lu MiBytes free)\r\n",
 			free_size_kb, free_size_mb);
 
 		err = sd_dir_list(con, (char *)fbuff);
 		if (err != FR_OK) {
-			cprintf(con, "sd_dir_list() on dir=%s failed\r\n", fbuff);
+			cprintf(con, "Directory list failed: error %d.\r\n", err);
 		}
+	} else {
+		cprintf(con, "Failed to get free space: error %d.\r\n", err);
 	}
 
 	return TRUE;
@@ -587,22 +581,21 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed *p)
 	if (!fs_ready) {
 		err = mount();
 		if(err) {
-			cprintf(con, "mount error:%d\r\n", err);
+			cprintf(con, "Mount failed: error %d.\r\n", err);
 			return FALSE;
 		}
 	}
 
 	err = f_open(&fp, filename, FA_READ | FA_OPEN_EXISTING);
 	if (err != FR_OK) {
-		cprintf(con, "Error to open file %s, err:%d\r\n", filename, err);
+		cprintf(con, "Failed to open file %s: error %d.\r\n", filename, err);
 		return FALSE;
 	}
 
 	filelen = fp.fsize;
 	if(filelen > MAX_FILE_SIZE) {
-		cprintf(con, "Read file: %s, size=%d is too big shall not exceed %d\r\n", filename, filelen, MAX_FILE_SIZE);
-	} else {
-		cprintf(con, "Read file: %s, size=%d\r\n", filename, filelen);
+		cprintf(con, "File is too big!\r\n");
+		return FALSE;
 	}
 
 	hex = p->tokens[1] == T_HD;
@@ -617,7 +610,7 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed *p)
 		}
 		err = f_read(&fp, inbuf, cnt, (void *)&cnt);
 		if (err != FR_OK) {
-			cprintf(con, "Error to read file, err:%d\r\n", err);
+			cprintf(con, "Failed to read file: error %d.\r\n", err);
 			break;
 		}
 		if (!cnt)
@@ -935,14 +928,14 @@ int cmd_sd_rm(t_hydra_console *con, t_tokenline_parsed *p)
 	int offset;
 
 	if (!fs_ready && (err = mount())) {
-		cprintf(con, "mount error: %d\r\n", err);
+		cprintf(con, "Mount failed: error %d.\r\n", err);
 		return FALSE;
 	}
 
 	memcpy(&offset, &p->tokens[3], sizeof(int));
 	snprintf((char *)fbuff, FILENAME_SIZE, "0:%s", p->buf + offset);
 	if ((err = f_unlink((char *)fbuff))) {
-		cprintf(con, "f_unlink error: %d\r\n", err);
+		cprintf(con, "Failed: error %d.\r\n", err);
 		return FALSE;
 	}
 
@@ -955,14 +948,14 @@ int cmd_sd_mkdir(t_hydra_console *con, t_tokenline_parsed *p)
 	int offset;
 
 	if (!fs_ready && (err = mount())) {
-		cprintf(con, "mount error: %d\r\n", err);
+		cprintf(con, "Mount failed: error %d.\r\n", err);
 		return FALSE;
 	}
 
 	memcpy(&offset, &p->tokens[3], sizeof(int));
 	snprintf((char *)fbuff, FILENAME_SIZE, "0:%s", p->buf + offset);
 	if ((err = f_mkdir((char *)fbuff))) {
-		cprintf(con, "f_mkdir error: %d\r\n", err);
+		cprintf(con, "Failed: error %d.\r\n", err);
 		return FALSE;
 	}
 
