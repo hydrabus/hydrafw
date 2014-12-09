@@ -653,16 +653,6 @@ int cmd_sd_erase(t_hydra_console *con, t_tokenline_parsed *p)
 		return FALSE;
 	}
 
-	while(1) {
-		if(USER_BUTTON) {
-			break;
-		}
-		chThdSleepMilliseconds(10);
-	}
-
-	cprintf(con, "Trying to connect SDIO... ");
-	chThdSleepMilliseconds(10);
-
 	if (!sdcConnect(&SDCD1)) {
 		cprintf(con, "OK\r\n");
 		cprintf(con, "*** Card CSD content is: ");

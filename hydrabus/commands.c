@@ -585,6 +585,7 @@ t_token tokens_sd[] = {
 	},
 	{
 		T_ERASE,
+		.subtokens = tokens_really,
 		.help = "Erase and reformat SD card"
 	},
 	{
