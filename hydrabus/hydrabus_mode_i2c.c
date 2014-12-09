@@ -86,6 +86,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 				break;
 			}
+			bsp_i2c_init(proto->dev_num, proto);
 			break;
 		case T_FREQUENCY:
 			t += 2;
@@ -100,6 +101,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Invalid frequency.\r\n");
 				return t;
 			}
+			bsp_i2c_init(proto->dev_num, proto);
 			break;
 		default:
 			return 0;
