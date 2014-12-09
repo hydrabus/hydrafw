@@ -37,7 +37,8 @@ static const char* str_i2c_ack_br = { "ACK\r\n" };
 static const char* str_i2c_nack = { "NACK" };
 static const char* str_i2c_nack_br = { "NACK\r\n" };
 
-static uint32_t speeds[] = {
+#define SPEED_NB (4)
+static uint32_t speeds[SPEED_NB] = {
 	50000,
 	100000,
 	400000,
@@ -46,11 +47,36 @@ static uint32_t speeds[] = {
 
 static void init_proto_default(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
+
 	/* Defaults */
 	proto->dev_num = I2C_DEV_NUM;
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 	proto->dev_speed = 1;
 	proto->ack_pending = 0;
+}
+
+static void show_params(t_hydra_console *con)
+{
+	int i, cnt;
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	cprintf(con, "GPIO resistor: %s\r\nFrequency: ",
+		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+		"floating");
+
+	print_freq(con, speeds[proto->dev_speed]);
+
+	cprintf(con, " (");
+	for (i = 0, cnt = 0; i < SPEED_NB; i++) {
+		if (proto->dev_speed == (int)i)
+			continue;
+		if (cnt++)
+			cprintf(con, ", ");
+		print_freq(con, speeds[i]);
+	}
+	cprintf(con, ")\r\n");
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -217,26 +243,10 @@ static void cleanup(t_hydra_console *con)
 
 static void show(t_hydra_console *con, t_tokenline_parsed *p)
 {
-	mode_config_proto_t* proto = &con->mode->proto;
-	unsigned int cnt, i;
-
 	if (p->tokens[1] == T_PINS) {
 		cprint(con, str_pins_i2c1, strlen(str_pins_i2c1));
 	} else {
-		cprintf(con, "GPIO resistor: %s\r\nFrequency: ",
-				proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
-				proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
-			   "floating");
-		print_freq(con, speeds[proto->dev_speed]);
-		cprintf(con, " (");
-		for (i = 0, cnt = 0; i < ARRAY_SIZE(speeds); i++) {
-			if (proto->dev_speed == (int)i)
-				continue;
-			if (cnt++)
-				cprintf(con, ", ");
-			print_freq(con, speeds[i]);
-		}
-		cprintf(con, ")\r\n");
+		show_params(con);
 	}
 }
 
