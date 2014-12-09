@@ -150,6 +150,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, str_bsp_init_err, bsp_status);
 				return t;
 			}
+			tl_set_prompt(con->tl, (char *)con->mode->exec->get_prompt(con));
 			cprintf(con, "Note: SPI parameters are reset to default value.\r\n");
 			break;
 		case T_PULL:
