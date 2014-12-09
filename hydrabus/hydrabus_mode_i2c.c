@@ -91,6 +91,8 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 
 	bsp_i2c_init(proto->dev_num, proto);
 
+	show_params(con);
+
 	return tokens_used;
 }
 
