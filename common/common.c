@@ -37,6 +37,24 @@ uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));
 
 extern uint32_t debug_flags;
 
+void cprint(t_hydra_console *con, const char *data, const uint32_t size)
+{
+	BaseSequentialStream* chp = con->bss;
+
+	if(size > 0)
+		chSequentialStreamWrite(chp, (uint8_t *)data, size);
+}
+
+void cprintf(t_hydra_console *con, const char *fmt, ...)
+{
+	BaseSequentialStream* chp = con->bss;
+	va_list ap;
+
+	va_start(ap, fmt);
+	chvprintf(chp, fmt, ap);
+	va_end(ap);
+}
+
 /** \brief print debug through Semi Hosting(SWD debug) & SWV
  *
  * \param data const char*

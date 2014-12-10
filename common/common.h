@@ -156,25 +156,9 @@ int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p);
 void token_dump(t_hydra_console *con, t_tokenline_parsed *p);
 
+void cprint(t_hydra_console *con, const char *data, const uint32_t size);
+void cprintf(t_hydra_console *con, const char *fmt, ...);
 void print_dbg(const char *data, const uint32_t size);
 void printf_dbg(const char *fmt, ...);
-
-static inline void cprint(t_hydra_console *con, const char *data, const uint32_t size)
-{
-	BaseSequentialStream* chp = con->bss;
-
-	if(size > 0)
-		chSequentialStreamWrite(chp, (uint8_t *)data, size);
-}
-
-static inline void cprintf(t_hydra_console *con, const char *fmt, ...)
-{
-	BaseSequentialStream* chp = con->bss;
-	va_list ap;
-
-	va_start(ap, fmt);
-	chvprintf(chp, fmt, ap);
-	va_end(ap);
-}
 
 #endif /* _COMMON_H_ */
