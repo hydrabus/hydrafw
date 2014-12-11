@@ -247,6 +247,8 @@ int cmd_show(t_hydra_console *con, t_tokenline_parsed *p)
 		cmd_show_memory(con);
 	else if (p->tokens[1] == T_THREADS)
 		cmd_show_threads(con);
+	else if (p->tokens[1] == T_SD)
+		cmd_show_sd(con);
 	else if (p->tokens[1] == T_DEBUG)
 		cmd_show_debug(con);
 	else

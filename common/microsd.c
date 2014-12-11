@@ -1009,3 +1009,250 @@ int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p)
 	return ret;
 }
 
+static void print_ascii_bytes(t_hydra_console *con, uint8_t *buf, int size)
+{
+	bool is_ascii;
+	int i;
+
+	cprintf(con, "'");
+	is_ascii = TRUE;
+	for (i = 0; i < size; i++) {
+		if (buf[i] < 0x20 || buf[i] > 0x7e) {
+			is_ascii = FALSE;
+			cprint(con, ".", 1);
+		} else {
+			cprint(con, (char *)buf + i, 1);
+		}
+	}
+	cprintf(con, "'");
+
+	if (!is_ascii) {
+		for (i = 0; i < size; i++) {
+			if (!i)
+				cprint(con, " (", 2);
+			else
+				cprint(con, " ", 1);
+			cprintf(con, "%02x", buf[i]);
+		}
+		cprintf(con, ")");
+	}
+	cprintf(con, "\r\n");
+}
+
+#define SHOW_SD_PADDING 23
+static void print_padded(t_hydra_console *con, char *str)
+{
+	int size;
+	const char *space = "                       ";
+
+	size = strlen(str);
+	cprint(con, str, size);
+	if (size <= SHOW_SD_PADDING)
+		cprint(con, space + size, SHOW_SD_PADDING - size);
+	cprint(con, ": ", 2);
+}
+
+static void cmd_show_sd_cid(t_hydra_console *con, uint8_t *cid)
+{
+	int i;
+
+	print_padded(con, "Manufacturer ID");
+	cprintf(con, "%02x\r\n", cid[0]);
+
+	print_padded(con, "OEM/Application ID");
+	print_ascii_bytes(con, cid + 1, 2);
+
+	print_padded(con, "Product name");
+	print_ascii_bytes(con, cid + 3, 5);
+
+	print_padded(con, "Product revision");
+	cprintf(con, "%d.%d\r\n", cid[8] >> 4, cid[8] & 0x0f);
+
+	print_padded(con, "Serial number");
+	for (i = 0; i < 4; i++)
+		cprintf(con, "%02x", cid[9 + i]);
+	cprintf(con, "\r\n");
+
+	print_padded(con, "Manufacturing date");
+	cprintf(con, "%d-%02d\r\n", 2000 + ((cid[13] << 4) + (cid[14] >> 4)), cid[14] & 0x0f);
+}
+
+static void cmd_show_sd_csd(t_hydra_console *con, uint8_t *csd)
+{
+	const int taac_mul[] = { 1, 10, 100 };
+	const int tran_mul[] = { 10, 100, 1000, 10000 };
+	const int tran_val[] = { 0, 10, 12, 13, 15, 20, 25, 30,
+		35, 40, 45, 50, 55, 60, 70, 80 };
+	const char *file_systems[] = {
+		"Partition table", "Boot record", "Universal", "Other"
+	};
+	const char *write_protected[] = { "no", "temporarily",
+		"permanently", "definitely" };
+	int csd_ver, mul, val, speed, block_len, size, tmp, i;
+	char *suffix;
+
+	csd_ver = csd[0] >> 6;
+
+	/* Read block length, needed for capacity. */
+	tmp = csd[5] & 0x0f;
+	if (tmp < 9 || tmp > 11)
+		block_len = 0;
+	else
+		block_len = 1 << tmp;
+
+	if (csd_ver == 0) {
+		tmp = ((csd[6] & 0x03) << 10) + (csd[7] << 2) + (csd[8] >> 6);
+		mul = 1 << ((((csd[9] & 0x03) << 1) + (csd[10] >> 7)) + 2);
+		size = (tmp + 1) * mul * block_len / 1024 / 1024;
+	} else {
+		tmp = ((csd[7] & 0x3f) << 16) + (csd[8] << 8) + csd[9];
+		size = (tmp + 1) / 2;
+	}
+	print_padded(con, "Capacity");
+	cprintf(con, "%d MiB\r\n", size);
+
+	print_padded(con, "Capacity class");
+	cprintf(con, "%s capacity)\r\n", csd_ver ? "HC (High" : "SC (Standard");
+
+	print_padded(con, "TAAC");
+	mul = csd[1] & 0x07;
+	//cprintf(con, "%02x\r\n", mul);
+	if (mul < 3) {
+		suffix = "ns";
+	} else if (mul < 6) {
+		suffix = "us";
+		mul -= 3;
+	} else {
+		suffix = "ms";
+		mul -= 6;
+	}
+	val = (csd[1] & 0x78) >> 3;
+	cprintf(con, "%d %s\r\n", val * taac_mul[mul], suffix);
+
+	if (csd_ver == 0 && csd[2]) {
+		print_padded(con, "NSAC");
+		cprintf(con, "%d clock cycles\r\n", 100 * csd[2]);
+	}
+
+	print_padded(con, "Data transfer rate");
+	mul = csd[3] & 0x07;
+	val = (csd[3] >> 3) & 0x0f;
+	if (mul > 3 || val == 0) {
+		cprintf(con, "Invalid (%02x)", csd[3]);
+	} else {
+		speed = tran_val[val] * tran_mul[mul];
+		if (mul)
+			speed /= 1000;
+		cprintf(con, "%d %cbit/s\r\n", speed, mul ? 'M' : 'K');
+	}
+
+	print_padded(con, "Command classes");
+	tmp = (csd[4] << 4) + (csd[5] >> 4);
+	for (i = 0; i < 12; i++) {
+		if (tmp & (1 << i))
+			cprintf(con, "%d ", i);
+	}
+	cprintf(con, "\r\n");
+
+	print_padded(con, "Read block length");
+	if (block_len)
+		cprintf(con, "%d bytes\r\n", block_len);
+	else
+		cprintf(con, "Invalid (%02x)\r\n", csd[3]);
+
+	print_padded(con, "Write block length");
+	size = 1 << (((csd[12] & 0x03) << 2) + (csd[13] >> 6));
+	cprintf(con, "%d bytes\r\n", size);
+
+	print_padded(con, "Partial block reads");
+	cprintf(con, "%s\r\n", csd[6] & 0x80 ? "yes" : "no");
+
+	print_padded(con, "Partial block writes");
+	cprintf(con, "%s\r\n", csd[13] & 0x20 ? "yes" : "no");
+
+	print_padded(con, "Read-write factor");
+	tmp = (csd[12] >> 2) & 0x07;
+	if (tmp > 5)
+		cprintf(con, "invalid (%02x)\r\n", tmp);
+	else
+		cprintf(con, "%d\r\n", (1 << tmp));
+
+	print_padded(con, "Misaligned block writes");
+	cprintf(con, "%s\r\n", csd[6] & 0x40 ? "yes" : "no");
+
+	print_padded(con, "Misaligned block reads");
+	cprintf(con, "%s\r\n", csd[6] & 0x20 ? "yes" : "no");
+
+	print_padded(con, "Contents copied");
+	cprintf(con, "%s\r\n", csd[14] & 0x40 ? "yes" : "no");
+
+	print_padded(con, "Erase sector size");
+	size = ((csd[10] & 0x3f) << 1) + (csd[11] >> 7) + 1;
+	cprintf(con, "%d bytes\r\n", size);
+
+	print_padded(con, "Minimum erase size");
+	cprintf(con, "%d bytes\r\n", (csd[10] & 0x40) ? 512 : size);
+
+	print_padded(con, "Write-protect possible");
+	if (csd[12] & 0x80) {
+		size = (csd[11] & 0x7f) + 1;
+		cprintf(con, "yes (group size %d bytes)\r\n", size);
+	} else {
+		cprintf(con, "no\r\n");
+	}
+
+	print_padded(con, "write-protected");
+	cprintf(con, "%s\r\n", write_protected[(csd[14] >> 4)]);
+
+	if (csd_ver == 0) {
+		/* FILE_FORMAT_GRP = 1 means reserved. */
+		if ((csd[14] & 0x80) == 0) {
+			print_padded(con, "Format");
+			tmp = (csd[14] & 0x0c) >> 2;
+			cprintf(con, "%s\r\n", file_systems[tmp]);
+		}
+	}
+
+	print_padded(con, "Driver stage register");
+	cprintf(con, "%s\r\n", csd[6] & 0x10 ? "yes" : "no");
+}
+
+int cmd_show_sd(t_hydra_console *con)
+{
+	int i;
+	char *s;
+
+	if (sdcConnect(&SDCD1)) {
+		cprintf(con, "Failed to connect to SD card.\r\n");
+		return FALSE;
+	}
+
+	print_padded(con, "Card type");
+	switch (SDCD1.cardmode & SDC_MODE_CARDTYPE_MASK) {
+		case SDC_MODE_CARDTYPE_SDV11:
+			s = "SD 1.1";
+			break;
+		case SDC_MODE_CARDTYPE_SDV20:
+			s = "SD 2.0";
+			break;
+		case SDC_MODE_CARDTYPE_MMC:
+			s = "MMC";
+			break;
+		default:
+			s = "unknown";
+	}
+	cprintf(con, "%s\r\n", s);
+
+	for (i = 0; i < 16; i++)
+		buf[i] = *((uint8_t *)&SDCD1.cid + (15 - i));
+	cmd_show_sd_cid(con, buf);
+
+	for (i = 0; i < 16; i++)
+		buf[i] = *((uint8_t *)&SDCD1.csd + (15 - i));
+	cmd_show_sd_csd(con, buf);
+
+	print_padded(con, "Relative card address");
+	cprintf(con, "%04x\r\n", SDCD1.rca >> 16);
+
+	return TRUE;
+}

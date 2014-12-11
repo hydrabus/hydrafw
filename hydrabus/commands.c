@@ -632,6 +632,7 @@ t_token tokens_show[] = {
 	{ T_SYSTEM },
 	{ T_MEMORY },
 	{ T_THREADS },
+	{ T_SD },
 	{ T_DEBUG },
 	{ }
 };
