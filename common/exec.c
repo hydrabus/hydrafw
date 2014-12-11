@@ -134,7 +134,7 @@ static int cmd_debug(t_hydra_console *con, t_tokenline_parsed *p)
 		}
 	}
 	if (tmp_debug && !action) {
-		cprintf(con, "Please specify either 'on' or 'off'.");
+		cprintf(con, "Please specify either 'on' or 'off'.\r\n");
 		return FALSE;
 	}
 	if (action == T_ON)

@@ -34,15 +34,15 @@
 #include "microsd.h"
 #include "hydrabus.h"
 
-/* USB1: Virtual serial port over USB.*/
+/* USB1: Virtual serial port over USB. */
 SerialUSBDriver SDU1;
-/* USB2: Virtual serial port over USB.*/
+/* USB2: Virtual serial port over USB. */
 SerialUSBDriver SDU2;
 
 extern t_token tl_tokens[];
 extern t_token_dict tl_dict[];
 
-// create tokenline objects for each console
+/* Create tokenline objects for each console. */
 t_tokenline tl_con1;
 t_mode_config mode_con1 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=MODE_CONFIG_PROTO_DEV_DEF_VAL }, .cmd={ 0 } };
 
@@ -98,6 +98,7 @@ int main(void)
 
 	scs_dwt_cycle_counter_enabled();
 
+	/* Configure PA0 (UBTN), PA4 (ULED) and initialize the SD driver. */
 	hydrabus_init();
 
 	/*
@@ -121,8 +122,8 @@ int main(void)
 
 	usbStart(serusb1cfg.usbp, &usb1cfg);
 	/*
-	 * Disable VBUS sensing on USB1 (GPIOA9) is not connected to VUSB
-	 * by default)
+	 * Disable VBUS sensing on USB1 (GPIOA9 is not connected to VUSB
+	 * by default).
 	 */
 #define GCCFG_NOVBUSSENS (1U<<21)
 	stm32_otg_t *otgp = (&USBD1)->otg;
@@ -137,8 +138,8 @@ int main(void)
 	chThdSleepMilliseconds(100);
 
 	/*
-	* Normal main() thread activity.
-	*/
+	 * Normal main() thread activity.
+	 */
 	chRegSetThreadName("main");
 	while (TRUE) {
 		for (i = 0; i < 2; i++) {
@@ -155,7 +156,7 @@ int main(void)
 			}
 		}
 
-		/* For test purpose HydraBus ULED blink */
+		/* HydraBus ULED blink. */
 		if (USER_BUTTON)
 			sleep_ms = BLINK_FAST;
 		else
