@@ -227,7 +227,16 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			break;
 		default:
 			/* Mode-specific commands. */
-			t += con->mode->exec->exec(con, p, t);
+			/*
+			 * The module dispatcher considers itself to have
+			 * used this token, but so does this loop. Subtract
+			 * 1 to get back to it.
+			 */
+			tokens_used = con->mode->exec->exec(con, p, t) - 1;
+			if (!tokens_used)
+				done = TRUE;
+			else
+				t += tokens_used;
 		}
 	}
 
