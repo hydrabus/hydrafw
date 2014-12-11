@@ -3,7 +3,7 @@
 	<EmBlocksVersion release="2.30" revision="1" />
 	<FileVersion major="1" minor="0" />
 	<Project>
-		<Option title="hydrafwEm_lt2" />
+		<Option title="hydrafwEm" />
 		<Option pch_mode="2" />
 		<Option compiler="armgcc_eb" />
 		<Build>
