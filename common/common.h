@@ -113,8 +113,9 @@ typedef struct {
 #define BIT(x) (1 << x)
 #endif
 
-/* How much thread working area to allocate per console. */
-#define CONSOLE_WA_SIZE 2048
+/* How much thread working area to allocate per console.
+ Need at least 1KB for printf buffer */
+#define CONSOLE_WA_SIZE 4096
 
 #define PROMPT "> "
 

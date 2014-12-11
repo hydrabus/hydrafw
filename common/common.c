@@ -37,22 +37,33 @@ uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));
 
 extern uint32_t debug_flags;
 
-void cprint(t_hydra_console *con, const char *data, const uint32_t size)
+void stream_write(t_hydra_console *con, const char *data, const uint32_t size)
 {
 	BaseSequentialStream* chp = con->bss;
 
 	if(size > 0)
 		chSequentialStreamWrite(chp, (uint8_t *)data, size);
+
+	/* Todo write in SD or other output depending on log flag ... */
+}
+
+void cprint(t_hydra_console *con, const char *data, const uint32_t size)
+{
+	stream_write(con, data, size);
 }
 
 void cprintf(t_hydra_console *con, const char *fmt, ...)
 {
-	BaseSequentialStream* chp = con->bss;
-	va_list ap;
+	va_list va_args;
+	int real_size;
+	#define CPRINTF_BUFF_SIZE (511)
+	char cprintf_buff[CPRINTF_BUFF_SIZE+1];
 
-	va_start(ap, fmt);
-	chvprintf(chp, fmt, ap);
-	va_end(ap);
+	va_start(va_args, fmt);
+	real_size = vsnprintf(cprintf_buff, CPRINTF_BUFF_SIZE, fmt, va_args);
+	va_end(va_args);
+
+	stream_write(con, cprintf_buff, real_size);
 }
 
 /** \brief print debug through Semi Hosting(SWD debug) & SWV
