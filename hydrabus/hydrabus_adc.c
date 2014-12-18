@@ -32,11 +32,23 @@ static const char *adc_channel_names[] = {
 	"VBAT",
 };
 
+#define PRINT_ADC_VAL_DIGITS	(1000)
+void print_adc_val(t_hydra_console *con, uint32_t val_raw_adc)
+{
+	uint32_t val;
+	uint32_t val_int_part;
+	uint32_t val_dec_part;
+
+	val = ((val_raw_adc * 33 * PRINT_ADC_VAL_DIGITS)) / 4095;
+	val_int_part = (val / (PRINT_ADC_VAL_DIGITS * 10));
+	val_dec_part = val - (val_int_part * PRINT_ADC_VAL_DIGITS * 10);
+	cprintf(con, "%d.%04d\t", val_int_part, val_dec_part);
+}
+
 static int adc_read(t_hydra_console *con, int num_sources)
 {
 	bsp_dev_adc_t *sources = con->mode->proto.buffer_rx;
 	bsp_status_t status;
-	float value;
 	int i;
 	uint16_t rx_data;
 
@@ -49,8 +61,7 @@ static int adc_read(t_hydra_console *con, int num_sources)
 			cprintf(con, "bsp_adc_read_u16 error: %d\r\n", status);
 			return FALSE;
 		}
-		value = (((float)(rx_data) * 3.3f) / 4095.0f);
-		cprintf(con, "%.4f\t", value);
+		print_adc_val(con, rx_data);
 	}
 	cprintf(con, "\r\n");
 
