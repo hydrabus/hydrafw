@@ -538,7 +538,7 @@ t_token tokens_gpio[] = {
 t_token tokens_adc[] = {
 	{
 		T_ADC1,
-		.help = "ADC1"
+		.help = "ADC1 (PA1)"
 	},
 	{
 		T_TEMPSENSOR,
