@@ -127,11 +127,24 @@ void fillbuffers(uint8_t pattern)
 	fillbuffer(pattern, outbuf);
 }
 
+#define PRINT_PERF_VAL_DIGITS	(100)
+void print_perf_kibs_to_mibs(t_hydra_console *con, uint32_t val_perf_kibs)
+{
+	uint32_t val;
+	uint32_t val_int_part;
+	uint32_t val_dec_part;
+
+	val = (val_perf_kibs * 10 * PRINT_PERF_VAL_DIGITS) / 1024;
+	val_int_part = (val / (PRINT_PERF_VAL_DIGITS * 10));
+	val_dec_part = val - (val_int_part * PRINT_PERF_VAL_DIGITS * 10);
+	cprintf(con, "%2d.%03d", val_int_part, val_dec_part);
+}
+
 static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offset)
 {
 	uint32_t n, startblk;
+	uint32_t kib_sec;
 	systime_t start, end;
-	float total;
 
 	/* The test is performed in the middle of the flash area. */
 	startblk = (SDCD1.capacity / MMCSD_BLOCK_SIZE) / 2;
@@ -147,10 +160,10 @@ static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offse
 		n += sectors;
 	} while (chVTIsSystemTimeWithin(start, end));
 
-	total = (float)n * MMCSD_BLOCK_SIZE / (1024 * 1024 * seconds);
-	cprintf(con, "%6D sectors/s, %5D KiB/s %4.2f MiB/s\r\n", n / seconds,
-		(n * MMCSD_BLOCK_SIZE) / (1024 * seconds), total);
-
+	kib_sec = (n * MMCSD_BLOCK_SIZE) / (1024 * seconds);
+	cprintf(con, "%6d sectors/s, %5d KiB/s ", n / seconds, kib_sec);
+	print_perf_kibs_to_mibs(con, kib_sec);
+	cprintf(con, " MiB/s\r\n");
 	return TRUE;
 }
 
@@ -171,7 +184,7 @@ static int sd_perf(t_hydra_console *con, int offset)
 
 	for(nb_sectors = 2; nb_sectors <= G_SBUF_SDC_BURST_SIZE; nb_sectors=nb_sectors*2) {
 		/* Multiple sequential blocks read performance, aligned.*/
-		cprintf(con, "%3DKiB blocks: ", nb_sectors/2 );
+		cprintf(con, "%3dKiB blocks: ", nb_sectors/2 );
 		ret = sd_perf_run(con, PERFRUN_SECONDS, nb_sectors, offset);
 		if(ret == FALSE)
 			return ret;
@@ -208,7 +221,7 @@ int cmd_sd_test_perf(t_hydra_console *con, t_tokenline_parsed *p)
 	cprintf(con, "CID:\t  %08X %08X %08X %08X \r\n",
 		SDCD1.cid[3], SDCD1.cid[2], SDCD1.cid[1], SDCD1.cid[0]);
 	cprintf(con, "Mode:\t  %s\r\n", mode[ (SDCD1.cardmode&0x03)]);
-	cprintf(con, "Capacity: %DMiB\r\n", SDCD1.capacity / 2048);
+	cprintf(con, "Capacity: %d MiB\r\n", SDCD1.capacity / 2048);
 	chThdSleepMilliseconds(1);
 
 	if (!sd_perf(con, 0))
@@ -538,7 +551,7 @@ int cmd_sd_ls(t_hydra_console *con, t_tokenline_parsed *p)
 
 /* Call only with len=multiples of 16 (unless end of dump). */
 static void dump_hexbuf(t_hydra_console *con, uint32_t offset,
-		const uint8_t *buf, int len)
+			const uint8_t *buf, int len)
 {
 	int b, i;
 	char asc[17];
@@ -640,7 +653,7 @@ int cmd_sd_erase(t_hydra_console *con, t_tokenline_parsed *p)
 
 	if (p->tokens[2] == 0) {
 		cprintf(con, "This will destroy the contents of the SD card. "
-				"Confirm with 'sd erase really'.\r\n");
+			"Confirm with 'sd erase really'.\r\n");
 		return TRUE;
 	} else if (p->tokens[2] != T_REALLY || p->tokens[3] != 0) {
 		return FALSE;
@@ -1082,12 +1095,14 @@ static void cmd_show_sd_csd(t_hydra_console *con, uint8_t *csd)
 	const int taac_mul[] = { 1, 10, 100 };
 	const int tran_mul[] = { 10, 100, 1000, 10000 };
 	const int tran_val[] = { 0, 10, 12, 13, 15, 20, 25, 30,
-		35, 40, 45, 50, 55, 60, 70, 80 };
+				 35, 40, 45, 50, 55, 60, 70, 80
+			       };
 	const char *file_systems[] = {
 		"Partition table", "Boot record", "Universal", "Other"
 	};
 	const char *write_protected[] = { "no", "temporarily",
-		"permanently", "definitely" };
+					  "permanently", "definitely"
+					};
 	int csd_ver, mul, val, speed, block_len, size, tmp, i;
 	char *suffix;
 
@@ -1229,17 +1244,17 @@ int cmd_show_sd(t_hydra_console *con)
 
 	print_padded(con, "Card type");
 	switch (SDCD1.cardmode & SDC_MODE_CARDTYPE_MASK) {
-		case SDC_MODE_CARDTYPE_SDV11:
-			s = "SD 1.1";
-			break;
-		case SDC_MODE_CARDTYPE_SDV20:
-			s = "SD 2.0";
-			break;
-		case SDC_MODE_CARDTYPE_MMC:
-			s = "MMC";
-			break;
-		default:
-			s = "unknown";
+	case SDC_MODE_CARDTYPE_SDV11:
+		s = "SD 1.1";
+		break;
+	case SDC_MODE_CARDTYPE_SDV20:
+		s = "SD 2.0";
+		break;
+	case SDC_MODE_CARDTYPE_MMC:
+		s = "MMC";
+		break;
+	default:
+		s = "unknown";
 	}
 	cprintf(con, "%s\r\n", s);
 
