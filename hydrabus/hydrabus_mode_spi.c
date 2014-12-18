@@ -22,7 +22,7 @@
 #include <string.h>
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
-static void show(t_hydra_console *con, t_tokenline_parsed *p);
+static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
 static const char* str_pins_spi1= {
 	"CS:   PA15\r\nSCK:  PB3\r\nMISO: PB4\r\nMOSI: PB5\r\n"
@@ -133,7 +133,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
 		case T_SHOW:
-			show(con, p);
+			t += show(con, p);
 			break;
 		case T_DEVICE:
 			/* Integer parameter. */
@@ -347,11 +347,14 @@ static void cleanup(t_hydra_console *con)
 	bsp_spi_deinit(proto->dev_num);
 }
 
-static void show(t_hydra_console *con, t_tokenline_parsed *p)
+static int show(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
+	int tokens_used;
 
+	tokens_used = 0;
 	if (p->tokens[1] == T_PINS) {
+		tokens_used++;
 		if (proto->dev_num == 0)
 			cprint(con, str_pins_spi1, strlen(str_pins_spi1));
 		else
@@ -359,6 +362,8 @@ static void show(t_hydra_console *con, t_tokenline_parsed *p)
 	} else {
 		show_params(con);
 	}
+
+	return tokens_used;
 }
 
 static const char *get_prompt(t_hydra_console *con)

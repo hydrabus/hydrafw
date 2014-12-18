@@ -28,7 +28,7 @@
 
 static void extcb1(EXTDriver *extp, expchannel_t channel);
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
-static void show(t_hydra_console *con, t_tokenline_parsed *p);
+static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
 static thread_t *key_sniff_thread;
 static volatile int irq_count;
@@ -548,7 +548,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
 		case T_SHOW:
-			show(con, p);
+			t += show(con, p);
 			break;
 		case T_MIFARE:
 			proto->dev_mode = NFC_MODE_MIFARE;
@@ -615,17 +615,22 @@ static void show_registers(t_hydra_console *con)
 	}
 }
 
-static void show(t_hydra_console *con, t_tokenline_parsed *p)
+static int show(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
+	int tokens_used;
 
+	tokens_used = 0;
 	if (p->tokens[1] == T_REGISTERS) {
+		tokens_used++;
 		show_registers(con);
 	} else {
 		cprintf(con, "Protocol: %s\r\n", proto->dev_mode == NFC_MODE_MIFARE ?
 				"MIFARE (ISO14443A)" : proto->dev_mode == NFC_MODE_VICINITY ?
 				"Vicinity (ISO/IEC 15693)" : "None");
 	}
+
+	return tokens_used;
 }
 
 static void cleanup(t_hydra_console *con)

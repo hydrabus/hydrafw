@@ -23,7 +23,7 @@
 #include <string.h>
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
-static void show(t_hydra_console *con, t_tokenline_parsed *p);
+static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
 #define I2C_DEV_NUM (1)
 
@@ -108,7 +108,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
 		case T_SHOW:
-			show(con, p);
+			t += show(con, p);
 			break;
 		case T_PULL:
 			switch (p->tokens[++t]) {
@@ -254,13 +254,19 @@ static void cleanup(t_hydra_console *con)
 	bsp_i2c_deinit(proto->dev_num);
 }
 
-static void show(t_hydra_console *con, t_tokenline_parsed *p)
+static int show(t_hydra_console *con, t_tokenline_parsed *p)
 {
+	int tokens_used;
+
+	tokens_used = 0;
 	if (p->tokens[1] == T_PINS) {
+		tokens_used++;
 		cprint(con, str_pins_i2c1, strlen(str_pins_i2c1));
 	} else {
 		show_params(con);
 	}
+
+	return tokens_used;
 }
 
 static const char *get_prompt(t_hydra_console *con)
