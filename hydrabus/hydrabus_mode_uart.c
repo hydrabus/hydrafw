@@ -39,6 +39,8 @@ static const char* str_dev_param_parity[]= {
 	"odd"
 };
 
+static const char* str_bsp_init_err= { "bsp_uart_init() error %d\r\n" };
+
 static void init_proto_default(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -55,7 +57,7 @@ static void show_params(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "Device: UART%d\r\nSpeed: %d bps\r\n",
-			proto->dev_num + 1, proto->dev_speed);
+		proto->dev_num + 1, proto->dev_speed);
 	cprintf(con, "Parity: %s\r\nStop bits: %d\r\n",
 		str_dev_param_parity[proto->dev_parity],
 		proto->dev_stop_bit);
@@ -83,6 +85,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int arg_int, t;
+	bsp_status_t bsp_status;
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
@@ -98,11 +101,21 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			proto->dev_num = arg_int - 1;
+			bsp_status = bsp_uart_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
 			break;
 		case T_SPEED:
 			/* Integer parameter. */
 			t += 2;
 			memcpy(&proto->dev_speed, p->buf + p->tokens[t], sizeof(int));
+			bsp_status = bsp_uart_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
 			break;
 		case T_PARITY:
 			/* Token parameter. */
@@ -117,6 +130,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				proto->dev_parity = 2;
 				break;
 			}
+			bsp_status = bsp_uart_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
 			break;
 		case T_STOP_BITS:
 			/* Integer parameter. */
@@ -127,6 +145,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			proto->dev_stop_bit = arg_int;
+			bsp_status = bsp_uart_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
 			break;
 		default:
 			return 0;
