@@ -622,7 +622,7 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed *p)
 		} else {
 			/* Force end of string at end of buffer */
 			inbuf[cnt] = 0;
-			cprintf(con, "%s", inbuf);
+			cprint(con, (char *)inbuf, cnt);
 		}
 	}
 	if (!hex)
