@@ -39,18 +39,37 @@ static const char* str_dev_param_parity[]= {
 	"odd"
 };
 
-static int init(t_hydra_console *con, t_tokenline_parsed *p)
+static void init_proto_default(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	int tokens_used;
 
 	/* Defaults */
 	proto->dev_num = 0;
 	proto->dev_speed = 9600;
 	proto->dev_parity = 0;
 	proto->dev_stop_bit = 1;
+}
 
-	/* Process cmdline arguments, skipping "i2c". */
+static void show_params(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	cprintf(con, "Device: UART%d\r\nSpeed: %d bps\r\n",
+			proto->dev_num + 1, proto->dev_speed);
+	cprintf(con, "Parity: %s\r\nStop bits: %d\r\n",
+		str_dev_param_parity[proto->dev_parity],
+		proto->dev_stop_bit);
+}
+
+static int init(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+	int tokens_used;
+
+	/* Defaults */
+	init_proto_default(con);
+
+	/* Process cmdline arguments, skipping "uart". */
 	tokens_used = 1 + exec(con, p, 1);
 
 	bsp_uart_init(proto->dev_num, proto);
@@ -199,11 +218,7 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 		tokens_used++;
 		cprintf(con, "%s", str_pins_uart[proto->dev_num]);
 	} else {
-		cprintf(con, "Device: UART%d\r\nSpeed: %d bps\r\n",
-				proto->dev_num + 1, proto->dev_speed);
-		cprintf(con, "Parity: %s\r\nStop bits: %d\r\n",
-			str_dev_param_parity[proto->dev_parity],
-			proto->dev_stop_bit);
+		show_params(con);
 	}
 
 	return tokens_used;
