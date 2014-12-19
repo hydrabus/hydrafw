@@ -173,7 +173,7 @@ static int sd_perf(t_hydra_console *con, int offset)
 	int nb_sectors;
 	int ret;
 
-	cprintf(con, "\r\n%sligned sequential reads:\r\n", offset ? "Una" : "A");
+	cprintf(con, "%sligned sequential reads:\r\n", offset ? "Una" : "A");
 
 	/* Single block read performance. */
 	cprintf(con, "0.5KiB blocks: ");
@@ -197,8 +197,6 @@ static int sd_perf(t_hydra_console *con, int offset)
 
 int cmd_sd_test_perf(t_hydra_console *con, t_tokenline_parsed *p)
 {
-	static const char *mode[] = {"SDV11", "SDV20", "MMC", NULL};
-
 	/* "really" */
 	if (p->tokens[2] != 0)
 		return FALSE;
@@ -209,21 +207,10 @@ int cmd_sd_test_perf(t_hydra_console *con, t_tokenline_parsed *p)
 		return FALSE;
 	}
 
-	/* Connection to the card.*/
-	cprintf(con, "Connecting... ");
 	if (sdcConnect(&SDCD1)) {
 		cprintf(con, "failed.\r\n");
 		return FALSE;
 	}
-	cprintf(con, "SD card info:\r\n");
-	cprintf(con, "CSD:\t  %08X %08X %08X %08X \r\n",
-		SDCD1.csd[3], SDCD1.csd[2], SDCD1.csd[1], SDCD1.csd[0]);
-	cprintf(con, "CID:\t  %08X %08X %08X %08X \r\n",
-		SDCD1.cid[3], SDCD1.cid[2], SDCD1.cid[1], SDCD1.cid[0]);
-	cprintf(con, "Mode:\t  %s\r\n", mode[ (SDCD1.cardmode&0x03)]);
-	cprintf(con, "Capacity: %d MiB\r\n", SDCD1.capacity / 2048);
-	chThdSleepMilliseconds(1);
-
 	if (!sd_perf(con, 0))
 		goto exittest;
 
