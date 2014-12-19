@@ -144,31 +144,26 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 		huart->Instance = BSP_UART2;
 	}
 	huart->Init.BaudRate = mode_conf->dev_speed;
-	/*
-	  TODO bsp_uart_init() manage 8 or 9bits data
-	  if((mode_conf->dev_numbits == 0)
-	    huart->Init.WordLength = UART_WORDLENGTH_8B;
-	  else
-	    huart->Init.WordLength = UART_WORDLENGTH_9B;
-	*/
-	huart->Init.WordLength = UART_WORDLENGTH_8B;
 
 	switch(mode_conf->dev_parity) {
 	case 1: /* 8/even */
 		huart->Init.Parity = UART_PARITY_EVEN;
+		huart->Init.WordLength = UART_WORDLENGTH_9B;
 		break;
 
 	case 2: /* 8/odd */
 		huart->Init.Parity = UART_PARITY_ODD;
+		huart->Init.WordLength = UART_WORDLENGTH_9B;
 		break;
 
 	case 0: /* 8/none */
 	default:
 		huart->Init.Parity = UART_PARITY_NONE;
+		huart->Init.WordLength = UART_WORDLENGTH_8B;
 		break;
 	}
 
-	if(mode_conf->dev_stop_bit == 0)
+	if(mode_conf->dev_stop_bit == 1)
 		huart->Init.StopBits   = UART_STOPBITS_1;
 	else
 		huart->Init.StopBits   = UART_STOPBITS_2;
