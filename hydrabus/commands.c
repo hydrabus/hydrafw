@@ -61,8 +61,8 @@ t_token_dict tl_dict[] = {
 	{ T_FLOATING, "floating" },
 	{ T_ON, "on" },
 	{ T_OFF, "off" },
-	{ T_CHIP_SELECT, "chip-select" },
-	{ T_CS, "cs" },
+	{ T_CS_ON, "cs-on" },
+	{ T_CS_OFF, "cs-off" },
 	{ T_PINS, "pins" },
 	{ T_READ, "read" },
 	{ T_WRITE, "write" },
@@ -421,18 +421,6 @@ t_token tokens_mode_spi[] = {
 	SPI_PARAMETERS
 	/* SPI-specific commands */
 	{
-		T_CHIP_SELECT,
-		.arg_type = T_ARG_TOKEN,
-		.subtokens = tokens_on_off,
-		.help = "Chip select (CS)"
-	},
-	{
-		T_CS,
-		.arg_type = T_ARG_TOKEN,
-		.subtokens = tokens_on_off,
-		.help = "Alias for \"chip-select\""
-	},
-	{
 		T_READ,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Read byte (repeat with :<num>)"
@@ -446,6 +434,14 @@ t_token tokens_mode_spi[] = {
 		T_ARG_INT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_CS_ON,
+		.help = "Alias for \"chip-select on\""
+	},
+	{
+		T_CS_OFF,
+		.help = "Alias for \"chip-select off\""
 	},
 	/* BP commands */
 	{

@@ -242,13 +242,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			break;
-		case T_CHIP_SELECT:
-		case T_CS:
-			if (p->tokens[1] == T_ON)
-				con->mode->exec->start(con);
-			else
-				con->mode->exec->stop(con);
-			break;
 		default:
 			return 0;
 		}
