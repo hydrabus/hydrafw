@@ -24,6 +24,7 @@
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
+static void scan(t_hydra_console *con, t_tokenline_parsed *p);
 
 #define I2C_DEV_NUM (1)
 
@@ -147,6 +148,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			break;
+		case T_SCAN:
+			scan(con, p);
+			break;
 		default:
 			return 0;
 		}
@@ -267,6 +271,35 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 	}
 
 	return tokens_used;
+}
+
+static void scan(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+	int i;
+	bool ack, found;
+
+	(void)p;
+
+	if(proto->ack_pending) {
+		bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
+		proto->ack_pending = 0;
+	}
+
+	/* Skip address 0x00 (general call) and >= 0x78 (10-bit address prefix) */
+	found = FALSE;
+	for (i = 0x1; i < 0x78; i++) {
+		bsp_i2c_start(I2C_DEV_NUM);
+		bsp_i2c_master_write_u8(I2C_DEV_NUM, i << 1, &ack);
+		bsp_i2c_stop(I2C_DEV_NUM);
+		if (ack) {
+			cprintf(con, "Device found at address 0x%02x\r\n", i);
+			found = TRUE;
+		}
+	}
+
+	if (!found)
+		cprintf(con, "No devices found.\r\n");
 }
 
 static const char *get_prompt(t_hydra_console *con)

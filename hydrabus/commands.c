@@ -345,6 +345,10 @@ t_token tokens_mode_i2c[] = {
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
 	},
+	{
+		T_SCAN,
+		.help = "Scan for connected devices"
+	},
 	/* BP commands */
 	{
 		T_LEFT_SQ,
