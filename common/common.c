@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define HYDRAFW_VERSION "HydraFW (HydraBus) " HYDRAFW_GIT_TAG " " HYDRAFW_GIT_HASH " " HYDRAFW_BUILD_DATE
+#define HYDRAFW_VERSION "HydraFW (HydraBus) " HYDRAFW_GIT_TAG " " HYDRAFW_BUILD_DATE
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
 uint8_t buf[512] __attribute__ ((section(".ccm")));
