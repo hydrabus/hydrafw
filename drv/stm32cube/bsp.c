@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+#include "ch.h"
+
 #include "bsp.h"
 #include "stm32f405xx.h"
 #include "stm32f4xx_hal.h"
@@ -44,6 +47,7 @@ typedef struct {
 void HAL_IncTick(void)
 {
 	uwTick++;
+	chThdSleepMicroseconds(1);
 }
 
 uint32_t HAL_GetTick(void)
