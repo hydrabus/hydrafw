@@ -243,7 +243,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			}
 			break;
 		default:
-			return 0;
+			return t - token_pos;
 		}
 	}
 
