@@ -26,6 +26,7 @@ Warning in order to use this driver all GPIOs peripherals shall be enabled.
 
 static UART_HandleTypeDef uart_handle[NB_UART];
 static mode_config_proto_t* uart_mode_conf[NB_UART];
+volatile uint16_t dummy_read;
 
 /**
   * @brief  Init low level hardware: GPIO, CLOCK, NVIC...
@@ -172,6 +173,9 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 	huart->Init.Mode       = UART_MODE_TX_RX;
 
 	status = HAL_UART_Init(huart);
+
+	/* Dummy read to flush old character */
+	dummy_read = huart->Instance->DR;
 
 	return status;
 }
