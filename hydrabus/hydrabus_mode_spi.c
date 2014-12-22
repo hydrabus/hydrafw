@@ -70,7 +70,7 @@ static void init_proto_default(t_hydra_console *con)
 	/* Defaults */
 	proto->dev_num = 0;
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
-	proto->dev_mode = SPI_MODE_MASTER;
+	proto->dev_mode = DEV_SPI_MASTER;
 	proto->dev_speed = 0;
 	proto->dev_polarity = 0;
 	proto->dev_phase = 0;
@@ -88,7 +88,7 @@ static void show_params(t_hydra_console *con)
 		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
 		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
 		"floating",
-		proto->dev_mode == SPI_MODE_MASTER ? "master" : "slave");
+		proto->dev_mode == DEV_SPI_MASTER ? "master" : "slave");
 
 	print_freq(con, speeds[proto->dev_num][proto->dev_speed]);
 	cprintf(con, " (");
@@ -173,9 +173,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_MODE:
 			if (p->tokens[++t] == T_MASTER)
-				proto->dev_mode = SPI_MODE_MASTER;
+				proto->dev_mode = DEV_SPI_MASTER;
 			else
-				proto->dev_mode = SPI_MODE_SLAVE;
+				proto->dev_mode = DEV_SPI_SLAVE;
 
 			bsp_status = bsp_spi_init(proto->dev_num, proto);
 			if( bsp_status != BSP_OK) {

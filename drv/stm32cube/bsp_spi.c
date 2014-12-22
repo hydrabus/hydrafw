@@ -204,7 +204,7 @@ bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
 
 	hspi->Init.TIMode = SPI_TIMODE_DISABLED;
 
-	if(mode_conf->dev_mode == SPI_MODE_SLAVE)
+	if(mode_conf->dev_mode == DEV_SPI_SLAVE)
 		hspi->Init.Mode = SPI_MODE_SLAVE;
 	else
 		hspi->Init.Mode = SPI_MODE_MASTER;

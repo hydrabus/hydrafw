@@ -48,6 +48,12 @@ typedef enum {
 	MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN = 2
 } mode_dev_gpio_mode_t;
 
+/* dev_mode */
+enum {
+	DEV_SPI_MASTER = 1,
+	DEV_SPI_SLAVE,
+};
+
 #define MODE_CONFIG_PROTO_DEV_DEF_VAL (0) /* mode_config_proto_t for dev_xxx default safe value */
 #define MODE_CONFIG_PROTO_BUFFER_SIZE (256)
 typedef struct {

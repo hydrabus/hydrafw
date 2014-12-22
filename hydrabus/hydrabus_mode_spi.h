@@ -22,11 +22,6 @@
 #include "hydrabus_mode.h"
 
 enum {
-	SPI_MODE_MASTER = 1,
-	SPI_MODE_SLAVE,
-};
-
-enum {
 	SPI_MSB_FIRST,
 	SPI_LSB_FIRST,
 };
