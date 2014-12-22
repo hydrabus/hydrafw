@@ -302,6 +302,7 @@ t_token tokens_uart[] = {
 		.arg_type = T_ARG_INT,
 		.help = "Stop bits (1 or 2)"
 	},
+	{ }
 };
 
 t_token tokens_mode_i2c[] = {
