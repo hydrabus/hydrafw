@@ -128,13 +128,13 @@ void fillbuffers(uint8_t pattern)
 }
 
 #define PRINT_PERF_VAL_DIGITS	(100)
-void print_perf_kibs_to_mibs(t_hydra_console *con, uint32_t val_perf_kibs)
+static void print_mbs(t_hydra_console *con, uint32_t val_perf_kibs)
 {
 	uint32_t val;
 	uint32_t val_int_part;
 	uint32_t val_dec_part;
 
-	val = (val_perf_kibs * 10 * PRINT_PERF_VAL_DIGITS) / 1024;
+	val = val_perf_kibs / 1000;
 	val_int_part = (val / (PRINT_PERF_VAL_DIGITS * 10));
 	val_dec_part = val - (val_int_part * PRINT_PERF_VAL_DIGITS * 10);
 	cprintf(con, "%2d.%03d", val_int_part, val_dec_part);
@@ -143,7 +143,6 @@ void print_perf_kibs_to_mibs(t_hydra_console *con, uint32_t val_perf_kibs)
 static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offset)
 {
 	uint32_t n, startblk;
-	uint32_t kib_sec;
 	systime_t start, end;
 
 	/* The test is performed in the middle of the flash area. */
@@ -160,10 +159,10 @@ static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offse
 		n += sectors;
 	} while (chVTIsSystemTimeWithin(start, end));
 
-	kib_sec = (n * MMCSD_BLOCK_SIZE) / (1024 * seconds);
-	cprintf(con, "%6d sectors/s, %5d KiB/s ", n / seconds, kib_sec);
-	print_perf_kibs_to_mibs(con, kib_sec);
-	cprintf(con, " MiB/s\r\n");
+	cprintf(con, "%6d sectors/s, ", n / seconds);
+	print_mbs(con, (n * MMCSD_BLOCK_SIZE) / seconds);
+	cprintf(con, " MB/s\r\n");
+
 	return TRUE;
 }
 
