@@ -179,16 +179,12 @@ static int sd_perf(t_hydra_console *con, int offset)
 	if (!(ret = sd_perf_run(con, PERFRUN_SECONDS, 1, offset)))
 		return ret;
 
-	chThdSleepMilliseconds(1);
-
 	for(nb_sectors = 2; nb_sectors <= G_SBUF_SDC_BURST_SIZE; nb_sectors=nb_sectors*2) {
 		/* Multiple sequential blocks read performance, aligned.*/
 		cprintf(con, "%3dKiB blocks: ", nb_sectors/2 );
 		ret = sd_perf_run(con, PERFRUN_SECONDS, nb_sectors, offset);
 		if(ret == FALSE)
 			return ret;
-
-		chThdSleepMilliseconds(1);
 	}
 
 	return ret;
@@ -428,13 +424,10 @@ static FRESULT sd_dir_list(t_hydra_console *con, char *path)
 #else
 			fno.fname);
 #endif
-		chThdSleepMilliseconds(1);
 	}
 
 	file_size_mb = (uint32_t)(file_size/(uint64_t)(1024*1024));
 	cprintf(con, "%4u File(s),%10lu MiB total %4u Dir(s)\r\n", nb_files, file_size_mb, nb_dirs);
-
-	chThdSleepMilliseconds(1);
 
 	return res;
 }
