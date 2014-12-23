@@ -23,6 +23,7 @@
 #include "hydrafw_version.hdr"
 
 #include <stdio.h>
+#include <string.h>
 #include <stdarg.h>
 
 #define HYDRAFW_VERSION "HydraFW (HydraBus) " HYDRAFW_GIT_TAG " " HYDRAFW_BUILD_DATE
@@ -43,8 +44,22 @@ void stream_write(t_hydra_console *con, const char *data, const uint32_t size)
 
 	if(size > 0)
 		chSequentialStreamWrite(chp, (uint8_t *)data, size);
+}
 
-	/* Todo write in SD or other output depending on log flag ... */
+void print(void *user, const char *str)
+{
+	t_hydra_console *con;
+	int len;
+
+	if (!user)
+		return;
+
+	if (!str)
+		return;
+
+	con = user;
+	len = strlen(str);
+	stream_write(con, str, len);
 }
 
 void cprint(t_hydra_console *con, const char *data, const uint32_t size)

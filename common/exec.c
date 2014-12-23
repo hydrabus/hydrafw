@@ -30,21 +30,6 @@ uint32_t debug_flags = 0;
 extern t_token_dict tl_dict[];
 extern t_token tokens_mode_spi[];
 
-void print(void *user, const char *str)
-{
-	t_hydra_console *con;
-	int len;
-
-	if (!str)
-		return;
-
-	len = strlen(str);
-	if (!len)
-		return;
-
-	con = user;
-	chSequentialStreamWrite(con->bss, (uint8_t *)str, len);
-}
 
 char get_char(t_hydra_console *con)
 {
