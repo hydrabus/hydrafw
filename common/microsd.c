@@ -192,9 +192,7 @@ static int sd_perf(t_hydra_console *con, int offset)
 
 int cmd_sd_test_perf(t_hydra_console *con, t_tokenline_parsed *p)
 {
-	/* "really" */
-	if (p->tokens[2] != 0)
-		return FALSE;
+	(void)p;
 
 	/* Card presence check.*/
 	if (!blkIsInserted(&SDCD1)) {
@@ -206,16 +204,14 @@ int cmd_sd_test_perf(t_hydra_console *con, t_tokenline_parsed *p)
 		cprintf(con, "failed.\r\n");
 		return FALSE;
 	}
+
 	if (!sd_perf(con, 0))
-		goto exittest;
+		return FALSE;
 
 #if STM32_SDC_SDIO_UNALIGNED_SUPPORT
-	sd_perf(con, 1);
-#endif /* STM32_SDC_SDIO_UNALIGNED_SUPPORT */
-
-	/* Card disconnect and command end.*/
-exittest:
-	sdcDisconnect(&SDCD1);
+	if (!sd_perf(con, 1))
+		return FALSE;
+#endif
 
 	return TRUE;
 }
@@ -612,8 +608,6 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed *p)
 			dump_hexbuf(con, offset, inbuf, cnt);
 			offset += cnt;
 		} else {
-			/* Force end of string at end of buffer */
-			inbuf[cnt] = 0;
 			cprint(con, (char *)inbuf, cnt);
 		}
 	}
@@ -1110,7 +1104,6 @@ static void cmd_show_sd_csd(t_hydra_console *con, uint8_t *csd)
 
 	print_padded(con, "TAAC");
 	mul = csd[1] & 0x07;
-	//cprintf(con, "%02x\r\n", mul);
 	if (mul < 3) {
 		suffix = "ns";
 	} else if (mul < 6) {
