@@ -21,6 +21,8 @@
 #include "bsp_uart.h"
 #include <string.h>
 
+#define UART_DEFAULT_SPEED (9600)
+
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
@@ -47,7 +49,7 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
-	proto->dev_speed = 9600;
+	proto->dev_speed = UART_DEFAULT_SPEED;
 	proto->dev_parity = 0;
 	proto->dev_stop_bit = 1;
 }
@@ -86,6 +88,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	mode_config_proto_t* proto = &con->mode->proto;
 	int arg_int, t;
 	bsp_status_t bsp_status;
+	uint32_t final_baudrate;
+	int baudrate_error_percent;
+	int baudrate_err_int_part;
+	int baudrate_err_dec_part;
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
@@ -118,6 +124,30 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, str_bsp_init_err, bsp_status);
 				return t;
 			}
+
+			final_baudrate = bsp_uart_get_final_baudrate(proto->dev_num);
+
+			baudrate_error_percent = 10000 - (int)((float)proto->dev_speed/(float)final_baudrate * 10000.0f);
+			if(baudrate_error_percent < 0)
+				baudrate_error_percent = -baudrate_error_percent;
+			else
+				baudrate_error_percent = baudrate_error_percent;
+
+			baudrate_err_int_part = (baudrate_error_percent / 100);
+			baudrate_err_dec_part = (baudrate_error_percent - (baudrate_err_int_part * 100));
+
+			if( (final_baudrate < 1) || (baudrate_err_int_part > 5)) {
+				cprintf(con, "Invalid final baudrate(%d bps/%d.%02d%% err) restore default %d bauds\r\n", final_baudrate, baudrate_err_int_part, baudrate_err_dec_part, UART_DEFAULT_SPEED);
+				proto->dev_speed = UART_DEFAULT_SPEED;
+				bsp_status = bsp_uart_init(proto->dev_num, proto);
+				if( bsp_status != BSP_OK) {
+					cprintf(con, str_bsp_init_err, bsp_status);
+					return t;
+				}
+			} else {
+				cprintf(con, "Final speed: %d bps(%d.%02d%% err)\r\n", final_baudrate, baudrate_err_int_part, baudrate_err_dec_part);
+			}
+
 			break;
 		case T_PARITY:
 			/* Token parameter. */

@@ -24,6 +24,9 @@ Warning in order to use this driver all GPIOs peripherals shall be enabled.
 #define NB_UART (BSP_DEV_UART_END)
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
 
+#define CLOCK_DIV8 (8)
+#define CLOCK_DIV16 (16)
+
 static UART_HandleTypeDef uart_handle[NB_UART];
 static mode_config_proto_t* uart_mode_conf[NB_UART];
 volatile uint16_t dummy_read;
@@ -146,6 +149,15 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 	}
 	huart->Init.BaudRate = mode_conf->dev_speed;
 
+	if(huart->Init.BaudRate < 4800)
+		huart->Init.OverSampling = UART_OVERSAMPLING_16;
+	else
+		huart->Init.OverSampling = UART_OVERSAMPLING_8;
+
+	/* Check baudrate is not too low */
+	if(huart->Init.BaudRate < 81)
+		return BSP_ERROR;
+
 	switch(mode_conf->dev_parity) {
 	case 1: /* 8/even */
 		huart->Init.Parity = UART_PARITY_EVEN;
@@ -263,3 +275,52 @@ bsp_status_t bsp_uart_write_read_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, ui
 	return status;
 }
 
+/** \brief Return final baud rate configured for over8=0 or over8=1.
+ *
+ * \param dev_num bsp_dev_uart_t
+ * \return uint32_t final baudrate configured
+ *
+ */
+uint32_t bsp_uart_get_final_baudrate(bsp_dev_uart_t dev_num)
+{
+	float f_baudrate;
+	float f_baudrate_frac;
+	uint32_t final_baudrate;
+	uint32_t clock;
+	uint32_t brr;
+	UART_HandleTypeDef* huart;
+
+	huart = &uart_handle[dev_num];
+	brr = huart->Instance->BRR;
+
+	if(huart->Init.OverSampling == UART_OVERSAMPLING_8) {
+
+		if((huart->Instance == USART1) || (huart->Instance == USART6))
+			clock = HAL_RCC_GetPCLK2Freq() / CLOCK_DIV8;
+		else
+			clock = HAL_RCC_GetPCLK1Freq() / CLOCK_DIV8;
+
+		final_baudrate = brr >> 4;
+		if(final_baudrate > 0)
+		{
+			f_baudrate_frac = (float)(brr & 0x0F) / 16.0f;
+			f_baudrate = ((float)final_baudrate) + f_baudrate_frac;
+			final_baudrate = (uint32_t)((float)clock / f_baudrate);
+		}
+	} else {
+
+		if((huart->Instance == USART1) || (huart->Instance == USART6))
+			clock = HAL_RCC_GetPCLK2Freq() / CLOCK_DIV16;
+		else
+			clock = HAL_RCC_GetPCLK1Freq() / CLOCK_DIV16;
+
+		final_baudrate = brr >> 4;
+		if(final_baudrate > 0)
+		{
+			f_baudrate_frac = (float)(brr & 0x07) / 16.0f;
+			f_baudrate = ((float)final_baudrate) + f_baudrate_frac;
+			final_baudrate = (uint32_t)((float)clock / f_baudrate);
+		}
+	}
+	return final_baudrate;
+}

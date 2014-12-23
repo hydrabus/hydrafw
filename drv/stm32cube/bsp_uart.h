@@ -31,4 +31,6 @@ bsp_status_t bsp_uart_write_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, uint8_t
 bsp_status_t bsp_uart_read_u8(bsp_dev_uart_t dev_num, uint8_t* rx_data, uint8_t nb_data);
 bsp_status_t bsp_uart_write_read_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, uint8_t* rx_data, uint8_t nb_data);
 
+uint32_t bsp_uart_get_final_baudrate(bsp_dev_uart_t dev_num);
+
 #endif /* _BSP_UART_H_ */
