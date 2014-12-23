@@ -154,6 +154,9 @@ int cmd_show(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_show_sd(t_hydra_console *con);
+bool log_open(t_hydra_console *con);
+bool log_add(t_hydra_console *con, char *text, int text_len);
+void log_close(void);
 int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p);
 

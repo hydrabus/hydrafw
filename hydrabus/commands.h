@@ -90,6 +90,7 @@ enum {
 	T_TIMING,
 	T_RM,
 	T_MKDIR,
+	T_LOGGING,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

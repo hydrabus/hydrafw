@@ -23,13 +23,19 @@
 #include "ch.h"
 #include "hal.h"
 #include "chprintf.h"
+#include "ff.h"
+#include "microsd.h"
 
 #include "common.h"
 
 uint32_t debug_flags = 0;
+
+char log_dest[48];
+static FIL log_file;
+
 extern t_token_dict tl_dict[];
 extern t_token tokens_mode_spi[];
-
+extern bool fs_ready;
 
 char get_char(t_hydra_console *con)
 {
@@ -130,6 +136,90 @@ static int cmd_debug(t_hydra_console *con, t_tokenline_parsed *p)
 	return TRUE;
 }
 
+static int cmd_logging(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	int action, t;
+	char *filename;
+
+	filename = NULL;
+	action = 0;
+	for (t = 0; p->tokens[t]; t++) {
+		switch (p->tokens[t]) {
+		case T_SD:
+			t += 2;
+			filename = p->buf + p->tokens[t];
+		case T_ON:
+		case T_OFF:
+			action = p->tokens[t];
+			break;
+		}
+	}
+	if (!action) {
+		cprintf(con, "Please specify either 'on' or 'off'.\r\n");
+		return FALSE;
+	}
+	if (action == T_ON) {
+		if (!filename) {
+			cprintf(con, "Please specify a file to log to.\r\n");
+			return FALSE;
+		}
+		if (filename[0] != '/') {
+			strcpy(log_dest, "/");
+			strncat(log_dest, filename, sizeof(log_dest) - 1);
+		} else {
+			strncpy(log_dest, filename, sizeof(log_dest));
+		}
+		log_open(con);
+	} else {
+		log_dest[0] = '\0';
+		log_close();
+	}
+
+	return TRUE;
+}
+
+bool log_open(t_hydra_console *con)
+{
+	FRESULT err;
+
+	if (!fs_ready && (err = mount())) {
+		cprintf(con, "mount error: %d\r\n", err);
+		return FALSE;
+	}
+
+	if ((err = f_open(&log_file, log_dest, FA_WRITE | FA_OPEN_ALWAYS))) {
+		cprintf(con, "Failed to open log file: error %d\r\n", err);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+bool log_add(t_hydra_console *con, char *text, int text_len)
+{
+	FRESULT err;
+	UINT written;
+	int size;
+
+	size = f_size(&log_file);
+	if ((err = f_lseek(&log_file, size))) {
+		cprintf(con, "f_seek error: %d\r\n", err);
+		return FALSE;
+	}
+
+	if ((err = f_write(&log_file, text, text_len, &written))) {
+		cprintf(con, "Failed to write to log file: error %d\r\n", err);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+void log_close(void)
+{
+	f_close(&log_file);
+}
+
 static struct cmd_map {
 	int token;
 	cmdfunc func;
@@ -137,6 +227,7 @@ static struct cmd_map {
 	{ T_CLEAR, print_clear },
 	{ T_DEBUG, cmd_debug },
 	{ T_SHOW, cmd_show },
+	{ T_LOGGING, cmd_logging },
 	{ T_SD, cmd_sd },
 	{ T_SPI, cmd_mode_init },
 	{ T_I2C, cmd_mode_init },
@@ -153,8 +244,10 @@ void execute(void *user, t_tokenline_parsed *p)
 	int i;
 
 	con = user;
+
 	if (debug_flags & DEBUG_TOKENLINE)
 		token_dump(con, p);
+
 	if (con->console_mode)
 		cmd_mode_exec(con, p);
 	else {
@@ -168,6 +261,11 @@ void execute(void *user, t_tokenline_parsed *p)
 		if (!top_commands[i].token) {
 			chprintf(con->bss, "Command mapping not found.\r\n");
 		}
+	}
+
+	if (*log_dest) {
+		/* Flush cached logging output. */
+		f_sync(&log_file);
 	}
 }
 

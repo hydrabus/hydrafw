@@ -97,6 +97,7 @@ t_token_dict tl_dict[] = {
 	{ T_TIMING, "timing" },
 	{ T_RM, "rm" },
 	{ T_MKDIR, "mkdir" },
+	{ T_LOGGING, "logging" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -658,6 +659,17 @@ t_token tokens_debug[] = {
 	{ }
 };
 
+t_token tokens_logging[] = {
+	{ T_SD,
+		.arg_type = T_ARG_STRING,
+		.help = "Log to file on SD card" },
+	{ T_ON,
+		.help = "Start logging" },
+	{ T_OFF,
+		.help = "Stop logging" },
+	{ }
+};
+
 t_token tl_tokens[] = {
 	{
 		T_HELP,
@@ -676,6 +688,11 @@ t_token tl_tokens[] = {
 		T_SHOW,
 		.subtokens = tokens_show,
 		.help = "Show information"
+	},
+	{
+		T_LOGGING,
+		.subtokens = tokens_logging,
+		.help = "Turn logging on or off"
 	},
 	{
 		T_SD,

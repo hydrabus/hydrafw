@@ -37,13 +37,19 @@ uint32_t g_sbuf_idx;
 uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));
 
 extern uint32_t debug_flags;
+extern char log_dest[];
 
 void stream_write(t_hydra_console *con, const char *data, const uint32_t size)
 {
 	BaseSequentialStream* chp = con->bss;
 
-	if(size > 0)
-		chSequentialStreamWrite(chp, (uint8_t *)data, size);
+	if (!size)
+		return;
+
+	chSequentialStreamWrite(chp, (uint8_t *)data, size);
+
+	if (*log_dest)
+		log_add(con, (char *)data, size);
 }
 
 void print(void *user, const char *str)
