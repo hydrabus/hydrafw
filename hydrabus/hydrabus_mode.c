@@ -21,7 +21,6 @@
 #include "common.h"
 
 #include "tokenline.h"
-#include "xatoi.h"
 
 #include "hydrabus.h"
 #include "hydrabus_mode.h"

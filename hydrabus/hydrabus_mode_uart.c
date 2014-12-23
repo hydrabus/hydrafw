@@ -17,7 +17,6 @@
  */
 
 #include "hydrabus_mode_uart.h"
-#include "xatoi.h"
 #include "bsp_uart.h"
 #include <string.h>
 

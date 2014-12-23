@@ -18,7 +18,6 @@
  */
 
 #include "hydrabus_mode_i2c.h"
-#include "xatoi.h"
 #include "bsp_i2c.h"
 #include <string.h>
 
