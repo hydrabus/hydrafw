@@ -99,22 +99,25 @@ void print_freq(t_hydra_console *con, uint32_t freq)
 
 	freq_int_part = freq;
 	freq_dec_part = 0;
-	if (freq > PRINT_FREQ_1GHZ) {
+	if (freq >= PRINT_FREQ_1GHZ) {
 		freq_int_part /= PRINT_FREQ_1GHZ;
 		freq_dec_part = (freq - (freq_int_part * PRINT_FREQ_1GHZ)) / (PRINT_FREQ_1MHZ*10);
 		suffix = "ghz";
-	} else if (freq > PRINT_FREQ_1MHZ) {
+	} else if (freq >= PRINT_FREQ_1MHZ) {
 		freq_int_part /= PRINT_FREQ_1MHZ;
 		freq_dec_part = (freq - (freq_int_part * PRINT_FREQ_1MHZ)) / (PRINT_FREQ_1KHZ*10);
 		suffix = "mhz";
-	} else if (freq > PRINT_FREQ_1KHZ) {
+	} else if (freq >= PRINT_FREQ_1KHZ) {
 		freq_int_part /= PRINT_FREQ_1KHZ;
 		freq_dec_part = (freq - (freq_int_part * PRINT_FREQ_1KHZ)) / 10;
 		suffix = "khz";
 	} else
 		suffix = "";
 
-	cprintf(con, "%d.%02d%s", freq_int_part, freq_dec_part, suffix);
+	if(freq_dec_part > 0)
+		cprintf(con, "%d.%02d%s", freq_int_part, freq_dec_part, suffix);
+	else
+		cprintf(con, "%d%s", freq_int_part, suffix);
 }
 
 
