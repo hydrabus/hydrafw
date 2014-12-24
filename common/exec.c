@@ -138,27 +138,26 @@ static int cmd_debug(t_hydra_console *con, t_tokenline_parsed *p)
 
 static int cmd_logging(t_hydra_console *con, t_tokenline_parsed *p)
 {
-	int action, t;
+	int t;
 	char *filename;
+	bool enable;
 
 	filename = NULL;
-	action = 0;
+	enable = TRUE;
 	for (t = 0; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
 		case T_SD:
 			t += 2;
 			filename = p->buf + p->tokens[t];
 		case T_ON:
+			/* Syntactic sugar. */
+			break;
 		case T_OFF:
-			action = p->tokens[t];
+			enable = FALSE;
 			break;
 		}
 	}
-	if (!action) {
-		cprintf(con, "Please specify either 'on' or 'off'.\r\n");
-		return FALSE;
-	}
-	if (action == T_ON) {
+	if (enable) {
 		if (!filename) {
 			cprintf(con, "Please specify a file to log to.\r\n");
 			return FALSE;
