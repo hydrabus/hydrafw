@@ -467,7 +467,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="chibios\os\various\memstreams.h" />
-		<Unit filename="common\cexcept.h" />
 		<Unit filename="common\chconf.h" />
 		<Unit filename="common\common.c">
 			<Option compilerVar="CC" />
@@ -487,9 +486,6 @@
 		<Unit filename="common\halconf.h" />
 		<Unit filename="common\hydrafw_version.hdr" />
 		<Unit filename="common\mcuconf.h" />
-		<Unit filename="common\microrl_callback.h" />
-		<Unit filename="common\microrl_common.h" />
-		<Unit filename="common\microrl_config.h" />
 		<Unit filename="common\microsd.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -503,10 +499,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="common\usb2cfg.h" />
-		<Unit filename="common\xatoi.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="common\xatoi.h" />
 		<Unit filename="drv\stm32cube\bsp.c">
 			<Option compilerVar="CC" />
 		</Unit>
