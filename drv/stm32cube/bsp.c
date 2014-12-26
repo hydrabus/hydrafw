@@ -43,11 +43,14 @@ typedef struct {
 #if !defined(get_cyclecounter) || defined(__DOXYGEN__)
 #define get_cyclecounter() ( DWTBase->CYCCNT )
 #endif
+extern volatile int nb_console ;
 
 void HAL_IncTick(void)
 {
 	uwTick++;
-	chThdSleepMicroseconds(1);
+
+	if(nb_console > 1)
+		chThdSleepMicroseconds(1);
 }
 
 uint32_t HAL_GetTick(void)

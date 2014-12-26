@@ -34,6 +34,8 @@
 #include "microsd.h"
 #include "hydrabus.h"
 
+volatile int nb_console = 0;
+
 /* USB1: Virtual serial port over USB. */
 SerialUSBDriver SDU1;
 /* USB2: Virtual serial port over USB. */
@@ -85,7 +87,7 @@ volatile int a, b, c;
 int main(void)
 {
 	int sleep_ms, i;
-
+	int local_nb_console;
 	/*
 	 * System initializations.
 	 * - HAL initialization, this also initializes the configured device
@@ -142,11 +144,13 @@ int main(void)
 	 */
 	chRegSetThreadName("main");
 	while (TRUE) {
+		local_nb_console = 0;
 		for (i = 0; i < 2; i++) {
 			if (!consoles[i].thread) {
 				if (consoles[i].sdu->config->usbp->state != USB_ACTIVE)
 					continue;
 				/* Spawn new console thread.*/
+				local_nb_console++;
 				consoles[i].thread = chThdCreateFromHeap(NULL,
 						     CONSOLE_WA_SIZE, NORMALPRIO, console, &consoles[i]);
 			} else {
@@ -155,6 +159,7 @@ int main(void)
 					consoles[i].thread = NULL;
 			}
 		}
+		nb_console = local_nb_console;
 
 		/* HydraBus ULED blink. */
 		if (USER_BUTTON)
