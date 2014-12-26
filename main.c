@@ -150,7 +150,6 @@ int main(void)
 				if (consoles[i].sdu->config->usbp->state != USB_ACTIVE)
 					continue;
 				/* Spawn new console thread.*/
-				local_nb_console++;
 				consoles[i].thread = chThdCreateFromHeap(NULL,
 						     CONSOLE_WA_SIZE, NORMALPRIO, console, &consoles[i]);
 			} else {
@@ -158,6 +157,8 @@ int main(void)
 					/* This console thread terminated. */
 					consoles[i].thread = NULL;
 			}
+			if (consoles[i].sdu->config->usbp->state == USB_ACTIVE)
+				local_nb_console++;
 		}
 		nb_console = local_nb_console;
 
