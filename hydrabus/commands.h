@@ -91,6 +91,13 @@ enum {
 	T_RM,
 	T_MKDIR,
 	T_LOGGING,
+	T_DAC,
+	T_DAC1,
+	T_DAC2,
+	T_DAC1_VOLT,
+	T_DAC2_VOLT,
+	T_DAC1_TRIANGLE,
+	T_DAC2_TRIANGLE,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

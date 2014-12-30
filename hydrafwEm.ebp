@@ -508,6 +508,11 @@
 		</Unit>
 		<Unit filename="drv\stm32cube\bsp_adc.h" />
 		<Unit filename="drv\stm32cube\bsp_adc_conf.h" />
+		<Unit filename="drv\stm32cube\bsp_dac.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\bsp_dac.h" />
+		<Unit filename="drv\stm32cube\bsp_dac_conf.h" />
 		<Unit filename="drv\stm32cube\bsp_gpio.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -589,10 +594,22 @@
 		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_adc.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_dac.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_dac_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_gpio.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_tim.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_tim_ex.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_uart.c">
@@ -626,6 +643,9 @@
 		</Unit>
 		<Unit filename="hydrabus\hydrabus.h" />
 		<Unit filename="hydrabus\hydrabus_adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_dac.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydrabus\hydrabus_microrl.h" />

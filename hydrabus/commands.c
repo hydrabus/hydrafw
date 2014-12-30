@@ -98,6 +98,13 @@ t_token_dict tl_dict[] = {
 	{ T_RM, "rm" },
 	{ T_MKDIR, "mkdir" },
 	{ T_LOGGING, "logging" },
+	{ T_DAC, "dac" },
+	{ T_DAC1, "dac1" },
+	{ T_DAC2, "dac2" },
+	{ T_DAC1_VOLT, "dac1-volt" },
+	{ T_DAC2_VOLT, "dac2-volt" },
+	{ T_DAC1_TRIANGLE, "dac1-triangle" },
+	{ T_DAC2_TRIANGLE, "dac2-triangle" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -571,6 +578,48 @@ t_token tokens_adc[] = {
 	{ }
 };
 
+t_token tokens_dac[] = {
+	{
+		T_HELP,
+		.arg_type = T_ARG_HELP,
+		.help = "DAC1, DAC2 (12bits DAC 0 to 4095/3.3V)"
+	},
+	{
+		T_DAC1,
+		.arg_type = T_ARG_INT,
+		.help = "<raw value 0 to 4095> (PA4 used by ULED)"
+	},
+	{
+		T_DAC2,
+		.arg_type = T_ARG_INT,
+		.help = "<raw value 0 to 4095> (PA5)"
+	},
+	{
+		T_DAC1_VOLT,
+		.arg_type = T_ARG_FLOAT,
+		.help = "Volt <0 to 3.3v> (PA4 used by ULED)"
+	},
+	{
+		T_DAC2_VOLT,
+		.arg_type = T_ARG_FLOAT,
+		.help = "Volt <0 to 3.3v> (PA5)"
+	},
+	{
+		T_DAC1_TRIANGLE,
+		.help = "Triangle output (amplitude 3.3V)"
+	},
+	{
+		T_DAC2_TRIANGLE,
+		.help = "Triangle output (amplitude 3.3V)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit DAC mode (reinit DAC1&2 pins to safe mode/in)"
+	},
+	{ }
+};
+
+
 t_token tokens_really[] = {
 	{ T_REALLY },
 	{ }
@@ -703,6 +752,11 @@ t_token tl_tokens[] = {
 		T_ADC,
 		.subtokens = tokens_adc,
 		.help = "Read analog values"
+	},
+	{
+		T_DAC,
+		.subtokens = tokens_dac,
+		.help = "Write analog values"
 	},
 	{
 		T_GPIO,
