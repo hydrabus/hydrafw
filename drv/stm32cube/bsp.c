@@ -101,3 +101,7 @@ void wait_delay(uint32_t wait_nb_cycles)
 	__asm__("cpsie i");
 }
 
+uint32_t bsp_get_apb1_freq(void)
+{
+	return 42000000;
+}

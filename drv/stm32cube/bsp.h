@@ -49,5 +49,8 @@ bool delay_is_expired(bool start, uint32_t wait_nb_cycles);
 /* wait_nb_cycles shall be min 10 */
 void wait_delay(uint32_t wait_nb_cycles);
 
+/* Return APB1 frequency */
+uint32_t bsp_get_apb1_freq(void);
+
 #endif /* _BSP_H_ */
 
