@@ -33,9 +33,23 @@ void bsp_dac_triangle_tim6_stop(void);
  */
 static void dac_gpio_hw_deinit(bsp_dev_dac_t dev_num)
 {
-	(void)dev_num;
+	GPIO_InitTypeDef gpio_init;
 
-	HAL_GPIO_DeInit(BSP_DAC1_PORT, BSP_DAC1_PIN);
+	switch(dev_num) {
+	case BSP_DEV_DAC1:
+		/* Pin configuration PA4 = LED */
+		gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
+		gpio_init.Pull  = GPIO_PULLUP;
+		gpio_init.Speed = GPIO_SPEED_HIGH; /* Max 100MHz */
+		gpio_init.Pin = BSP_DAC1_PIN;
+		HAL_GPIO_Init(BSP_DAC1_PORT, &gpio_init);
+		break;
+	case BSP_DEV_DAC2:
+		HAL_GPIO_DeInit(BSP_DAC2_PORT, BSP_DAC2_PIN);
+		break;
+	default:
+		break;
+	}
 }
 
 /** \brief DAC GPIO HW Init.
@@ -140,10 +154,10 @@ bsp_status_t bsp_dac_deinit(bsp_dev_dac_t dev_num)
 	/* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
 	dac_gpio_hw_deinit(dev_num);
 
-	__DAC_CLK_DISABLE();
-
 	__DAC_FORCE_RESET();
 	__DAC_RELEASE_RESET();
+
+	__DAC_CLK_DISABLE();
 
 	return BSP_OK;
 }
