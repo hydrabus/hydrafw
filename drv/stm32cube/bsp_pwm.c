@@ -256,5 +256,9 @@ void bsp_pwm_get(bsp_dev_pwm_t dev_num, uint32_t* frequency, uint32_t* duty_cycl
 	arr = TIM2->ARR + 1;
 	ccr = *CCRx;
 	*frequency = (apb1_freq * 2) / arr;
-	*duty_cycle_percent = ccr / (arr / 100);
+
+	if(arr < 1000)
+		*duty_cycle_percent = (ccr * 100) / arr;
+	else
+		*duty_cycle_percent = ccr / (arr / 100);
 }

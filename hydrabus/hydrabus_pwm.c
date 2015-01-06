@@ -51,7 +51,7 @@ static int pwm_write(t_hydra_console *con, uint32_t freq, uint32_t dc)
 	bsp_pwm_get(pwm_src, &final_freq, &final_duty_cycle_percent);
 
 	cprintf(con, "%s ", pwm_channel_names[0]);
-	cprintf(con, "Frequency: %d, Duty Cycle: %d%%\r\n",
+	cprintf(con, "Frequency: %d, Duty Cycle: %d%%(+/-1%%)\r\n",
 		final_freq, final_duty_cycle_percent);
 
 	return TRUE;
