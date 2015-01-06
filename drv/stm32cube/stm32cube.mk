@@ -11,6 +11,7 @@ STM32CUBESRC = ./drv/stm32cube/stm32f4xx_hal_msp.c \
               ./drv/stm32cube/bsp.c \
               ./drv/stm32cube/bsp_adc.c \
               ./drv/stm32cube/bsp_dac.c \
+              ./drv/stm32cube/bsp_pwm.c \
               ./drv/stm32cube/bsp_gpio.c \
               ./drv/stm32cube/bsp_i2c.c \
               ./drv/stm32cube/bsp_spi.c \
