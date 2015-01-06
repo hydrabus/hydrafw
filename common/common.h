@@ -159,6 +159,7 @@ bool log_add(t_hydra_console *con, char *text, int text_len);
 void log_close(void);
 int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_dac(t_hydra_console *con, t_tokenline_parsed *p);
+int cmd_pwm(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p);
 
 void token_dump(t_hydra_console *con, t_tokenline_parsed *p);

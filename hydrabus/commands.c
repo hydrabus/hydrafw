@@ -105,6 +105,8 @@ t_token_dict tl_dict[] = {
 	{ T_DAC2_VOLT, "dac2-volt" },
 	{ T_DAC1_TRIANGLE, "dac1-triangle" },
 	{ T_DAC2_TRIANGLE, "dac2-triangle" },
+	{ T_PWM, "pwm" },
+	{ T_DUTY_CYCLE, "duty-cycle" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -619,6 +621,28 @@ t_token tokens_dac[] = {
 	{ }
 };
 
+t_token tokens_pwm[] = {
+	{
+		T_HELP,
+		.arg_type = T_ARG_HELP,
+		.help = "PWM1 (PB11)"
+	},
+	{
+		T_FREQUENCY,
+		.arg_type = T_ARG_INT,
+		.help = "PWM frequency <value 1Hz to 42MHz>"
+	},
+	{
+		T_DUTY_CYCLE,
+		.arg_type = T_ARG_INT,
+		.help = "Duty Cycle in % <value 0 to 100>"
+	},
+	{
+		T_EXIT,
+		.help = "Exit PWM mode (reinit PWM1 pin to safe mode/in)"
+	},
+	{ }
+};
 
 t_token tokens_really[] = {
 	{ T_REALLY },
@@ -757,6 +781,11 @@ t_token tl_tokens[] = {
 		T_DAC,
 		.subtokens = tokens_dac,
 		.help = "Write analog values"
+	},
+	{
+		T_PWM,
+		.subtokens = tokens_pwm,
+		.help = "Write PWM"
 	},
 	{
 		T_GPIO,

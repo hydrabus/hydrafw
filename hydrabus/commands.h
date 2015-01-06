@@ -98,6 +98,8 @@ enum {
 	T_DAC2_VOLT,
 	T_DAC1_TRIANGLE,
 	T_DAC2_TRIANGLE,
+	T_PWM,
+	T_DUTY_CYCLE,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,
