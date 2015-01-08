@@ -1,3 +1,11 @@
+
+Firmware commands name rules
+==================
+Commands name rules are used by [tokeline](https://github.com/biot/tokenline) "t_token_dict" like for example in https://github.com/bvernoux/hydrafw/blob/master/hydrabus/commands.c
+
+basic rules: no capital letters or _ in keywords please, this keeps it consistent use - for space instead, like write-mode or whatever
+
+
 C code conventions
 ==================
 When writing new C code, please adhere to the following conventions.
