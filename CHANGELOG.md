@@ -3,8 +3,9 @@
 
 #### 19.12.2014 - [HydraFW v0.4 Beta](https://github.com/bvernoux/hydrafw/releases/tag/v0.4-beta)
 * Major improvement/refactoring towards terminal/syntax using tokenline (instead of microrl) thanks to Bert Vermeulen (biot) for that amazing piece of software and all the work on this project.
-* Also lot of new commands added like:
-* ADC, GPIO, more sd commands, SPI1&2, I2C and UART1&2 are tested with logic analyzer/oscilloscope.
+* New commands added:
+  * ADC, GPIO, more sd commands
+* SPI1&2, I2C and UART1&2 are tested with logic analyzer/oscilloscope.
 
 ---
 
