@@ -12,7 +12,7 @@ parser = OptionParser(usage=usage)
 if len(args)==1:
   sys.stdout = open(args[0], 'w')
   git=Repo().git
-  print '#define HYDRAFW_GIT_TAG "' + git.describe(tags=True,always=True,dirty=True) + '"'
+  print '#define HYDRAFW_GIT_TAG "' + git.describe(tags=True,always=True,dirty=True,long=True) + '"'
   print '#define HYDRAFW_BUILD_DATE "' + date.today().isoformat() + '"'
 else:
   parser.print_help()
