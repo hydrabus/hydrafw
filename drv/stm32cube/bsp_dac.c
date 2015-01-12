@@ -23,7 +23,7 @@ limitations under the License.
 static DAC_HandleTypeDef dac_handle[NB_DAC];
 static DAC_ChannelConfTypeDef dac_chan_conf[NB_DAC];
 
-void bsp_dac_triangle_tim6_stop(void);
+void bsp_dac_tim6_stop(void);
 
 /** \brief DAC GPIO HW DeInit.
  *
@@ -149,7 +149,7 @@ bsp_status_t bsp_dac_init(bsp_dev_dac_t dev_num)
  */
 bsp_status_t bsp_dac_deinit(bsp_dev_dac_t dev_num)
 {
-	bsp_dac_triangle_tim6_stop();
+	bsp_dac_tim6_stop();
 
 	/* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
 	dac_gpio_hw_deinit(dev_num);
@@ -197,7 +197,7 @@ bsp_status_t bsp_dac_write_u12(bsp_dev_dac_t dev_num, uint16_t data)
   * @param  None
   * @retval None
   */
-void bsp_dac_triangle_tim6_init(void)
+void bsp_dac_tim6_init(void)
 {
 	static TIM_HandleTypeDef  htim;
 	TIM_MasterConfigTypeDef sMasterConfig;
@@ -228,7 +228,7 @@ void bsp_dac_triangle_tim6_init(void)
   * @param  None
   * @retval None
   */
-void bsp_dac_triangle_tim6_stop(void)
+void bsp_dac_tim6_stop(void)
 {
 	static TIM_HandleTypeDef  htim;
 	/* Time base configuration */
@@ -243,7 +243,6 @@ void bsp_dac_triangle_tim6_stop(void)
 /** \brief Output DAC with Triangle amplitude 3.3V, offset 0
  *
  * \param dev_num bsp_dev_dac_t: DAC dev num.
- * \param data uint8_t new dac value.
  * \return bsp_status_t: Status of the write.
  *
  */
@@ -263,7 +262,7 @@ bsp_status_t bsp_dac_triangle(bsp_dev_dac_t dev_num)
 	dac_gpio_hw_init(dev_num);
 
 	/* Init Timer6 */
-	bsp_dac_triangle_tim6_init();
+	bsp_dac_tim6_init();
 
 	hdac = &dac_handle[dev_num];
 	hdac_chan = &dac_chan_conf[dev_num];
@@ -294,3 +293,55 @@ bsp_status_t bsp_dac_triangle(bsp_dev_dac_t dev_num)
 	return status;
 }
 
+/** \brief Output DAC with Noise amplitude 3.3V
+ *
+ * \param dev_num bsp_dev_dac_t: DAC dev num.
+ * \return bsp_status_t: Status of the write.
+ *
+ */
+bsp_status_t bsp_dac_noise(bsp_dev_dac_t dev_num)
+{
+	uint32_t dac_chan_num;
+	HAL_StatusTypeDef status;
+	DAC_HandleTypeDef* hdac;
+	DAC_ChannelConfTypeDef* hdac_chan;
+
+	bsp_dac_deinit(dev_num);
+
+	/* Configure the DAC peripheral */
+	__DAC_CLK_ENABLE();
+
+	/* Init the DAC GPIO */
+	dac_gpio_hw_init(dev_num);
+
+	/* Init Timer6 */
+	bsp_dac_tim6_init();
+
+	hdac = &dac_handle[dev_num];
+	hdac_chan = &dac_chan_conf[dev_num];
+
+	hdac->Instance =  DAC;
+	if(HAL_DAC_Init(hdac) != HAL_OK) {
+		return BSP_ERROR;
+	}
+
+	/* Configure DAC regular channel */
+	dac_chan_num = get_dac_chan_num(dev_num);
+	hdac_chan->DAC_Trigger = DAC_TRIGGER_T6_TRGO;
+	hdac_chan->DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+	if(HAL_DAC_ConfigChannel(hdac, hdac_chan, dac_chan_num) != HAL_OK)
+		return BSP_ERROR;
+
+	if(HAL_DACEx_NoiseWaveGenerate(hdac, dac_chan_num, DAC_LFSRUNMASK_BITS11_0) != HAL_OK)
+		return BSP_ERROR;
+
+	/* Enable DAC channel */
+	if(HAL_DAC_Start(hdac, dac_chan_num) != HAL_OK)
+		return BSP_ERROR;
+
+	/* Set default value to 0 (corresponds to offset) */
+	if(HAL_DAC_SetValue(hdac, dac_chan_num, DAC_ALIGN_12B_R, 0x0) != HAL_OK)
+		return BSP_ERROR;
+
+	return status;
+}

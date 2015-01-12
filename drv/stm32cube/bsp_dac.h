@@ -34,5 +34,6 @@ bsp_status_t bsp_dac_deinit(bsp_dev_dac_t dev_num);
 
 bsp_status_t bsp_dac_write_u12(bsp_dev_dac_t dev_num, uint16_t data);
 bsp_status_t bsp_dac_triangle(bsp_dev_dac_t dev_num);
+bsp_status_t bsp_dac_noise(bsp_dev_dac_t dev_num);
 
 #endif /* _BSP_DAC_H_ */
