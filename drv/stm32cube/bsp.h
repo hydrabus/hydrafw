@@ -52,5 +52,8 @@ void wait_delay(uint32_t wait_nb_cycles);
 /* Return APB1 frequency */
 uint32_t bsp_get_apb1_freq(void);
 
+/* Check if UBTN is pressed after reset then enter USB DFU */
+void bsp_enter_usb_dfu(void);
+
 #endif /* _BSP_H_ */
 

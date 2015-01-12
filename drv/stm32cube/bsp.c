@@ -19,6 +19,8 @@ limitations under the License.
 #include "stm32f405xx.h"
 #include "stm32f4xx_hal.h"
 
+#include "bsp_gpio.h"
+
 static uint32_t uwTick = 0;
 
 /* Internal Cycle Counter */
@@ -105,3 +107,33 @@ uint32_t bsp_get_apb1_freq(void)
 {
 	return 42000000;
 }
+
+void reboot_usb_dfu(void)
+{
+	/* Assert green LED (PA4) as indicator we are in the bootloader */
+	bsp_gpio_init(BSP_GPIO_PORTA, 4, MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_set(BSP_GPIO_PORTA, 4);
+
+	/* Remap to System flash */
+	__SYSCFG_CLK_ENABLE();
+	__HAL_REMAPMEMORY_SYSTEMFLASH();
+
+	/* Reboot to USB DFU (from system flash) */
+#define SCB_AIRCR_VECTKEY_RESET		(0x05FA0001)
+	SCB->AIRCR = SCB_AIRCR_VECTKEY_RESET;
+
+	while (1);
+}
+
+/* Check the USER button to enter USD DFU (bootrom) */
+void bsp_enter_usb_dfu(void)
+{
+	/* Enable peripheral Clock for GPIOA */
+	__GPIOA_CLK_ENABLE();
+	bsp_gpio_init(BSP_GPIO_PORTA, 0, MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+
+	if(USER_BUTTON) {
+		reboot_usb_dfu();
+	}
+}
+

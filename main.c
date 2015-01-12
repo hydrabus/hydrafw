@@ -34,6 +34,8 @@
 #include "microsd.h"
 #include "hydrabus.h"
 
+#include "bsp.h"
+
 volatile int nb_console = 0;
 
 /* USB1: Virtual serial port over USB. */
@@ -88,6 +90,9 @@ int main(void)
 {
 	int sleep_ms, i;
 	int local_nb_console;
+
+	bsp_enter_usb_dfu();
+
 	/*
 	 * System initializations.
 	 * - HAL initialization, this also initializes the configured device
@@ -96,6 +101,7 @@ int main(void)
 	 *   RTOS is active.
 	 */
 	halInit();
+
 	chSysInit();
 
 	scs_dwt_cycle_counter_enabled();
