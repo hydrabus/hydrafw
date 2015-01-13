@@ -453,9 +453,6 @@
 		<Unit filename="chibios\os\rt\src\chvt.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="chibios\os\various\chprintf.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="chibios\os\various\chprintf.h" />
 		<Unit filename="chibios\os\various\fatfs_bindings\fatfs_diskio.c">
 			<Option compilerVar="CC" />

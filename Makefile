@@ -122,9 +122,8 @@ CSRC = $(PORTSRC) \
        $(COMMONSRC) \
        $(HYDRABUSSRC) \
        $(STM32CUBESRC) \
-       $(CHIBIOS)/os/various/chprintf.c \
        $(CHIBIOS)/os/various/memstreams.c \
-	   tokenline/tokenline.c \
+       tokenline/tokenline.c \
        main.c
 
 ifeq ($(HYDRAFW_NFC),1)

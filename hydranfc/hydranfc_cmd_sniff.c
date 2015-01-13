@@ -20,7 +20,6 @@
 #include <stdio.h> /* sprintf */
 
 #include "ch.h"
-#include "chprintf.h"
 #include "hal.h"
 #include "shell.h"
 
@@ -110,15 +109,21 @@ void tprint_str(const char *data, uint32_t size)
 
 void tprintf(const char *fmt, ...)
 {
-	va_list ap;
+	va_list va_args;
+	int real_size;
+#define TPRINTF_BUFF_SIZE (255)
+	char tprintf_buff[TPRINTF_BUFF_SIZE+1];
 
-	va_start(ap, fmt);
+	va_start(va_args, fmt);
+	real_size = vsnprintf(tprintf_buff, TPRINTF_BUFF_SIZE, fmt, va_args);
+
 	if (SDU1.config->usbp->state == USB_ACTIVE)
-		chvprintf((BaseSequentialStream*)&SDU1, fmt, ap);
+		chSequentialStreamWrite((BaseSequentialStream*)&SDU1, (uint8_t *)tprintf_buff, real_size);
 
 	if (SDU2.config->usbp->state == USB_ACTIVE)
-		chvprintf((BaseSequentialStream*)&SDU2, fmt, ap);
-	va_end(ap);
+		chSequentialStreamWrite((BaseSequentialStream*)&SDU2, (uint8_t *)tprintf_buff, real_size);
+
+	va_end(va_args);
 }
 
 /* Stop driver to exit Sniff NFC mode */

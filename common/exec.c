@@ -255,12 +255,12 @@ void execute(void *user, t_tokenline_parsed *p)
 		for (i = 0; top_commands[i].token; i++) {
 			if (p->tokens[0] == top_commands[i].token) {
 				if (!top_commands[i].func(con, p))
-					chprintf(con->bss, "Command failed.\r\n");
+					cprintf(con, "Command failed.\r\n");
 				break;
 			}
 		}
 		if (!top_commands[i].token) {
-			chprintf(con->bss, "Command mapping not found.\r\n");
+			cprintf(con, "Command mapping not found.\r\n");
 		}
 	}
 
