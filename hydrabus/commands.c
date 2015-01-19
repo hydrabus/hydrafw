@@ -101,10 +101,10 @@ t_token_dict tl_dict[] = {
 	{ T_DAC, "dac" },
 	{ T_DAC1, "dac1" },
 	{ T_DAC2, "dac2" },
-	{ T_DAC1_VOLT, "dac1-volt" },
-	{ T_DAC2_VOLT, "dac2-volt" },
-	{ T_DAC1_TRIANGLE, "dac1-triangle" },
-	{ T_DAC2_TRIANGLE, "dac2-triangle" },
+	{ T_RAW, "raw" },
+	{ T_VOLT, "volt" },
+	{ T_TRIANGLE, "triangle" },
+	{ T_NOISE, "noise" },
 	{ T_PWM, "pwm" },
 	{ T_DUTY_CYCLE, "duty-cycle" },
 
@@ -588,31 +588,29 @@ t_token tokens_dac[] = {
 	},
 	{
 		T_DAC1,
-		.arg_type = T_ARG_INT,
-		.help = "<raw value 0 to 4095> (PA4 used by ULED)"
+		.help = "DAC1 (PA4 used by ULED)"
 	},
 	{
 		T_DAC2,
+		.help = "DAC2 (PA5)"
+	},
+	{
+		T_RAW,
 		.arg_type = T_ARG_INT,
-		.help = "<raw value 0 to 4095> (PA5)"
+		.help = "Raw value <0 to 4095>"
 	},
 	{
-		T_DAC1_VOLT,
+		T_VOLT,
 		.arg_type = T_ARG_FLOAT,
-		.help = "Volt <0 to 3.3v> (PA4 used by ULED)"
+		.help = "Volt <0 to 3.3v>"
 	},
 	{
-		T_DAC2_VOLT,
-		.arg_type = T_ARG_FLOAT,
-		.help = "Volt <0 to 3.3v> (PA5)"
-	},
-	{
-		T_DAC1_TRIANGLE,
+		T_TRIANGLE,
 		.help = "Triangle output (amplitude 3.3V)"
 	},
 	{
-		T_DAC2_TRIANGLE,
-		.help = "Triangle output (amplitude 3.3V)"
+		T_NOISE,
+		.help = "Noise output (amplitude 3.3V)"
 	},
 	{
 		T_EXIT,
