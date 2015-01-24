@@ -30,7 +30,15 @@
 
 bool hydranfc_is_detected(void);
 
-void cmd_nfc_sniff_14443A(t_hydra_console *con);
+bool hydranfc_init(t_hydra_console *con);
+void hydranfc_cleanup(t_hydra_console *con);
+
+void hydranfc_show_registers(t_hydra_console *con);
+
+void hydranfc_scan_mifare(t_hydra_console *con);
+void hydranfc_scan_vicinity(t_hydra_console *con);
+
+void hydranfc_sniff_14443A(t_hydra_console *con);
 
 #endif /* _HYDRANFC_H_ */
 

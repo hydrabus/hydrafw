@@ -33,6 +33,7 @@
 
 #include "microsd.h"
 #include "hydrabus.h"
+#include "hydranfc.h"
 
 #include "bsp.h"
 
@@ -108,6 +109,7 @@ int main(void)
 
 	/* Configure PA0 (UBTN), PA4 (ULED) and initialize the SD driver. */
 	hydrabus_init();
+	hydranfc_init(NULL);
 
 	/*
 	 * Initializes a serial-over-USB CDC driver.

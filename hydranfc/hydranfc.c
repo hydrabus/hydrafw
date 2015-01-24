@@ -30,7 +30,7 @@ static void extcb1(EXTDriver *extp, expchannel_t channel);
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
-static thread_t *key_sniff_thread;
+static thread_t *key_sniff_thread = NULL;
 static volatile int irq_count;
 volatile int irq;
 volatile int irq_end_rx;
@@ -208,8 +208,8 @@ static bool configure_gpio(t_hydra_console *con)
 	McuDelayMillisecond(21);
 
 	if (!hydranfc_test_shield()) {
-		/* TODO: clean up */
-		cprintf(con, "HydraNFC not found.\r\n");
+		if(con != NULL)
+			cprintf(con, "HydraNFC not found.\r\n");
 		return FALSE;
 	}
 
@@ -255,11 +255,9 @@ THD_FUNCTION(key_sniff, arg)
 			D3_OFF;
 
 		/* If K3_BUTTON is pressed */
-		if (K3_BUTTON)
-		{
+		if (K3_BUTTON) {
 			/* Wait Until K3_BUTTON is released */
-			while(K3_BUTTON)
-			{
+			while(K3_BUTTON) {
 				chThdSleepMilliseconds(100);
 			}
 
@@ -270,7 +268,7 @@ THD_FUNCTION(key_sniff, arg)
 				D2_OFF;
 				chThdSleepMilliseconds(25);
 			}
-			cmd_nfc_sniff_14443A(NULL);
+			hydranfc_sniff_14443A(NULL);
 		}
 
 		if (K4_BUTTON)
@@ -287,26 +285,7 @@ THD_FUNCTION(key_sniff, arg)
 	return 0;
 }
 
-static int init(t_hydra_console *con, t_tokenline_parsed *p)
-{
-	mode_config_proto_t* proto = &con->mode->proto;
-	int tokens_used;
-
-	proto->dev_mode = NFC_MODE_NONE;
-
-	/* Process cmdline arguments, skipping "nfc". */
-	tokens_used = 1 + exec(con, p, 1);
-
-	if (!configure_gpio(con))
-		return 0;
-
-	key_sniff_thread = chThdCreateStatic(key_sniff_mem,
-			sizeof(key_sniff_mem), NORMALPRIO, key_sniff, NULL);
-
-	return tokens_used;
-}
-
-static void scan_mifare(t_hydra_console *con)
+void hydranfc_scan_mifare(t_hydra_console *con)
 {
 	uint8_t fifo_size;
 	uint8_t data_buf[MIFARE_DATA_MAX];
@@ -340,7 +319,7 @@ static void scan_mifare(t_hydra_console *con)
 	Trf797xReadSingle(data_buf, 1);
 	if (data_buf[0] != 0x88)
 		cprintf(con, "Error ISO Control Register read=0x%02lX (should be 0x88)\r\n",
-				(uint32_t)data_buf[0]);
+			(uint32_t)data_buf[0]);
 
 	/* Configure Test Settings 1 to BIT6/0x40 => MOD Pin becomes receiver subcarrier output (Digital Output for RX/TX) */
 	/*
@@ -383,8 +362,8 @@ static void scan_mifare(t_hydra_console *con)
 		data_buf[0] = 0x93;
 		data_buf[1] = 0x20;
 		fifo_size = Trf797x_transceive_bytes(data_buf, 2, uid_buf, MIFARE_UID_MAX,
-				10, /* 10ms TX/RX Timeout */
-				0); /* TX CRC disabled */
+						     10, /* 10ms TX/RX Timeout */
+						     0); /* TX CRC disabled */
 		if (fifo_size > 0) {
 			cprintf(con, "UID: ");
 			bcc = 0;
@@ -417,8 +396,8 @@ static void scan_mifare(t_hydra_console *con)
 				data_buf[2 + i] = uid_buf[i];
 			}
 			fifo_size = Trf797x_transceive_bytes(data_buf, (2 + MIFARE_UID_MAX),  data_buf, MIFARE_DATA_MAX,
-				10, /* 10ms TX/RX Timeout */
-				1); /* TX CRC enabled */
+							     10, /* 10ms TX/RX Timeout */
+							     1); /* TX CRC enabled */
 			if (fifo_size > 0) {
 				cprintf(con, "SAK: ");
 				for (i = 0; i < fifo_size; i++)
@@ -429,9 +408,9 @@ static void scan_mifare(t_hydra_console *con)
 				data_buf[0] = 0x50;
 				data_buf[1] = 0x00;
 				fifo_size = Trf797x_transceive_bytes(data_buf,
-						(2 + MIFARE_UID_MAX), data_buf, MIFARE_DATA_MAX,
-						5, /* 5ms TX/RX Timeout => shall not receive answer */
-						1); /* TX CRC enabled */
+								     (2 + MIFARE_UID_MAX), data_buf, MIFARE_DATA_MAX,
+								     5, /* 5ms TX/RX Timeout => shall not receive answer */
+								     1); /* TX CRC enabled */
 				if (fifo_size > 0) {
 					cprintf(con, "HALT:");
 					for (i = 0; i < fifo_size; i++)
@@ -452,7 +431,7 @@ static void scan_mifare(t_hydra_console *con)
 	*/
 }
 
-static void scan_vicinity(t_hydra_console *con)
+void hydranfc_scan_vicinity(t_hydra_console *con)
 {
 	static uint8_t data_buf[VICINITY_UID_MAX];
 	uint8_t fifo_size;
@@ -501,8 +480,8 @@ static void scan_vicinity(t_hydra_console *con)
 	data_buf[2] = 0x00; /* Mask */
 
 	fifo_size = Trf797x_transceive_bytes(data_buf, 3, data_buf, VICINITY_UID_MAX,
-			10, /* 10ms TX/RX Timeout (shall be less than 10ms (6ms) in High Speed) */
-			1); /* CRC enabled */
+					     10, /* 10ms TX/RX Timeout (shall be less than 10ms (6ms) in High Speed) */
+					     1); /* CRC enabled */
 	if (fifo_size > 0) {
 		/* fifo_size should be 10. */
 		cprintf(con, "UID:");
@@ -532,9 +511,9 @@ static void scan(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	if (proto->dev_mode == NFC_MODE_MIFARE)
-		scan_mifare(con);
+		hydranfc_scan_mifare(con);
 	else if (proto->dev_mode == NFC_MODE_VICINITY)
-		scan_vicinity(con);
+		hydranfc_scan_vicinity(con);
 }
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
@@ -578,7 +557,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 
 		if (continuous) {
 			cprintf(con, "Scanning %s ",
-					proto->dev_mode == NFC_MODE_MIFARE ? "MIFARE" : "Vicinity");
+				proto->dev_mode == NFC_MODE_MIFARE ? "MIFARE" : "Vicinity");
 			cprintf(con, "with %dms period. Press user button to stop.\r\n", period);
 			t++;
 			while (!USER_BUTTON) {
@@ -589,13 +568,13 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			scan(con);
 		}
 	} else if (action == T_SNIFF) {
-		cmd_nfc_sniff_14443A(con);
+		hydranfc_sniff_14443A(con);
 	}
 
 	return t + 1;
 }
 
-static void show_registers(t_hydra_console *con)
+void show_registers(t_hydra_console *con)
 {
 	unsigned int i;
 	static uint8_t data_buf;
@@ -610,8 +589,8 @@ static void show_registers(t_hydra_console *con)
 		else
 			Trf797xReadSingle(&data_buf, 1);
 		cprintf(con, "0x%02x\t%s%s: 0x%02x\r\n", registers[i].reg,
-				registers[i].name, buf + strlen(registers[i].name),
-				data_buf);
+			registers[i].name, buf + strlen(registers[i].name),
+			data_buf);
 	}
 }
 
@@ -626,19 +605,11 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 		show_registers(con);
 	} else {
 		cprintf(con, "Protocol: %s\r\n", proto->dev_mode == NFC_MODE_MIFARE ?
-				"MIFARE (ISO14443A)" : proto->dev_mode == NFC_MODE_VICINITY ?
-				"Vicinity (ISO/IEC 15693)" : "None");
+			"MIFARE (ISO14443A)" : proto->dev_mode == NFC_MODE_VICINITY ?
+			"Vicinity (ISO/IEC 15693)" : "None");
 	}
 
 	return tokens_used;
-}
-
-static void cleanup(t_hydra_console *con)
-{
-	(void)con;
-
-	chThdTerminate(key_sniff_thread);
-	/* TODO deinit GPIO config */
 }
 
 static const char *get_prompt(t_hydra_console *con)
@@ -648,10 +619,62 @@ static const char *get_prompt(t_hydra_console *con)
 	return "NFC" PROMPT;
 }
 
+int init(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+	int tokens_used;
+
+	proto->dev_mode = NFC_MODE_NONE;
+
+	/* Process cmdline arguments, skipping "nfc". */
+	tokens_used = 1 + exec(con, p, 1);
+
+	hydranfc_init(con);
+
+	return tokens_used;
+}
+
+/** \brief Init HydraNFC board
+ *
+ * \param con t_hydra_console*: hydra console
+ * \return int: return TRUE if success or FALSE if failure
+ *
+ */
+bool hydranfc_init(t_hydra_console *con)
+{
+	if(key_sniff_thread != NULL) {
+		chThdTerminate(key_sniff_thread);
+		key_sniff_thread = NULL;
+	}
+
+	if (configure_gpio(con) == FALSE) {
+		/* deinit GPIO config (reinit using hydrabus_init() */
+		hydrabus_init();
+		return FALSE;
+	}
+
+	key_sniff_thread = chThdCreateStatic(key_sniff_mem,
+					     sizeof(key_sniff_mem), NORMALPRIO, key_sniff, NULL);
+	return TRUE;
+}
+
+void hydranfc_cleanup(t_hydra_console *con)
+{
+	(void)con;
+
+	if(key_sniff_thread != NULL) {
+		chThdTerminate(key_sniff_thread);
+		key_sniff_thread = NULL;
+	}
+
+	/* deinit GPIO config (reinit using hydrabus_init() */
+	hydrabus_init();
+}
+
 const mode_exec_t mode_nfc_exec = {
 	.init = &init,
 	.exec = &exec,
-	.cleanup = &cleanup,
+	.cleanup = &hydranfc_cleanup,
 	.get_prompt = &get_prompt,
 };
 
