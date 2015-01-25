@@ -189,8 +189,17 @@ bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
 	hspi->Init.NSS = SPI_NSS_SOFT;
 	hspi->Init.BaudRatePrescaler = ((7 - mode_conf->dev_speed) * SPI_CR1_BR_0);
 	hspi->Init.Direction = SPI_DIRECTION_2LINES;
-	cpha = (mode_conf->dev_cpol_cpha & SPI_CR1_CPHA);
-	cpol = (mode_conf->dev_cpol_cpha & SPI_CR1_CPOL);
+
+	if(mode_conf->dev_phase == 0)
+		cpha = SPI_PHASE_1EDGE;
+	else
+		cpha = SPI_PHASE_2EDGE;
+
+	if(mode_conf->dev_polarity == 0)
+		cpol = SPI_POLARITY_LOW;
+	else
+		cpol = SPI_POLARITY_HIGH;
+
 	hspi->Init.CLKPhase = cpha;
 	hspi->Init.CLKPolarity = cpol;
 	hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;

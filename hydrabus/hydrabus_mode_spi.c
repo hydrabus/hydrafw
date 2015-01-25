@@ -19,6 +19,7 @@
 
 #include "hydrabus_mode_spi.h"
 #include "bsp_spi.h"
+#include "hydranfc.h"
 #include <string.h>
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
@@ -110,6 +111,9 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int tokens_used;
+
+	/* In case HydraNFC is initialized call cleanup, as SPI is used by HydraNFC */
+	hydranfc_cleanup(con);
 
 	init_proto_default(con);
 

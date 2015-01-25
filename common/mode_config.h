@@ -66,7 +66,6 @@ typedef struct {
 	long dev_speed;
 	long dev_polarity; /* For SPI */
 	long dev_phase; /* For SPI */
-	long dev_cpol_cpha; /* For SPI */
 	long dev_numbits;
 	long dev_bit_lsb_msb; /* For SPI */
 	long dev_parity; /* For UART */
