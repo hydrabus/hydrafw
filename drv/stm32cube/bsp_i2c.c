@@ -48,11 +48,12 @@ bool i2c_started;
 /* wait I2C half clock delay */
 #define i2c_sw_delay() (wait_delay(i2c_speed_delay))
 
-/**
-	* @brief  I2C SW Bit Banging GPIO HW DeInit.
-	* @param  dev_num: I2C dev num
-	* @retval None
-	*/
+/** \brief I2C SW Bit Banging GPIO HW DeInit.
+ *
+ * \param dev_num bsp_dev_i2c_t: I2C dev num
+ * \return void
+ *
+ */
 static void i2c_gpio_hw_deinit(bsp_dev_i2c_t dev_num)
 {
 	(void)dev_num;
@@ -61,11 +62,13 @@ static void i2c_gpio_hw_deinit(bsp_dev_i2c_t dev_num)
 	HAL_GPIO_DeInit(BSP_I2C1_SCL_SDA_GPIO_PORT, (BSP_I2C1_SCL_PIN | BSP_I2C1_SDA_PIN));
 }
 
-/**
-	* @brief  I2C SW Bit Banging GPIO HW Init.
-	* @param  dev_num: I2C dev num
-	* @retval None
-	*/
+/** \brief I2C SW Bit Banging GPIO HW Init.
+ *
+ * \param dev_num bsp_dev_i2c_t: I2C dev num
+ * \param gpio_scl_sda_pull uint32_t: MODE_CONFIG_DEV_GPIO_PULLUP/PULLDOWN or NOPULL
+ * \return void
+ *
+ */
 static void i2c_gpio_hw_init(bsp_dev_i2c_t dev_num, uint32_t gpio_scl_sda_pull)
 {
 	(void)dev_num;
@@ -80,12 +83,13 @@ static void i2c_gpio_hw_init(bsp_dev_i2c_t dev_num, uint32_t gpio_scl_sda_pull)
 	HAL_GPIO_Init(BSP_I2C1_SCL_SDA_GPIO_PORT, &gpio_init);
 }
 
-/**
-	* @brief  Init I2C device.
-	* @param  dev_num: I2C dev num.
-	* @param  mode_conf: Mode config proto.
-	* @retval status: status of the init.
-	*/
+/** \brief Init I2C device.
+ *
+ * \param dev_num bsp_dev_i2c_t: I2C dev num.
+ * \param mode_conf mode_config_proto_t*: Mode config proto.
+ * \return bsp_status_t: status of the init.
+ *
+ */
 bsp_status_t bsp_i2c_init(bsp_dev_i2c_t dev_num, mode_config_proto_t* mode_conf)
 {
 	uint32_t gpio_scl_sda_pull;
@@ -122,11 +126,12 @@ bsp_status_t bsp_i2c_init(bsp_dev_i2c_t dev_num, mode_config_proto_t* mode_conf)
 	return BSP_OK;
 }
 
-/**
-	* @brief  De-initialize the I2C comunication bus
-	* @param  dev_num: I2C dev num.
-	* @retval status: status of the deinit.
-	*/
+/** \brief De-initialize the I2C comunication bus
+ *
+ * \param dev_num bsp_dev_i2c_t: I2C dev num.
+ * \return bsp_status_t: status of the deinit.
+ *
+ */
 bsp_status_t bsp_i2c_deinit(bsp_dev_i2c_t dev_num)
 {
 	/* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
@@ -135,11 +140,12 @@ bsp_status_t bsp_i2c_deinit(bsp_dev_i2c_t dev_num)
 	return BSP_OK;
 }
 
-/**
-	* @brief  Sends START BIT in blocking mode and set the status.
-	* @param  dev_num: I2C dev num.
-	* @retval status of the transfer.
-	*/
+/** \brief Sends START BIT in blocking mode and set the status.
+ *
+ * \param dev_num bsp_dev_i2c_t: I2C dev num.
+ * \return bsp_status_t: status of the transfer.
+ *
+ */
 bsp_status_t bsp_i2c_start(bsp_dev_i2c_t dev_num)
 {
 	(void)dev_num;
@@ -164,11 +170,12 @@ bsp_status_t bsp_i2c_start(bsp_dev_i2c_t dev_num)
 	return BSP_OK;
 }
 
-/**
-	* @brief  Sends STOP BIT in blocking mode and set the status.
-	* @param  dev_num: I2C dev num.
-	* @retval status of the transfer.
-	*/
+/** \brief Sends STOP BIT in blocking mode and set the status.
+ *
+ * \param dev_num bsp_dev_i2c_t: I2C dev num.
+ * \return bsp_status_t: status of the transfer.
+ *
+ */
 bsp_status_t bsp_i2c_stop(bsp_dev_i2c_t dev_num)
 {
 	(void)dev_num;
@@ -187,13 +194,14 @@ bsp_status_t bsp_i2c_stop(bsp_dev_i2c_t dev_num)
 	return BSP_OK;
 }
 
-/**
-	* @brief  Sends a Byte in blocking mode and set the status.
-	* @param  dev_num: I2C dev num.
-	* @param  tx_data: data to send.
-	* @param  tx_ack_flag: TRUE means ACK, FALSE means NACK.
-	* @retval status of the transfer.
-	*/
+/** \brief Sends a Byte in blocking mode and set the status.
+ *
+ * \param dev_num bsp_dev_i2c_t: I2C dev num.
+ * \param tx_data uint8_t: data to send.
+ * \param tx_ack_flag bool*: TRUE means ACK, FALSE means NACK.
+ * \return bsp_status_t: status of the transfer.
+ *
+ */
 bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, bool* tx_ack_flag)
 {
 	(void)dev_num;
@@ -236,11 +244,13 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, boo
 	return BSP_OK;
 }
 
-/**
-	* @brief  Write ACK or NACK at end of Read.
-	* @param  dev_num: I2C dev num.
-	* @retval None
-	*/
+/** \brief Write ACK or NACK at end of Read.
+ *
+ * \param dev_num bsp_dev_i2c_t: I2C dev num.
+ * \param enable_ack bool: TRUE means ACK, FALSE means NACK.
+ * \return void
+ *
+ */
 void bsp_i2c_read_ack(bsp_dev_i2c_t dev_num, bool enable_ack)
 {
 	(void)dev_num;
@@ -259,12 +269,13 @@ void bsp_i2c_read_ack(bsp_dev_i2c_t dev_num, bool enable_ack)
 	set_scl_low();
 }
 
-/**
-	* @brief  Read a Byte in blocking mode and set the status.
-	* @param  dev_num: I2C dev num.
-	* @param  rx_data: The received byte.
-	* @retval status of the transfer.
-	*/
+/** \brief Read a Byte in blocking mode and set the status.
+ *
+ * \param dev_num bsp_dev_i2c_t: I2C dev num.
+ * \param rx_data uint8_t*: The received byte.
+ * \return bsp_status_t: status of the transfer.
+ *
+ */
 bsp_status_t bsp_i2c_master_read_u8(bsp_dev_i2c_t dev_num, uint8_t* rx_data)
 {
 	(void)dev_num;
