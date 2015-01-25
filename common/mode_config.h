@@ -54,6 +54,12 @@ enum {
 	DEV_SPI_SLAVE,
 };
 
+/* dev_bit_lsb_msb */
+enum {
+	DEV_SPI_FIRSTBIT_MSB = 1,
+	DEV_SPI_FIRSTBIT_LSB,
+};
+
 #define MODE_CONFIG_PROTO_DEV_DEF_VAL (0) /* mode_config_proto_t for dev_xxx default safe value */
 #define MODE_CONFIG_PROTO_BUFFER_SIZE (256)
 typedef struct {

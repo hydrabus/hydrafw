@@ -206,7 +206,7 @@ bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
 	hspi->Init.CRCPolynomial = 0;
 	hspi->Init.DataSize = SPI_DATASIZE_8BIT;
 
-	if(mode_conf->dev_bit_lsb_msb == SPI_FIRSTBIT_MSB)
+	if(mode_conf->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB)
 		hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
 	else
 		hspi->Init.FirstBit = SPI_FIRSTBIT_LSB;

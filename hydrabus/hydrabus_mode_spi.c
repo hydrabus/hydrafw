@@ -75,7 +75,7 @@ static void init_proto_default(t_hydra_console *con)
 	proto->dev_speed = 0;
 	proto->dev_polarity = 0;
 	proto->dev_phase = 0;
-	proto->dev_bit_lsb_msb = SPI_MSB_FIRST;
+	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
 }
 
 static void show_params(t_hydra_console *con)
@@ -104,7 +104,7 @@ static void show_params(t_hydra_console *con)
 	cprintf(con, "Polarity: %d\r\nPhase: %d\r\nBit order: %s first\r\n",
 		proto->dev_polarity,
 		proto->dev_phase,
-		proto->dev_bit_lsb_msb == SPI_MSB_FIRST ? "MSB" : "LSB");
+		proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -231,7 +231,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			bsp_spi_init(proto->dev_num, proto);
 			break;
 		case T_MSB_FIRST:
-			proto->dev_bit_lsb_msb = SPI_MSB_FIRST;
+			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
 			bsp_status = bsp_spi_init(proto->dev_num, proto);
 			if( bsp_status != BSP_OK) {
 				cprintf(con, str_bsp_init_err, bsp_status);
@@ -239,7 +239,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			}
 			break;
 		case T_LSB_FIRST:
-			proto->dev_bit_lsb_msb = SPI_LSB_FIRST;
+			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
 			bsp_status = bsp_spi_init(proto->dev_num, proto);
 			if( bsp_status != BSP_OK) {
 				cprintf(con, str_bsp_init_err, bsp_status);
