@@ -20,44 +20,38 @@
 *
 ****************************************************************/
 
-#include "ch.h"
-#include "hal.h"
-#include "chprintf.h"
+#include "bsp_spi.h"
 
 #include "trf797x.h"
 #include "tools.h"
 
 void SPI_LL_Select(void)
 {
-	spiAcquireBus(&SPID2); /* Acquire ownership of the bus. */
-	spiSelect(&SPID2); /* Slave Select assertion. */
+	bsp_spi_select(BSP_DEV_SPI2); /* Slave Select assertion. */
 }
 
 void SPI_LL_Unselect(void)
 {
-	spiUnselect(&SPID2);
+	bsp_spi_unselect(BSP_DEV_SPI2);
 	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
-	spiReleaseBus(&SPID2); /* Ownership release.*/
 }
 
 void SPI_LL_Write(u08_t* pbuf, const u08_t len)
 {
-	spiSend(&SPID2, len, pbuf);
+	bsp_spi_write_u8(BSP_DEV_SPI2, pbuf, len);
 }
 
 void SPI_LL_Read(u08_t* pbuf, const u08_t len)
 {
-	spiReceive(&SPID2, len, pbuf);
+	bsp_spi_read_u8(BSP_DEV_SPI2, pbuf, len);
 }
 
 void SPI_write(u08_t* pbuf, const u08_t len)
 {
-	spiAcquireBus(&SPID2); /* Acquire ownership of the bus. */
-	spiSelect(&SPID2);      /* Slave Select assertion. */
-	spiSend(&SPID2, len, pbuf);
-	spiUnselect(&SPID2);
+	bsp_spi_select(BSP_DEV_SPI2); /* Slave Select assertion. */
+	bsp_spi_write_u8(BSP_DEV_SPI2, pbuf, len);
+	bsp_spi_unselect(BSP_DEV_SPI2);
 	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
-	spiReleaseBus(&SPID2); /* Ownership release.*/
 }
 
 //===============================================================
@@ -85,15 +79,14 @@ void SpiDirectCommand(u08_t *pbuf)
 {
 	*pbuf = (0x80 | *pbuf); // command
 	*pbuf = (0x9f &*pbuf); // command code
-	spiAcquireBus(&SPID2); /* Acquire ownership of the bus. */
-	spiSelect(&SPID2); /* Slave Select assertion. */
-	spiSend(&SPID2, 1, pbuf);
-	spiSend(&SPID2, 1, pbuf); /* Dummy write  */
+
+	bsp_spi_select(BSP_DEV_SPI2); /* Slave Select assertion. */
+	bsp_spi_write_u8(BSP_DEV_SPI2, pbuf, 1);
+	bsp_spi_write_u8(BSP_DEV_SPI2, pbuf, 1); /* Dummy write  */
 	/* Errata All direct Command functions need to have an additional DATA_CLK cycle before Slave Select l line goes
 	high. */
-	spiUnselect(&SPID2);
+	bsp_spi_unselect(BSP_DEV_SPI2);
 	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
-	spiReleaseBus(&SPID2); /* Ownership release.*/
 }
 
 //===============================================================
@@ -174,20 +167,17 @@ void SpiRawWrite(u08_t *pbuf, u08_t length)
 //===============================================================
 void SpiReadCont(u08_t *pbuf, u08_t length)
 {
-	spiAcquireBus(&SPID2); /* Acquire ownership of the bus. */
-	spiSelect(&SPID2);      /* Slave Select assertion. */
+	bsp_spi_select(BSP_DEV_SPI2); /* Slave Select assertion. */
 
 	// Address/Command Word Bit Distribution
 	*pbuf = (0x60 | *pbuf); 					// address, read, continuous
 	*pbuf = (0x7f &*pbuf);						// register address
 
-	spiSend(&SPID2, 1, pbuf);
+	bsp_spi_write_u8(BSP_DEV_SPI2, pbuf, 1);
+	bsp_spi_read_u8(BSP_DEV_SPI2, pbuf, length);
 
-	spiReceive(&SPID2, length, pbuf);
-
-	spiUnselect(&SPID2);
+	bsp_spi_unselect(BSP_DEV_SPI2);
 	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
-	spiReleaseBus(&SPID2); /* Ownership release.*/
 }
 
 //===============================================================
@@ -215,24 +205,22 @@ void SpiReadCont(u08_t *pbuf, u08_t length)
 
 void SpiReadSingle(u08_t *pbuf, u08_t number)
 {
-	spiAcquireBus(&SPID2); /* Acquire ownership of the bus. */
-	spiSelect(&SPID2);      /* Slave Select assertion. */
+	bsp_spi_select(BSP_DEV_SPI2); /* Slave Select assertion. */
 
 	while(number > 0) {
 		// Address/Command Word Bit Distribution
 		*pbuf = (0x40 | *pbuf);             // address, read, single
 		*pbuf = (0x5f & *pbuf);             // register address
 
-		spiSend(&SPID2, 1, pbuf);
-		spiReceive(&SPID2, 1, pbuf);
+		bsp_spi_write_u8(BSP_DEV_SPI2, pbuf, 1);
+		bsp_spi_read_u8(BSP_DEV_SPI2, pbuf, 1);
 
 		pbuf++;
 		number--;
 	}
 
-	spiUnselect(&SPID2);
+	bsp_spi_unselect(BSP_DEV_SPI2);
 	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
-	spiReleaseBus(&SPID2); /* Ownership release.*/
 }
 
 //===============================================================
@@ -243,7 +231,6 @@ void SpiReadSingle(u08_t *pbuf, u08_t number)
 
 void SpiSetup(void)
 {
-	McuDelayMillisecond(1);
 }
 
 //===============================================================
@@ -270,16 +257,14 @@ void SpiSetup(void)
 
 void SpiWriteCont(u08_t *pbuf, u08_t length)
 {
-	spiAcquireBus(&SPID2); /* Acquire ownership of the bus. */
-	spiSelect(&SPID2);      /* Slave Select assertion. */
+	bsp_spi_select(BSP_DEV_SPI2); /* Slave Select assertion. */
 
 	*pbuf = (0x20 | *pbuf);                 // address, write, continuous
 	*pbuf = (0x3f &*pbuf);                  // register address
-	spiSend(&SPID2, length, pbuf);
+	bsp_spi_write_u8(BSP_DEV_SPI2, pbuf, length);
 
-	spiUnselect(&SPID2);
+	bsp_spi_unselect(BSP_DEV_SPI2);
 	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
-	spiReleaseBus(&SPID2); /* Ownership release.*/
 }
 
 //===============================================================
@@ -308,22 +293,20 @@ void SpiWriteSingle(u08_t *pbuf, u08_t length)
 {
 	u08_t	i = 0;
 
-	spiAcquireBus(&SPID2); /* Acquire ownership of the bus. */
-	spiSelect(&SPID2);      /* Slave Select assertion. */
+	bsp_spi_select(BSP_DEV_SPI2); /* Slave Select assertion. */
 
 	while(length > 0) {
 		// Address/Command Word Bit Distribution
 		// address, write, single (fist 3 bits = 0)
 		*pbuf = (0x1f &*pbuf);              // register address
 		for(i = 0; i < 2; i++) {
-			spiSend(&SPID2, 1, pbuf);
+			bsp_spi_write_u8(BSP_DEV_SPI2, pbuf, 1);
 
 			pbuf++;
 			length--;
 		}
 	}
 
-	spiUnselect(&SPID2);
+	bsp_spi_unselect(BSP_DEV_SPI2);
 	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
-	spiReleaseBus(&SPID2); /* Ownership release.*/
 }

@@ -24,6 +24,7 @@
 #include "hydrabus_mode.h"
 #include "hydranfc.h"
 #include "trf797x.h"
+#include "bsp_spi.h"
 #include <string.h>
 
 static void extcb1(EXTDriver *extp, expchannel_t channel);
@@ -100,12 +101,6 @@ static struct {
 	{ TX_LENGTH_BYTE_2, "TX Length Byte2" },
 };
 
-static const SPIConfig spi2cfg = {
-	NULL, /* spicb, */
-	/* HW dependent part.*/
-	GPIOC, 1, (SPI_CR1_CPHA | SPI_CR1_BR_2)
-};
-
 enum {
 	NFC_MODE_NONE,
 	NFC_MODE_MIFARE,
@@ -144,6 +139,8 @@ static bool hydranfc_test_shield(void)
 
 	return err == 0;
 }
+
+extern t_mode_config mode_con1;
 
 static bool configure_gpio(t_hydra_console *con)
 {
@@ -187,7 +184,14 @@ static bool configure_gpio(t_hydra_console *con)
 	 * PC3 - MOSI.
 	 * Used for communication with TRF7970A in SPI mode with NSS.
 	 */
-	spiStart(&SPID2, &spi2cfg);
+	mode_con1.proto.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+	mode_con1.proto.dev_speed = 2; /* 1.31mhz */
+	mode_con1.proto.dev_phase = 1;
+	mode_con1.proto.dev_polarity = 0;
+	mode_con1.proto.dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
+	mode_con1.proto.dev_mode = DEV_SPI_MASTER;
+	bsp_spi_init(BSP_DEV_SPI2, &mode_con1.proto);
+
 	/* NSS - ChipSelect. */
 	palSetPad(GPIOC, 1);
 	palSetPadMode(GPIOC, 1, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
@@ -668,7 +672,7 @@ void hydranfc_cleanup(t_hydra_console *con)
 		key_sniff_thread = NULL;
 	}
 
-	spiStop(&SPID2);
+	bsp_spi_deinit(BSP_DEV_SPI2);
 	extStop(&EXTD1);
 
 	/* deinit GPIO config (reinit using hydrabus_init() */
