@@ -230,7 +230,8 @@ static bool configure_gpio(t_hydra_console *con)
 	palSetPadMode(GPIOB, 5, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
 
 	/* Activates the EXT driver 1. */
-	extStart(&EXTD1, &extcfg);
+	if(con != NULL)
+		extStart(&EXTD1, &extcfg);
 
 	return TRUE;
 }
@@ -666,6 +667,9 @@ void hydranfc_cleanup(t_hydra_console *con)
 		chThdTerminate(key_sniff_thread);
 		key_sniff_thread = NULL;
 	}
+
+	spiStop(&SPID2);
+	extStop(&EXTD1);
 
 	/* deinit GPIO config (reinit using hydrabus_init() */
 	hydrabus_init();

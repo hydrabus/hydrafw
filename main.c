@@ -109,7 +109,6 @@ int main(void)
 
 	/* Configure PA0 (UBTN), PA4 (ULED) and initialize the SD driver. */
 	hydrabus_init();
-	hydranfc_init(NULL);
 
 	/*
 	 * Initializes a serial-over-USB CDC driver.
@@ -146,6 +145,9 @@ int main(void)
 
 	/* Wait for USB Enumeration. */
 	chThdSleepMilliseconds(100);
+
+	/* Init HydraNFC if detected */
+	hydranfc_init(NULL);
 
 	/*
 	 * Normal main() thread activity.

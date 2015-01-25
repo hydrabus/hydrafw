@@ -45,5 +45,6 @@ void hydrabus_init(void)
 	/*
 	 * Initializes the SDIO drivers.
 	 */
+	sdcStop(&SDCD1);
 	sdcStart(&SDCD1, &sdccfg);
 }
