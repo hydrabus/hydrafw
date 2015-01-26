@@ -142,7 +142,7 @@ static bool hydranfc_test_shield(void)
 
 extern t_mode_config mode_con1;
 
-static bool configure_gpio(t_hydra_console *con)
+static bool init_gpio(t_hydra_console *con)
 {
 	/* PA7 as Input connected to TRF7970A MOD Pin */
 	// palSetPadMode(GPIOA, 7, PAL_MODE_INPUT);
@@ -240,6 +240,38 @@ static bool configure_gpio(t_hydra_console *con)
 	return TRUE;
 }
 
+static void deinit_gpio(void)
+{
+	palSetPadMode(GPIOA, 3, PAL_MODE_INPUT);
+	palSetPadMode(GPIOA, 2, PAL_MODE_INPUT);
+	palSetPadMode(GPIOC, 0, PAL_MODE_INPUT);
+
+	palSetPadMode(GPIOA, 5, PAL_MODE_INPUT);
+	palSetPadMode(GPIOA, 6, PAL_MODE_INPUT);
+	palSetPadMode(GPIOA, 7, PAL_MODE_INPUT);
+
+	bsp_spi_deinit(BSP_DEV_SPI2);
+
+	palSetPadMode(GPIOC, 1, PAL_MODE_INPUT);
+	palSetPadMode(GPIOB, 10, PAL_MODE_INPUT);
+	palSetPadMode(GPIOC, 2, PAL_MODE_INPUT);
+	palSetPadMode(GPIOC, 3, PAL_MODE_INPUT);
+
+	palSetPadMode(GPIOB, 11, PAL_MODE_INPUT);
+
+	/* Configure K1/2/3/4 Buttons as Input */
+	palSetPadMode(GPIOB, 7, PAL_MODE_INPUT);
+	palSetPadMode(GPIOB, 6, PAL_MODE_INPUT);
+	palSetPadMode(GPIOB, 8, PAL_MODE_INPUT);
+	palSetPadMode(GPIOB, 9, PAL_MODE_INPUT);
+
+	/* Configure D2/3/4/5 LEDs as Input */
+	palSetPadMode(GPIOB, 0, PAL_MODE_INPUT);
+	palSetPadMode(GPIOB, 3, PAL_MODE_INPUT);
+	palSetPadMode(GPIOB, 4, PAL_MODE_INPUT);
+	palSetPadMode(GPIOB, 5, PAL_MODE_INPUT);
+}
+
 THD_WORKING_AREA(key_sniff_mem, 2048);
 THD_FUNCTION(key_sniff, arg)
 {
@@ -263,6 +295,7 @@ THD_FUNCTION(key_sniff, arg)
 		if (K3_BUTTON) {
 			/* Wait Until K3_BUTTON is released */
 			while(K3_BUTTON) {
+				D2_ON;
 				chThdSleepMilliseconds(100);
 			}
 
@@ -624,51 +657,80 @@ static const char *get_prompt(t_hydra_console *con)
 	return "NFC" PROMPT;
 }
 
-int init(t_hydra_console *con, t_tokenline_parsed *p)
+static int init(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	int tokens_used;
+	int tokens_used = 0;
 
 	proto->dev_mode = NFC_MODE_NONE;
 
-	/* Process cmdline arguments, skipping "nfc". */
-	tokens_used = 1 + exec(con, p, 1);
+	if(init_gpio(con) ==  FALSE) {
+		deinit_gpio();
+		return tokens_used;
+	}
 
-	hydranfc_init(con);
+	if(key_sniff_thread != NULL) {
+		chThdTerminate(key_sniff_thread);
+		chThdWait(key_sniff_thread);
+		key_sniff_thread = NULL;
+	}
+
+	key_sniff_thread = chThdCreateStatic(key_sniff_mem,
+					     sizeof(key_sniff_mem), HIGHPRIO, key_sniff, NULL);
+
+	/* Process cmdline arguments, skipping "nfc". */
+	if(p != NULL) {
+		tokens_used = 1 + exec(con, p, 1);
+	}
 
 	return tokens_used;
 }
 
-/** \brief Init HydraNFC board
+/** \brief Check if HydraNFC is detected
  *
- * \param con t_hydra_console*: hydra console
- * \return int: return TRUE if success or FALSE if failure
+ * \return bool: return TRUE if success or FALSE if failure
+ *
+ */
+bool hydranfc_is_detected(void)
+{
+	if(init_gpio(NULL) ==  FALSE) {
+		deinit_gpio();
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/** \brief Init HydraNFC functions
+ *
+ * \param con t_hydra_console*: hydra console (optional can be NULL if unused)
+ * \return bool: return TRUE if success or FALSE if failure
  *
  */
 bool hydranfc_init(t_hydra_console *con)
 {
-	if(key_sniff_thread != NULL) {
-		chThdTerminate(key_sniff_thread);
-		key_sniff_thread = NULL;
-	}
-
-	if (configure_gpio(con) == FALSE) {
-		/* deinit GPIO config (reinit using hydrabus_init() */
-		hydrabus_init();
+	if(init_gpio(con) ==  FALSE) {
+		deinit_gpio();
 		return FALSE;
 	}
 
-	key_sniff_thread = chThdCreateStatic(key_sniff_mem,
-					     sizeof(key_sniff_mem), NORMALPRIO, key_sniff, NULL);
+	init(con, NULL);
+
 	return TRUE;
 }
 
+/** \brief DeInit/Cleanup HydraNFC functions
+ *
+ * \param con t_hydra_console*: hydra console (optional can be NULL if unused)
+ * \return void
+ *
+ */
 void hydranfc_cleanup(t_hydra_console *con)
 {
 	(void)con;
 
 	if(key_sniff_thread != NULL) {
 		chThdTerminate(key_sniff_thread);
+		chThdWait(key_sniff_thread);
 		key_sniff_thread = NULL;
 	}
 
@@ -676,6 +738,7 @@ void hydranfc_cleanup(t_hydra_console *con)
 	extStop(&EXTD1);
 
 	/* deinit GPIO config (reinit using hydrabus_init() */
+	deinit_gpio();
 	hydrabus_init();
 }
 

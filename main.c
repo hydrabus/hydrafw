@@ -91,6 +91,7 @@ int main(void)
 {
 	int sleep_ms, i;
 	int local_nb_console;
+	bool hydranfc_detected;
 
 	bsp_enter_usb_dfu();
 
@@ -146,8 +147,8 @@ int main(void)
 	/* Wait for USB Enumeration. */
 	chThdSleepMilliseconds(100);
 
-	/* Init HydraNFC if detected */
-	hydranfc_init(NULL);
+	/* Check HydraNFC */
+	hydranfc_detected = hydranfc_is_detected();
 
 	/*
 	 * Normal main() thread activity.
@@ -198,6 +199,14 @@ int main(void)
 			sleep_ms = BLINK_SLOW;
 		ULED_OFF;
 
+		if(hydranfc_detected == TRUE) {
+			/* If K3_BUTTON is pressed */
+			if (K3_BUTTON) {
+				hydranfc_cleanup(NULL);
+				hydranfc_init(NULL);
+				chThdSleepMilliseconds(1000);
+			}
+		}
 		chThdSleepMilliseconds(sleep_ms);
 	}
 }
