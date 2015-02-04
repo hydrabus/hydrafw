@@ -95,6 +95,7 @@ t_token_dict tl_dict[] = {
 	{ T_OPEN_DRAIN, "open-drain" },
 	{ T_TOKENLINE, "tokenline" },
 	{ T_TIMING, "timing" },
+	{ T_DEBUG_TEST_RX, "test-rx" },
 	{ T_RM, "rm" },
 	{ T_MKDIR, "mkdir" },
 	{ T_LOGGING, "logging" },
@@ -606,7 +607,7 @@ t_token tokens_dac[] = {
 	},
 	{
 		T_TRIANGLE,
-		.help = "Triangle output (amplitude 3.3V)"
+		.help = "Triangle output (5Hz and amplitude 3.3V)"
 	},
 	{
 		T_NOISE,
@@ -718,6 +719,10 @@ t_token tokens_debug[] = {
 	{
 		T_TIMING,
 		.help = "Mysterious timing function"
+	},
+	{
+		T_DEBUG_TEST_RX,
+		.help = "Test USB1 or 2 RX(read all data until UBTN+Key pressed)"
 	},
 	{
 		T_ON,

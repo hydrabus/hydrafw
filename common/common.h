@@ -152,6 +152,7 @@ typedef int (*cmdfunc)(t_hydra_console *con, t_tokenline_parsed *p);
 int mode_exit(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_show(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p);
+int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_show_sd(t_hydra_console *con);
 bool log_open(t_hydra_console *con);

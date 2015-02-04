@@ -118,6 +118,9 @@ static int cmd_debug(t_hydra_console *con, t_tokenline_parsed *p)
 		case T_TIMING:
 			cmd_debug_timing(con, p);
 			break;
+		case T_DEBUG_TEST_RX:
+			cmd_debug_test_rx(con, p);
+			break;
 		case T_ON:
 		case T_OFF:
 			action = p->tokens[t];

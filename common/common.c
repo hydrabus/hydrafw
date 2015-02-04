@@ -430,3 +430,20 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 
 	return TRUE;
 }
+
+/* Just debug rx speed ignore all data received until UBTN + a key is pressed */
+int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	(void)p;
+
+	cprintf(con, "Test debug-rx started, stop it with UBTN + Key\r\n");
+	while(1)
+	{
+		/* Exit if User Button is pressed */
+		if (USER_BUTTON) {
+			break;
+		}
+		get_char(con);
+	}
+	return TRUE;
+}
