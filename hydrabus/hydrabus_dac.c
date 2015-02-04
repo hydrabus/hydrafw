@@ -149,8 +149,13 @@ int cmd_dac(t_hydra_console *con, t_tokenline_parsed *p)
 			bsp_dac_noise(dev_num);
 			break;
 		case T_EXIT:
-			bsp_dac_deinit(BSP_DEV_DAC1);
-			bsp_dac_deinit(BSP_DEV_DAC2);
+			if (num_sources == 0) {
+				bsp_dac_deinit(BSP_DEV_DAC1);
+				bsp_dac_deinit(BSP_DEV_DAC2);
+				bsp_dac_disable();
+			} else {
+				bsp_dac_deinit(dev_num);
+			}
 			return TRUE;
 		}
 	}

@@ -31,6 +31,7 @@ typedef enum {
 
 bsp_status_t bsp_dac_init(bsp_dev_dac_t dev_num);
 bsp_status_t bsp_dac_deinit(bsp_dev_dac_t dev_num);
+void bsp_dac_disable(void);
 
 bsp_status_t bsp_dac_write_u12(bsp_dev_dac_t dev_num, uint16_t data);
 bsp_status_t bsp_dac_triangle(bsp_dev_dac_t dev_num);

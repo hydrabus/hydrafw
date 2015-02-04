@@ -18,12 +18,11 @@ limitations under the License.
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_rcc.h"
 
-#define DACx_TIMEOUT_MAX (2000) // About 1msec can be aborted by UBTN too
 #define NB_DAC (BSP_DEV_DAC_END)
 static DAC_HandleTypeDef dac_handle[NB_DAC];
 static DAC_ChannelConfTypeDef dac_chan_conf[NB_DAC];
 
-void bsp_dac_tim6_stop(void);
+void bsp_dac_timer_stop(bsp_dev_dac_t dev_num);
 
 /** \brief DAC GPIO HW DeInit.
  *
@@ -107,8 +106,6 @@ bsp_status_t bsp_dac_init(bsp_dev_dac_t dev_num)
 	DAC_HandleTypeDef* hdac;
 	DAC_ChannelConfTypeDef* hdac_chan;
 
-	bsp_dac_deinit(dev_num);
-
 	/* Configure the DAC peripheral */
 	__DAC_CLK_ENABLE();
 
@@ -141,7 +138,7 @@ bsp_status_t bsp_dac_init(bsp_dev_dac_t dev_num)
 	return BSP_OK;
 }
 
-/** \brief De-initialize the DAC device.
+/** \brief De-initialize the DAC timer & device.
  *
  * \param dev_num bsp_dev_dac_t: DAC dev num.
  * \return bsp_status_t: Status of the deinit.
@@ -149,17 +146,26 @@ bsp_status_t bsp_dac_init(bsp_dev_dac_t dev_num)
  */
 bsp_status_t bsp_dac_deinit(bsp_dev_dac_t dev_num)
 {
-	bsp_dac_tim6_stop();
+	bsp_dac_timer_stop(dev_num);
 
 	/* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
 	dac_gpio_hw_deinit(dev_num);
 
+	return BSP_OK;
+}
+
+/** \brief Disable the DAC1 or 2.
+ *
+ * \param void
+ * \return void
+ *
+ */
+void bsp_dac_disable(void)
+{
 	__DAC_FORCE_RESET();
 	__DAC_RELEASE_RESET();
 
 	__DAC_CLK_DISABLE();
-
-	return BSP_OK;
 }
 
 /** \brief Write 12bits value to update DAC output.
@@ -188,23 +194,35 @@ bsp_status_t bsp_dac_write_u12(bsp_dev_dac_t dev_num, uint16_t data)
 }
 
 /**
-  * @brief TIM6 Configuration Init
-  * @note TIM6 configuration is based on APB1 frequency(42MHz)
+  * @brief TIM6/7 Configuration Init
+  * @note TIM6/7 configuration is based on APB1 frequency(42MHz)
   * @note Internal triangle counter is incremented
   * @note three APB1 clock cycles after each trigger event
   * @note Final Triangle Freq Hz=((42MHz/3)/(2^(MAMPx[3:0]+1)) / ((TIM6.Period+1)/3)
-  * @note TIM6.Period shall be min 3
-  * @param  None
+  * @note TIM6/7.Period shall be min 3
+  * \param dev_num bsp_dev_dac_t: DAC dev num.
   * @retval None
   */
-void bsp_dac_tim6_init(void)
+void bsp_dac_timer_init(bsp_dev_dac_t dev_num)
 {
 	static TIM_HandleTypeDef  htim;
 	TIM_MasterConfigTypeDef sMasterConfig;
 
-	__TIM6_CLK_ENABLE();
-	/* Time base configuration */
-	htim.Instance = TIM6;
+	switch(dev_num) {
+	case BSP_DEV_DAC1:
+		__TIM6_CLK_ENABLE();
+		/* Time base configuration */
+		htim.Instance = TIM6;
+		break;
+	case BSP_DEV_DAC2:
+		__TIM7_CLK_ENABLE();
+		/* Time base configuration */
+		htim.Instance = TIM7;
+		break;
+	default:
+		return;
+	}
+
 	/* 2047 = 20Hz Triangle Frequency */
 	/* 1 about 10.25KHz Triangle Frequency */
 	htim.Init.Period = 2048-1; /*  Corresponding to 5Hz Triangle Frequency (DAC_DORx is updated after 3 APB1 cycles) */
@@ -224,20 +242,54 @@ void bsp_dac_tim6_init(void)
 }
 
 /**
-  * @brief  TIM6 Configuration Stop
-  * @param  None
+  * @brief  TIM6/7 Configuration Stop
+  * \param dev_num bsp_dev_dac_t: DAC dev num.
   * @retval None
   */
-void bsp_dac_tim6_stop(void)
+void bsp_dac_timer_stop(bsp_dev_dac_t dev_num)
 {
 	static TIM_HandleTypeDef  htim;
-	/* Time base configuration */
-	htim.Instance = TIM6;
-	HAL_TIM_Base_Stop(&htim);
 
-	__TIM6_FORCE_RESET();
-	__TIM6_RELEASE_RESET();
-	__TIM6_CLK_DISABLE();
+	switch(dev_num) {
+	case BSP_DEV_DAC1:
+		/* Time base configuration */
+		htim.Instance = TIM6;
+		HAL_TIM_Base_Stop(&htim);
+
+		__TIM6_FORCE_RESET();
+		__TIM6_RELEASE_RESET();
+		__TIM6_CLK_DISABLE();
+		break;
+	case BSP_DEV_DAC2:
+		/* Time base configuration */
+		htim.Instance = TIM7;
+		HAL_TIM_Base_Stop(&htim);
+
+		__TIM7_FORCE_RESET();
+		__TIM7_RELEASE_RESET();
+		__TIM7_CLK_DISABLE();
+		break;
+	default:
+		return;
+	}
+
+}
+
+/**
+  * @brief Returns DAC Trigger corresponding to DAC dev
+  * \param dev_num bsp_dev_dac_t: DAC dev num.
+  * @retval DAC_Trigger value
+  */
+uint32_t bsp_dac_trigger(bsp_dev_dac_t dev_num)
+{
+	switch(dev_num) {
+	case BSP_DEV_DAC1:
+		return DAC_TRIGGER_T6_TRGO;
+	case BSP_DEV_DAC2:
+		return DAC_TRIGGER_T7_TRGO;
+	default:
+		return DAC_TRIGGER_T6_TRGO;
+	}
 }
 
 /** \brief Output DAC with Triangle amplitude 3.3V, offset 0
@@ -253,16 +305,14 @@ bsp_status_t bsp_dac_triangle(bsp_dev_dac_t dev_num)
 	DAC_HandleTypeDef* hdac;
 	DAC_ChannelConfTypeDef* hdac_chan;
 
-	bsp_dac_deinit(dev_num);
-
 	/* Configure the DAC peripheral */
 	__DAC_CLK_ENABLE();
 
 	/* Init the DAC GPIO */
 	dac_gpio_hw_init(dev_num);
 
-	/* Init Timer6 */
-	bsp_dac_tim6_init();
+	/* Init Timer */
+	bsp_dac_timer_init(dev_num);
 
 	hdac = &dac_handle[dev_num];
 	hdac_chan = &dac_chan_conf[dev_num];
@@ -274,7 +324,7 @@ bsp_status_t bsp_dac_triangle(bsp_dev_dac_t dev_num)
 
 	/* Configure DAC regular channel */
 	dac_chan_num = get_dac_chan_num(dev_num);
-	hdac_chan->DAC_Trigger = DAC_TRIGGER_T6_TRGO;
+	hdac_chan->DAC_Trigger = bsp_dac_trigger(dev_num);
 	hdac_chan->DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
 	if(HAL_DAC_ConfigChannel(hdac, hdac_chan, dac_chan_num) != HAL_OK)
 		return BSP_ERROR;
@@ -306,16 +356,14 @@ bsp_status_t bsp_dac_noise(bsp_dev_dac_t dev_num)
 	DAC_HandleTypeDef* hdac;
 	DAC_ChannelConfTypeDef* hdac_chan;
 
-	bsp_dac_deinit(dev_num);
-
 	/* Configure the DAC peripheral */
 	__DAC_CLK_ENABLE();
 
 	/* Init the DAC GPIO */
 	dac_gpio_hw_init(dev_num);
 
-	/* Init Timer6 */
-	bsp_dac_tim6_init();
+	/* Init Timer */
+	bsp_dac_timer_init(dev_num);
 
 	hdac = &dac_handle[dev_num];
 	hdac_chan = &dac_chan_conf[dev_num];
@@ -327,7 +375,7 @@ bsp_status_t bsp_dac_noise(bsp_dev_dac_t dev_num)
 
 	/* Configure DAC regular channel */
 	dac_chan_num = get_dac_chan_num(dev_num);
-	hdac_chan->DAC_Trigger = DAC_TRIGGER_T6_TRGO;
+	hdac_chan->DAC_Trigger =  bsp_dac_trigger(dev_num);
 	hdac_chan->DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
 	if(HAL_DAC_ConfigChannel(hdac, hdac_chan, dac_chan_num) != HAL_OK)
 		return BSP_ERROR;
