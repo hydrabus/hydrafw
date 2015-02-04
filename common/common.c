@@ -26,6 +26,8 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include "bsp_gpio.h"
+
 #define HYDRAFW_VERSION "HydraFW (HydraBus) " HYDRAFW_GIT_TAG " " HYDRAFW_BUILD_DATE
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
@@ -77,7 +79,7 @@ void cprintf(t_hydra_console *con, const char *fmt, ...)
 {
 	va_list va_args;
 	int real_size;
-	#define CPRINTF_BUFF_SIZE (511)
+#define CPRINTF_BUFF_SIZE (511)
 	char cprintf_buff[CPRINTF_BUFF_SIZE+1];
 
 	va_start(va_args, fmt);
@@ -289,7 +291,18 @@ int cmd_show(t_hydra_console *con, t_tokenline_parsed *p)
 	return TRUE;
 }
 
-#define waitcycles(n) ( wait_nbcycles(n) )
+void waitcycles(uint32_t nbcycles)
+{
+	if (nbcycles < 20) {
+		return;
+	} else
+		nbcycles-=20; /* Remove 20 cycles because of code overhead */
+
+	clear_cyclecounter();
+
+	while ( get_cyclecounter() < nbcycles );
+}
+
 /* Just debug to check Timing and accuracy with output pin */
 int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 {
@@ -309,16 +322,23 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 #define  TST_OFF (*gpio_clr=gpio_val)
 #define  TST_ON (*gpio_set=gpio_val)
 #endif
-	volatile systime_t tick, ticks10MHz, ticks3_39MHz, tick1MHz;
+	volatile systime_t tick, ticks10MHz, ticks3_39MHz, tick1MHz, ticks_1us;
 
-	ticks10MHz = NS2RTT(50);
-	ticks3_39MHz = NS2RTT(148);
-	tick1MHz = NS2RTT(500);
+	bsp_gpio_init(BSP_GPIO_PORTB, 3, MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
+
+	/* 168MHz Clk=5.84ns/cycle */
+	ticks10MHz = 8; /* 10MHz= (100ns/2) / 5.84 */
+	ticks3_39MHz = 25; /* 3.39MHz= (295ns/2) / 5.84 */
+	tick1MHz = 85; /* 1MHz= (1000ns/2) / 5.84 */
+	ticks_1us = 171;
 	cprintf(con, "50ns=%.2ld ticks\r\n", (uint32_t)ticks10MHz);
 	cprintf(con, "148ns=%.2ld ticks\r\n", (uint32_t)ticks3_39MHz);
 	cprintf(con, "500ns=%.2ld ticks\r\n", (uint32_t)tick1MHz);
 	cprintf(con, "Test dbg Out Freq Max 84Mhz(11.9ns),10MHz(100ns/2),3.39MHz(295ns/2),1MHz(1us/2)\r\nPress User Button to exit\r\n");
 	chThdSleepMilliseconds(1);
+
+	/* Lock Kernel for sniffer */
+	chSysLock();
 
 	while (1) {
 		/* Exit if User Button is pressed */
@@ -345,7 +365,8 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 		}
 
 		/* Delay 1us */
-		DelayUs(1);
+		tick = ticks_1us;
+		waitcycles(tick);
 
 		/* Freq 10Mhz */
 		tick = ticks10MHz;
@@ -372,7 +393,8 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 		}
 
 		/* Delay 1us */
-		DelayUs(1);
+		tick = ticks_1us;
+		waitcycles(tick);
 
 		/* Freq 3.39Mhz */
 		tick = ticks3_39MHz;
@@ -399,7 +421,8 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 		}
 
 		/* Delay 1us */
-		DelayUs(1);
+		tick = ticks_1us;
+		waitcycles(tick);
 
 		/* Freq 1Mhz */
 		tick = tick1MHz;
@@ -426,7 +449,12 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 		}
 
 	}
+
+	chSysUnlock();
 	cprintf(con, "Test dbg Out Freq end\r\n");
+
+	/* Reconfigure GPIOB3 in Safe Mode / Input */
+	bsp_gpio_init(BSP_GPIO_PORTB, 3, MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
 
 	return TRUE;
 }
@@ -437,8 +465,7 @@ int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p)
 	(void)p;
 
 	cprintf(con, "Test debug-rx started, stop it with UBTN + Key\r\n");
-	while(1)
-	{
+	while(1) {
 		/* Exit if User Button is pressed */
 		if (USER_BUTTON) {
 			break;
