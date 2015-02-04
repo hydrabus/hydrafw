@@ -19,7 +19,7 @@ limitations under the License.
 /** \brief Init GPIO
  *
  * \param gpio_port bsp_gpio_port_t GPIO port to configure
- * \param uint16_t gpio_pin GPIO pin(s) (see BSP_GPIO_PINx) corresponding to port to configure
+ * \param uint16_t gpio_pin GPIO pin(s) corresponding to port to configure
  * \param mode_conf mode_config_proto_t* use configuration fields dev_gpio_mode & dev_gpio_pull
  * \return bsp_status_t status of the init.
  *
@@ -78,7 +78,7 @@ bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, uint16_t gpio_pin,
 	return BSP_OK;
 }
 
-/** \brief Set (state "1") gpio_pin(s) (see BSP_GPIO_PINx) for the corresponding gpio_port
+/** \brief Set (state "1") gpio_pin(s) for the corresponding gpio_port
  *
  * \param gpio_port bsp_gpio_port_t GPIO port to configure
  * \param uint16_t gpio_pin GPIO pin(s) corresponding to port to configure
@@ -94,7 +94,7 @@ void bsp_gpio_set(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
 }
 
 
-/** \brief Clear (state "0") gpio_pin(s) (see BSP_GPIO_PINx) for the corresponding gpio_port
+/** \brief Clear (state "0") gpio_pin(s) for the corresponding gpio_port
  *
  * \param gpio_port bsp_gpio_port_t GPIO port to configure
  * \param uint16_t gpio_pin GPIO pin(s) corresponding to port to configure
@@ -108,12 +108,12 @@ void bsp_gpio_clr(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
 	hal_gpio_port->BSRRH = 1 << gpio_pin;
 }
 
-/** \brief Read only one gpio_pin (see BSP_GPIO_PINx) for the corresponding gpio_port
+/** \brief Read only one gpio_pin for the corresponding gpio_port
  *
  * \param gpio_port bsp_gpio_port_t GPIO port to configure
- * \param gpio_pin uint16_t
+ * \param gpio_pin uint16_t gpio_pin GPIO pin(s) corresponding to port to configure
  *
- * \return bsp_gpio_pinstate
+ * \return bsp_gpio_pinstate BSP_GPIO_PIN_1 or BSP_GPIO_PIN_0
  */
 bsp_gpio_pinstate bsp_gpio_pin_read(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
 {
@@ -134,7 +134,7 @@ bsp_gpio_pinstate bsp_gpio_pin_read(bsp_gpio_port_t gpio_port, uint16_t gpio_pin
  *
  * \param gpio_port bsp_gpio_port_t GPIO port to configure
  *
- * \return bsp_gpio_pinstate
+ * \return uint16_t gpio_pin(s) for the whole port
  */
 /* Read all pins of a port */
 uint16_t bsp_gpio_port_read(bsp_gpio_port_t gpio_port)
