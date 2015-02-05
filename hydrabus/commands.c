@@ -650,6 +650,10 @@ t_token tokens_really[] = {
 
 t_token tokens_sd[] = {
 	{
+		T_SHOW,
+		.help = "Show SD information"
+	},
+	{
 		T_MOUNT,
 		.help = "Mount SD card"
 	},

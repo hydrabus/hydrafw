@@ -957,6 +957,9 @@ int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p)
 
 	ret = TRUE;
 	switch (p->tokens[1]) {
+	case T_SHOW:
+		ret = cmd_show_sd(con);
+		break;
 	case T_MOUNT:
 		ret = cmd_sd_mount(con, p);
 		break;
