@@ -182,29 +182,32 @@ t_token tokens_mode_nfc_scan[] = {
 	{ }
 };
 
+#define NFC_PARAMETERS \
+	{\
+		T_MIFARE,\
+		.help = "MIFARE (ISO14443A)"\
+	},\
+	{\
+		T_VICINITY,\
+		.help = "Vicinity (ISO/IEC 15693)"\
+	},\
+	{\
+		T_SCAN,\
+		.subtokens = tokens_mode_nfc_scan,\
+		.help = "Scan"\
+	},\
+	{\
+		T_SNIFF,\
+		.help = "Sniff (ISO14443A only)"\
+	},
+
 t_token tokens_mode_nfc[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_nfc_show,
 		.help = "Show NFC parameters"
 	},
-	{
-		T_MIFARE,
-		.help = "MIFARE (ISO14443A)"
-	},
-	{
-		T_VICINITY,
-		.help = "Vicinity (ISO/IEC 15693)"
-	},
-	{
-		T_SCAN,
-		.subtokens = tokens_mode_nfc_scan,
-		.help = "Scan"
-	},
-	{
-		T_SNIFF,
-		.help = "Sniff (ISO14443A only)"
-	},
+	NFC_PARAMETERS
 	{
 		T_EXIT,
 		.help = "Exit NFC mode"
@@ -213,14 +216,7 @@ t_token tokens_mode_nfc[] = {
 };
 
 t_token tokens_nfc[] = {
-	{
-		T_MIFARE,
-		.help = "MIFARE (ISO14443A)"
-	},
-	{
-		T_VICINITY,
-		.help = "Vicinity (ISO/IEC 15693)"
-	},
+	NFC_PARAMETERS
 	{ }
 };
 
@@ -230,33 +226,36 @@ t_token tokens_parity[] = {
 	{ T_ODD },
 };
 
+#define UART_PARAMETERS \
+	{\
+		T_DEVICE,\
+		.arg_type = T_ARG_INT,\
+		.help = "UART device (1/2)"\
+	},\
+	{\
+		T_SPEED,\
+		.arg_type = T_ARG_INT,\
+		.help = "Bus bitrate"\
+	},\
+	{\
+		T_PARITY,\
+		.arg_type = T_ARG_TOKEN,\
+		.subtokens = tokens_parity,\
+		.help = "Parity (none/even/odd)"\
+	},\
+	{\
+		T_STOP_BITS,\
+		.arg_type = T_ARG_INT,\
+		.help = "Stop bits (1/2)"\
+	},
+
 t_token tokens_mode_uart[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
 		.help = "Show UART parameters"
 	},
-	{
-		T_DEVICE,
-		.arg_type = T_ARG_INT,
-		.help = "UART device (1 or 2)"
-	},
-	{
-		T_SPEED,
-		.arg_type = T_ARG_INT,
-		.help = "Bitrate"
-	},
-	{
-		T_PARITY,
-		.arg_type = T_ARG_TOKEN,
-		.subtokens = tokens_parity,
-		.help = "Parity (none/even/odd)"
-	},
-	{
-		T_STOP_BITS,
-		.arg_type = T_ARG_INT,
-		.help = "Stop bits (1 or 2)"
-	},
+	UART_PARAMETERS
 	/* UART-specific commands */
 	{
 		T_READ,
@@ -292,29 +291,22 @@ t_token tokens_mode_uart[] = {
 };
 
 t_token tokens_uart[] = {
-	{
-		T_DEVICE,
-		.arg_type = T_ARG_INT,
-		.help = "UART device (1 or 2)"
-	},
-	{
-		T_SPEED,
-		.arg_type = T_ARG_INT,
-		.help = "Bitrate"
-	},
-	{
-		T_PARITY,
-		.arg_type = T_ARG_TOKEN,
-		.subtokens = tokens_parity,
-		.help = "Parity (none/even/odd)"
-	},
-	{
-		T_STOP_BITS,
-		.arg_type = T_ARG_INT,
-		.help = "Stop bits (1 or 2)"
-	},
+	UART_PARAMETERS
 	{ }
 };
+
+#define I2C_PARAMETERS \
+	{\
+		T_PULL,\
+		.arg_type = T_ARG_TOKEN,\
+		.subtokens = tokens_gpio_pull,\
+		.help = "GPIO pull (up/down/floating)"\
+	},\
+	{\
+		T_FREQUENCY,\
+		.arg_type = T_ARG_FREQ,\
+		.help = "Bus frequency"\
+	},
 
 t_token tokens_mode_i2c[] = {
 	{
@@ -322,18 +314,12 @@ t_token tokens_mode_i2c[] = {
 		.subtokens = tokens_mode_show,
 		.help = "Show I2C parameters"
 	},
-	{
-		T_PULL,
-		.arg_type = T_ARG_TOKEN,
-		.subtokens = tokens_gpio_pull,
-		.help = "GPIO pull"
-	},
-	{
-		T_FREQUENCY,
-		.arg_type = T_ARG_FREQ,
-		.help = "Read/write frequency"
-	},
+	I2C_PARAMETERS
 	/* I2C-specific commands */
+	{
+		T_SCAN,
+		.help = "Scan for connected devices"
+	},
 	{
 		T_START,
 		.help = "Start"
@@ -356,10 +342,6 @@ t_token tokens_mode_i2c[] = {
 		T_ARG_INT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
-	},
-	{
-		T_SCAN,
-		.help = "Scan for connected devices"
 	},
 	/* BP commands */
 	{
@@ -388,41 +370,31 @@ t_token tokens_mode_i2c[] = {
 };
 
 t_token tokens_i2c[] = {
-	{
-		T_PULL,
-		.arg_type = T_ARG_TOKEN,
-		.subtokens = tokens_gpio_pull,
-		.help = "GPIO pull"
-	},
-	{
-		T_FREQUENCY,
-		.arg_type = T_ARG_FREQ,
-		.help = "Read/write frequency"
-	},
+	I2C_PARAMETERS
 	{ }
 };
 
 #define SPI_PARAMETERS \
 	{ T_DEVICE, \
 		.arg_type = T_ARG_INT, \
-		.help = "SPI device (1 or 2)" }, \
+		.help = "SPI device (1/2)" }, \
 	{ T_PULL, \
 		.arg_type = T_ARG_TOKEN, \
 		.subtokens = tokens_gpio_pull, \
-		.help = "GPIO pull" }, \
+		.help = "GPIO pull (up/down/floating)" }, \
 	{ T_MODE, \
 		.arg_type = T_ARG_TOKEN, \
 		.subtokens = tokens_master_slave, \
-			.help = "Master or slave mode" }, \
+			.help = "Mode (master/slave)" }, \
 	{ T_FREQUENCY, \
 		.arg_type = T_ARG_FREQ, \
-		.help = "Read/write frequency" }, \
+		.help = "Bus frequency" }, \
 	{ T_POLARITY, \
 		.arg_type = T_ARG_INT, \
-		.help = "Clock polarity (0 or 1)" }, \
+		.help = "Clock polarity (0/1)" }, \
 	{ T_PHASE, \
 		.arg_type = T_ARG_INT, \
-		.help = "Clock phase (0 or 1)" }, \
+		.help = "Clock phase (0/1)" }, \
 	{ T_MSB_FIRST, \
 		.help = "Send/receive MSB first" }, \
 	{ T_LSB_FIRST, \
@@ -515,18 +487,22 @@ t_token tokens_gpio[] = {
 		T_MODE,
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_gpio_mode,
-		.help = "Configure as input, output or open drain"
+		.help = "Mode (in/out/open-drain)"
 	},
 	{
 		T_PULL,
 		.arg_type = T_ARG_TOKEN,
 		.subtokens = tokens_gpio_pull,
-		.help = "GPIO pull up, down or floating"
+		.help = "GPIO pull (up/down/floating)"
 	},
 	{
 		T_PERIOD,
 		.arg_type = T_ARG_INT,
 		.help = "Delay between reads, in milliseconds"
+	},
+	{
+		T_READ,
+		.help = "Read GPIO values"
 	},
 	{
 		T_CONTINUOUS,
@@ -539,10 +515,6 @@ t_token tokens_gpio[] = {
 	{
 		T_OFF,
 		.help = "Clear GPIO pin"
-	},
-	{
-		T_READ,
-		.help = "Read GPIO values"
 	},
 	{ }
 };
@@ -565,14 +537,14 @@ t_token tokens_adc[] = {
 		.help = "VBAT voltage"
 	},
 	{
-		T_SAMPLES,
-		.arg_type = T_ARG_INT,
-		.help = "Number of samples"
-	},
-	{
 		T_PERIOD,
 		.arg_type = T_ARG_INT,
 		.help = "Delay between samples (msec)"
+	},
+	{
+		T_SAMPLES,
+		.arg_type = T_ARG_INT,
+		.help = "Number of samples"
 	},
 	{
 		T_CONTINUOUS,
@@ -782,37 +754,44 @@ t_token tl_tokens[] = {
 	{
 		T_ADC,
 		.subtokens = tokens_adc,
-		.help = "Read analog values"
+		.help = "Read analog values",
+		.help_full = "Usage: adc <adc1/tempsensor/vrefint/vbat> [period (nb ms)] [samples (nb sample)/continuous]"
 	},
 	{
 		T_DAC,
 		.subtokens = tokens_dac,
-		.help = "Write analog values"
+		.help = "Write analog values",
+		.help_full = "Usage: dac <dac1/dac2> <raw (0 to 4095)/volt (0 to 3.3V)/triangle/noise> [exit]"
 	},
 	{
 		T_PWM,
 		.subtokens = tokens_pwm,
-		.help = "Write PWM"
+		.help = "Write PWM",
+		.help_full = "Usage: pwm <frequency (1Hz to 42MHz)> [duty-cycle (0 to 100%)] [exit]"
 	},
 	{
 		T_GPIO,
 		.subtokens = tokens_gpio,
-		.help = "Get or set GPIO pins"
+		.help = "Get or set GPIO pins",
+		.help_full = "Configuration: gpio <PA0-15, PB0-11, PC0-15, PA*> <mode (in/out/open-drain)> [pull (up/down/floating)]\r\nInteraction: gpio <PA0-15, PB0-11, PC0-15, PA*> [period (nb ms)] <read/continuous> or <on/off>"
 	},
 	{
 		T_SPI,
 		.subtokens = tokens_spi,
-		.help = "SPI mode"
+		.help = "SPI mode",
+		.help_full = "Configuration: spi [device (1/2)] [pull (up/down/floating)] [mode (master/slave)] [frequency (value hz/khz/mhz)] [polarity 0/1] [phase 0/1] [msb-first/lsb-first]\r\nInteraction: [cs-on/cs-off] <read/write (value:repeat)> [exit]"
 	},
 	{
 		T_I2C,
 		.subtokens = tokens_i2c,
-		.help = "I2C mode"
+		.help = "I2C mode",
+		.help_full = "Configuration: i2c [pull (up/down/floating)] [frequency (value hz/khz/mhz)]\r\nInteraction: [<start>] [<stop>] <read/write (value:repeat)>"
 	},
 	{
 		T_UART,
 		.subtokens = tokens_uart,
-		.help = "UART mode"
+		.help = "UART mode",
+		.help_full = "Configuration: uart [device (1/2)> [speed (value in bauds)] [parity (none/even/odd)] [stop-bits (1/2)]\r\nInteraction: <read/write (value:repeat)>"
 	},
 	{
 		T_NFC,
