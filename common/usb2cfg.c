@@ -17,6 +17,9 @@ limitations under the License.
 #include "ch.h"
 #include "hal.h"
 
+#define VENDOR_ID		0x1d50
+#define PRODUCT_ID	0x60a7
+
 /*
  * Endpoints to be used for USBD2.
  */
@@ -34,8 +37,8 @@ static const uint8_t vcom_device_descriptor_data[18] = {
 		0x00,          /* bDeviceSubClass.                 */
 		0x00,          /* bDeviceProtocol.                 */
 		0x40,          /* bMaxPacketSize.                  */
-		0x0483,        /* idVendor (ST).                   */
-		0x5740,        /* idProduct.                       */
+		VENDOR_ID,     /* idVendor.                        */
+		PRODUCT_ID,    /* idProduct.                       */
 		0x0200,        /* bcdDevice.                       */
 		1,             /* iManufacturer.                   */
 		2,             /* iProduct.                        */
@@ -152,11 +155,10 @@ static const uint8_t vcom_string0[] = {
  * Vendor string.
  */
 static const uint8_t vcom_string1[] = {
-	USB_DESC_BYTE(38),                    /* bLength.         */
-	USB_DESC_BYTE(USB_DESCRIPTOR_STRING), /* bDescriptorType. */
-	'S', 0, 'T', 0, 'M', 0, 'i', 0, 'c', 0, 'r', 0, 'o', 0, 'e', 0,
-	'l', 0, 'e', 0, 'c', 0, 't', 0, 'r', 0, 'o', 0, 'n', 0, 'i', 0,
-	'c', 0, 's', 0
+	USB_DESC_BYTE(30),                    /* bLength.                         */
+	USB_DESC_BYTE(USB_DESCRIPTOR_STRING), /* bDescriptorType.                 */
+	'O', 0, 'p', 0, 'e', 0, 'n', 0, 'm', 0, 'o', 0, 'k', 0, 'o', 0,
+	',', 0, ' ', 0, 'I', 0, 'n', 0, 'c', 0, '.', 0
 };
 
 /*
