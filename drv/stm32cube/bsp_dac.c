@@ -340,7 +340,7 @@ bsp_status_t bsp_dac_triangle(bsp_dev_dac_t dev_num)
 	if(HAL_DAC_SetValue(hdac, dac_chan_num, DAC_ALIGN_12B_R, 0x0) != HAL_OK)
 		return BSP_ERROR;
 
-	return status;
+	return BSP_OK;
 }
 
 /** \brief Output DAC with Noise amplitude 3.3V
@@ -391,5 +391,5 @@ bsp_status_t bsp_dac_noise(bsp_dev_dac_t dev_num)
 	if(HAL_DAC_SetValue(hdac, dac_chan_num, DAC_ALIGN_12B_R, 0x0) != HAL_OK)
 		return BSP_ERROR;
 
-	return status;
+	return BSP_OK;
 }

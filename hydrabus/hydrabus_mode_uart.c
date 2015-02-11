@@ -129,8 +129,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			baudrate_error_percent = 10000 - (int)((float)proto->dev_speed/(float)final_baudrate * 10000.0f);
 			if(baudrate_error_percent < 0)
 				baudrate_error_percent = -baudrate_error_percent;
-			else
-				baudrate_error_percent = baudrate_error_percent;
 
 			baudrate_err_int_part = (baudrate_error_percent / 100);
 			baudrate_err_dec_part = (baudrate_error_percent - (baudrate_err_int_part * 100));

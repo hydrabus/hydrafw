@@ -131,13 +131,13 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_FREQUENCY:
 			t += 2;
 			memcpy(&arg_float, p->buf + p->tokens[t], sizeof(float));
-			for (i = 0; i < 8; i++) {
+			for (i = 0; i < SPEED_NB; i++) {
 				if (arg_float == speeds[i]) {
 					proto->dev_speed = i;
 					break;
 				}
 			}
-			if (i == 8) {
+			if (i == SPEED_NB) {
 				cprintf(con, "Invalid frequency.\r\n");
 				return t;
 			}
