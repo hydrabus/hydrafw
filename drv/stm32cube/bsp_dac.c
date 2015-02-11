@@ -301,7 +301,6 @@ uint32_t bsp_dac_trigger(bsp_dev_dac_t dev_num)
 bsp_status_t bsp_dac_triangle(bsp_dev_dac_t dev_num)
 {
 	uint32_t dac_chan_num;
-	HAL_StatusTypeDef status;
 	DAC_HandleTypeDef* hdac;
 	DAC_ChannelConfTypeDef* hdac_chan;
 
@@ -352,7 +351,6 @@ bsp_status_t bsp_dac_triangle(bsp_dev_dac_t dev_num)
 bsp_status_t bsp_dac_noise(bsp_dev_dac_t dev_num)
 {
 	uint32_t dac_chan_num;
-	HAL_StatusTypeDef status;
 	DAC_HandleTypeDef* hdac;
 	DAC_ChannelConfTypeDef* hdac_chan;
 
