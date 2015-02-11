@@ -609,7 +609,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		hydranfc_sniff_14443A(con);
 	}
 
-	return t + 1;
+	return t - token_pos;
 }
 
 void show_registers(t_hydra_console *con)
