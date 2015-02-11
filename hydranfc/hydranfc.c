@@ -597,7 +597,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			cprintf(con, "Scanning %s ",
 				proto->dev_mode == NFC_MODE_MIFARE ? "MIFARE" : "Vicinity");
 			cprintf(con, "with %dms period. Press user button to stop.\r\n", period);
-			t++;
 			while (!USER_BUTTON) {
 				scan(con);
 				chThdSleepMilliseconds(period);
