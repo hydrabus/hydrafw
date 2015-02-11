@@ -739,7 +739,6 @@ void hydranfc_cleanup(t_hydra_console *con)
 
 	/* deinit GPIO config (reinit using hydrabus_init() */
 	deinit_gpio();
-	hydrabus_init();
 }
 
 const mode_exec_t mode_nfc_exec = {
