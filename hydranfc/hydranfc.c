@@ -36,6 +36,8 @@ static volatile int irq_count;
 volatile int irq;
 volatile int irq_end_rx;
 
+void (*trf7970a_irq_fn)(void) = NULL;
+
 /* Configure TRF7970A IRQ on GPIO A1 Rising Edge */
 static const EXTConfig extcfg = {
 	{
@@ -105,13 +107,24 @@ enum {
 	NFC_MODE_NONE,
 	NFC_MODE_MIFARE,
 	NFC_MODE_VICINITY,
+	NFC_EMUL_UID_14443A
 };
+
+typedef enum {
+	NFC_EMUL_RX_REQA, /* Wait RX REQA 0x26 */
+	NFC_EMUL_RX_ANTICOL, /* Wait RX ANTICOL 0x93 0x20 */
+	NFC_EMUL_RX_SEL_UID, /* Wait RX SEL UID 0x93 0x70 + UID 4Bytes + BCC */
+	NFC_EMUL_RX_MIFARE_CMD
+} emul_iso14443a_state;
 
 /* Triggered when the Ext IRQ is pressed or released. */
 static void extcb1(EXTDriver *extp, expchannel_t channel)
 {
 	(void)extp;
 	(void)channel;
+
+	if(trf7970a_irq_fn != NULL)
+		trf7970a_irq_fn();
 
 	irq_count++;
 	irq = 1;
@@ -559,6 +572,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	mode_config_proto_t* proto = &con->mode->proto;
 	int action, period, continuous, t;
 
+	hydranfc_cleanup(con);
+	hydranfc_init(con);
+
 	action = 0;
 	period = 1000;
 	continuous = FALSE;
@@ -582,6 +598,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_SCAN:
 		case T_SNIFF:
+		case T_EMUL_UID_14443A:
 			action = p->tokens[t];
 			break;
 		}
@@ -606,6 +623,8 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		}
 	} else if (action == T_SNIFF) {
 		hydranfc_sniff_14443A(con);
+	} else if (action == T_EMUL_UID_14443A) {
+		hydranfc_emul_uid_14443a(con);
 	}
 
 	return t - token_pos;

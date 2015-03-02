@@ -28,6 +28,8 @@
 #define MIFARE_UID_MAX      5
 #define VICINITY_UID_MAX    16
 
+extern void (*trf7970a_irq_fn)(void);
+
 bool hydranfc_is_detected(void);
 
 bool hydranfc_init(t_hydra_console *con);
@@ -39,6 +41,9 @@ void hydranfc_scan_mifare(t_hydra_console *con);
 void hydranfc_scan_vicinity(t_hydra_console *con);
 
 void hydranfc_sniff_14443A(t_hydra_console *con);
+
+void hydranfc_emul_uid_14443a(t_hydra_console *con);
+
 
 #endif /* _HYDRANFC_H_ */
 
