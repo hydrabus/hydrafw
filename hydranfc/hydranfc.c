@@ -110,13 +110,6 @@ enum {
 	NFC_EMUL_UID_14443A
 };
 
-typedef enum {
-	NFC_EMUL_RX_REQA, /* Wait RX REQA 0x26 */
-	NFC_EMUL_RX_ANTICOL, /* Wait RX ANTICOL 0x93 0x20 */
-	NFC_EMUL_RX_SEL_UID, /* Wait RX SEL UID 0x93 0x70 + UID 4Bytes + BCC */
-	NFC_EMUL_RX_MIFARE_CMD
-} emul_iso14443a_state;
-
 /* Triggered when the Ext IRQ is pressed or released. */
 static void extcb1(EXTDriver *extp, expchannel_t channel)
 {

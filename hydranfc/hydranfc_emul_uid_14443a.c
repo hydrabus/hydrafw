@@ -336,8 +336,8 @@ void hydranfc_emul_uid_14443a(t_hydra_console *con)
 
 	hydranfc_emul_1444a_init();
 
-	/* Wait Until K4 or UBTN is pressed */
-	/*  Emulation is managed by  IRQ => hydranfc_emul_14443a_irq */
+	/* Infinite loop until UBTN is pressed */
+	/*  Emulation is managed by IRQ => hydranfc_emul_14443a_irq */
 	cprintf(con, "NFC Card Emulation UID 14443A started\r\nPress user button(UBTN) to stop.\r\n");
 	while(1) {
 		if(USER_BUTTON)
