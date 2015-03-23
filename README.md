@@ -17,6 +17,4 @@ http://www.seeedstudio.com/depot/HydraBus-m-132.html
 * For more details on HydraNFC Hardware see: https://github.com/bvernoux/hydranfc
 * If you want to help on this project see the [Coding Styles](https://github.com/bvernoux/hydrafw/blob/master/CODING_STYLE.md), [Wiki](https://github.com/bvernoux/hydrafw/wiki) & [Wiki Task List](https://github.com/bvernoux/hydrafw/wiki/Task-List) 
 
-See also:
-* [how to build flash and use hydrafw on windows Wiki](https://github.com/bvernoux/hydrafw/wiki/how-to-build-flash-and-use-hydrafw-on-windows)
-* [how to build flash and use hydrafw on linux Wiki](https://github.com/bvernoux/hydrafw/wiki/how-to-build-flash-and-use-hydrafw-on-linux)
+See also Wiki [Getting Started with HydraBus](https://github.com/bvernoux/hydrafw/wiki/Getting-Started-with-HydraBus)
