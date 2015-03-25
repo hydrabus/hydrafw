@@ -15,6 +15,7 @@ http://www.seeedstudio.com/depot/HydraBus-m-132.html
 * HydraFW usage with VT100 Terminal see wiki https://github.com/bvernoux/hydrafw/wiki/HydraFW-commands
 * For more details on HydraBus Hardware and Firmware see also: https://github.com/bvernoux/hydrabus
 * For more details on HydraNFC Hardware see: https://github.com/bvernoux/hydranfc
-* If you want to help on this project see the [Coding Styles](https://github.com/bvernoux/hydrafw/blob/master/CODING_STYLE.md), [Wiki](https://github.com/bvernoux/hydrafw/wiki) & [Wiki Task List](https://github.com/bvernoux/hydrafw/wiki/Task-List) 
-
-See also Wiki [Getting Started with HydraBus](https://github.com/bvernoux/hydrafw/wiki/Getting-Started-with-HydraBus)
+* If you want to help on this project see:
+  * [Coding Styles](https://github.com/bvernoux/hydrafw/blob/master/CODING_STYLE.md), [Wiki](https://github.com/bvernoux/hydrafw/wiki) & [Wiki Task List](https://github.com/bvernoux/hydrafw/wiki/Task-List) 
+  * [How to Build/Flash/Use HydraFW on Windows](https://github.com/bvernoux/hydrafw/wiki/how-to-build-flash-and-use-hydrafw-on-windows)
+  * [How to Build/Flash/Use HydraFW on Linux](https://github.com/bvernoux/hydrafw/wiki/how-to-build-flash-and-use-hydrafw-on-linux)
