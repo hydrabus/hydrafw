@@ -84,9 +84,10 @@ t_token_dict tl_dict[] = {
 	{ T_PERIOD, "period" },
 	{ T_CONTINUOUS, "continuous" },
 	{ T_NFC, "nfc" },
-	{ T_MIFARE, "mifare" },
+	{ T_TYPEA, "typea" },
 	{ T_VICINITY, "vicinity" },
 	{ T_EMUL_UID_14443A, "emul_uid_14443A" },
+	{ T_TAG_EMUL, "tag_emul_uid" },
 	{ T_REGISTERS, "registers" },
 	{ T_SCAN, "scan" },
 	{ T_SNIFF, "sniff" },
@@ -185,8 +186,8 @@ t_token tokens_mode_nfc_scan[] = {
 
 #define NFC_PARAMETERS \
 	{\
-		T_MIFARE,\
-		.help = "MIFARE (ISO14443A)"\
+		T_TYPEA,\
+		.help = "TypeA (ISO14443A => MIFARE...)"\
 	},\
 	{\
 		T_VICINITY,\
@@ -204,6 +205,10 @@ t_token tokens_mode_nfc_scan[] = {
 	{\
 		T_EMUL_UID_14443A,\
 		.help = "Emul 14443A Tag UID"\
+	},\
+	{\
+		T_TAG_EMUL,\
+		.help = "Tag Emul SDD UID"\
 	},
 
 t_token tokens_mode_nfc[] = {
