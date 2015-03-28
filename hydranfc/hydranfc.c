@@ -104,11 +104,10 @@ static struct {
 };
 
 enum {
-	NFC_MODE_NONE,
-	NFC_MODE_MIFARE,
-	NFC_MODE_VICINITY,
+	NFC_TYPEA,
+	NFC_VICINITY,
 	NFC_EMUL_UID_14443A
-};
+} nfc_function_t;
 
 /* Triggered when the Ext IRQ is pressed or released. */
 static void extcb1(EXTDriver *extp, expchannel_t channel)
@@ -402,7 +401,7 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 			cprintf(con, " %02X", (uint32_t)data_buf[i]);
 		cprintf(con, "\r\n");
 
-		/* Send AntiColl (2 bytes) and receive UID+BCC (5 bytes) */
+		/* Send AntiColl Cascade1 (2 bytes) and receive UID+BCC (5 bytes) */
 		data_buf[0] = 0x93;
 		data_buf[1] = 0x20;
 		fifo_size = Trf797x_transceive_bytes(data_buf, 2, uid_buf, MIFARE_UID_MAX,
@@ -433,7 +432,7 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 			data_buf[1] = 0x08;
 			Trf797xWriteSingle(data_buf, 2);
 
-			/* Send SelUID (6 bytes) and receive ATQA (2 bytes) */
+			/* Finish Select (6 bytes) and receive SAK (2 bytes) */
 			data_buf[0] = 0x93;
 			data_buf[1] = 0x70;
 			for (i = 0; i < MIFARE_UID_MAX; i++) {
@@ -554,19 +553,17 @@ static void scan(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	if (proto->dev_mode == NFC_MODE_MIFARE)
+	if (proto->dev_function == NFC_TYPEA)
 		hydranfc_scan_mifare(con);
-	else if (proto->dev_mode == NFC_MODE_VICINITY)
+	else if (proto->dev_function == NFC_VICINITY)
 		hydranfc_scan_vicinity(con);
 }
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
+	int dev_func;
 	mode_config_proto_t* proto = &con->mode->proto;
 	int action, period, continuous, t;
-
-	hydranfc_cleanup(con);
-	hydranfc_init(con);
 
 	action = 0;
 	period = 1000;
@@ -576,11 +573,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_SHOW:
 			t += show(con, p);
 			break;
-		case T_MIFARE:
-			proto->dev_mode = NFC_MODE_MIFARE;
+		case T_TYPEA:
+			proto->dev_function = NFC_TYPEA;
 			break;
 		case T_VICINITY:
-			proto->dev_mode = NFC_MODE_VICINITY;
+			proto->dev_function = NFC_VICINITY;
 			break;
 		case T_PERIOD:
 			t += 2;
@@ -592,33 +589,37 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_SCAN:
 		case T_SNIFF:
 		case T_EMUL_UID_14443A:
+		case T_TAG_EMUL:
 			action = p->tokens[t];
 			break;
 		}
 	}
 
 	if (action == T_SCAN) {
-		if (proto->dev_mode == NFC_MODE_NONE) {
+		dev_func = proto->dev_function;
+		if( (dev_func == NFC_TYPEA) || (dev_func == NFC_VICINITY) ) {
+			if (continuous) {
+				cprintf(con, "Scanning %s ",
+					proto->dev_function == NFC_TYPEA ? "MIFARE" : "Vicinity");
+				cprintf(con, "with %dms period. Press user button to stop.\r\n", period);
+				while (!USER_BUTTON) {
+					scan(con);
+					chThdSleepMilliseconds(period);
+				}
+			} else {
+				scan(con);
+			}
+
+		} else {
 			cprintf(con, "Please select MIFARE or Vicinity mode first.\r\n");
 			return 0;
-		}
-
-		if (continuous) {
-			cprintf(con, "Scanning %s ",
-				proto->dev_mode == NFC_MODE_MIFARE ? "MIFARE" : "Vicinity");
-			cprintf(con, "with %dms period. Press user button to stop.\r\n", period);
-			while (!USER_BUTTON) {
-				scan(con);
-				chThdSleepMilliseconds(period);
-			}
-		} else {
-			scan(con);
 		}
 	} else if (action == T_SNIFF) {
 		hydranfc_sniff_14443A(con);
 	} else if (action == T_EMUL_UID_14443A) {
 		hydranfc_emul_uid_14443a(con);
-	}
+	} else if (action == T_TAG_EMUL)
+		hydranfc_tag_emul(con);
 
 	return t - token_pos;
 }
@@ -653,9 +654,18 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 		tokens_used++;
 		show_registers(con);
 	} else {
-		cprintf(con, "Protocol: %s\r\n", proto->dev_mode == NFC_MODE_MIFARE ?
-			"MIFARE (ISO14443A)" : proto->dev_mode == NFC_MODE_VICINITY ?
-			"Vicinity (ISO/IEC 15693)" : "None");
+
+		switch(proto->dev_function) {
+		case NFC_TYPEA:
+			cprintf(con, "Protocol: TypeA (ISO14443A => MIFARE...)\r\n");
+			break;
+		case NFC_VICINITY:
+			cprintf(con, "Protocol: Vicinity (ISO/IEC 15693)\r\n");
+			break;
+		default:
+			cprintf(con, "Protocol: Unknown\r\n");
+			break;
+		}
 	}
 
 	return tokens_used;
@@ -673,7 +683,7 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	mode_config_proto_t* proto = &con->mode->proto;
 	int tokens_used = 0;
 
-	proto->dev_mode = NFC_MODE_NONE;
+	proto->dev_function = NFC_TYPEA;
 
 	if(init_gpio(con) ==  FALSE) {
 		deinit_gpio();

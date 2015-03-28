@@ -692,6 +692,9 @@
 		<Unit filename="hydranfc\hydranfc_emul_uid_14443a.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="hydranfc\hydranfc_tag_emul.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
