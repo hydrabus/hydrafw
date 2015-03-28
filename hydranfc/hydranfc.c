@@ -36,6 +36,9 @@ static volatile int irq_count;
 volatile int irq;
 volatile int irq_end_rx;
 
+#define NFC_TX_RAWDATA_BUF_SIZE (64)
+unsigned char nfc_tx_rawdata_buf[NFC_TX_RAWDATA_BUF_SIZE+1];
+
 void (*trf7970a_irq_fn)(void) = NULL;
 
 /* Configure TRF7970A IRQ on GPIO A1 Rising Edge */

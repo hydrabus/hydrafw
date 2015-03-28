@@ -28,6 +28,9 @@
 #define MIFARE_UID_MAX      11
 #define VICINITY_UID_MAX    16
 
+#define NFC_TX_RAWDATA_BUF_SIZE (64)
+extern unsigned char nfc_tx_rawdata_buf[NFC_TX_RAWDATA_BUF_SIZE+1];
+
 extern void (*trf7970a_irq_fn)(void);
 
 bool hydranfc_is_detected(void);

@@ -65,9 +65,6 @@ typedef enum {
 
 emul_iso14443a_state hydranfc_emul_14443a_state = NFC_EMUL_RX_REQA;
 
-#define EMUL_14443A_TX_RAWDATA_BUF_SIZE (64)
-unsigned char emul_14443a_tx_rawdata_buf[EMUL_14443A_TX_RAWDATA_BUF_SIZE+1];
-
 void  hydranfc_emul_1444a_init(void)
 {
 	uint8_t data_buf[2];
@@ -142,25 +139,25 @@ int emul_14443a_tx_rawdata(unsigned char* tx_data, int tx_nb_data, int flag_crc)
 {
 	int i;
 
-	if(tx_nb_data+5 > EMUL_14443A_TX_RAWDATA_BUF_SIZE)
+	if(tx_nb_data+5 > NFC_TX_RAWDATA_BUF_SIZE)
 		return 0;
 
 	/* Send Raw Data */
-	emul_14443a_tx_rawdata_buf[0] = 0x8F; /* Direct Command => Reset FIFO */
+	nfc_tx_rawdata_buf[0] = 0x8F; /* Direct Command => Reset FIFO */
 	if(flag_crc==0) {
-		emul_14443a_tx_rawdata_buf[1] = 0x90; /* Direct Command => Transmission With No CRC (0x10) */
+		nfc_tx_rawdata_buf[1] = 0x90; /* Direct Command => Transmission With No CRC (0x10) */
 	} else {
-		emul_14443a_tx_rawdata_buf[1] = 0x91; /* Direct Command => Transmission With CRC (0x11) */
+		nfc_tx_rawdata_buf[1] = 0x91; /* Direct Command => Transmission With CRC (0x11) */
 	}
-	emul_14443a_tx_rawdata_buf[2] = 0x3D; /* Write Continuous (Start at @0x1D => TX Length Byte1 & Byte2) */
-	emul_14443a_tx_rawdata_buf[3] = ((tx_nb_data&0xF0)>>4); /* Number of Bytes to be sent MSB 0x00 @0x1D */
-	emul_14443a_tx_rawdata_buf[4] = ((tx_nb_data<<4)&0xF0); /* Number of Byte to be sent LSB 0x00 @0x1E = Max 7bits */
+	nfc_tx_rawdata_buf[2] = 0x3D; /* Write Continuous (Start at @0x1D => TX Length Byte1 & Byte2) */
+	nfc_tx_rawdata_buf[3] = ((tx_nb_data&0xF0)>>4); /* Number of Bytes to be sent MSB 0x00 @0x1D */
+	nfc_tx_rawdata_buf[4] = ((tx_nb_data<<4)&0xF0); /* Number of Byte to be sent LSB 0x00 @0x1E = Max 7bits */
 
 	for(i=0; i<tx_nb_data; i++) {
 		/* Data (FIFO TX 1st Data @0x1F) */
-		emul_14443a_tx_rawdata_buf[5+i] = tx_data[i];
+		nfc_tx_rawdata_buf[5+i] = tx_data[i];
 	}
-	Trf797xRawWrite(emul_14443a_tx_rawdata_buf, (tx_nb_data+5));
+	Trf797xRawWrite(nfc_tx_rawdata_buf, (tx_nb_data+5));
 	return tx_nb_data;
 }
 
