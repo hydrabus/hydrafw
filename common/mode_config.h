@@ -76,6 +76,7 @@ typedef struct {
 	long dev_bit_lsb_msb; /* For SPI */
 	long dev_parity; /* For UART */
 	long dev_stop_bit; /* For UART */
+	long dev_function; /* device function */
 
 	uint32_t : 24; // not used reserved for future use
 	uint32_t altAUX : 2; // 4 AUX tbd
