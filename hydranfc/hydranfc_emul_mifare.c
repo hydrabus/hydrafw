@@ -24,25 +24,24 @@
 #include "bsp_spi.h"
 #include <string.h>
 
-enum {
-	NFC_EMUL_UID_14443A
-};
-
 typedef enum {
-	NFC_EMUL_RX_REQA, /* Wait RX REQA 0x26 */
-	NFC_EMUL_RX_ANTICOL, /* Wait RX ANTICOL 0x93 0x20 */
-	NFC_EMUL_RX_SEL_UID, /* Wait RX SEL UID 0x93 0x70 + UID 4Bytes + BCC */
-	NFC_EMUL_RX_MIFARE_CMD
-} emul_iso14443a_state;
+	EMUL_RX_MIFARE_REQA, /* Wait RX REQA 0x26 */
+	EMUL_RX_MIFARE_ANTICOL, /* Wait RX ANTICOL 0x93 0x20 */
+	EMUL_RX_MIFARE_SEL_UID, /* Wait RX SEL UID 0x93 0x70 + UID 4Bytes + BCC */
+	EMUL_RX_MIFARE_MIFARE_CMD
+} emul_mifare_state;
 
 #define TRF7970A_IRQ_STATUS_RX_TX 0xC0
 #define TRF7970A_IRQ_STATUS_TX 0x80
 #define TRF7970A_IRQ_STATUS_RX 0x40
 #define TRF7970A_IRQ_STATUS_FIFO 0x20
 
+/* 
+Mifare/MF1S503x commands see http://www.nxp.com/documents/data_sheet/MF1S503x.pdf
+*/
 /* Emul ISO14443A */
-#define ISO14443A_REQA 0x26 /* RX REQA */
-//#define ISO14443A_WUPA 0x52 /* RX WUPA */
+#define ISO14443A_REQA 0x26 /* RX REQA 7bit */
+//#define ISO14443A_WUPA 0x52 /* RX WUPA 7bit */
 
 #define ISO14443A_ATQA_BYTE0 0x04 /* TX ATQA */
 #define ISO14443A_ATQA_BYTE1 0x00
@@ -61,11 +60,25 @@ typedef enum {
 
 #define ISO14443A_SAK 0x08 /* TX SAK => MIFARE Classic 1K = 0x08 */
 
-#define ISO14443A_AUTH 0x60
+#define ISO14443A_HALT_BYTE0 0x50
+#define ISO14443A_HALT_BYTE1 0x00
 
-emul_iso14443a_state hydranfc_emul_14443a_state = NFC_EMUL_RX_REQA;
+typedef enum {
+	EMUL_MIFARE_AUTH_KEYA = 0x60,
+	EMUL_MIFARE_AUTH_KEYB = 0x61,
+	EMUL_MIFARE_READ = 0x30,
+	EMUL_MIFARE_WRITE = 0xA0,
+	EMUL_MIFARE_DECR = 0xC0,
+	EMUL_MIFARE_INCR = 0xC1,
+	EMUL_MIFARE_RESTORE = 0xC2,
+	EMUL_MIFARE_TRANSFER = 0xB0
+} emul_mifare_cmd;
 
-void  hydranfc_emul_1444a_init(void)
+#define ISO14443A_AUTH_KEY_A 0x60
+
+emul_mifare_state hydranfc_emul_14443a_state = EMUL_RX_MIFARE_REQA;
+
+void  hydranfc_emul_mifare_init(void)
 {
 	uint8_t data_buf[2];
 
@@ -135,7 +148,7 @@ void  hydranfc_emul_1444a_init(void)
 }
 
 /* Return Nb data sent (0 if error) */
-int emul_14443a_tx_rawdata(unsigned char* tx_data, int tx_nb_data, int flag_crc)
+int emul_mifare_tx_rawdata(unsigned char* tx_data, int tx_nb_data, int flag_crc)
 {
 	int i;
 
@@ -161,7 +174,7 @@ int emul_14443a_tx_rawdata(unsigned char* tx_data, int tx_nb_data, int flag_crc)
 	return tx_nb_data;
 }
 
-void hydranfc_emul_14443a_states(void)
+void hydranfc_emul_mifare_states(void)
 {
 	uint8_t data_buf[32];
 	int fifo_size;
@@ -176,7 +189,7 @@ void hydranfc_emul_14443a_states(void)
 
 	switch(hydranfc_emul_14443a_state) {
 
-	case NFC_EMUL_RX_REQA:
+	case EMUL_RX_MIFARE_REQA:
 		if(fifo_size == 1) {
 			data_buf[0] = FIFO;
 			Trf797xReadCont(data_buf, fifo_size);
@@ -184,8 +197,8 @@ void hydranfc_emul_14443a_states(void)
 				/* Reply with ATQA 0x04 0x00 */
 				data_buf[0] = ISO14443A_ATQA_BYTE0;
 				data_buf[1] = ISO14443A_ATQA_BYTE1;
-				if(emul_14443a_tx_rawdata(data_buf, 2, 0) == 2)
-					hydranfc_emul_14443a_state = NFC_EMUL_RX_ANTICOL;
+				if(emul_mifare_tx_rawdata(data_buf, 2, 0) == 2)
+					hydranfc_emul_14443a_state = EMUL_RX_MIFARE_ANTICOL;
 			} else {
 				/* Invalid/Unsupported RX data */
 				/* TODO Support WUPA ... */
@@ -195,7 +208,7 @@ void hydranfc_emul_14443a_states(void)
 			error=1;
 		break;
 
-	case NFC_EMUL_RX_ANTICOL:
+	case EMUL_RX_MIFARE_ANTICOL:
 		if(fifo_size == 2) {
 			data_buf[0] = FIFO;
 			Trf797xReadCont(data_buf, fifo_size);
@@ -208,15 +221,15 @@ void hydranfc_emul_14443a_states(void)
 				data_buf[2] = ISO14443A_UID_BYTE2;
 				data_buf[3] = ISO14443A_UID_BYTE3;
 				data_buf[4] = ISO14443A_UID_BYTE4;
-				if(emul_14443a_tx_rawdata(data_buf, 5, 0) == 5)
-					hydranfc_emul_14443a_state = NFC_EMUL_RX_SEL_UID;
+				if(emul_mifare_tx_rawdata(data_buf, 5, 0) == 5)
+					hydranfc_emul_14443a_state = EMUL_RX_MIFARE_SEL_UID;
 			} else
 				error=1;
 		} else
 			error=1;
 		break;
 
-	case NFC_EMUL_RX_SEL_UID:
+	case EMUL_RX_MIFARE_SEL_UID:
 		if(fifo_size >= 9) {
 			data_buf[0] = FIFO;
 			Trf797xReadCont(data_buf, fifo_size);
@@ -233,8 +246,8 @@ void hydranfc_emul_14443a_states(void)
 
 				/* Reply with SAK + CRC */
 				data_buf[0] = ISO14443A_SAK;
-				if(emul_14443a_tx_rawdata(data_buf, 1, 1) == 1) {
-					hydranfc_emul_14443a_state = NFC_EMUL_RX_MIFARE_CMD;
+				if(emul_mifare_tx_rawdata(data_buf, 1, 1) == 1) {
+					hydranfc_emul_14443a_state = EMUL_RX_MIFARE_MIFARE_CMD;
 				} else
 					error=1;
 			} else
@@ -243,7 +256,7 @@ void hydranfc_emul_14443a_states(void)
 			error=1;
 		break;
 
-	case NFC_EMUL_RX_MIFARE_CMD:
+	case EMUL_RX_MIFARE_MIFARE_CMD:
 		data_buf[0] = FIFO;
 		Trf797xReadCont(data_buf, fifo_size);
 
@@ -257,8 +270,8 @@ void hydranfc_emul_14443a_states(void)
 				data_buf[1] = 0;
 				data_buf[2] = 0;
 				data_buf[3] = 0;
-				if(emul_14443a_tx_rawdata(data_buf, 4, 1) == 4) {
-					hydranfc_emul_14443a_state = NFC_EMUL_RX_REQA;
+				if(emul_mifare_tx_rawdata(data_buf, 4, 1) == 4) {
+					hydranfc_emul_14443a_state = EMUL_RX_MIFARE_REQA;
 				} else
 					error=1;
 			}
@@ -273,18 +286,18 @@ void hydranfc_emul_14443a_states(void)
 
 	/* Error on Protocol */
 	if(error > 0) {
-		hydranfc_emul_14443a_state = NFC_EMUL_RX_REQA;
+		hydranfc_emul_14443a_state = EMUL_RX_MIFARE_REQA;
 
 		/* Re-Init TRF7970A on status error */
 		data_buf[0] = SOFT_INIT;
 		Trf797xDirectCommand(data_buf);
 		data_buf[0] = IDLE;
 		Trf797xDirectCommand(data_buf);
-		hydranfc_emul_1444a_init();
+		hydranfc_emul_mifare_init();
 	}
 }
 
-void hydranfc_emul_14443a_irq(void)
+void hydranfc_emul_mifare_irq(void)
 {
 	uint8_t data_buf[2];
 	int status;
@@ -308,12 +321,12 @@ void hydranfc_emul_14443a_irq(void)
 		break;
 
 	case TRF7970A_IRQ_STATUS_RX:
-		hydranfc_emul_14443a_states();
+		hydranfc_emul_mifare_states();
 		break;
 
 	default:
 		/* Re-Init Internal Emul 14443A state */
-		hydranfc_emul_14443a_state = NFC_EMUL_RX_REQA;
+		hydranfc_emul_14443a_state = EMUL_RX_MIFARE_REQA;
 
 		/* Re-Init TRF7970A on status error */
 		data_buf[0] = SOFT_INIT;
@@ -321,20 +334,20 @@ void hydranfc_emul_14443a_irq(void)
 		data_buf[0] = IDLE;
 		Trf797xDirectCommand(data_buf);
 
-		hydranfc_emul_1444a_init();
+		hydranfc_emul_mifare_init();
 		break;
 	}
 }
 
-void hydranfc_emul_uid_14443a(t_hydra_console *con)
+void hydranfc_emul_mifare(t_hydra_console *con)
 {
 	/* Init TRF7970A IRQ function callback */
-	trf7970a_irq_fn = hydranfc_emul_14443a_irq;
+	trf7970a_irq_fn = hydranfc_emul_mifare_irq;
 
-	hydranfc_emul_1444a_init();
+	hydranfc_emul_mifare_init();
 
 	/* Infinite loop until UBTN is pressed */
-	/*  Emulation is managed by IRQ => hydranfc_emul_14443a_irq */
+	/*  Emulation is managed by IRQ => hydranfc_emul_mifare_irq */
 	cprintf(con, "NFC Card Emulation UID 14443A started\r\nPress user button(UBTN) to stop.\r\n");
 	while(1) {
 		if(USER_BUTTON)
