@@ -689,10 +689,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydranfc\hydranfc_cmd_sniff_iso14443.h" />
-		<Unit filename="hydranfc\hydranfc_emul_uid_14443a.c">
+		<Unit filename="hydranfc\hydranfc_emul_14443a_sdd.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="hydranfc\hydranfc_tag_emul.c">
+		<Unit filename="hydranfc\hydranfc_emul_mifare.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="main.c">

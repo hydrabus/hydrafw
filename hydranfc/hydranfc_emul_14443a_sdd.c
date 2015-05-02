@@ -60,7 +60,7 @@ void write_emul_tag_uid(const uint8_t* tag_uid_buffer)
 
 void hydranfc_tag_emul_init(void)
 {
-	uint8_t data_buf[3];
+	uint8_t data_buf[4];
 
 	Trf797xInitialSettings();
 	Trf797xReset();
@@ -161,7 +161,6 @@ void TagIRQ(int irq_status)
 {
 	uint8_t data_buf[32];
 	int fifo_size;
-	int i;
 
 	// RF collision avoidance error
 	if( (irq_status & BIT0) == BIT0) {
@@ -249,7 +248,7 @@ void hydranfc_tag_emul_irq(void)
 	TagIRQ(status);
 }
 
-void hydranfc_tag_emul(t_hydra_console *con)
+void hydranfc_emul_iso14443a(t_hydra_console *con)
 {
 	/* Init TRF7970A IRQ function callback */
 	trf7970a_irq_fn = hydranfc_tag_emul_irq;

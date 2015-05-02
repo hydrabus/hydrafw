@@ -193,7 +193,7 @@ static bool init_gpio(t_hydra_console *con)
 	 * Used for communication with TRF7970A in SPI mode with NSS.
 	 */
 	mode_con1.proto.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
-	mode_con1.proto.dev_speed = 2; /* 1.31mhz */
+	mode_con1.proto.dev_speed = 5; /* 5 250 000 Hz */
 	mode_con1.proto.dev_phase = 1;
 	mode_con1.proto.dev_polarity = 0;
 	mode_con1.proto.dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
@@ -591,8 +591,8 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_SCAN:
 		case T_SNIFF:
-		case T_EMUL_UID_14443A:
-		case T_TAG_EMUL:
+		case T_EMUL_MIFARE:
+		case T_EMUL_ISO14443A:
 			action = p->tokens[t];
 			break;
 		}
@@ -619,10 +619,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		}
 	} else if (action == T_SNIFF) {
 		hydranfc_sniff_14443A(con);
-	} else if (action == T_EMUL_UID_14443A) {
-		hydranfc_emul_uid_14443a(con);
-	} else if (action == T_TAG_EMUL)
-		hydranfc_tag_emul(con);
+	} else if (action == T_EMUL_MIFARE) {
+		hydranfc_emul_mifare(con);
+	} else if (action == T_EMUL_ISO14443A)
+		hydranfc_emul_iso14443a(con);
 
 	return t - token_pos;
 }
