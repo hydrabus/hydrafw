@@ -33,7 +33,7 @@ void SPI_LL_Select(void)
 void SPI_LL_Unselect(void)
 {
 	bsp_spi_unselect(BSP_DEV_SPI2);
-	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
+	//DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
 }
 
 void SPI_LL_Write(u08_t* pbuf, const u08_t len)
@@ -51,7 +51,7 @@ void SPI_write(u08_t* pbuf, const u08_t len)
 	bsp_spi_select(BSP_DEV_SPI2); /* Slave Select assertion. */
 	bsp_spi_write_u8(BSP_DEV_SPI2, pbuf, len);
 	bsp_spi_unselect(BSP_DEV_SPI2);
-	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
+	//DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
 }
 
 //===============================================================
@@ -86,7 +86,7 @@ void SpiDirectCommand(u08_t *pbuf)
 	/* Errata All direct Command functions need to have an additional DATA_CLK cycle before Slave Select l line goes
 	high. */
 	bsp_spi_unselect(BSP_DEV_SPI2);
-	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
+	//DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
 }
 
 //===============================================================
@@ -177,7 +177,7 @@ void SpiReadCont(u08_t *pbuf, u08_t length)
 	bsp_spi_read_u8(BSP_DEV_SPI2, pbuf, length);
 
 	bsp_spi_unselect(BSP_DEV_SPI2);
-	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
+	//DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
 }
 
 //===============================================================
@@ -220,7 +220,7 @@ void SpiReadSingle(u08_t *pbuf, u08_t number)
 	}
 
 	bsp_spi_unselect(BSP_DEV_SPI2);
-	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
+	//DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
 }
 
 //===============================================================
@@ -264,7 +264,7 @@ void SpiWriteCont(u08_t *pbuf, u08_t length)
 	bsp_spi_write_u8(BSP_DEV_SPI2, pbuf, length);
 
 	bsp_spi_unselect(BSP_DEV_SPI2);
-	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
+	//DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
 }
 
 //===============================================================
@@ -308,5 +308,5 @@ void SpiWriteSingle(u08_t *pbuf, u08_t length)
 	}
 
 	bsp_spi_unselect(BSP_DEV_SPI2);
-	DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
+	//DelayUs(1); /* Additional delay to avoid too fast Unselect() and Select() for consecutive SPI_write() */
 }

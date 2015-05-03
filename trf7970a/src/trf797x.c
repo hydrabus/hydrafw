@@ -509,13 +509,13 @@ uint8_t Trf797x_transceive_bits(uint8_t tx_databuf, uint8_t tx_databuf_nb_bits,
 	data_buf[3] = 0x00; /* Number of Bytes to be sent MSB 0x00 @0x1D */
 	data_buf[4] = (tx_databuf_nb_bits<<1) | 0x01; /* Number of Bits to be sent LSB 0x00 @0x1E = Max 7bits */
 	data_buf[5] = tx_databuf; /* Data (FIFO TX 1st Data @0x1F) */
-	Trf797xRawWrite(data_buf, 8);  // writing to FIFO
+	Trf797xRawWrite(data_buf, 6);  // writing to FIFO
 
 	irq_end_rx = 0;
 	/* irq is set by External Interrupt on  IRQ Pin */
 	irq = 0;
-	/* Max Timeout TX/RX are finished increment 100us */
-	for(i=0; i < (timeout_ms*10); i++) {
+	/* Max Timeout TX/RX are finished increment 10us */
+	for(i=0; i < (timeout_ms*100); i++) {
 		if(irq == 1) {
 			irq = 0;
 			/* Read/Clear IRQ Status(0x0C=>0x6C)+read dummy */
@@ -529,7 +529,7 @@ uint8_t Trf797x_transceive_bits(uint8_t tx_databuf, uint8_t tx_databuf_nb_bits,
 				Trf797xReset(); // reset the FIFO after TX
 			}
 		}
-		DelayUs(100);
+		DelayUs(10);
 	}
 	if(0 == irq_end_rx) {
 		/* RX timeout */

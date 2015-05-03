@@ -36,7 +36,7 @@ typedef enum {
 #define TRF7970A_IRQ_STATUS_RX 0x40
 #define TRF7970A_IRQ_STATUS_FIFO 0x20
 
-/* 
+/*
 Mifare/MF1S503x commands see http://www.nxp.com/documents/data_sheet/MF1S503x.pdf
 */
 /* Emul ISO14443A */
@@ -348,7 +348,7 @@ void hydranfc_emul_mifare(t_hydra_console *con)
 
 	/* Infinite loop until UBTN is pressed */
 	/*  Emulation is managed by IRQ => hydranfc_emul_mifare_irq */
-	cprintf(con, "NFC Card Emulation UID 14443A started\r\nPress user button(UBTN) to stop.\r\n");
+	cprintf(con, "NFC Emulation Mifare One UID started\r\nPress user button(UBTN) to stop.\r\n");
 	while(1) {
 		if(USER_BUTTON)
 			break;
