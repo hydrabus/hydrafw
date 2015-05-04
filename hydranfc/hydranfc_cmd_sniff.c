@@ -387,16 +387,33 @@ void sniff_write_pcd(void)
 	/* Write output buffer 4 space (data format Miller Modified):
 	  It means Reader/Writer (PCD – Proximity Coupling Device)
 	*/
-	uint32_t i;
+	uint32_t i, nb_cycles;
+	uint8_t val;
+
 	i = g_sbuf_idx;
 	g_sbuf[i+0] = '\r';
 	g_sbuf[i+1] = '\n';
 
-	g_sbuf[i+2] = ' ';
-	g_sbuf[i+3] = ' ';
-	g_sbuf[i+4] = ' ';
-	g_sbuf[i+5] = ' ';
-	g_sbuf_idx +=6;
+	nb_cycles = get_cyclecounter();
+	val = ((nb_cycles & 0xFF000000) >> 24);
+	g_sbuf[i+2] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+3] = htoa[(val & 0x0F)];
+	val = ((nb_cycles & 0x00FF0000) >> 16);
+	g_sbuf[i+4] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+5] = htoa[(val & 0x0F)];
+	val = ((nb_cycles & 0x0000FF00) >> 8);
+	g_sbuf[i+6] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+7] = htoa[(val & 0x0F)];
+	val = (nb_cycles & 0x000000FF);
+	g_sbuf[i+8] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+9] = htoa[(val & 0x0F)];
+	g_sbuf[i+10] = '\t';
+
+	g_sbuf[i+11] = 'R';
+	g_sbuf[i+12] = 'D';
+	g_sbuf[i+13] = 'R';
+	g_sbuf[i+14] = '\t';
+	g_sbuf_idx +=15;
 }
 
 __attribute__ ((always_inline)) static inline
@@ -405,16 +422,33 @@ void sniff_write_picc(void)
 	/* Write output buffer "TAG"+1 space (data format Manchester):
 	  It means TAG(PICC – Proximity Integrated Circuit Card)
 	*/
-	uint32_t i;
+	uint32_t i, nb_cycles;
+	uint8_t val;
+
 	i = g_sbuf_idx;
 	g_sbuf[i+0] = '\r';
 	g_sbuf[i+1] = '\n';
 
-	g_sbuf[i+2] = 'T';
-	g_sbuf[i+3] = 'A';
-	g_sbuf[i+4] = 'G';
-	g_sbuf[i+5] = ' ';
-	g_sbuf_idx +=6;
+	nb_cycles = get_cyclecounter();
+	val = ((nb_cycles & 0xFF000000) >> 24);
+	g_sbuf[i+2] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+3] = htoa[(val & 0x0F)];
+	val = ((nb_cycles & 0x00FF0000) >> 16);
+	g_sbuf[i+4] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+5] = htoa[(val & 0x0F)];
+	val = ((nb_cycles & 0x0000FF00) >> 8);
+	g_sbuf[i+6] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+7] = htoa[(val & 0x0F)];
+	val = (nb_cycles & 0x000000FF);
+	g_sbuf[i+8] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+9] = htoa[(val & 0x0F)];
+	g_sbuf[i+10] = '\t';
+
+	g_sbuf[i+11] = 'T';
+	g_sbuf[i+12] = 'A';
+	g_sbuf[i+13] = 'G';
+	g_sbuf[i+14] = '\t';
+	g_sbuf_idx +=15;
 }
 
 __attribute__ ((always_inline)) static inline
@@ -429,17 +463,33 @@ void sniff_write_unknown_protocol(uint8_t data)
 	  data |= (downsample_4x[((f_data&0x0000FF00)>>8)])<<2;
 	  data |= (downsample_4x[(f_data&0x000000FF)]);
 	*/
-	uint32_t i;
+	uint32_t i, nb_cycles;
+	uint8_t val;
 
 	i = g_sbuf_idx;
 	g_sbuf[i+0] = '\r';
 	g_sbuf[i+1] = '\n';
 
-	g_sbuf[i+2] = 'U';
-	g_sbuf[i+3] = htoa[(data & 0xF0) >> 4];
-	g_sbuf[i+4] = htoa[(data & 0x0F)];
-	g_sbuf[i+5] = ' ';
-	g_sbuf_idx +=6;
+	nb_cycles = get_cyclecounter();
+	val = ((nb_cycles & 0xFF000000) >> 24);
+	g_sbuf[i+2] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+3] = htoa[(val & 0x0F)];
+	val = ((nb_cycles & 0x00FF0000) >> 16);
+	g_sbuf[i+4] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+5] = htoa[(val & 0x0F)];
+	val = ((nb_cycles & 0x0000FF00) >> 8);
+	g_sbuf[i+6] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+7] = htoa[(val & 0x0F)];
+	val = (nb_cycles & 0x000000FF);
+	g_sbuf[i+8] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+9] = htoa[(val & 0x0F)];
+	g_sbuf[i+10] = '\t';
+
+	g_sbuf[i+11] = 'U';
+	g_sbuf[i+12] = htoa[(data & 0xF0) >> 4];
+	g_sbuf[i+13] = htoa[(data & 0x0F)];
+	g_sbuf[i+14] = '\t';
+	g_sbuf_idx +=15;
 }
 
 __attribute__ ((always_inline)) static inline
