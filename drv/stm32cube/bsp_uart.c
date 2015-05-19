@@ -302,7 +302,7 @@ uint32_t bsp_uart_get_final_baudrate(bsp_dev_uart_t dev_num)
 
 		final_baudrate = brr >> 4;
 		if(final_baudrate > 0) {
-			f_baudrate_frac = (float)(brr & 0x0F) / 16.0f;
+			f_baudrate_frac = (float)(brr & 0x07) / 8.0f;
 			f_baudrate = ((float)final_baudrate) + f_baudrate_frac;
 			final_baudrate = (uint32_t)((float)clock / f_baudrate);
 		}
@@ -315,7 +315,7 @@ uint32_t bsp_uart_get_final_baudrate(bsp_dev_uart_t dev_num)
 
 		final_baudrate = brr >> 4;
 		if(final_baudrate > 0) {
-			f_baudrate_frac = (float)(brr & 0x07) / 8.0f;
+			f_baudrate_frac = (float)(brr & 0x0F) / 16.0f;
 			f_baudrate = ((float)final_baudrate) + f_baudrate_frac;
 			final_baudrate = (uint32_t)((float)clock / f_baudrate);
 		}
