@@ -110,6 +110,7 @@ t_token_dict tl_dict[] = {
 	{ T_NOISE, "noise" },
 	{ T_PWM, "pwm" },
 	{ T_DUTY_CYCLE, "duty-cycle" },
+	{ T_BRIDGE, "bridge" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -292,6 +293,10 @@ t_token tokens_mode_uart[] = {
 		T_PERCENT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_BRIDGE,
+		.help = "UART bridge mode"
 	},
 	{
 		T_EXIT,
