@@ -104,6 +104,7 @@ enum {
 	T_NOISE,
 	T_PWM,
 	T_DUTY_CYCLE,
+    T_SUMP,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

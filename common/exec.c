@@ -239,6 +239,7 @@ static struct cmd_map {
 	{ T_DAC, cmd_dac },
 	{ T_PWM, cmd_pwm },
 	{ T_GPIO, cmd_gpio },
+	{ T_SUMP, cmd_sump },
 	{ 0, NULL }
 };
 
