@@ -113,6 +113,7 @@ t_token_dict tl_dict[] = {
 	{ T_DUTY_CYCLE, "duty-cycle" },
 	{ T_SUMP, "sump" },
 	{ T_BRIDGE, "bridge" },
+	{ T_SUMP, "sump" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },

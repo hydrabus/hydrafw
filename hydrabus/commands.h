@@ -106,6 +106,7 @@ enum {
 	T_DUTY_CYCLE,
     T_SUMP,
 	T_BRIDGE,
+    T_SUMP,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,
