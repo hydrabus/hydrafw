@@ -84,6 +84,7 @@ enum {
 	T_REGISTERS,
 	T_SCAN,
 	T_SNIFF,
+	T_SNIFF_DBG,
 	T_GPIO,
 	T_IN,
 	T_OUT,

@@ -608,6 +608,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_SCAN:
 		case T_SNIFF:
+		case T_SNIFF_DBG:
 		case T_EMUL_MIFARE:
 		case T_EMUL_ISO14443A:
 			action = p->tokens[t];
@@ -636,6 +637,8 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		}
 	} else if (action == T_SNIFF) {
 		hydranfc_sniff_14443A(con);
+	} else if (action == T_SNIFF_DBG) {
+		hydranfc_sniff_14443A_dbg(con);
 	} else if (action == T_EMUL_MIFARE) {
 		hydranfc_emul_mifare(con);
 	} else if (action == T_EMUL_ISO14443A)

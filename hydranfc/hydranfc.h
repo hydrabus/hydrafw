@@ -44,6 +44,7 @@ void hydranfc_scan_mifare(t_hydra_console *con);
 void hydranfc_scan_vicinity(t_hydra_console *con);
 
 void hydranfc_sniff_14443A(t_hydra_console *con);
+void hydranfc_sniff_14443A_dbg(t_hydra_console *con);
 
 void hydranfc_emul_mifare(t_hydra_console *con);
 void hydranfc_emul_iso14443a(t_hydra_console *con);
