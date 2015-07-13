@@ -344,15 +344,15 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 	uint8_t atqa_buf[MIFARE_ATQA_MAX];
 	uint8_t uid_buf[MIFARE_UID_MAX];
 	uint8_t sak1_buf[MIFARE_SAK_MAX];
-    uint8_t sak2_buf[MIFARE_SAK_MAX];
+	uint8_t sak2_buf[MIFARE_SAK_MAX];
 	uint8_t CL1_buf[MIFARE_CL1_MAX];
-    uint8_t CL2_buf[MIFARE_CL2_MAX];
-    uint8_t halt_buf[MIFARE_HALT_MAX];
+	uint8_t CL2_buf[MIFARE_CL2_MAX];
+	uint8_t halt_buf[MIFARE_HALT_MAX];
 
 	uint8_t atqa_buf_size = 0;
 	uint8_t uid_buf_size = 0;
 	uint8_t sak1_buf_size = 0;
-    uint8_t sak2_buf_size = 0;
+	uint8_t sak2_buf_size = 0;
 	uint8_t CL1_buf_size = 0;
 	uint8_t CL2_buf_size = 0;
 	uint8_t halt_buf_size = 0;
@@ -428,124 +428,121 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 							10, /* 10ms TX/RX Timeout */
 							0); /* TX CRC disabled */
 
-        /*Check tag 7 bytes UID*/
-        if (CL1_buf[0] == 0x88)
-        {
-            uid_buf_size = 7;
-            for (i = 0; i < 3; i++) {
-                 uid_buf[i] = CL1_buf[1 + i];
-            }
+		/*Check tag 7 bytes UID*/
+		if (CL1_buf[0] == 0x88) {
+			uid_buf_size = 7;
+			for (i = 0; i < 3; i++) {
+				uid_buf[i] = CL1_buf[1 + i];
+			}
 
-            /* Send AntiColl Cascade Level1 (2 bytes)+CT+3 UID bytes+BCC (5 bytes) and receive SAK1 (1 byte) */
-            data_buf[0] = 0x93;
-            data_buf[1] = 0x70;
+			/* Send AntiColl Cascade Level1 (2 bytes)+CT+3 UID bytes+BCC (5 bytes) and receive SAK1 (1 byte) */
+			data_buf[0] = 0x93;
+			data_buf[1] = 0x70;
 
-            for (i = 0; i < CL1_buf_size; i++) {
-                    data_buf[2 + i] = CL1_buf[i];
-                }
+			for (i = 0; i < CL1_buf_size; i++) {
+				data_buf[2 + i] = CL1_buf[i];
+			}
 
-            sak1_buf_size = Trf797x_transceive_bytes(data_buf, (2 + CL1_buf_size), sak1_buf, MIFARE_SAK_MAX,
+			sak1_buf_size = Trf797x_transceive_bytes(data_buf, (2 + CL1_buf_size), sak1_buf, MIFARE_SAK_MAX,
 
-                                20, /* 10ms TX/RX Timeout */
-                                1); /* TX CRC disabled */
+					20, /* 10ms TX/RX Timeout */
+					1); /* TX CRC disabled */
 
-            if (sak1_buf_size > 0)
-            {
+			if (sak1_buf_size > 0) {
 
-                /* Send AntiColl Cascade Level2 (2 bytes) and receive 4 UID bytes+BCC (5 bytes)*/
-                data_buf[0] = 0x95;
-                data_buf[1] = 0x20;
+				/* Send AntiColl Cascade Level2 (2 bytes) and receive 4 UID bytes+BCC (5 bytes)*/
+				data_buf[0] = 0x95;
+				data_buf[1] = 0x20;
 
-                CL2_buf_size = Trf797x_transceive_bytes(data_buf, 2, CL2_buf, MIFARE_CL2_MAX,
-                                    10, /* 10ms TX/RX Timeout */
-                                    0); /* TX CRC disabled */
+				CL2_buf_size = Trf797x_transceive_bytes(data_buf, 2, CL2_buf, MIFARE_CL2_MAX,
+									10, /* 10ms TX/RX Timeout */
+									0); /* TX CRC disabled */
 
-                if (CL2_buf_size > 0)
-                {
-                    for (i = 0; i < 4; i++) {
-                        uid_buf[i + 3] = CL2_buf[i];
-                    }
+				if (CL2_buf_size > 0) {
+					for (i = 0; i < 4; i++) {
+						uid_buf[i + 3] = CL2_buf[i];
+					}
 
-                    data_buf[0] = RSSI_LEVELS;
-                    Trf797xReadSingle(data_buf, 1);
-                    if (data_buf[0] < 0x40)
-                        cprintf(con, "RSSI error: 0x%02lX (should be > 0x40)\r\n", (uint32_t)data_buf[0]);
+					data_buf[0] = RSSI_LEVELS;
+					Trf797xReadSingle(data_buf, 1);
+					if (data_buf[0] < 0x40)
+						cprintf(con, "RSSI error: 0x%02lX (should be > 0x40)\r\n", (uint32_t)data_buf[0]);
 
-                    /*
-                     * Select RX with CRC_A
-                     * Configure Mode ISO Control Register (0x01) to 0x08
-                     * (ISO14443A RX bit rate, 106 kbps) and RX CRC (CRC
-                     * is present in the response)
-                     */
-                    data_buf[0] = ISO_CONTROL;
-                    data_buf[1] = 0x08;
-                    Trf797xWriteSingle(data_buf, 2);
+					/*
+					 * Select RX with CRC_A
+					 * Configure Mode ISO Control Register (0x01) to 0x08
+					 * (ISO14443A RX bit rate, 106 kbps) and RX CRC (CRC
+					 * is present in the response)
+					 */
+					data_buf[0] = ISO_CONTROL;
+					data_buf[1] = 0x08;
+					Trf797xWriteSingle(data_buf, 2);
 
-                    /* Send AntiColl Cascade Level2 (2 bytes)+4 UID bytes(4 bytes) and receive SAK2 (1 byte) */
-                    data_buf[0] = 0x95;
-                    data_buf[1] = 0x70;
+					/* Send AntiColl Cascade Level2 (2 bytes)+4 UID bytes(4 bytes) and receive SAK2 (1 byte) */
+					data_buf[0] = 0x95;
+					data_buf[1] = 0x70;
 
-                    for (i = 0; i < CL2_buf_size; i++) {
-                    data_buf[2 + i] = CL2_buf[i];
-                    }
+					for (i = 0; i < CL2_buf_size; i++) {
+						data_buf[2 + i] = CL2_buf[i];
+					}
 
-                    sak2_buf_size = Trf797x_transceive_bytes(data_buf, (2 + CL2_buf_size), sak2_buf, MIFARE_SAK_MAX,
-                                        20, /* 10ms TX/RX Timeout */
-                                        1); /* TX CRC disabled */
+					sak2_buf_size = Trf797x_transceive_bytes(data_buf, (2 + CL2_buf_size), sak2_buf, MIFARE_SAK_MAX,
+							20, /* 10ms TX/RX Timeout */
+							1); /* TX CRC disabled */
 
-                    if (sak2_buf_size > 0) {
-                        /* Send Halt(2Bytes+CRC) */
-                        data_buf[0] = 0x50;
-                        data_buf[1] = 0x00;
-                        halt_buf_size = Trf797x_transceive_bytes(data_buf, 2, halt_buf, MIFARE_HALT_MAX,
-                                    5, /* 5ms TX/RX Timeout => shall not receive answer */
-                                    1); /* TX CRC enabled */
-                    }
-                }
-            }
-        }
+					if (sak2_buf_size > 0) {
+						/* Send Halt(2Bytes+CRC) */
+						data_buf[0] = 0x50;
+						data_buf[1] = 0x00;
+						halt_buf_size = Trf797x_transceive_bytes(data_buf, 2, halt_buf, MIFARE_HALT_MAX,
+								5, /* 5ms TX/RX Timeout => shall not receive answer */
+								1); /* TX CRC enabled */
+					}
+				}
+			}
+		}
 
-        /*tag 4 bytes UID*/
-        else {
-            uid_buf_size = Trf797x_transceive_bytes(data_buf, 2, uid_buf, MIFARE_UID_MAX,
-                                10, /* 10ms TX/RX Timeout */
-                                0); /* TX CRC disabled */
-            if (uid_buf_size > 0) {
-                data_buf[0] = RSSI_LEVELS;
-                Trf797xReadSingle(data_buf, 1);
-                if (data_buf[0] < 0x40)
-                    cprintf(con, "RSSI error: 0x%02lX (should be > 0x40)\r\n", (uint32_t)data_buf[0]);
+		/*tag 4 bytes UID*/
+		else {
+			uid_buf_size = Trf797x_transceive_bytes(data_buf, 2, uid_buf, MIFARE_UID_MAX,
+								10, /* 10ms TX/RX Timeout */
+								0); /* TX CRC disabled */
+			if (uid_buf_size > 0) {
+				data_buf[0] = RSSI_LEVELS;
+				Trf797xReadSingle(data_buf, 1);
+				if (data_buf[0] < 0x40)
+					cprintf(con, "RSSI error: 0x%02lX (should be > 0x40)\r\n", (uint32_t)data_buf[0]);
 
-                /*
-                * Select RX with CRC_A
-                * Configure Mode ISO Control Register (0x01) to 0x08
-                * (ISO14443A RX bit rate, 106 kbps) and RX CRC (CRC
-                * is present in the response)
-                */
+				/*
+				* Select RX with CRC_A
+				* Configure Mode ISO Control Register (0x01) to 0x08
+				* (ISO14443A RX bit rate, 106 kbps) and RX CRC (CRC
+				* is present in the response)
+				*/
 
-                data_buf[0] = ISO_CONTROL;
-                data_buf[1] = 0x08;
-                Trf797xWriteSingle(data_buf, 2);
+				data_buf[0] = ISO_CONTROL;
+				data_buf[1] = 0x08;
+				Trf797xWriteSingle(data_buf, 2);
 
-                /* Finish Select (6 bytes) and receive SAK1 (1 byte) */
-                data_buf[0] = 0x93;
-                data_buf[1] = 0x70;
-                for (i = 0; i < uid_buf_size; i++) {
-                    data_buf[2 + i] = uid_buf[i];
-                }
-                sak1_buf_size = Trf797x_transceive_bytes(data_buf, (2 + uid_buf_size),  sak1_buf, MIFARE_SAK_MAX,
-                                    20, /* 20ms TX/RX Timeout */
-                                    1); /* TX CRC enabled */
-                if (sak1_buf_size > 0) {
-                    /* Send Halt(2Bytes+CRC) */
-                    data_buf[0] = 0x50;
-                    data_buf[1] = 0x00;
-                    halt_buf_size = Trf797x_transceive_bytes(data_buf, 2, halt_buf, MIFARE_HALT_MAX,
-                            5, /* 5ms TX/RX Timeout => shall not receive answer */
-                            1); /* TX CRC enabled */
-                }
-            }
-        }
+				/* Finish Select (6 bytes) and receive SAK1 (1 byte) */
+				data_buf[0] = 0x93;
+				data_buf[1] = 0x70;
+				for (i = 0; i < uid_buf_size; i++) {
+					data_buf[2 + i] = uid_buf[i];
+				}
+				sak1_buf_size = Trf797x_transceive_bytes(data_buf, (2 + uid_buf_size),  sak1_buf, MIFARE_SAK_MAX,
+						20, /* 20ms TX/RX Timeout */
+						1); /* TX CRC enabled */
+				if (sak1_buf_size > 0) {
+					/* Send Halt(2Bytes+CRC) */
+					data_buf[0] = 0x50;
+					data_buf[1] = 0x00;
+					halt_buf_size = Trf797x_transceive_bytes(data_buf, 2, halt_buf, MIFARE_HALT_MAX,
+							5, /* 5ms TX/RX Timeout => shall not receive answer */
+							1); /* TX CRC enabled */
+				}
+			}
+		}
 	}
 
 	/* Turn RF OFF (Chip Status Control Register (0x00)) */
@@ -561,7 +558,7 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 	if(sak1_buf_size > 0) {
 		cprintf(con, "SAK1: ");
 		if (sak1_buf_size > 1)
-		    sak1_buf_size = 1;
+			sak1_buf_size = 1;
 		for (i = 0; i < sak1_buf_size; i++)
 			cprintf(con, " %02lX", (uint32_t)sak1_buf[i]);
 		cprintf(con, "\r\n");
@@ -575,23 +572,22 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 	}
 
 	if(uid_buf_size > 0) {
-	        if(uid_buf_size == 7) {
-                cprintf(con, "UID: ");
-	            for (i = 0; i < uid_buf_size ; i++) {
-                    cprintf(con, " %02lX", (uint32_t)uid_buf[i]);
-	            }
-	            cprintf(con, "\r\n");
-	        }
-	        else{
-                cprintf(con, "UID: ");
-                bcc = 0;
-                for (i = 0; i < uid_buf_size - 1; i++) {
-                    cprintf(con, " %02lX", (uint32_t)uid_buf[i]);
-                    bcc ^= uid_buf[i];
-                }
-                cprintf(con, " (BCC %02lX %s)\r\n", (uint32_t)uid_buf[i],
-                    bcc == uid_buf[i] ? "ok" : "NOT OK");
-	        }
+		if(uid_buf_size == 7) {
+			cprintf(con, "UID: ");
+			for (i = 0; i < uid_buf_size ; i++) {
+				cprintf(con, " %02lX", (uint32_t)uid_buf[i]);
+			}
+			cprintf(con, "\r\n");
+		} else {
+			cprintf(con, "UID: ");
+			bcc = 0;
+			for (i = 0; i < uid_buf_size - 1; i++) {
+				cprintf(con, " %02lX", (uint32_t)uid_buf[i]);
+				bcc ^= uid_buf[i];
+			}
+			cprintf(con, " (BCC %02lX %s)\r\n", (uint32_t)uid_buf[i],
+				bcc == uid_buf[i] ? "ok" : "NOT OK");
+		}
 	}
 
 	if (halt_buf_size > 0) {
@@ -631,17 +627,17 @@ void hydranfc_scan_vicinity(t_hydra_console *con)
 
 	/* Configure Test Settings 1 to BIT6/0x40 => MOD Pin becomes receiver subcarrier output (Digital Output for RX/TX) */
 	/*
-	    data_buf[0] = TEST_SETTINGS_1;
-	    data_buf[1] = BIT6;
-	    Trf797xWriteSingle(data_buf, 2);
+	data_buf[0] = TEST_SETTINGS_1;
+	data_buf[1] = BIT6;
+	Trf797xWriteSingle(data_buf, 2);
 
-	    data_buf[0] = TEST_SETTINGS_1;
-	    Trf797xReadSingle(data_buf, 1);
-	    if (data_buf[0] != 0x40)
-	    {
-	      cprintf(con, "Error Test Settings Register(0x1A) read=0x%02lX (shall be 0x40)\r\n", (uint32_t)data_buf[0]);
-	      err++;
-	    }
+	data_buf[0] = TEST_SETTINGS_1;
+	Trf797xReadSingle(data_buf, 1);
+	if (data_buf[0] != 0x40)
+	{
+		cprintf(con, "Error Test Settings Register(0x1A) read=0x%02lX (shall be 0x40)\r\n", (uint32_t)data_buf[0]);
+		err++;
+	}
 	*/
 
 	/* Turn RF ON (Chip Status Control Register (0x00)) */
