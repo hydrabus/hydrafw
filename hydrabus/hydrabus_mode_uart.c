@@ -82,30 +82,31 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	return tokens_used;
 }
 
+msg_t bridge_thread (void *arg)
+{
+t_hydra_console *con;
+con = arg;
+chRegSetThreadName("UART bridge");
+chThdSleepMilliseconds(10);
+uint8_t rx_data;
+uint8_t tx_data;
+mode_config_proto_t* proto = &con->mode->proto;
+
+    while (!USER_BUTTON) {
+        if(bsp_uart_rxne(proto->dev_num)) {
+            bsp_uart_read_u8(proto->dev_num, &rx_data ,1);
+            chSequentialStreamWrite(con->sdu, &rx_data, 1);
+        }
+        if(chnReadTimeout(con->sdu, &tx_data, 1, 1)) {
+            bsp_uart_write_u8(proto->dev_num, &tx_data, 1);
+            //chSequentialStreamWrite(con->sdu, &tx_data, 1);
+        }
+    }
+    return (msg_t)1;
+}
+
 static void bridge(t_hydra_console *con)
 {
-    msg_t bridge_thread (t_hydra_console *con)
-    {
-	chRegSetThreadName("UART bridge");
-    chThdSleepMilliseconds(10);
-    uint8_t rx_data;
-    //uint8_t tx_data;
-    uint32_t status;
-    mode_config_proto_t* proto = &con->mode->proto;
-    
-        while (!USER_BUTTON) {
-            status = bsp_uart_read_u8(proto->dev_num, &rx_data, 1);
-            if(status == BSP_OK) {
-    	        chSequentialStreamWrite(con->sdu, &rx_data, 1);
-            }
-            /*if(chSequentialStreamRead(con->sdu, &tx_data, 1)) {
-                //status = bsp_uart_write_u8(proto->dev_num, &tx_data, 1);
-    	        chSequentialStreamWrite(con->sdu, &tx_data, 1);
-            }*/
-        }
-        return (msg_t)1;
-    }
-
     cprintf(con, "Interrupt by pressing user button.\r\n");
     cprint(con, "\r\n", 2);
 

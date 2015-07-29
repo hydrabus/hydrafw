@@ -275,6 +275,18 @@ bsp_status_t bsp_uart_write_read_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, ui
 	return status;
 }
 
+/**
+  * @brief  Checks if the UART receive buffer is empty
+  * @retval 0 if empty, 1 if data
+  */
+bsp_status_t bsp_uart_rxne(bsp_dev_uart_t dev_num)
+{
+	UART_HandleTypeDef* huart;
+	huart = &uart_handle[dev_num];
+
+    return __HAL_UART_GET_FLAG(huart, UART_FLAG_RXNE);
+}
+
 /** \brief Return final baud rate configured for over8=0 or over8=1.
  *
  * \param dev_num bsp_dev_uart_t
