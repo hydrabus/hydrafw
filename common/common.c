@@ -510,7 +510,7 @@ uint64_t get_cyclecounter64(void)
 */
 uint64_t get_cyclecounter64I(void)
 {
-	cyclecounter64 += DWT->CYCCNT - (uint32_t)(cyclecounter64);
+	cyclecounter64 += DWTBase->CYCCNT - (uint32_t)(cyclecounter64);
 	return cyclecounter64;
 }
 
