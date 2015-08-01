@@ -82,6 +82,39 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	return tokens_used;
 }
 
+msg_t bridge_thread (void *arg)
+{
+t_hydra_console *con;
+con = arg;
+chRegSetThreadName("UART bridge");
+chThdSleepMilliseconds(10);
+uint8_t rx_data;
+uint8_t tx_data;
+mode_config_proto_t* proto = &con->mode->proto;
+
+    while (!USER_BUTTON) {
+        if(bsp_uart_rxne(proto->dev_num)) {
+            bsp_uart_read_u8(proto->dev_num, &rx_data ,1);
+            chSequentialStreamWrite(con->sdu, &rx_data, 1);
+        }
+        if(chnReadTimeout(con->sdu, &tx_data, 1, 1)) {
+            bsp_uart_write_u8(proto->dev_num, &tx_data, 1);
+            //chSequentialStreamWrite(con->sdu, &tx_data, 1);
+        }
+    }
+    return (msg_t)1;
+}
+
+static void bridge(t_hydra_console *con)
+{
+    cprintf(con, "Interrupt by pressing user button.\r\n");
+    cprint(con, "\r\n", 2);
+
+    thread_t *bthread = chThdCreateFromHeap(NULL, CONSOLE_WA_SIZE, NORMALPRIO, bridge_thread, con);
+    chThdWait(bthread);
+
+}
+
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -179,6 +212,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, str_bsp_init_err, bsp_status);
 				return t;
 			}
+			break;
+		case T_BRIDGE:
+			bridge(con);
 			break;
 		default:
 			return t - token_pos;

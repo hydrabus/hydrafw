@@ -30,6 +30,7 @@ bsp_status_t bsp_uart_deinit(bsp_dev_uart_t dev_num);
 bsp_status_t bsp_uart_write_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, uint8_t nb_data);
 bsp_status_t bsp_uart_read_u8(bsp_dev_uart_t dev_num, uint8_t* rx_data, uint8_t nb_data);
 bsp_status_t bsp_uart_write_read_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, uint8_t* rx_data, uint8_t nb_data);
+bsp_status_t bsp_uart_rxne(bsp_dev_uart_t dev_num);
 
 uint32_t bsp_uart_get_final_baudrate(bsp_dev_uart_t dev_num);
 
