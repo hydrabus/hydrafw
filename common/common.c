@@ -31,6 +31,8 @@
 #define HYDRAFW_VERSION "HydraFW (HydraBus) " HYDRAFW_GIT_TAG " " HYDRAFW_BUILD_DATE
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
+static volatile uint64_t cyclecounter64 = 0;
+
 uint8_t buf[512] __attribute__ ((section(".ccm")));
 /* Generic large buffer.*/
 uint8_t fbuff[2048] __attribute__ ((section(".ccm")));
@@ -222,8 +224,17 @@ void cmd_show_system(t_hydra_console *con)
 	uint32_t cycles_start;
 	uint32_t cycles_stop;
 	uint32_t cycles_delta;
+	uint64_t cycles64;
 
 	cprintf(con, "%s\r\n", HYDRAFW_VERSION);
+
+	cycles_start = get_cyclecounter();
+	cycles64 = get_cyclecounter64();
+
+	cprintf(con, "cyclecounter: 0x%08x cycles.\r\n", cycles_start);
+	cprintf(con, "cyclecounter64: 0x%08x%08x cycles.\r\n",
+					(uint32_t)(cycles64 >> 32),
+					(uint32_t)(cycles64 & 0xFFFFFFFF));
 
 	cycles_start = get_cyclecounter();
 	DelayUs(10000);
@@ -474,3 +485,32 @@ int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p)
 	}
 	return TRUE;
 }
+
+/*
+ If used this function shall be called at least every 2^32 cycles (to avoid overflow)
+ (2^32 cycles => 25.56 seconds @168MHz)
+ Use this function if interruptions are enabled
+*/
+uint64_t get_cyclecounter64(void)
+{
+	uint32_t primask;
+	asm volatile ("mrs %0, PRIMASK" : "=r"(primask));
+	asm volatile ("cpsid i");  // Disable interrupts.
+	int64_t r = cyclecounter64;
+	r += DWTBase->CYCCNT - (uint32_t)(r);
+	cyclecounter64 = r;
+	asm volatile ("msr PRIMASK, %0" : : "r"(primask));  // Restore interrupts.
+	return r;
+}
+
+/*
+ If used this function shall be called at least every 2^32 cycles (to avoid overflow)
+ (2^32 cycles => 25.56 seconds @168MHz)
+ Use this function if interruptions are disabled
+*/
+uint64_t get_cyclecounter64I(void)
+{
+	cyclecounter64 += DWTBase->CYCCNT - (uint32_t)(cyclecounter64);
+	return cyclecounter64;
+}
+
