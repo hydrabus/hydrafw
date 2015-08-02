@@ -112,6 +112,7 @@ t_token_dict tl_dict[] = {
 	{ T_PWM, "pwm" },
 	{ T_DUTY_CYCLE, "duty-cycle" },
 	{ T_BRIDGE, "bridge" },
+	{ T_SUMP, "sump" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -817,6 +818,10 @@ t_token tl_tokens[] = {
 		T_NFC,
 		.subtokens = tokens_nfc,
 		.help = "NFC mode"
+	},
+	{
+		T_SUMP,
+		.help = "SUMP mode"
 	},
 	{
 		T_DEBUG,
