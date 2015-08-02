@@ -55,8 +55,8 @@ void tim_init(void)
 {
 	htim.Instance = TIM4;
 
-	htim.Init.Period = 84 - 1;
-	htim.Init.Prescaler = 2*(config.divider+1) - 1;
+	htim.Init.Period = 42 - 1;
+	htim.Init.Prescaler = (config.divider+1) - 1;
 	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
 
@@ -76,21 +76,17 @@ void tim_set_prescaler(void)
 void sump_init(void)
 {
 	portc_init();
-	nvicEnableVector(TIM4_IRQn, CORTEX_PRIO_MASK(12));
 	tim_init();
 }
 
-CH_IRQ_HANDLER(STM32_TIM4_HANDLER)
+void get_sample(void)
 {
-	chSysLockFromISR();
 
 	buffer[INDEX] = GPIOC->IDR;
 
 	if (config.state == SUMP_STATE_TRIGGED) {
 		config.delay_count--;
-	}
-
-	if (config.state == SUMP_STATE_ARMED) {
+	}else if (config.state == SUMP_STATE_ARMED) {
 		if ( (buffer[INDEX] & config.trigger_masks[0]) == (config.trigger_values[0] & config.trigger_masks[0]) ) {
 			config.state = SUMP_STATE_TRIGGED;
 		}
@@ -98,18 +94,16 @@ CH_IRQ_HANDLER(STM32_TIM4_HANDLER)
 
 	if (config.delay_count == 0) {
 		config.state = SUMP_STATE_IDLE;
-		HAL_TIM_Base_Stop_IT(&htim);
+		HAL_TIM_Base_Stop(&htim);
 	}
 
-	if (INDEX == STATES_LEN - 1) {
+    INDEX++;
+	if (INDEX == STATES_LEN) {
 		INDEX=0;
-	}else{
-		INDEX++;
 	}
 
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 
-	chSysUnlockFromISR();
 }
 
 void sump_deinit(void)
@@ -151,9 +145,12 @@ void cmd_sump(t_hydra_console *con)
 				case SUMP_RUN:
 					INDEX=0;
 					config.state = SUMP_STATE_ARMED;
-					HAL_TIM_Base_Start_IT(&htim);
+					HAL_TIM_Base_Start(&htim);
 
 					while(TIM4->CR1 & TIM_CR1_CEN) { /* Sleep for capture to finish */
+                        if (TIM4->SR & TIM_SR_UIF) {
+                            get_sample();
+                        }
 					}
 
 					while(config.read_count > 0) {
@@ -244,6 +241,7 @@ void cmd_sump(t_hydra_console *con)
 								config.divider |= sump_parameters[1];
 								config.divider <<= 8;
 								config.divider |= sump_parameters[0];
+								config.divider /= 100; /* Assuming 100MHz base frequency */
 								tim_set_prescaler();
 								break;
 							case SUMP_FLAGS:
