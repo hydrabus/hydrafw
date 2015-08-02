@@ -24,9 +24,9 @@
 #include <string.h>
 #include <ctype.h>
 
-#define STATES_LEN 2048
+#define STATES_LEN 8192
 
-uint16_t buffer[STATES_LEN] = {0x00};
+uint16_t *buffer = (uint16_t *)g_sbuf;
 uint16_t INDEX = 0;
 TIM_HandleTypeDef htim;
 sump_config config;
@@ -82,12 +82,12 @@ void sump_init(void)
 void get_sample(void)
 {
 
-	buffer[INDEX] = GPIOC->IDR;
+	*(buffer+INDEX) = GPIOC->IDR;
 
 	if (config.state == SUMP_STATE_TRIGGED) {
 		config.delay_count--;
 	}else if (config.state == SUMP_STATE_ARMED) {
-		if ( (buffer[INDEX] & config.trigger_masks[0]) == (config.trigger_values[0] & config.trigger_masks[0]) ) {
+		if ( (*(buffer+INDEX) & config.trigger_masks[0]) == (config.trigger_values[0] & config.trigger_masks[0]) ) {
 			config.state = SUMP_STATE_TRIGGED;
 		}
 	}
@@ -159,7 +159,7 @@ void cmd_sump(t_hydra_console *con)
 						}else{
 							INDEX--;
 						}
-						cprintf(con, "%c%c\x00\x00", buffer[INDEX] & 0xff, (buffer[INDEX] & 0xff00)>>8);
+						cprintf(con, "%c%c\x00\x00", *(buffer+INDEX) & 0xff, (*(buffer+INDEX) & 0xff00)>>8);
 						config.read_count--;
 					}
 					break;

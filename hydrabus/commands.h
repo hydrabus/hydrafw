@@ -104,7 +104,6 @@ enum {
 	T_NOISE,
 	T_PWM,
 	T_DUTY_CYCLE,
-    T_SUMP,
 	T_BRIDGE,
     T_SUMP,
 

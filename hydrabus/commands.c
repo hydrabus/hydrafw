@@ -111,7 +111,6 @@ t_token_dict tl_dict[] = {
 	{ T_NOISE, "noise" },
 	{ T_PWM, "pwm" },
 	{ T_DUTY_CYCLE, "duty-cycle" },
-	{ T_SUMP, "sump" },
 	{ T_BRIDGE, "bridge" },
 	{ T_SUMP, "sump" },
 
