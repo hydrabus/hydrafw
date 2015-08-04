@@ -45,6 +45,6 @@ typedef struct {
 	uint32_t trigger_values[4];
 	uint32_t read_count;
 	uint32_t delay_count;
-	uint16_t divider;
+	uint32_t divider;
 	uint8_t state;
 }sump_config;
