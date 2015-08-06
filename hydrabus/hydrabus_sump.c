@@ -26,12 +26,12 @@
 
 #define STATES_LEN 8192
 
-uint16_t *buffer = (uint16_t *)g_sbuf;
-uint16_t INDEX = 0;
-TIM_HandleTypeDef htim;
-sump_config config;
+static uint16_t *buffer = (uint16_t *)g_sbuf;
+static uint16_t INDEX = 0;
+static TIM_HandleTypeDef htim;
+static sump_config config;
 
-void portc_init(void)
+static void portc_init(void)
 {
 	GPIO_InitTypeDef gpio_init;
 	GPIO_TypeDef *hal_gpio_port;
@@ -51,7 +51,7 @@ void portc_init(void)
 	}
 }
 
-void tim_init(void)
+static void tim_init(void)
 {
 	htim.Instance = TIM4;
 
@@ -66,28 +66,27 @@ void tim_init(void)
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
 
-void tim_set_prescaler(void)
+static void tim_set_prescaler(void)
 {
 	HAL_TIM_Base_DeInit(&htim);
 	htim.Init.Prescaler = 2*(config.divider+1) - 1;
 	HAL_TIM_Base_Init(&htim);
 }
 
-void sump_init(void)
+static void sump_init(void)
 {
 	portc_init();
 	tim_init();
 }
 
-void get_sample(void)
+static void get_sample(void)
 {
-
 	*(buffer+INDEX) = GPIOC->IDR;
 
 	if (config.state == SUMP_STATE_TRIGGED) {
 		config.delay_count--;
 	}else if (config.state == SUMP_STATE_ARMED) {
-		if ( (*(buffer+INDEX) & config.trigger_masks[0]) == (config.trigger_values[0] & config.trigger_masks[0]) ) {
+        if ( !((*(buffer+INDEX) ^ config.trigger_values[0]) & config.trigger_masks[0]) ){
 			config.state = SUMP_STATE_TRIGGED;
 		}
 	}
@@ -98,15 +97,12 @@ void get_sample(void)
 	}
 
     INDEX++;
-	if (INDEX == STATES_LEN) {
-		INDEX=0;
-	}
+    INDEX %= STATES_LEN;
 
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-
 }
 
-void sump_deinit(void)
+static void sump_deinit(void)
 {
 	GPIO_TypeDef *hal_gpio_port;
 	hal_gpio_port =(GPIO_TypeDef*)GPIOC;
@@ -120,7 +116,7 @@ void sump_deinit(void)
 	}
 }
 
-void cmd_sump(t_hydra_console *con)
+int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p)
 {
 
 	sump_init();
@@ -129,7 +125,6 @@ void cmd_sump(t_hydra_console *con)
 	uint8_t sump_command;
 	uint8_t sump_parameters[4] = {0};
 	uint32_t index=0;
-
 
 	cprintf(con, "Interrupt by pressing user button.\r\n");
 	cprint(con, "\r\n", 2);
@@ -159,7 +154,17 @@ void cmd_sump(t_hydra_console *con)
 						}else{
 							INDEX--;
 						}
-						cprintf(con, "%c%c\x00\x00", *(buffer+INDEX) & 0xff, (*(buffer+INDEX) & 0xff00)>>8);
+                        switch (config.channels) {
+                            case 1:
+                                cprintf(con, "%c\x00\x00\x00", *(buffer+INDEX) & 0xff);
+                                break;
+                            case 2:
+                                cprintf(con, "%c\x00\x00\x00", (*(buffer+INDEX) & 0xff00)>>8);
+                                break;
+                            case 3:
+                                cprintf(con, "%c%c\x00\x00", *(buffer+INDEX) & 0xff, (*(buffer+INDEX) & 0xff00)>>8);
+                                break;
+                        }
 						config.read_count--;
 					}
 					break;
@@ -168,11 +173,11 @@ void cmd_sump(t_hydra_console *con)
 					cprintf(con, "%c", 0x01);
 					cprintf(con, "HydraBus");
 					cprintf(con, "%c", 0x00);
-					//sample memory (2048)
+					//sample memory (8192)
 					cprintf(con, "%c", 0x21);
 					cprintf(con, "%c", 0x00);
 					cprintf(con, "%c", 0x00);
-					cprintf(con, "%c", 0x10);
+					cprintf(con, "%c", 0x20);
 					cprintf(con, "%c", 0x00);
 					//sample rate (1MHz)
 					cprintf(con, "%c", 0x23);
@@ -245,6 +250,7 @@ void cmd_sump(t_hydra_console *con)
 								tim_set_prescaler();
 								break;
 							case SUMP_FLAGS:
+                                config.channels = (~sump_parameters[0] >> 2) & 0x0f;
 								/* not implemented */
 								break;
 							default:
@@ -256,5 +262,6 @@ void cmd_sump(t_hydra_console *con)
 		}
 	}
 	sump_deinit();
+    return TRUE;
 }
 
