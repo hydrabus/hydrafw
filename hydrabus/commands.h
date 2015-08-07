@@ -105,7 +105,17 @@ enum {
 	T_PWM,
 	T_DUTY_CYCLE,
 	T_BRIDGE,
-    T_SUMP,
+	T_SUMP,
+	T_JTAG,
+	T_TCK,
+	T_TMS,
+	T_TDI,
+	T_TDO,
+	T_QUERY,
+	T_BRUTE,
+	T_BYPASS,
+	T_IDCODE,
+	T_OOCD,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,
