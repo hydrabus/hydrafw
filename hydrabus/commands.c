@@ -113,6 +113,16 @@ t_token_dict tl_dict[] = {
 	{ T_DUTY_CYCLE, "duty-cycle" },
 	{ T_BRIDGE, "bridge" },
 	{ T_SUMP, "sump" },
+	{ T_JTAG, "jtag" },
+	{ T_TCK, "tck" },
+	{ T_TMS, "tms" },
+	{ T_TDI, "tdi" },
+	{ T_TDO, "tdo" },
+	{ T_QUERY, "query" },
+	{ T_BRUTE, "brute" },
+	{ T_BYPASS, "bypass" },
+	{ T_IDCODE, "idcode" },
+	{ T_OOCD, "openocd" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -183,6 +193,20 @@ t_token tokens_mode_nfc_scan[] = {
 	{
 		T_CONTINUOUS,
 		.help = "Scan until interrupted"
+	},
+	{ }
+};
+
+t_token tokens_mode_brute[] = {
+	{
+		T_BYPASS,
+		.arg_type = T_ARG_INT,
+		.help = "Performs a BYPASS scan on n pins"
+	},
+	{
+		T_IDCODE,
+		.arg_type = T_ARG_INT,
+		.help = "Performs an IDCODE scan on n pins"
 	},
 	{ }
 };
@@ -480,6 +504,134 @@ t_token tokens_mode_spi[] = {
 
 t_token tokens_spi[] = {
 	SPI_PARAMETERS
+	{ }
+};
+
+#define JTAG_PARAMETERS \
+	{ T_DEVICE, \
+		.arg_type = T_ARG_INT, \
+		.help = "JTAG device (1)" }, \
+	{ T_PULL, \
+		.arg_type = T_ARG_TOKEN, \
+		.subtokens = tokens_gpio_pull, \
+		.help = "GPIO pull (up/down/floating)" },
+
+t_token tokens_mode_jtag[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show JTAG parameters"
+	},
+	JTAG_PARAMETERS
+	/* JTAG-specific commands */
+	{
+		T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_WRITE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_INT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_TCK,
+		.arg_type = T_ARG_INT, \
+		.help = "Set TCK pin number x for PBx"
+	},
+	{
+		T_TMS,
+		.arg_type = T_ARG_INT, \
+		.help = "Set TMS pin number x for PBx"
+	},
+	{
+		T_TDI,
+		.arg_type = T_ARG_INT, \
+		.help = "Set TDI pin number x for PBx"
+	},
+	{
+		T_TDO,
+		.arg_type = T_ARG_INT, \
+		.help = "Set TDO pin number x for PBx"
+	},
+	{
+		T_BRUTE,
+        .subtokens = tokens_mode_brute,
+		.help = "Bruteforce JTAG pins on x pins starting from PC0"
+	},
+	{
+		T_BYPASS,
+		.help = "Query number of devices in the JTAG chain using BYPASS mode"
+	},
+	{
+		T_IDCODE,
+		.help = "Scan for IDCODEs in the JTAG chain"
+	},
+	{
+		T_OOCD,
+		.help = "Get into OpenOCD mode"
+	},
+	/* BP commands */
+	{
+		T_CARET,
+		.help = "Send one clock tick"
+	},
+	{
+		T_SLASH,
+		.help = "Toggle clock level high"
+	},
+	{
+		T_BACKSLASH,
+		.help = "Toggle clock level low"
+	},
+	{
+		T_MINUS,
+		.help = "Toggle TDI high"
+	},
+	{
+		T_UNDERSCORE,
+		.help = "Toggle TDI low"
+	},
+	{
+		T_LEFT_SQ,
+		.help = "Toggle TMS high"
+	},
+	{
+		T_RIGHT_SQ,
+		.help = "Toggle TMS low"
+	},
+	{
+		T_EXCLAMATION,
+		.help = "Read bit with clock"
+	},
+	{
+		T_DOT,
+		.help = "Read bit without clock"
+	},
+	{
+		T_AMPERSAND,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 usec (repeat with :<num>)"
+	},
+	{
+		T_PERCENT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit JTAG mode"
+	},
+	{ }
+};
+
+t_token tokens_jtag[] = {
+	JTAG_PARAMETERS
 	{ }
 };
 
@@ -822,6 +974,11 @@ t_token tl_tokens[] = {
 	{
 		T_SUMP,
 		.help = "SUMP mode"
+	},
+	{
+		T_JTAG,
+		.subtokens = tokens_jtag,
+		.help = "JTAG mode"
 	},
 	{
 		T_DEBUG,

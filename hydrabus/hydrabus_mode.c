@@ -37,10 +37,12 @@ extern const mode_exec_t mode_spi_exec;
 extern const mode_exec_t mode_i2c_exec;
 extern const mode_exec_t mode_uart_exec;
 extern const mode_exec_t mode_nfc_exec;
+extern const mode_exec_t mode_jtag_exec;
 extern t_token tokens_mode_spi[];
 extern t_token tokens_mode_i2c[];
 extern t_token tokens_mode_uart[];
 extern t_token tokens_mode_nfc[];
+extern t_token tokens_mode_jtag[];
 
 static struct {
 	int token;
@@ -51,6 +53,7 @@ static struct {
 	{ T_I2C, tokens_mode_i2c, &mode_i2c_exec },
 	{ T_UART, tokens_mode_uart, &mode_uart_exec },
 	{ T_NFC, tokens_mode_nfc, &mode_nfc_exec },
+	{ T_JTAG, tokens_mode_jtag, &mode_jtag_exec },
 };
 
 const char hydrabus_mode_str_cs_enabled[] =  "/CS ENABLED\r\n";

@@ -240,6 +240,7 @@ static struct cmd_map {
 	{ T_PWM, cmd_pwm },
 	{ T_GPIO, cmd_gpio },
 	{ T_SUMP, cmd_sump },
+	{ T_JTAG, cmd_mode_init },
 	{ 0, NULL }
 };
 
