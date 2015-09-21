@@ -197,6 +197,7 @@ void hydranfc_emul_mifare_states(void)
 				/* Reply with ATQA 0x04 0x00 */
 				data_buf[0] = ISO14443A_ATQA_BYTE0;
 				data_buf[1] = ISO14443A_ATQA_BYTE1;
+				wait_nbcycles(3791);
 				if(emul_mifare_tx_rawdata(data_buf, 2, 0) == 2)
 					hydranfc_emul_14443a_state = EMUL_RX_MIFARE_ANTICOL;
 			} else {
@@ -221,6 +222,7 @@ void hydranfc_emul_mifare_states(void)
 				data_buf[2] = ISO14443A_UID_BYTE2;
 				data_buf[3] = ISO14443A_UID_BYTE3;
 				data_buf[4] = ISO14443A_UID_BYTE4;
+				wait_nbcycles(2378);
 				if(emul_mifare_tx_rawdata(data_buf, 5, 0) == 5)
 					hydranfc_emul_14443a_state = EMUL_RX_MIFARE_SEL_UID;
 			} else
@@ -246,6 +248,7 @@ void hydranfc_emul_mifare_states(void)
 
 				/* Reply with SAK + CRC */
 				data_buf[0] = ISO14443A_SAK;
+				wait_nbcycles(322);
 				if(emul_mifare_tx_rawdata(data_buf, 1, 1) == 1) {
 					hydranfc_emul_14443a_state = EMUL_RX_MIFARE_MIFARE_CMD;
 				} else
