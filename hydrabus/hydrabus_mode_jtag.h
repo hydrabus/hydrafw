@@ -54,6 +54,7 @@ typedef struct {
     uint8_t tdo_pin;
     uint8_t tms_pin;
     uint8_t tck_pin;
+    uint8_t trst_pin;
     jtag_state state;
 }jtag_config;
 

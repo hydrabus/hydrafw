@@ -44,6 +44,7 @@ static void init_proto_default(t_hydra_console *con)
 	proto->dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 
+	config.tdi_pin = 7;
 	config.tdi_pin = 8;
 	config.tdo_pin = 9;
 	config.tms_pin = 10;
@@ -65,9 +66,13 @@ static bool jtag_pin_init(t_hydra_console *con)
     if(config.tck_pin == config.tms_pin) return false;
     if(config.tck_pin == config.tdi_pin) return false;
     if(config.tck_pin == config.tdo_pin) return false;
+    if(config.tck_pin == config.trst_pin) return false;
     if(config.tms_pin == config.tdi_pin) return false;
     if(config.tms_pin == config.tdo_pin) return false;
+    if(config.tms_pin == config.trst_pin) return false;
     if(config.tdi_pin == config.tdo_pin) return false;
+    if(config.tdi_pin == config.trst_pin) return false;
+    if(config.tdo_pin == config.trst_pin) return false;
 
 	bsp_gpio_init(BSP_GPIO_PORTB, config.tdi_pin,
 			proto->dev_gpio_mode, proto->dev_gpio_pull);
@@ -76,6 +81,8 @@ static bool jtag_pin_init(t_hydra_console *con)
 	bsp_gpio_init(BSP_GPIO_PORTB, config.tms_pin,
 			proto->dev_gpio_mode, proto->dev_gpio_pull);
 	bsp_gpio_init(BSP_GPIO_PORTB, config.tck_pin,
+			proto->dev_gpio_mode, proto->dev_gpio_pull);
+	bsp_gpio_init(BSP_GPIO_PORTB, config.trst_pin,
 			proto->dev_gpio_mode, proto->dev_gpio_pull);
     return true;
 }
@@ -108,6 +115,16 @@ static inline void jtag_tdi_high(void)
 static inline void jtag_tdi_low(void)
 {
 	bsp_gpio_clr(BSP_GPIO_PORTB, config.tdi_pin);
+}
+
+static inline void jtag_trst_high(void)
+{
+	bsp_gpio_set(BSP_GPIO_PORTB, config.trst_pin);
+}
+
+static inline void jtag_trst_low(void)
+{
+	bsp_gpio_clr(BSP_GPIO_PORTB, config.trst_pin);
 }
 
 static inline void jtag_clock(void)
@@ -313,7 +330,7 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	uint8_t tck, tms, tdi, tdo, i;
+	uint8_t tck, tms, tdi, tdo, trst, i;
 
 	for (tms = 0; tms < num_pins; tms++) {
 		for (tck = 0; tck < num_pins; tck++) {
@@ -338,6 +355,23 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 					if  (jtag_scan_bypass()) {
 						cprintf(con, "TMS: PB%d TCK: PB%d TDI: PB%d TDO: PB%d\r\n",
 								tms, tck, tdi, tdo);
+                        for (trst = 0; trst < num_pins; trst++) {
+                            if (trst == tck) continue;
+                            if (trst == tms) continue;
+                            if (trst == tdi) continue;
+                            if (trst == tdo) continue;
+                            for(i = 0; i < num_pins; i++){
+                                bsp_gpio_init(BSP_GPIO_PORTB, i,
+                                        proto->dev_gpio_mode, proto->dev_gpio_pull);
+                                bsp_gpio_set(BSP_GPIO_PORTB, i);
+                            }
+                            config.trst_pin = trst;
+                            jtag_pin_init(con);
+                            jtag_trst_low();
+                            if (!jtag_scan_bypass()) {
+                                cprintf(con, "TRST: PB%d\r\n", trst);
+                            }
+                        }
 					}
 				}
 			}
@@ -351,7 +385,7 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	uint8_t tck, tms, tdo;
+	uint8_t tck, tms, tdo, trst;
 	uint8_t i;
 
 	for (tms = 0; tms < num_pins; tms++) {
@@ -374,6 +408,22 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 				if  (jtag_scan_idcode(con)) {
 					cprintf(con, "TMS: PB%d TCK: PB%d TDO: PB%d\r\n\r\n",
 							tms, tck, tdo);
+                        for (trst = 0; trst < num_pins; trst++) {
+                            if (trst == tck) continue;
+                            if (trst == tms) continue;
+                            if (trst == tdo) continue;
+                            for(i = 0; i < num_pins; i++){
+                                bsp_gpio_init(BSP_GPIO_PORTB, i,
+                                        proto->dev_gpio_mode, proto->dev_gpio_pull);
+                                bsp_gpio_set(BSP_GPIO_PORTB, i);
+                            }
+                            config.trst_pin = trst;
+                            jtag_pin_init(con);
+                            jtag_trst_low();
+                            if (!jtag_scan_idcode(con)) {
+                                cprintf(con, "TRST: PB%d\r\n", trst);
+                            }
+                        }
 				}
 			}
 		}
@@ -540,6 +590,7 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	jtag_clk_low();
 	jtag_tms_low();
 	jtag_tdi_low();
+    jtag_trst_high();
 
 	show_params(con);
 
