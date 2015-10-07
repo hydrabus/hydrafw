@@ -294,7 +294,7 @@ static uint8_t jtag_scan_bypass(void)
         }
 
         jtag_tdi_high();
-        while( !jtag_read_bit_clock() ) {
+        while( !jtag_read_bit_clock() && !USER_BUTTON ) {
                 num_devices++;
         }
         jtag_tdi_low();
@@ -319,7 +319,7 @@ static bool jtag_scan_idcode(t_hydra_console *con)
 
         idcode = jtag_read_u32();
         /* IDCODE bit0 must be 1 */
-        while(idcode != 0xffffffff && idcode & 0x1) {
+        while((idcode != 0xffffffff && idcode & 0x1) && !USER_BUTTON) {
                 cprintf(con, "Device found. IDCODE : %08X\r\n", idcode);
                 idcode = jtag_read_u32();
                 retval = true;
@@ -343,6 +343,7 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
                                         if (tck == tdi) continue;
                                         if (tck == tdo) continue;
                                         if (tdi == tdo) continue;
+					if (USER_BUTTON) return;
                                         for(i = 0; i < num_pins; i++) {
                                                 bsp_gpio_init(BSP_GPIO_PORTB, i,
                                                               proto->dev_gpio_mode,
@@ -397,6 +398,7 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
                                 if (tms == tck) continue;
                                 if (tms == tdo) continue;
                                 if (tck == tdo) continue;
+				if (USER_BUTTON) return;
                                 for(i = 0; i < num_pins; i++) {
                                         bsp_gpio_init(BSP_GPIO_PORTB, i,
                                                       proto->dev_gpio_mode,
