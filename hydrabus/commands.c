@@ -531,7 +531,11 @@ t_token tokens_spi[] = {
 	{ T_PULL, \
 		.arg_type = T_ARG_TOKEN, \
 		.subtokens = tokens_gpio_pull, \
-		.help = "GPIO pull (up/down/floating)" },
+		.help = "GPIO pull (up/down/floating)" }, \
+	{ T_MSB_FIRST, \
+		.help = "Send/receive MSB first" }, \
+	{ T_LSB_FIRST, \
+		.help = "Send/receive LSB first" },
 
 t_token tokens_mode_jtag[] = {
 	{
