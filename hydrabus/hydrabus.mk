@@ -10,6 +10,8 @@ HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/hydrabus_mode_uart.c \
             hydrabus/hydrabus_mode_i2c.c \
             hydrabus/hydrabus_sump.c \
-            hydrabus/hydrabus_mode_jtag.c
+            hydrabus/hydrabus_mode_jtag.c \
+            hydrabus/hydrabus_rng.c
+
 # Required include directories
 HYDRABUSINC = ./hydrabus

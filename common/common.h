@@ -166,6 +166,7 @@ int cmd_dac(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_pwm(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_sump(t_hydra_console *con, t_tokenline_parsed *p);
+int cmd_rng(t_hydra_console *con, t_tokenline_parsed *p);
 
 void token_dump(t_hydra_console *con, t_tokenline_parsed *p);
 void cprint(t_hydra_console *con, const char *data, const uint32_t size);
