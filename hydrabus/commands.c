@@ -123,6 +123,7 @@ t_token_dict tl_dict[] = {
 	{ T_BYPASS, "bypass" },
 	{ T_IDCODE, "idcode" },
 	{ T_OOCD, "openocd" },
+	{ T_RNG, "random" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -979,6 +980,10 @@ t_token tl_tokens[] = {
 		T_JTAG,
 		.subtokens = tokens_jtag,
 		.help = "JTAG mode"
+	},
+	{
+		T_RNG,
+		.help = "Random number"
 	},
 	{
 		T_DEBUG,

@@ -116,6 +116,7 @@ enum {
 	T_BYPASS,
 	T_IDCODE,
 	T_OOCD,
+	T_RNG,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

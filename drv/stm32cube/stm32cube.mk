@@ -15,7 +15,8 @@ STM32CUBESRC = ./drv/stm32cube/stm32f4xx_hal_msp.c \
               ./drv/stm32cube/bsp_gpio.c \
               ./drv/stm32cube/bsp_i2c.c \
               ./drv/stm32cube/bsp_spi.c \
-              ./drv/stm32cube/bsp_uart.c
+              ./drv/stm32cube/bsp_uart.c \
+              ./drv/stm32cube/bsp_rng.c
 
 # Required include directories
 STM32CUBEINC = ./drv/stm32cube \

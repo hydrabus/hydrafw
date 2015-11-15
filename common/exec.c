@@ -241,6 +241,7 @@ static struct cmd_map {
 	{ T_GPIO, cmd_gpio },
 	{ T_SUMP, cmd_sump },
 	{ T_JTAG, cmd_mode_init },
+	{ T_RNG, cmd_rng },
 	{ 0, NULL }
 };
 
