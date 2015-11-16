@@ -350,7 +350,7 @@ t_token tokens_uart[] = {
 	},\
 	{\
 		T_FREQUENCY,\
-		.arg_type = T_ARG_FREQ,\
+		.arg_type = T_ARG_FLOAT,\
 		.help = "Bus frequency"\
 	},
 
@@ -433,7 +433,7 @@ t_token tokens_i2c[] = {
 		.subtokens = tokens_master_slave, \
 			.help = "Mode (master/slave)" }, \
 	{ T_FREQUENCY, \
-		.arg_type = T_ARG_FREQ, \
+		.arg_type = T_ARG_FLOAT, \
 		.help = "Bus frequency" }, \
 	{ T_POLARITY, \
 		.arg_type = T_ARG_INT, \

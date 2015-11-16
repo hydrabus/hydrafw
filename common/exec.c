@@ -84,7 +84,6 @@ void token_dump(t_hydra_console *con, t_tokenline_parsed *p)
 			cprintf(con, "T_ARG_INT\r\n%d: integer %d\r\n", i, arg_int);
 			break;
 		case T_ARG_FLOAT:
-		case T_ARG_FREQ:
 			memcpy(&arg_float, p->buf + p->tokens[++i], sizeof(float));
 			cprintf(con, "T_ARG_FLOAT\r\n%d: float %f\r\n", i, arg_float);
 			break;
