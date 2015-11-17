@@ -132,5 +132,6 @@ enum {
 	T_DOT,
 	T_AMPERSAND,
 	T_PERCENT,
+	T_TILDE,
 };
 

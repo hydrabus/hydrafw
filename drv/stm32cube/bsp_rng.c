@@ -48,23 +48,24 @@ bsp_status_t bsp_rng_init()
  */
 bsp_status_t bsp_rng_deinit()
 {
-        __RNG_CLK_DISABLE();
+        hrng->Instance = RNG;
 
         __HAL_RNG_DISABLE(hrng);
+
+        __RNG_CLK_DISABLE();
 
         return BSP_OK;
 }
 
-/** \brief
+/** \brief Returns a random number from the RNG
  *
- * \param dev_num bsp_dev_rng_t: RNG dev num.
- * \param rx_data uint16_t*: The received byte.
- * \param nb_data uint8_t: Number of byte to received.
- * \return bsp_status_t: Status of the transfer.
+ * \return uint32_t: Random number
  *
  */
 uint32_t bsp_rng_read()
 {
+        hrng->Instance = RNG;
+
         while (!(__HAL_RNG_GET_FLAG(hrng, RNG_FLAG_DRDY)) || USER_BUTTON) {
         }
 
