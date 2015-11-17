@@ -44,6 +44,7 @@ static void init_proto_default(t_hydra_console *con)
 	proto->dev_num = 0;
 	proto->dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
 
 	config.tdi_pin = 7;
 	config.tdi_pin = 8;
@@ -158,9 +159,8 @@ static uint8_t jtag_read_bit(void)
 static uint8_t jtag_read_bit_clock(void)
 {
 	uint8_t bit;
-	jtag_clk_high();
+	jtag_clock();
 	bit = bsp_gpio_pin_read(BSP_GPIO_PORTB, config.tdo_pin);
-	jtag_clk_low();
 	return bit;
 }
 
@@ -229,35 +229,58 @@ static void bitr(t_hydra_console *con)
 	cprintf(con, hydrabus_mode_str_read_one_u8, rx_data);
 }
 
-static void jtag_write_u8(uint8_t tx_data)
+static void jtag_write_u8(t_hydra_console *con, uint8_t tx_data)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t i;
-	for (i=0; i<8; i++) {
-		jtag_send_bit((tx_data>>i) & 1);
+
+	if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
+		for (i=0; i<8; i++) {
+			jtag_send_bit((tx_data>>i) & 1);
+		}
+	} else {
+		for (i=0; i<8; i++) {
+			jtag_send_bit((tx_data>>(7-i)) & 1);
+		}
 	}
 }
 
-static uint8_t jtag_read_u8(void)
+static uint8_t jtag_read_u8(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t value;
 	uint8_t i;
 
 	value = 0;
-	for(i=0; i<8; i++) {
-		value |= (jtag_read_bit_clock() << i);
+	if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
+		for(i=0; i<8; i++) {
+			value |= (jtag_read_bit_clock() << i);
+		}
+	} else {
+		for(i=0; i<8; i++) {
+			value |= (jtag_read_bit_clock() << (7-i));
+		}
 	}
 	return value;
 }
 
-static uint32_t jtag_read_u32(void)
+static uint32_t jtag_read_u32(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
 	uint32_t value;
 	uint8_t i;
 
 	value = 0;
-	for(i=0; i<32; i++) {
-		value |= (jtag_read_bit_clock() << i);
+	if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
+		for(i=0; i<32; i++) {
+			value |= (jtag_read_bit_clock() << i);
+		}
+	} else {
+		for(i=0; i<32; i++) {
+			value |= (jtag_read_bit_clock() << (31-i));
+		}
 	}
+
 	return value;
 }
 
@@ -317,11 +340,11 @@ static bool jtag_scan_idcode(t_hydra_console *con)
 	jtag_clock();
 	jtag_clock();
 
-	idcode = jtag_read_u32();
+	idcode = jtag_read_u32(con);
 	/* IDCODE bit0 must be 1 */
 	while((idcode != 0xffffffff && idcode & 0x1) && !USER_BUTTON) {
 		cprintf(con, "Device found. IDCODE : %08X\r\n", idcode);
-		idcode = jtag_read_u32();
+		idcode = jtag_read_u32(con);
 		retval = true;
 	}
 	return retval;
@@ -497,11 +520,11 @@ static void openOCD(t_hydra_console *con)
 						break;
 					case OCD_MODE_JTAG:
 						proto->dev_gpio_mode =
-						    MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
+						        MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
 						break;
 					case OCD_MODE_JTAG_OD:
 						proto->dev_gpio_mode =
-						    MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN;
+						        MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN;
 						break;
 					}
 					jtag_pin_init(con);
@@ -628,6 +651,12 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			}
 			jtag_pin_init(con);
 			break;
+		case T_MSB_FIRST:
+			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
+			break;
+		case T_LSB_FIRST:
+			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
+			break;
 		case T_BRUTE:
 			/* Integer parameter. */
 			memcpy(&arg_int, p->buf + p->tokens[t+3], sizeof(int));
@@ -706,9 +735,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
 	int i;
+	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 	for (i = 0; i < nb_data; i++) {
-		jtag_write_u8(tx_data[i]);
+		jtag_write_u8(con, tx_data[i]);
 	}
 	if(nb_data == 1) {
 		/* Write 1 data */
@@ -717,7 +747,8 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 		/* Write n data */
 		cprintf(con, hydrabus_mode_str_mul_write);
 		for(i = 0; i < nb_data; i++) {
-			cprintf(con, hydrabus_mode_str_mul_value_u8, tx_data[i]);
+			cprintf(con, hydrabus_mode_str_mul_value_u8,
+			        tx_data[i]);
 		}
 		cprintf(con, hydrabus_mode_str_mul_br);
 	}
@@ -731,7 +762,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	for(i = 0; i < nb_data; i++) {
-		rx_data[i] = jtag_read_u8();
+		rx_data[i] = jtag_read_u8(con);
 	}
 	if(nb_data == 1) {
 		/* Read 1 data */
