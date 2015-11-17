@@ -524,6 +524,9 @@
 		</Unit>
 		<Unit filename="drv\stm32cube\bsp_pwm.h" />
 		<Unit filename="drv\stm32cube\bsp_pwm_conf.h" />
+		<Unit filename="drv\stm32cube\bsp_rng.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="drv\stm32cube\bsp_spi.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -661,6 +664,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydrabus\hydrabus_mode_i2c.h" />
+		<Unit filename="hydrabus\hydrabus_mode_jtag.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="hydrabus\hydrabus_mode_spi.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -670,6 +676,12 @@
 		</Unit>
 		<Unit filename="hydrabus\hydrabus_mode_uart.h" />
 		<Unit filename="hydrabus\hydrabus_pwm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_rng.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_sump.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydrafw_STM32F405xG.ld" />
