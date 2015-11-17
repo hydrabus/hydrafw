@@ -16,6 +16,8 @@ Coding Style of the project: Linux Kernel coding style see: https://www.kernel.o
 Can be also done automatically with open source tool AStyle: http://astyle.sourceforge.net/
 With following syntax: AStyle.exe -t --style=linux --lineend=linux my_c_file.c
 
+Syntax tested with AStyle_2.05.1
+
 #Configuration of Linux Kernel coding style with Em::Blocks
 ##Menu Settings -> Editor -> General settings:
 ![Em::Blocks General settings](http://hydrabus.com/EmBlocks_CodingStyle_GeneralSettings.png)
