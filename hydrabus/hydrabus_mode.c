@@ -30,9 +30,9 @@
 
 #define MAYBE_CALL(x) { if (x) x(con); }
 static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
-			       int token_pos);
+                               int token_pos);
 static int hydrabus_mode_read(t_hydra_console *con, t_tokenline_parsed *p,
-			      int token_pos);
+                              int token_pos);
 
 extern t_token_dict tl_dict[];
 extern const mode_exec_t mode_spi_exec;
@@ -254,7 +254,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 }
 
 static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,
-			  int token_pos, unsigned int *num_bytes)
+                          int token_pos, unsigned int *num_bytes)
 {
 	mode_config_proto_t* p_proto = &con->mode->proto;
 	int arg_int, count, t, i;
@@ -262,7 +262,7 @@ static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,
 	t = token_pos;
 	*num_bytes = 0;
 	while ((p->tokens[t] == T_ARG_INT) || (p->tokens[t] == T_TILDE)) {
-		if(p->tokens[t] == T_TILDE){
+		if(p->tokens[t] == T_TILDE) {
 			bsp_rng_init();
 			arg_int = bsp_rng_read() & 0xff;
 			bsp_rng_deinit();
@@ -301,7 +301,7 @@ static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,
  * Returns the number of tokens eaten.
  */
 static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
-			       int t)
+                               int t)
 {
 	mode_config_proto_t* p_proto = &con->mode->proto;
 	uint32_t mode_status;
@@ -332,7 +332,7 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 			mode_status = !HYDRABUS_MODE_STATUS_OK;
 			if(con->mode->exec->write_read != NULL) {
 				mode_status = con->mode->exec->write_read(con,
-						p_proto->buffer_tx, p_proto->buffer_rx, num_bytes);
+				              p_proto->buffer_tx, p_proto->buffer_rx, num_bytes);
 			}
 
 			if (mode_status != HYDRABUS_MODE_STATUS_OK)
@@ -342,7 +342,7 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 			mode_status = !HYDRABUS_MODE_STATUS_OK;
 			if(con->mode->exec->write != NULL) {
 				mode_status = con->mode->exec->write(con,
-								     p_proto->buffer_tx, num_bytes);
+				                                     p_proto->buffer_tx, num_bytes);
 			}
 			if (mode_status != HYDRABUS_MODE_STATUS_OK)
 				hydrabus_mode_write_error(con, mode_status);
@@ -354,7 +354,7 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 
 /* Returns the number of tokens eaten. */
 static int hydrabus_mode_read(t_hydra_console *con, t_tokenline_parsed *p,
-			      int token_pos)
+                              int token_pos)
 {
 	mode_config_proto_t* p_proto;
 	uint32_t mode_status;

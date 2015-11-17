@@ -57,7 +57,7 @@ static void show_params(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "Device: JTAG%d\r\n",
-	proto->dev_num + 1);
+	        proto->dev_num + 1);
 }
 
 static bool jtag_pin_init(t_hydra_console *con)
@@ -76,15 +76,15 @@ static bool jtag_pin_init(t_hydra_console *con)
 	if(config.tdo_pin == config.trst_pin) return false;
 
 	bsp_gpio_init(BSP_GPIO_PORTB, config.tdi_pin,
-	proto->dev_gpio_mode, proto->dev_gpio_pull);
+	              proto->dev_gpio_mode, proto->dev_gpio_pull);
 	bsp_gpio_init(BSP_GPIO_PORTB, config.tdo_pin,
-	MODE_CONFIG_DEV_GPIO_IN, proto->dev_gpio_pull);
+	              MODE_CONFIG_DEV_GPIO_IN, proto->dev_gpio_pull);
 	bsp_gpio_init(BSP_GPIO_PORTB, config.tms_pin,
-	proto->dev_gpio_mode, proto->dev_gpio_pull);
+	              proto->dev_gpio_mode, proto->dev_gpio_pull);
 	bsp_gpio_init(BSP_GPIO_PORTB, config.tck_pin,
-	proto->dev_gpio_mode, proto->dev_gpio_pull);
+	              proto->dev_gpio_mode, proto->dev_gpio_pull);
 	bsp_gpio_init(BSP_GPIO_PORTB, config.trst_pin,
-	proto->dev_gpio_mode, proto->dev_gpio_pull);
+	              proto->dev_gpio_mode, proto->dev_gpio_pull);
 	return true;
 }
 
@@ -346,8 +346,8 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 					if (USER_BUTTON) return;
 					for(i = 0; i < num_pins; i++) {
 						bsp_gpio_init(BSP_GPIO_PORTB, i,
-						proto->dev_gpio_mode,
-						proto->dev_gpio_pull);
+						              proto->dev_gpio_mode,
+						              proto->dev_gpio_pull);
 						bsp_gpio_set(BSP_GPIO_PORTB, i);
 					}
 					config.tms_pin = tms;
@@ -357,7 +357,7 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 					jtag_pin_init(con);
 					if  (jtag_scan_bypass()) {
 						cprintf(con, "TMS: PB%d TCK: PB%d TDI: PB%d TDO: PB%d\r\n",
-						tms, tck, tdi, tdo);
+						        tms, tck, tdi, tdo);
 						for (trst = 0; trst < num_pins; trst++) {
 							if (trst == tck) continue;
 							if (trst == tms) continue;
@@ -365,8 +365,8 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 							if (trst == tdo) continue;
 							for(i = 0; i < num_pins; i++) {
 								bsp_gpio_init(BSP_GPIO_PORTB, i,
-								proto->dev_gpio_mode,
-								proto->dev_gpio_pull);
+								              proto->dev_gpio_mode,
+								              proto->dev_gpio_pull);
 								bsp_gpio_set(BSP_GPIO_PORTB, i);
 							}
 							config.trst_pin = trst;
@@ -401,27 +401,27 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 				if (USER_BUTTON) return;
 				for(i = 0; i < num_pins; i++) {
 					bsp_gpio_init(BSP_GPIO_PORTB, i,
-					proto->dev_gpio_mode,
-					proto->dev_gpio_pull);
+					              proto->dev_gpio_mode,
+					              proto->dev_gpio_pull);
 					bsp_gpio_set(BSP_GPIO_PORTB, i);
 				}
 				config.tms_pin = tms;
 				config.tck_pin = tck;
 				config.tdo_pin = tdo;
 				bsp_gpio_init(BSP_GPIO_PORTB, config.tdo_pin,
-				MODE_CONFIG_DEV_GPIO_IN,
-				MODE_CONFIG_DEV_GPIO_NOPULL);
+				              MODE_CONFIG_DEV_GPIO_IN,
+				              MODE_CONFIG_DEV_GPIO_NOPULL);
 				if  (jtag_scan_idcode(con)) {
 					cprintf(con, "TMS: PB%d TCK: PB%d TDO: PB%d\r\n\r\n",
-					tms, tck, tdo);
+					        tms, tck, tdo);
 					for (trst = 0; trst < num_pins; trst++) {
 						if (trst == tck) continue;
 						if (trst == tms) continue;
 						if (trst == tdo) continue;
 						for(i = 0; i < num_pins; i++) {
 							bsp_gpio_init(BSP_GPIO_PORTB, i,
-							proto->dev_gpio_mode,
-							proto->dev_gpio_pull);
+							              proto->dev_gpio_mode,
+							              proto->dev_gpio_pull);
 							bsp_gpio_set(BSP_GPIO_PORTB, i);
 						}
 						config.trst_pin = trst;
@@ -497,11 +497,11 @@ static void openOCD(t_hydra_console *con)
 						break;
 					case OCD_MODE_JTAG:
 						proto->dev_gpio_mode =
-						MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
+						    MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
 						break;
 					case OCD_MODE_JTAG_OD:
 						proto->dev_gpio_mode =
-						MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN;
+						    MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN;
 						break;
 					}
 					jtag_pin_init(con);
@@ -544,7 +544,7 @@ static void openOCD(t_hydra_console *con)
 				/* Not implemented */
 				if(chSequentialStreamRead(con->sdu, ocd_parameters, 1) == 1) {
 					cprintf(con, "%c%c", CMD_OCD_UART_SPEED,
-					ocd_parameters[0]);
+					        ocd_parameters[0]);
 				} else {
 					cprint(con, "\x00", 1);
 				}
@@ -555,7 +555,7 @@ static void openOCD(t_hydra_console *con)
 					num_sequences = ocd_parameters[0] << 8;
 					num_sequences |= ocd_parameters[1];
 					cprintf(con, "%c%c%c", CMD_OCD_TAP_SHIFT, ocd_parameters[0],
-					ocd_parameters[1]);
+					        ocd_parameters[1]);
 
 					chSequentialStreamRead(con->sdu, g_sbuf,((num_sequences+7)/8)*2);
 					for(i = 0; i < num_sequences; i+=8) {
@@ -566,9 +566,9 @@ static void openOCD(t_hydra_console *con)
 							bits=8;
 						}
 						cprintf(con, "%c",
-						ocd_shift_u8(g_sbuf[2*offset],
-						g_sbuf[(2*offset)+1],
-						bits ));
+						        ocd_shift_u8(g_sbuf[2*offset],
+						                     g_sbuf[(2*offset)+1],
+						                     bits ));
 					}
 				} else {
 					cprint(con, "\x00", 1);
@@ -713,8 +713,7 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 	if(nb_data == 1) {
 		/* Write 1 data */
 		cprintf(con, hydrabus_mode_str_write_one_u8, tx_data[0]);
-	} else if(nb_data > 1)
-	{
+	} else if(nb_data > 1) {
 		/* Write n data */
 		cprintf(con, hydrabus_mode_str_mul_write);
 		for(i = 0; i < nb_data; i++) {
@@ -742,7 +741,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 		cprintf(con, hydrabus_mode_str_mul_read);
 		for(i = 0; i < nb_data; i++) {
 			cprintf(con, hydrabus_mode_str_mul_value_u8,
-			rx_data[i]);
+			        rx_data[i]);
 		}
 		cprintf(con, hydrabus_mode_str_mul_br);
 	}
@@ -763,7 +762,7 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 	if (p->tokens[1] == T_PINS) {
 		tokens_used++;
 		cprintf(con, "TMS: PB%d\r\nTCK: PB%d\r\nTDI: PB%d\r\nTDO: PB%d\r\n",
-		config.tms_pin, config.tck_pin, config.tdi_pin, config.tdo_pin);
+		        config.tms_pin, config.tck_pin, config.tdi_pin, config.tdo_pin);
 	} else {
 		show_params(con);
 	}

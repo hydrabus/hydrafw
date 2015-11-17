@@ -25,7 +25,7 @@
 #include <ctype.h>
 
 static const char *str_pin_error = "Invalid pin '%s'. Select one or more "
-				   "of PA0-15, PB0-11, PC0-15.\r\n";
+                                   "of PA0-15, PB0-11, PC0-15.\r\n";
 
 static uint32_t ports[] = {
 	BSP_GPIO_PORTA,
@@ -43,7 +43,7 @@ static void read_continuous(t_hydra_console *con, uint16_t *gpio, int period)
 		for (pin = 0; pin < 16; pin++) {
 			if (gpio[port] & (1 << pin))
 				cprintf(con, "P%c%d%s ", port + 'A', pin,
-					pin < 10 ? " " : "");
+				        pin < 10 ? " " : "");
 		}
 	}
 	cprint(con, "\r\n", 2);
@@ -164,10 +164,10 @@ int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 			port = str[1] - 'A';
 			if (str[2] == '*') {
 				if (port == 1)
-					 /* 0 to 11 for port B */
+					/* 0 to 11 for port B */
 					gpio[port] = 0x0FFF;
 				else
-					 /* 0 to 15 */
+					/* 0 to 15 */
 					gpio[port] = 0xFFFF;
 			} else {
 				pin = strtoul(str + 2, &s, 10);
@@ -181,7 +181,7 @@ int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p)
 					/* Range */
 					max = strtoul(s + 1, &s, 10);
 					if (max <= pin || max > 15 ||
-							(port == 1 && max > 11)) {
+					    (port == 1 && max > 11)) {
 						cprintf(con, str_pin_error, str);
 						return FALSE;
 					}

@@ -52,7 +52,7 @@ static int pwm_write(t_hydra_console *con, uint32_t freq, uint32_t dc)
 
 	cprintf(con, "%s ", pwm_channel_names[0]);
 	cprintf(con, "Frequency: %d, Duty Cycle: %d%%(+/-1%%)\r\n",
-		final_freq, final_duty_cycle_percent);
+	        final_freq, final_duty_cycle_percent);
 
 	return TRUE;
 }

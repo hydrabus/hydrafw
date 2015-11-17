@@ -64,9 +64,9 @@ static void show_params(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "GPIO resistor: %s\r\nFrequency: ",
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
-		"floating");
+	        proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+	        proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+	        "floating");
 
 	print_freq(con, speeds[proto->dev_speed]);
 

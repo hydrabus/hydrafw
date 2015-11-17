@@ -85,8 +85,8 @@ static void get_sample(void)
 
 	if (config.state == SUMP_STATE_TRIGGED) {
 		config.delay_count--;
-	}else if (config.state == SUMP_STATE_ARMED) {
-        if ( !((*(buffer+INDEX) ^ config.trigger_values[0]) & config.trigger_masks[0]) ){
+	} else if (config.state == SUMP_STATE_ARMED) {
+		if ( !((*(buffer+INDEX) ^ config.trigger_values[0]) & config.trigger_masks[0]) ) {
 			config.state = SUMP_STATE_TRIGGED;
 		}
 	}
@@ -96,8 +96,8 @@ static void get_sample(void)
 		HAL_TIM_Base_Stop(&htim);
 	}
 
-    INDEX++;
-    INDEX %= STATES_LEN;
+	INDEX++;
+	INDEX %= STATES_LEN;
 
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
@@ -131,137 +131,137 @@ int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p
 
 	while (!palReadPad(GPIOA, 0)) {
 		if(chnReadTimeout(con->sdu, &sump_command, 1, 1)) {
-			switch(sump_command){
-				case SUMP_RESET:
-					break;
-				case SUMP_ID:
-					cprintf(con, "1ALS");
-					break;
-				case SUMP_RUN:
-					INDEX=0;
-					config.state = SUMP_STATE_ARMED;
-					HAL_TIM_Base_Start(&htim);
+			switch(sump_command) {
+			case SUMP_RESET:
+				break;
+			case SUMP_ID:
+				cprintf(con, "1ALS");
+				break;
+			case SUMP_RUN:
+				INDEX=0;
+				config.state = SUMP_STATE_ARMED;
+				HAL_TIM_Base_Start(&htim);
 
-					while(TIM4->CR1 & TIM_CR1_CEN) { /* Sleep for capture to finish */
-                        if (TIM4->SR & TIM_SR_UIF) {
-                            get_sample();
-                        }
+				while(TIM4->CR1 & TIM_CR1_CEN) { /* Sleep for capture to finish */
+					if (TIM4->SR & TIM_SR_UIF) {
+						get_sample();
 					}
+				}
 
-					while(config.read_count > 0) {
-						if (INDEX == 0) {
-							INDEX = STATES_LEN-1;
-						}else{
-							INDEX--;
-						}
-                        switch (config.channels) {
-                            case 1:
-                                cprintf(con, "%c\x00\x00\x00", *(buffer+INDEX) & 0xff);
-                                break;
-                            case 2:
-                                cprintf(con, "%c\x00\x00\x00", (*(buffer+INDEX) & 0xff00)>>8);
-                                break;
-                            case 3:
-                                cprintf(con, "%c%c\x00\x00", *(buffer+INDEX) & 0xff, (*(buffer+INDEX) & 0xff00)>>8);
-                                break;
-                        }
-						config.read_count--;
+				while(config.read_count > 0) {
+					if (INDEX == 0) {
+						INDEX = STATES_LEN-1;
+					} else {
+						INDEX--;
 					}
-					break;
-				case SUMP_DESC:
-					// device name string
-					cprintf(con, "%c", 0x01);
-					cprintf(con, "HydraBus");
-					cprintf(con, "%c", 0x00);
-					//sample memory (8192)
-					cprintf(con, "%c", 0x21);
-					cprintf(con, "%c", 0x00);
-					cprintf(con, "%c", 0x00);
-					cprintf(con, "%c", 0x20);
-					cprintf(con, "%c", 0x00);
-					//sample rate (1MHz)
-					cprintf(con, "%c", 0x23);
-					cprintf(con, "%c", 0x00);
-					cprintf(con, "%c", 0x0F);
-					cprintf(con, "%c", 0x42);
-					cprintf(con, "%c", 0x40);
-					//number of probes (16)
-					cprintf(con, "%c", 0x40);
-					cprintf(con, "%c", 0x10);
-					//protocol version (2)
-					cprintf(con, "%c", 0x41);
-					cprintf(con, "%c", 0x02);
-					cprintf(con, "%c", 0x00);
-					break;
-				case SUMP_XON:
-				case SUMP_XOFF:
-					/* not implemented */
-					break;
-				default:
-					// Other commands take 4 bytes as parameters
-					if(chSequentialStreamRead(con->sdu, sump_parameters, 4) == 4) {
-						switch(sump_command){
-							case SUMP_TRIG_1:
-							case SUMP_TRIG_2:
-							case SUMP_TRIG_3:
-							case SUMP_TRIG_4:
-								// Get the trigger index
-								index = (sump_command & 0x0c) >> 2; 
-								config.trigger_masks[index] = sump_parameters[3];
-								config.trigger_masks[index] <<= 8;
-								config.trigger_masks[index] |= sump_parameters[2];
-								config.trigger_masks[index] <<= 8;
-								config.trigger_masks[index] |= sump_parameters[1];
-								config.trigger_masks[index] <<= 8;
-								config.trigger_masks[index] |= sump_parameters[0];
-								break;
-							case SUMP_TRIG_VALS_1:
-							case SUMP_TRIG_VALS_2:
-							case SUMP_TRIG_VALS_3:
-							case SUMP_TRIG_VALS_4:
-								// Get the trigger index
-								index = (sump_command & 0x0c) >> 2; 
-								config.trigger_values[index] = sump_parameters[3];
-								config.trigger_values[index] <<= 8;
-								config.trigger_values[index] |= sump_parameters[2];
-								config.trigger_values[index] <<= 8;
-								config.trigger_values[index] |= sump_parameters[1];
-								config.trigger_values[index] <<= 8;
-								config.trigger_values[index] |= sump_parameters[0];
-								break;
-							case SUMP_CNT:
-								config.delay_count = sump_parameters[3];
-								config.delay_count <<= 8;
-								config.delay_count |= sump_parameters[2];
-								config.delay_count <<= 2; /* values are multiples of 4 */
-								config.read_count = sump_parameters[1];
-								config.read_count <<= 8;
-								config.read_count |= sump_parameters[0];
-								config.read_count++;
-								config.read_count <<= 2; /* values are multiples of 4 */
-								break;
-							case SUMP_DIV:
-								config.divider = sump_parameters[2];
-								config.divider <<= 8;
-								config.divider |= sump_parameters[1];
-								config.divider <<= 8;
-								config.divider |= sump_parameters[0];
-								config.divider /= 100; /* Assuming 100MHz base frequency */
-								tim_set_prescaler();
-								break;
-							case SUMP_FLAGS:
-                                config.channels = (~sump_parameters[0] >> 2) & 0x0f;
-								/* not implemented */
-								break;
-							default:
-								break;
-						}
+					switch (config.channels) {
+					case 1:
+						cprintf(con, "%c\x00\x00\x00", *(buffer+INDEX) & 0xff);
+						break;
+					case 2:
+						cprintf(con, "%c\x00\x00\x00", (*(buffer+INDEX) & 0xff00)>>8);
+						break;
+					case 3:
+						cprintf(con, "%c%c\x00\x00", *(buffer+INDEX) & 0xff, (*(buffer+INDEX) & 0xff00)>>8);
+						break;
 					}
-					break;
+					config.read_count--;
+				}
+				break;
+			case SUMP_DESC:
+				// device name string
+				cprintf(con, "%c", 0x01);
+				cprintf(con, "HydraBus");
+				cprintf(con, "%c", 0x00);
+				//sample memory (8192)
+				cprintf(con, "%c", 0x21);
+				cprintf(con, "%c", 0x00);
+				cprintf(con, "%c", 0x00);
+				cprintf(con, "%c", 0x20);
+				cprintf(con, "%c", 0x00);
+				//sample rate (1MHz)
+				cprintf(con, "%c", 0x23);
+				cprintf(con, "%c", 0x00);
+				cprintf(con, "%c", 0x0F);
+				cprintf(con, "%c", 0x42);
+				cprintf(con, "%c", 0x40);
+				//number of probes (16)
+				cprintf(con, "%c", 0x40);
+				cprintf(con, "%c", 0x10);
+				//protocol version (2)
+				cprintf(con, "%c", 0x41);
+				cprintf(con, "%c", 0x02);
+				cprintf(con, "%c", 0x00);
+				break;
+			case SUMP_XON:
+			case SUMP_XOFF:
+				/* not implemented */
+				break;
+			default:
+				// Other commands take 4 bytes as parameters
+				if(chSequentialStreamRead(con->sdu, sump_parameters, 4) == 4) {
+					switch(sump_command) {
+					case SUMP_TRIG_1:
+					case SUMP_TRIG_2:
+					case SUMP_TRIG_3:
+					case SUMP_TRIG_4:
+						// Get the trigger index
+						index = (sump_command & 0x0c) >> 2;
+						config.trigger_masks[index] = sump_parameters[3];
+						config.trigger_masks[index] <<= 8;
+						config.trigger_masks[index] |= sump_parameters[2];
+						config.trigger_masks[index] <<= 8;
+						config.trigger_masks[index] |= sump_parameters[1];
+						config.trigger_masks[index] <<= 8;
+						config.trigger_masks[index] |= sump_parameters[0];
+						break;
+					case SUMP_TRIG_VALS_1:
+					case SUMP_TRIG_VALS_2:
+					case SUMP_TRIG_VALS_3:
+					case SUMP_TRIG_VALS_4:
+						// Get the trigger index
+						index = (sump_command & 0x0c) >> 2;
+						config.trigger_values[index] = sump_parameters[3];
+						config.trigger_values[index] <<= 8;
+						config.trigger_values[index] |= sump_parameters[2];
+						config.trigger_values[index] <<= 8;
+						config.trigger_values[index] |= sump_parameters[1];
+						config.trigger_values[index] <<= 8;
+						config.trigger_values[index] |= sump_parameters[0];
+						break;
+					case SUMP_CNT:
+						config.delay_count = sump_parameters[3];
+						config.delay_count <<= 8;
+						config.delay_count |= sump_parameters[2];
+						config.delay_count <<= 2; /* values are multiples of 4 */
+						config.read_count = sump_parameters[1];
+						config.read_count <<= 8;
+						config.read_count |= sump_parameters[0];
+						config.read_count++;
+						config.read_count <<= 2; /* values are multiples of 4 */
+						break;
+					case SUMP_DIV:
+						config.divider = sump_parameters[2];
+						config.divider <<= 8;
+						config.divider |= sump_parameters[1];
+						config.divider <<= 8;
+						config.divider |= sump_parameters[0];
+						config.divider /= 100; /* Assuming 100MHz base frequency */
+						tim_set_prescaler();
+						break;
+					case SUMP_FLAGS:
+						config.channels = (~sump_parameters[0] >> 2) & 0x0f;
+						/* not implemented */
+						break;
+					default:
+						break;
+					}
+				}
+				break;
 			}
 		}
 	}
 	sump_deinit();
-    return TRUE;
+	return TRUE;
 }
 

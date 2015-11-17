@@ -47,4 +47,4 @@ typedef struct {
 	uint32_t divider;
 	uint8_t state;
 	uint8_t channels;
-}sump_config;
+} sump_config;

@@ -578,7 +578,7 @@ t_token tokens_mode_jtag[] = {
 	},
 	{
 		T_BRUTE,
-        .subtokens = tokens_mode_brute,
+		.subtokens = tokens_mode_brute,
 		.help = "Bruteforce JTAG pins on x pins starting from PC0"
 	},
 	{
@@ -907,13 +907,19 @@ t_token tokens_debug[] = {
 };
 
 t_token tokens_logging[] = {
-	{ T_SD,
+	{
+		T_SD,
 		.arg_type = T_ARG_STRING,
-		.help = "Log to file on SD card" },
-	{ T_ON,
-		.help = "Start logging" },
-	{ T_OFF,
-		.help = "Stop logging" },
+		.help = "Log to file on SD card"
+	},
+	{
+		T_ON,
+		.help = "Start logging"
+	},
+	{
+		T_OFF,
+		.help = "Stop logging"
+	},
 	{ }
 };
 

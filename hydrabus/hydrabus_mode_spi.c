@@ -84,12 +84,12 @@ static void show_params(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "Device: SPI%d\r\nGPIO resistor: %s\r\nMode: %s\r\n"
-		"Frequency: ",
-		proto->dev_num + 1,
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
-		"floating",
-		proto->dev_mode == DEV_SPI_MASTER ? "master" : "slave");
+	        "Frequency: ",
+	        proto->dev_num + 1,
+	        proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+	        proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+	        "floating",
+	        proto->dev_mode == DEV_SPI_MASTER ? "master" : "slave");
 
 	print_freq(con, speeds[proto->dev_num][proto->dev_speed]);
 	cprintf(con, " (");
@@ -102,9 +102,9 @@ static void show_params(t_hydra_console *con)
 	}
 	cprintf(con, ")\r\n");
 	cprintf(con, "Polarity: %d\r\nPhase: %d\r\nBit order: %s first\r\n",
-		proto->dev_polarity,
-		proto->dev_phase,
-		proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
+	        proto->dev_polarity,
+	        proto->dev_phase,
+	        proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
