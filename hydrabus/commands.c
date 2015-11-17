@@ -138,6 +138,7 @@ t_token_dict tl_dict[] = {
 	{ T_DOT, "." },
 	{ T_AMPERSAND, "&" },
 	{ T_PERCENT, "%" },
+	{ T_TILDE, "~" },
 	{ }
 };
 
@@ -326,6 +327,11 @@ t_token tokens_mode_uart[] = {
 		.help = "Delay 1 msec (repeat with :<num>)"
 	},
 	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
 		T_BRIDGE,
 		.help = "UART bridge mode"
 	},
@@ -407,6 +413,11 @@ t_token tokens_mode_i2c[] = {
 		T_PERCENT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
 	},
 	{
 		T_EXIT,
@@ -495,6 +506,11 @@ t_token tokens_mode_spi[] = {
 		T_PERCENT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
 	},
 	{
 		T_EXIT,
@@ -623,6 +639,11 @@ t_token tokens_mode_jtag[] = {
 		T_PERCENT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
 	},
 	{
 		T_EXIT,

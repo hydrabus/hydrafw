@@ -26,6 +26,8 @@
 #include "hydrabus_mode.h"
 #include "mode_config.h"
 
+#include "bsp_rng.h"
+
 #define MAYBE_CALL(x) { if (x) x(con); }
 static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 			       int token_pos);
@@ -216,6 +218,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			else
 				t += tokens_used;
 			break;
+		case T_TILDE:
 		case T_ARG_INT:
 			tokens_used = hydrabus_mode_write(con, p, t);
 			if (!tokens_used)
@@ -258,12 +261,19 @@ static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,
 
 	t = token_pos;
 	*num_bytes = 0;
-	while (p->tokens[t] == T_ARG_INT) {
-		t++;
-		memcpy(&arg_int, p->buf + p->tokens[t++], sizeof(int));
-		if (arg_int > 0xff) {
-			cprintf(con, "Please specify one byte at a time.\r\n");
-			return 0;
+	while ((p->tokens[t] == T_ARG_INT) || (p->tokens[t] == T_TILDE)) {
+		if(p->tokens[t] == T_TILDE){
+			bsp_rng_init();
+			arg_int = bsp_rng_read() & 0xff;
+			bsp_rng_deinit();
+			t++;
+		} else {
+			t++;
+			memcpy(&arg_int, p->buf + p->tokens[t++], sizeof(int));
+			if (arg_int > 0xff) {
+				cprintf(con, "Please specify one byte at a time.\r\n");
+				return 0;
+			}
 		}
 		p_proto->buffer_tx[(*num_bytes)++] = arg_int;
 
@@ -307,7 +317,7 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 		count = 1;
 	}
 
-	if (p->tokens[t] != T_ARG_INT) {
+	if ((p->tokens[t] != T_ARG_INT) && (p->tokens[t] != T_TILDE)) {
 		cprintf(con, "No bytes to write.\r\n");
 		return 0;
 	}
