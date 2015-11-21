@@ -16,7 +16,7 @@ limitations under the License.
 #include "bsp_rng.h"
 #include "stm32f405xx.h"
 
-static RNG_HandleTypeDef *hrng;
+RNG_HandleTypeDef hrng;
 
 /** \brief Init RNG device.
  *
@@ -25,12 +25,12 @@ static RNG_HandleTypeDef *hrng;
  */
 bsp_status_t bsp_rng_init()
 {
-        hrng->Instance = RNG;
+        hrng.Instance = RNG;
 
         /* Configure the RNG peripheral */
         __RNG_CLK_ENABLE();
 
-        __HAL_RNG_ENABLE(hrng);
+        __HAL_RNG_ENABLE(&hrng);
 
         /*
         if(HAL_RNG_Init(hrng) != HAL_OK) {
@@ -48,9 +48,9 @@ bsp_status_t bsp_rng_init()
  */
 bsp_status_t bsp_rng_deinit()
 {
-        hrng->Instance = RNG;
+        hrng.Instance = RNG;
 
-        __HAL_RNG_DISABLE(hrng);
+        __HAL_RNG_DISABLE(&hrng);
 
         __RNG_CLK_DISABLE();
 
@@ -64,11 +64,11 @@ bsp_status_t bsp_rng_deinit()
  */
 uint32_t bsp_rng_read()
 {
-        hrng->Instance = RNG;
+        hrng.Instance = RNG;
 
-        while (!(__HAL_RNG_GET_FLAG(hrng, RNG_FLAG_DRDY)) || USER_BUTTON) {
+        while (!(__HAL_RNG_GET_FLAG(&hrng, RNG_FLAG_DRDY)) || USER_BUTTON) {
         }
 
-        return hrng->Instance->DR;
+        return hrng.Instance->DR;
 }
 

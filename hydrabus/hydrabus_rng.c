@@ -31,10 +31,9 @@ int cmd_rng(t_hydra_console *con, t_tokenline_parsed *p)
 
 	bsp_rng_init();
 
-	cprintf(con, "%02X\r\n", bsp_rng_read());
+	cprintf(con, "%08X\r\n", bsp_rng_read());
 
 	bsp_rng_deinit();
 
 	return TRUE;
 }
-
