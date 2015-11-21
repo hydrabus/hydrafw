@@ -18,12 +18,12 @@ With following syntax: AStyle.exe -t --style=linux --lineend=linux my_c_file.c
 
 Syntax tested with AStyle_2.05.1
 
-#Configuration of Linux Kernel coding style with Em::Blocks
+#Configuration of Linux Kernel coding style with [EmBitz](http://www.emblocks.org/web/downloads-main)
 ##Menu Settings -> Editor -> General settings:
-![Em::Blocks General settings](http://hydrabus.com/EmBlocks_CodingStyle_GeneralSettings.png)
+![General settings](http://hydrabus.com/EmBlocks_CodingStyle_GeneralSettings.png)
 
 ##Menu Settings -> Editor -> Source fomatter Tab Style:
-![Em::Blocks Source fomatter Tab Style](http://hydrabus.com/EmBlocks_CodingStyle_SourceFormatter_Style.png)
+![Source fomatter Tab Style](http://hydrabus.com/EmBlocks_CodingStyle_SourceFormatter_Style.png)
 
 ##Menu Settings -> Editor -> General settings Tab Indentation:
-![Em::Blocks Source fomatter Tab Indentation](http://hydrabus.com/EmBlocks_CodingStyle_SourceFormatter_Indentation.png)
+![Source fomatter Tab Indentation](http://hydrabus.com/EmBlocks_CodingStyle_SourceFormatter_Indentation.png)
