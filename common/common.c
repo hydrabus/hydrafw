@@ -28,7 +28,7 @@
 
 #include "bsp_gpio.h"
 
-#define HYDRAFW_VERSION "HydraFW (HydraBus) " HYDRAFW_GIT_TAG " " HYDRAFW_BUILD_DATE
+#define HYDRAFW_VERSION "HydraFW (HydraBus) " HYDRAFW_GIT_TAG " " HYDRAFW_CHECKIN_DATE
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
 static volatile uint64_t cyclecounter64 = 0;
@@ -233,8 +233,8 @@ void cmd_show_system(t_hydra_console *con)
 
 	cprintf(con, "cyclecounter: 0x%08x cycles.\r\n", cycles_start);
 	cprintf(con, "cyclecounter64: 0x%08x%08x cycles.\r\n",
-					(uint32_t)(cycles64 >> 32),
-					(uint32_t)(cycles64 & 0xFFFFFFFF));
+		(uint32_t)(cycles64 >> 32),
+		(uint32_t)(cycles64 & 0xFFFFFFFF));
 
 	cycles_start = get_cyclecounter();
 	DelayUs(10000);
