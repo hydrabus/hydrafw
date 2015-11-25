@@ -241,6 +241,7 @@ static struct cmd_map {
 	{ T_SUMP, cmd_sump },
 	{ T_JTAG, cmd_mode_init },
 	{ T_RNG, cmd_rng },
+	{ T_TWOWIRE, cmd_mode_init },
 	{ 0, NULL }
 };
 
