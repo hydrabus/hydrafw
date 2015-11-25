@@ -117,6 +117,7 @@ enum {
 	T_IDCODE,
 	T_OOCD,
 	T_RNG,
+	T_TWOWIRE,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,
