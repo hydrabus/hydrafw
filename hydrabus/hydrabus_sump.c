@@ -108,9 +108,9 @@ static void sump_deinit(void)
 	hal_gpio_port =(GPIO_TypeDef*)GPIOC;
 	uint8_t gpio_pin;
 
-	HAL_TIM_Base_Stop_IT(&htim);
+	HAL_TIM_Base_Stop(&htim);
 	HAL_TIM_Base_DeInit(&htim);
-	nvicDisableVector(TIM4_IRQn);
+	__TIM4_CLK_DISABLE();
 	for(gpio_pin=0; gpio_pin<15; gpio_pin++) {
 		HAL_GPIO_DeInit(hal_gpio_port, 1 << gpio_pin);
 	}
