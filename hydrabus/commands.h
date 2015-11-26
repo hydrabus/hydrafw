@@ -118,6 +118,11 @@ enum {
 	T_OOCD,
 	T_RNG,
 	T_TWOWIRE,
+	T_CAN,
+	T_ID,
+	T_FILTER,
+	T_LOW,
+	T_HIGH,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,
