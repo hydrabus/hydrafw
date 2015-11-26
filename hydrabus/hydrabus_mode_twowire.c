@@ -109,17 +109,17 @@ static void twowire_sda_mode_output(t_hydra_console *con)
 		      proto->dev_gpio_mode, proto->dev_gpio_pull);
 }
 
-static inline void twowire_sda_high()
+static inline void twowire_sda_high(void)
 {
 	bsp_gpio_set(BSP_GPIO_PORTB, config.sda_pin);
 }
 
-static inline void twowire_sda_low()
+static inline void twowire_sda_low(void)
 {
 	bsp_gpio_clr(BSP_GPIO_PORTB, config.sda_pin);
 }
 
-static inline void twowire_clk_high()
+static inline void twowire_clk_high(void)
 {
 	while (!(TIM4->SR & TIM_SR_UIF)) {
 	}
@@ -127,7 +127,7 @@ static inline void twowire_clk_high()
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
 
-static inline void twowire_clk_low()
+static inline void twowire_clk_low(void)
 {
 	while (!(TIM4->SR & TIM_SR_UIF)) {
 	}
