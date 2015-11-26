@@ -505,6 +505,10 @@
 		</Unit>
 		<Unit filename="drv\stm32cube\bsp_adc.h" />
 		<Unit filename="drv\stm32cube\bsp_adc_conf.h" />
+		<Unit filename="drv\stm32cube\bsp_can.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="drv\stm32cube\bsp_can.h" />
 		<Unit filename="drv\stm32cube\bsp_dac.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -599,6 +603,9 @@
 		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_adc.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_can.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="drv\stm32cube\src\stm32f4xx_hal_dac.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -658,6 +665,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydrabus\hydrabus_mode.h" />
+		<Unit filename="hydrabus\hydrabus_mode_can.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="hydrabus\hydrabus_mode_conf.h" />
 		<Unit filename="hydrabus\hydrabus_mode_hiz.h" />
 		<Unit filename="hydrabus\hydrabus_mode_i2c.c">
@@ -671,6 +681,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="hydrabus\hydrabus_mode_spi.h" />
+		<Unit filename="hydrabus\hydrabus_mode_twowire.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="hydrabus\hydrabus_mode_uart.c">
 			<Option compilerVar="CC" />
 		</Unit>
