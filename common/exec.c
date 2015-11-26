@@ -234,6 +234,7 @@ static struct cmd_map {
 	{ T_I2C, cmd_mode_init },
 	{ T_UART, cmd_mode_init },
 	{ T_NFC, cmd_mode_init },
+	{ T_CAN, cmd_mode_init },
 	{ T_ADC, cmd_adc },
 	{ T_DAC, cmd_dac },
 	{ T_PWM, cmd_pwm },

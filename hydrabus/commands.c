@@ -125,6 +125,11 @@ t_token_dict tl_dict[] = {
 	{ T_OOCD, "openocd" },
 	{ T_RNG, "random" },
 	{ T_TWOWIRE, "2-wire" },
+	{ T_CAN, "can" },
+	{ T_ID, "id" },
+	{ T_FILTER, "filter" },
+	{ T_LOW, "low" },
+	{ T_HIGH, "high" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -187,6 +192,18 @@ t_token tokens_mode_nfc_show[] = {
 	{ }
 };
 
+t_token tokens_mode_can_show[] = {
+	{
+		T_PINS,
+		.help = "Show pins used in this mode"
+	},
+	{
+		T_FILTER,
+		.help = "Show CAN filter"
+	},
+	{ }
+};
+
 t_token tokens_mode_nfc_scan[] = {
 	{
 		T_PERIOD,
@@ -210,6 +227,28 @@ t_token tokens_mode_brute[] = {
 		T_IDCODE,
 		.arg_type = T_ARG_INT,
 		.help = "Performs an IDCODE scan on n pins"
+	},
+	{ }
+};
+
+t_token tokens_mode_can_filter[] = {
+	{
+		T_ON,
+		.help = "Enable filter"
+	},
+	{
+		T_OFF,
+		.help = "Disable filter"
+	},
+	{
+		T_LOW,
+		.arg_type = T_ARG_INT,
+		.help = "Lower ID to include in filter"
+	},
+	{
+		T_HIGH,
+		.arg_type = T_ARG_INT,
+		.help = "Higher ID to include in filter"
 	},
 	{ }
 };
@@ -345,6 +384,69 @@ t_token tokens_mode_uart[] = {
 
 t_token tokens_uart[] = {
 	UART_PARAMETERS
+	{ }
+};
+
+#define CAN_PARAMETERS \
+	{\
+		T_DEVICE,\
+		.arg_type = T_ARG_INT,\
+		.help = "CAN device (1/2)"\
+	},\
+	{\
+		T_SPEED,\
+		.arg_type = T_ARG_INT,\
+		.help = "Bus bitrate"\
+	},
+
+t_token tokens_mode_can[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_can_show,
+		.help = "Show CAN parameters"
+	},
+	CAN_PARAMETERS
+	/* CAN-specific commands */
+	{
+		T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read packet (repeat with :<num>)"
+	},
+	{
+		T_CONTINUOUS,
+		.help = "Read continuously"
+	},
+	{
+		T_WRITE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write packet (repeat with :<num>)"
+	},
+	{
+		T_ID,
+		.arg_type = T_ARG_INT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Change next frame ID"
+	},
+	{
+		T_FILTER,
+		.subtokens = tokens_mode_can_filter,
+		.help = "Set input filter"
+	},
+	{
+		T_ARG_INT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write packets (repeat with :<num>)"
+	},
+	/* BP commands */
+	{
+		T_EXIT,
+		.help = "Exit UART mode"
+	},
+	{ }
+};
+
+t_token tokens_can[] = {
+	CAN_PARAMETERS
 	{ }
 };
 
@@ -1105,6 +1207,11 @@ t_token tl_tokens[] = {
 		T_NFC,
 		.subtokens = tokens_nfc,
 		.help = "NFC mode"
+	},
+	{
+		T_CAN,
+		.subtokens = tokens_can,
+		.help = "CAN mode"
 	},
 	{
 		T_SUMP,
