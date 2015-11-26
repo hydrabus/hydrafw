@@ -35,43 +35,43 @@ static mode_config_proto_t* can_mode_conf[NB_CAN];
   */
 static void can_gpio_hw_init(bsp_dev_can_t dev_num)
 {
-        GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitTypeDef GPIO_InitStructure;
 
-        __CAN1_CLK_ENABLE();
+	__CAN1_CLK_ENABLE();
 
-        if(dev_num == BSP_DEV_CAN1) {
-                /* Enable the CAN peripheral */
+	if(dev_num == BSP_DEV_CAN1) {
+		/* Enable the CAN peripheral */
 
-                GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-                GPIO_InitStructure.Pull  = GPIO_NOPULL;
-                GPIO_InitStructure.Speed = BSP_CAN1_GPIO_SPEED;
-                GPIO_InitStructure.Alternate = BSP_CAN1_AF;
+		GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
+		GPIO_InitStructure.Pull  = GPIO_NOPULL;
+		GPIO_InitStructure.Speed = BSP_CAN1_GPIO_SPEED;
+		GPIO_InitStructure.Alternate = BSP_CAN1_AF;
 
-                /* CAN1 TX pin configuration */
-                GPIO_InitStructure.Pin = BSP_CAN1_TX_PIN;
-                HAL_GPIO_Init(BSP_CAN1_TX_PORT, &GPIO_InitStructure);
+		/* CAN1 TX pin configuration */
+		GPIO_InitStructure.Pin = BSP_CAN1_TX_PIN;
+		HAL_GPIO_Init(BSP_CAN1_TX_PORT, &GPIO_InitStructure);
 
-                /* CAN1 RX pin configuration */
-                GPIO_InitStructure.Pin = BSP_CAN1_RX_PIN;
-                HAL_GPIO_Init(BSP_CAN1_RX_PORT, &GPIO_InitStructure);
+		/* CAN1 RX pin configuration */
+		GPIO_InitStructure.Pin = BSP_CAN1_RX_PIN;
+		HAL_GPIO_Init(BSP_CAN1_RX_PORT, &GPIO_InitStructure);
 
-        } else {
-                /* Enable the CAN peripheral */
-                __CAN2_CLK_ENABLE();
+	} else {
+		/* Enable the CAN peripheral */
+		__CAN2_CLK_ENABLE();
 
-                GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-                GPIO_InitStructure.Pull  = GPIO_NOPULL;
-                GPIO_InitStructure.Speed = BSP_CAN2_GPIO_SPEED;
-                GPIO_InitStructure.Alternate = BSP_CAN2_AF;
+		GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
+		GPIO_InitStructure.Pull  = GPIO_NOPULL;
+		GPIO_InitStructure.Speed = BSP_CAN2_GPIO_SPEED;
+		GPIO_InitStructure.Alternate = BSP_CAN2_AF;
 
-                /* CAN2 TX pin configuration */
-                GPIO_InitStructure.Pin = BSP_CAN2_TX_PIN;
-                HAL_GPIO_Init(BSP_CAN2_TX_PORT, &GPIO_InitStructure);
+		/* CAN2 TX pin configuration */
+		GPIO_InitStructure.Pin = BSP_CAN2_TX_PIN;
+		HAL_GPIO_Init(BSP_CAN2_TX_PORT, &GPIO_InitStructure);
 
-                /* CAN2 RX pin configuration */
-                GPIO_InitStructure.Pin = BSP_CAN2_RX_PIN;
-                HAL_GPIO_Init(BSP_CAN2_RX_PORT, &GPIO_InitStructure);
-        }
+		/* CAN2 RX pin configuration */
+		GPIO_InitStructure.Pin = BSP_CAN2_RX_PIN;
+		HAL_GPIO_Init(BSP_CAN2_RX_PORT, &GPIO_InitStructure);
+	}
 
 }
 
@@ -82,23 +82,23 @@ static void can_gpio_hw_init(bsp_dev_can_t dev_num)
   */
 static void can_gpio_hw_deinit(bsp_dev_can_t dev_num)
 {
-        if(dev_num == BSP_DEV_CAN1) {
-                /* Reset peripherals */
-                __CAN1_FORCE_RESET();
-                __CAN1_RELEASE_RESET();
+	if(dev_num == BSP_DEV_CAN1) {
+		/* Reset peripherals */
+		__CAN1_FORCE_RESET();
+		__CAN1_RELEASE_RESET();
 
-                /* Disable peripherals GPIO */
-                HAL_GPIO_DeInit(BSP_CAN1_TX_PORT, BSP_CAN1_TX_PIN);
-                HAL_GPIO_DeInit(BSP_CAN1_RX_PORT, BSP_CAN1_RX_PIN);
-        } else {
-                /* Reset peripherals */
-                __CAN2_FORCE_RESET();
-                __CAN2_RELEASE_RESET();
+		/* Disable peripherals GPIO */
+		HAL_GPIO_DeInit(BSP_CAN1_TX_PORT, BSP_CAN1_TX_PIN);
+		HAL_GPIO_DeInit(BSP_CAN1_RX_PORT, BSP_CAN1_RX_PIN);
+	} else {
+		/* Reset peripherals */
+		__CAN2_FORCE_RESET();
+		__CAN2_RELEASE_RESET();
 
-                /* Disable peripherals GPIO */
-                HAL_GPIO_DeInit(BSP_CAN2_TX_PORT, BSP_CAN2_TX_PIN);
-                HAL_GPIO_DeInit(BSP_CAN2_RX_PORT, BSP_CAN2_RX_PIN);
-        }
+		/* Disable peripherals GPIO */
+		HAL_GPIO_DeInit(BSP_CAN2_TX_PORT, BSP_CAN2_TX_PIN);
+		HAL_GPIO_DeInit(BSP_CAN2_RX_PORT, BSP_CAN2_RX_PIN);
+	}
 }
 
 /**
@@ -108,10 +108,10 @@ static void can_gpio_hw_deinit(bsp_dev_can_t dev_num)
   */
 static void can_error(bsp_dev_can_t dev_num)
 {
-        if(bsp_can_deinit(dev_num) == BSP_OK) {
-                /* Re-Initialize the CAN comunication bus */
-                bsp_can_init(dev_num, can_mode_conf[dev_num]);
-        }
+	if(bsp_can_deinit(dev_num) == BSP_OK) {
+		/* Re-Initialize the CAN comunication bus */
+		bsp_can_init(dev_num, can_mode_conf[dev_num]);
+	}
 }
 
 /**
@@ -122,24 +122,24 @@ static void can_error(bsp_dev_can_t dev_num)
   */
 bsp_status_t bsp_can_set_speed(bsp_dev_can_t dev_num, uint32_t speed)
 {
-        CAN_HandleTypeDef* hcan;
-        bsp_status_t status;
+	CAN_HandleTypeDef* hcan;
+	bsp_status_t status;
 
-        hcan = &can_handle[dev_num];
+	hcan = &can_handle[dev_num];
 
-        HAL_CAN_DeInit(hcan);
+	HAL_CAN_DeInit(hcan);
 
-        hcan->Init.Prescaler = 2000000/speed;
-        status = HAL_CAN_Init(hcan);
+	hcan->Init.Prescaler = 2000000/speed;
+	status = HAL_CAN_Init(hcan);
 
-        return status;
+	return status;
 }
 
 uint32_t bsp_can_get_speed(bsp_dev_can_t dev_num)
 {
-        CAN_HandleTypeDef* hcan;
-        hcan = &can_handle[dev_num];
-        return 2000000/hcan->Init.Prescaler;
+	CAN_HandleTypeDef* hcan;
+	hcan = &can_handle[dev_num];
+	return 2000000/hcan->Init.Prescaler;
 }
 
 /**
@@ -150,66 +150,66 @@ uint32_t bsp_can_get_speed(bsp_dev_can_t dev_num)
   */
 bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 {
-        CAN_HandleTypeDef* hcan;
-        bsp_status_t status;
+	CAN_HandleTypeDef* hcan;
+	bsp_status_t status;
 
-        can_mode_conf[dev_num] = mode_conf;
-        hcan = &can_handle[dev_num];
+	can_mode_conf[dev_num] = mode_conf;
+	hcan = &can_handle[dev_num];
 
-        can_gpio_hw_init(dev_num);
+	can_gpio_hw_init(dev_num);
 
-        if(dev_num == BSP_DEV_CAN1) {
-                hcan->Instance = BSP_CAN1;
-                HAL_CAN_DeInit(hcan);
-        } else { /* CAN2 */
-                hcan->Instance = BSP_CAN2;
-                HAL_CAN_DeInit(hcan);
-        }
+	if(dev_num == BSP_DEV_CAN1) {
+		hcan->Instance = BSP_CAN1;
+		HAL_CAN_DeInit(hcan);
+	} else { /* CAN2 */
+		hcan->Instance = BSP_CAN2;
+		HAL_CAN_DeInit(hcan);
+	}
 
-        __HAL_CAN_RESET_HANDLE_STATE(hcan);
+	__HAL_CAN_RESET_HANDLE_STATE(hcan);
 
-        /* CAN cell init */
+	/* CAN cell init */
 
-        /* time triggered communication mode */
-        hcan->Init.TTCM = DISABLE;
+	/* time triggered communication mode */
+	hcan->Init.TTCM = DISABLE;
 
-        /* automatic bus-off management */
-        hcan->Init.ABOM = ENABLE;
+	/* automatic bus-off management */
+	hcan->Init.ABOM = ENABLE;
 
-        /* automatic wake-up mode */
-        hcan->Init.AWUM = ENABLE;
+	/* automatic wake-up mode */
+	hcan->Init.AWUM = ENABLE;
 
-        /* non-automatic retransmission mode */
-        hcan->Init.NART = DISABLE;
+	/* non-automatic retransmission mode */
+	hcan->Init.NART = DISABLE;
 
-        /* receive FIFO Locked mode */
-        hcan->Init.RFLM = DISABLE;
+	/* receive FIFO Locked mode */
+	hcan->Init.RFLM = DISABLE;
 
-        /* transmit FIFO priority */
-        hcan->Init.TXFP = DISABLE;
+	/* transmit FIFO priority */
+	hcan->Init.TXFP = DISABLE;
 
-        hcan->Init.SJW  = CAN_SJW_1TQ;
-        hcan->Init.Mode = CAN_MODE_NORMAL;
+	hcan->Init.SJW  = CAN_SJW_1TQ;
+	hcan->Init.Mode = CAN_MODE_NORMAL;
 
-        /* CAN Baudrate */
-        hcan->Init.BS1 = CAN_BS1_14TQ;
-        hcan->Init.BS2 = CAN_BS2_6TQ;
+	/* CAN Baudrate */
+	hcan->Init.BS1 = CAN_BS1_14TQ;
+	hcan->Init.BS2 = CAN_BS2_6TQ;
 
-        //hcan->Init.Prescaler=1;        // 2000 kbit/s
-        //hcan->Init.Prescaler=2;        // 1000 kbit/s
-        hcan->Init.Prescaler=4;        //  500 kbit/s
-        //hcan->Init.Prescaler=5;        //  400 kbit/s
-        //hcan->Init.Prescaler=8;        //  250 kbit/s
-        //hcan->Init.Prescaler=10;       //  200 kbit/s
-        //hcan->Init.Prescaler=16;       //  125 kbit/s
-        //hcan->Init.Prescaler=20;       //  100 kbit/s
-        //hcan->Init.Prescaler=40;       //   50 kbit/s
-        //hcan->Init.Prescaler=80;       //   40 kbit/s
-        //hcan->Init.Prescaler=200;      //   10 kbit/s
+	//hcan->Init.Prescaler=1;        // 2000 kbit/s
+	//hcan->Init.Prescaler=2;        // 1000 kbit/s
+	hcan->Init.Prescaler=4;        //  500 kbit/s
+	//hcan->Init.Prescaler=5;        //  400 kbit/s
+	//hcan->Init.Prescaler=8;        //  250 kbit/s
+	//hcan->Init.Prescaler=10;       //  200 kbit/s
+	//hcan->Init.Prescaler=16;       //  125 kbit/s
+	//hcan->Init.Prescaler=20;       //  100 kbit/s
+	//hcan->Init.Prescaler=40;       //   50 kbit/s
+	//hcan->Init.Prescaler=80;       //   40 kbit/s
+	//hcan->Init.Prescaler=200;      //   10 kbit/s
 
-        status = HAL_CAN_Init(hcan);
+	status = HAL_CAN_Init(hcan);
 
-        return status;
+	return status;
 }
 
 /**
@@ -220,30 +220,30 @@ bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
   */
 bsp_status_t bsp_can_init_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 {
-        CAN_HandleTypeDef* hcan;
-        CAN_FilterConfTypeDef* hcanfilter;
+	CAN_FilterConfTypeDef hcanfilter;
+	CAN_HandleTypeDef* hcan;
 
-        can_mode_conf[dev_num] = mode_conf;
-        hcan = &can_handle[dev_num];
+	can_mode_conf[dev_num] = mode_conf;
+	hcan = &can_handle[dev_num];
 
-        bsp_status_t status;
+	bsp_status_t status;
 
-        can_gpio_hw_init(dev_num);
+	can_gpio_hw_init(dev_num);
 
-        hcanfilter->FilterIdLow = 0;
-        hcanfilter->FilterIdHigh = 0;
-        hcanfilter->FilterMaskIdHigh = 0;
-        hcanfilter->FilterMaskIdLow = 0;
-        hcanfilter->FilterFIFOAssignment = CAN_FILTER_FIFO0;
-        hcanfilter->FilterNumber = 0;
-        hcanfilter->FilterMode = CAN_FILTERMODE_IDMASK;
-        hcanfilter->FilterScale = CAN_FILTERSCALE_16BIT;
-        hcanfilter->FilterActivation = ENABLE;
-        hcanfilter->BankNumber = 0;
+	hcanfilter.FilterIdLow = 0;
+	hcanfilter.FilterIdHigh = 0;
+	hcanfilter.FilterMaskIdHigh = 0;
+	hcanfilter.FilterMaskIdLow = 0;
+	hcanfilter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
+	hcanfilter.FilterNumber = 0;
+	hcanfilter.FilterMode = CAN_FILTERMODE_IDMASK;
+	hcanfilter.FilterScale = CAN_FILTERSCALE_16BIT;
+	hcanfilter.FilterActivation = ENABLE;
+	hcanfilter.BankNumber = 0;
 
-        status = HAL_CAN_ConfigFilter(hcan, hcanfilter);
+	status = HAL_CAN_ConfigFilter(hcan, &hcanfilter);
 
-        return status;
+	return status;
 }
 
 /**
@@ -255,33 +255,33 @@ bsp_status_t bsp_can_init_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mod
   * @retval status: status of the init.
   */
 bsp_status_t bsp_can_set_filter(bsp_dev_can_t dev_num,
-                                mode_config_proto_t* mode_conf,
-                                uint32_t id_low, uint32_t id_high)
+				mode_config_proto_t* mode_conf,
+				uint32_t id_low, uint32_t id_high)
 {
-        CAN_HandleTypeDef* hcan;
-        CAN_FilterConfTypeDef* hcanfilter;
+	CAN_FilterConfTypeDef hcanfilter;
+	CAN_HandleTypeDef* hcan;
 
-        can_mode_conf[dev_num] = mode_conf;
-        hcan = &can_handle[dev_num];
+	can_mode_conf[dev_num] = mode_conf;
+	hcan = &can_handle[dev_num];
 
-        bsp_status_t status;
+	bsp_status_t status;
 
-        can_gpio_hw_init(dev_num);
+	can_gpio_hw_init(dev_num);
 
-        hcanfilter->FilterIdLow = id_low<<5;
-        hcanfilter->FilterIdHigh = id_high<<5;
-        hcanfilter->FilterMaskIdHigh = 0;
-        hcanfilter->FilterMaskIdLow = 0;
-        hcanfilter->FilterFIFOAssignment = CAN_FILTER_FIFO0;
-        hcanfilter->FilterNumber = 0;
-        hcanfilter->FilterMode = CAN_FILTERMODE_IDLIST;
-        hcanfilter->FilterScale = CAN_FILTERSCALE_16BIT;
-        hcanfilter->FilterActivation = ENABLE;
-        hcanfilter->BankNumber = 0;
+	hcanfilter.FilterIdLow = id_low<<5;
+	hcanfilter.FilterIdHigh = id_high<<5;
+	hcanfilter.FilterMaskIdHigh = 0;
+	hcanfilter.FilterMaskIdLow = 0;
+	hcanfilter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
+	hcanfilter.FilterNumber = 0;
+	hcanfilter.FilterMode = CAN_FILTERMODE_IDLIST;
+	hcanfilter.FilterScale = CAN_FILTERSCALE_16BIT;
+	hcanfilter.FilterActivation = ENABLE;
+	hcanfilter.BankNumber = 0;
 
-        status = HAL_CAN_ConfigFilter(hcan, hcanfilter);
+	status = HAL_CAN_ConfigFilter(hcan, &hcanfilter);
 
-        return status;
+	return status;
 }
 
 /**
@@ -291,18 +291,18 @@ bsp_status_t bsp_can_set_filter(bsp_dev_can_t dev_num,
   */
 bsp_status_t bsp_can_deinit(bsp_dev_can_t dev_num)
 {
-        CAN_HandleTypeDef* hcan;
-        bsp_status_t status;
+	CAN_HandleTypeDef* hcan;
+	bsp_status_t status;
 
-        hcan = &can_handle[dev_num];
+	hcan = &can_handle[dev_num];
 
-        /* De-initialize the CAN comunication bus */
-        status = HAL_CAN_DeInit(hcan);
+	/* De-initialize the CAN comunication bus */
+	status = HAL_CAN_DeInit(hcan);
 
-        /* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
-        can_gpio_hw_deinit(dev_num);
+	/* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
+	can_gpio_hw_deinit(dev_num);
 
-        return status;
+	return status;
 }
 
 /**
@@ -313,18 +313,18 @@ bsp_status_t bsp_can_deinit(bsp_dev_can_t dev_num)
   */
 bsp_status_t bsp_can_write(bsp_dev_can_t dev_num, CanTxMsgTypeDef* tx_msg)
 {
-        CAN_HandleTypeDef* hcan;
-        bsp_status_t status;
+	CAN_HandleTypeDef* hcan;
+	bsp_status_t status;
 
-        hcan = &can_handle[dev_num];
+	hcan = &can_handle[dev_num];
 
-        hcan->pTxMsg = tx_msg;
+	hcan->pTxMsg = tx_msg;
 
-        status = HAL_CAN_Transmit(hcan, CANx_TIMEOUT_MAX);
-        if(status != BSP_OK) {
-                can_error(dev_num);
-        }
-        return status;
+	status = HAL_CAN_Transmit(hcan, CANx_TIMEOUT_MAX);
+	if(status != BSP_OK) {
+		can_error(dev_num);
+	}
+	return status;
 }
 
 /**
@@ -335,18 +335,18 @@ bsp_status_t bsp_can_write(bsp_dev_can_t dev_num, CanTxMsgTypeDef* tx_msg)
   */
 bsp_status_t bsp_can_read(bsp_dev_can_t dev_num, CanRxMsgTypeDef* rx_msg)
 {
-        CAN_HandleTypeDef* hcan;
-        bsp_status_t status;
+	CAN_HandleTypeDef* hcan;
+	bsp_status_t status;
 
-        hcan = &can_handle[dev_num];
+	hcan = &can_handle[dev_num];
 
-        hcan->pRxMsg = rx_msg;
+	hcan->pRxMsg = rx_msg;
 
-        status = HAL_CAN_Receive(hcan, CAN_FIFO0, CANx_TIMEOUT_MAX);
-        if(status != BSP_OK) {
-                can_error(dev_num);
-        }
-        return status;
+	status = HAL_CAN_Receive(hcan, CAN_FIFO0, CANx_TIMEOUT_MAX);
+	if(status != BSP_OK) {
+		can_error(dev_num);
+	}
+	return status;
 }
 
 /**
@@ -355,9 +355,9 @@ bsp_status_t bsp_can_read(bsp_dev_can_t dev_num, CanRxMsgTypeDef* rx_msg)
   */
 bsp_status_t bsp_can_rxne(bsp_dev_can_t dev_num)
 {
-        CAN_HandleTypeDef* hcan;
-        hcan = &can_handle[dev_num];
+	CAN_HandleTypeDef* hcan;
+	hcan = &can_handle[dev_num];
 
-        return __HAL_CAN_GET_FLAG(hcan, CAN_FLAG_FMP0);
+	return __HAL_CAN_GET_FLAG(hcan, CAN_FLAG_FMP0);
 }
 
