@@ -26,8 +26,8 @@ typedef enum {
 	BSP_DEV_CAN_END = 2
 } bsp_dev_can_t;
 
-
 bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf);
+uint32_t bsp_can_get_speed(bsp_dev_can_t dev_num);
 bsp_status_t bsp_can_set_speed(bsp_dev_can_t dev_num, uint32_t speed);
 bsp_status_t bsp_can_init_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf);
 bsp_status_t bsp_can_set_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf, uint32_t id_low, uint32_t id_high);
