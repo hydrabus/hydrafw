@@ -59,8 +59,14 @@ static void show_params(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "Device: JTAG%d\r\n",
-		proto->dev_num + 1);
+	cprintf(con, "Device: JTAG%d\r\nGPIO resistor: %s\r\n",
+		proto->dev_num + 1,
+		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+		"floating");
+
+	cprintf(con, "Bit order: %s first\r\n",
+		proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
 }
 
 static bool jtag_pin_init(t_hydra_console *con)
