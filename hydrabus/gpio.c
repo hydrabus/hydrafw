@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2012-2014 Benjamin VERNOUX
+ * Copyright (C) 2012-2015 Benjamin VERNOUX
  * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@
 #include <ctype.h>
 
 static const char *str_pin_error = "Invalid pin '%s'. Select one or more "
-                                   "of PA0-15, PB0-11, PC0-15.\r\n";
+				   "of PA0-15, PB0-11, PC0-15.\r\n";
 
 static uint32_t ports[] = {
 	BSP_GPIO_PORTA,
@@ -43,7 +43,7 @@ static void read_continuous(t_hydra_console *con, uint16_t *gpio, int period)
 		for (pin = 0; pin < 16; pin++) {
 			if (gpio[port] & (1 << pin))
 				cprintf(con, "P%c%d%s ", port + 'A', pin,
-				        pin < 10 ? " " : "");
+					pin < 10 ? " " : "");
 		}
 	}
 	cprint(con, "\r\n", 2);

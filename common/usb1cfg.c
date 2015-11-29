@@ -1,6 +1,6 @@
 /*
 ChibiOS/RT - Copyright (C) 2006-2013 Giovanni Di Sirio
-HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2012-2015 Benjamin VERNOUX
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
 #include "ch.h"
 #include "hal.h"
 
-#define VENDOR_ID		0x1d50
+#define VENDOR_ID	0x1d50
 #define PRODUCT_ID	0x60a7
 
 /*

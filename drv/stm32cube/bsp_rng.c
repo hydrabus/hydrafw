@@ -1,5 +1,5 @@
 /*
-HydraBus/HydraNFC - Copyright (C) 2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2015 Benjamin VERNOUX
 HydraBus/HydraNFC - Copyright (C) 2015 Nicolas OBERLI
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,20 +25,20 @@ RNG_HandleTypeDef hrng;
  */
 bsp_status_t bsp_rng_init()
 {
-        hrng.Instance = RNG;
+	hrng.Instance = RNG;
 
-        /* Configure the RNG peripheral */
-        __RNG_CLK_ENABLE();
+	/* Configure the RNG peripheral */
+	__RNG_CLK_ENABLE();
 
-        __HAL_RNG_ENABLE(&hrng);
+	__HAL_RNG_ENABLE(&hrng);
 
-        /*
-        if(HAL_RNG_Init(hrng) != HAL_OK) {
-        	return BSP_ERROR;
-        }
-        */
+	/*
+	if(HAL_RNG_Init(hrng) != HAL_OK) {
+		return BSP_ERROR;
+	}
+	*/
 
-        return BSP_OK;
+	return BSP_OK;
 }
 
 /** \brief De-initialize the RNG device.
@@ -48,13 +48,13 @@ bsp_status_t bsp_rng_init()
  */
 bsp_status_t bsp_rng_deinit()
 {
-        hrng.Instance = RNG;
+	hrng.Instance = RNG;
 
-        __HAL_RNG_DISABLE(&hrng);
+	__HAL_RNG_DISABLE(&hrng);
 
-        __RNG_CLK_DISABLE();
+	__RNG_CLK_DISABLE();
 
-        return BSP_OK;
+	return BSP_OK;
 }
 
 /** \brief Returns a random number from the RNG
@@ -64,11 +64,11 @@ bsp_status_t bsp_rng_deinit()
  */
 uint32_t bsp_rng_read()
 {
-        hrng.Instance = RNG;
+	hrng.Instance = RNG;
 
-        while (!(__HAL_RNG_GET_FLAG(&hrng, RNG_FLAG_DRDY)) || USER_BUTTON) {
-        }
+	while (!(__HAL_RNG_GET_FLAG(&hrng, RNG_FLAG_DRDY)) || USER_BUTTON) {
+	}
 
-        return hrng.Instance->DR;
+	return hrng.Instance->DR;
 }
 

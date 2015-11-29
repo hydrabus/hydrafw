@@ -203,13 +203,13 @@ void TagIRQ(int irq_status)
 		if(fifo_size > 0) {
 			data_buf[0] = FIFO;
 			Trf797xReadCont(data_buf, fifo_size);
-/*
-			printf_dbg("RX: ");
-			for(i=0; i<fifo_size; i++) {
-				printf_dbg("0x%02X ", data_buf[i]);
-			}
-			printf_dbg("\r\n");
-*/
+			/*
+						printf_dbg("RX: ");
+						for(i=0; i<fifo_size; i++) {
+							printf_dbg("0x%02X ", data_buf[i]);
+						}
+						printf_dbg("\r\n");
+			*/
 			Trf797xReset(); //reset the FIFO after last byte has been read out
 			Trf797xResetIrqStatus();
 

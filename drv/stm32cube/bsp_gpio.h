@@ -1,5 +1,5 @@
 /*
-HydraBus/HydraNFC - Copyright (C) 2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2014-2015 Benjamin VERNOUX
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ typedef enum {
 
 /* mode_conf use only members dev_gpio_pull & dev_gpio_mode */
 bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, uint16_t gpio_pin,
-		uint32_t mode, uint32_t pull);
+			   uint32_t mode, uint32_t pull);
 
 void bsp_gpio_set(bsp_gpio_port_t gpio_port, uint16_t gpio_pin);
 

@@ -1,5 +1,5 @@
 /*
-HydraBus/HydraNFC - Copyright (C) 2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2014-2015 Benjamin VERNOUX
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -284,7 +284,7 @@ bsp_status_t bsp_uart_rxne(bsp_dev_uart_t dev_num)
 	UART_HandleTypeDef* huart;
 	huart = &uart_handle[dev_num];
 
-    return __HAL_UART_GET_FLAG(huart, UART_FLAG_RXNE);
+	return __HAL_UART_GET_FLAG(huart, UART_FLAG_RXNE);
 }
 
 /** \brief Return final baud rate configured for over8=0 or over8=1.

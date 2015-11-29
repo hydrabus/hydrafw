@@ -1,5 +1,5 @@
 /*
-HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2012-2015 Benjamin VERNOUX
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,19 +24,19 @@ limitations under the License.
 #define BSP_ADC1_PIN          GPIO_PIN_1 /* PA.1 */
 
 #if 0
-	/* ADC2 */
-	#define BSP_ADC2              ADC_CHANNEL_6
-	#define BSP_ADC2_GPIO_SPEED   GPIO_SPEED_HIGH
-	#define BSP_ADC2_AF           GPIO_AF5_ADC2
-	#define BSP_ADC2_PORT         GPIOA
-	#define BSP_ADC2_PIN          GPIO_PIN_6 /* PA.6 */
+/* ADC2 */
+#define BSP_ADC2              ADC_CHANNEL_6
+#define BSP_ADC2_GPIO_SPEED   GPIO_SPEED_HIGH
+#define BSP_ADC2_AF           GPIO_AF5_ADC2
+#define BSP_ADC2_PORT         GPIOA
+#define BSP_ADC2_PIN          GPIO_PIN_6 /* PA.6 */
 
-	/* ADC3 */
-	#define BSP_ADC2              ADC2
-	#define BSP_ADC2_GPIO_SPEED   GPIO_SPEED_HIGH
-	#define BSP_ADC2_AF           GPIO_AF5_ADC2
-	#define BSP_ADC2_PORT         GPIOA
-	#define BSP_ADC2_PIN          GPIO_PIN_7 /* PA.7 */
+/* ADC3 */
+#define BSP_ADC2              ADC2
+#define BSP_ADC2_GPIO_SPEED   GPIO_SPEED_HIGH
+#define BSP_ADC2_AF           GPIO_AF5_ADC2
+#define BSP_ADC2_PORT         GPIOA
+#define BSP_ADC2_PIN          GPIO_PIN_7 /* PA.7 */
 #endif
 
 #endif /* _BSP_ADC_CONF_H_ */

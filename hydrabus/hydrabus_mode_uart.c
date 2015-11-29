@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2012-2014 Benjamin VERNOUX
+ * Copyright (C) 2012-2015 Benjamin VERNOUX
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,10 +58,10 @@ static void show_params(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "Device: UART%d\r\nSpeed: %d bps\r\n",
-	        proto->dev_num + 1, proto->dev_speed);
+		proto->dev_num + 1, proto->dev_speed);
 	cprintf(con, "Parity: %s\r\nStop bits: %d\r\n",
-	        str_dev_param_parity[proto->dev_parity],
-	        proto->dev_stop_bit);
+		str_dev_param_parity[proto->dev_parity],
+		proto->dev_stop_bit);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)

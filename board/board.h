@@ -1,6 +1,6 @@
 /*
     ChibiOS/RT - Copyright (C) 2006-2013 Giovanni Di Sirio
-    HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+    HydraBus/HydraNFC - Copyright (C) 2012-2015 Benjamin VERNOUX
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -559,12 +559,12 @@
 #define VAL_GPIOI_ODR               (0x00000000)
 #define VAL_GPIOI_AFRL              (0x00000000)
 #define VAL_GPIOI_AFRH              (0x00000000)
- 
+
 #if !defined(_FROM_ASM_)
 #ifdef __cplusplus
 extern "C" {
 #endif
-  void boardInit(void);
+	void boardInit(void);
 #ifdef __cplusplus
 }
 #endif

@@ -1,5 +1,5 @@
 /*
-HydraBus/HydraNFC - Copyright (C) 2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2014-2015 Benjamin VERNOUX
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ limitations under the License.
 #include "bsp.h"
 #include "mode_config.h"
 
-typedef enum
-{
+typedef enum {
 	BSP_DEV_ADC1 = 0,
 	BSP_DEV_ADC_TEMPSENSOR = 1,
 	BSP_DEV_ADC_VREFINT = 2,

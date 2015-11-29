@@ -97,7 +97,7 @@ void token_dump(t_hydra_console *con, t_tokenline_parsed *p)
 			break;
 		default:
 			cprintf(con, "token %d (%s)\r\n", p->tokens[i],
-					tl_dict[p->tokens[i]].tokenstr);
+				tl_dict[p->tokens[i]].tokenstr);
 		}
 	}
 }
