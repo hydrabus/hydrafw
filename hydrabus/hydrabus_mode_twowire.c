@@ -54,8 +54,14 @@ static void show_params(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "Device: twowire%d\r\nFrequency : %dHz\r\n",
-		proto->dev_num + 1, (TWOWIRE_MAX_FREQ/(int)config.divider));
+	cprintf(con, "Device: twowire%d\r\nGPIO resistor: %s\r\n",
+		proto->dev_num + 1,
+		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+		"floating");
+
+	cprintf(con, "Frequency: %dHz\r\nBit order: %s first\r\n",
+		(TWOWIRE_MAX_FREQ/(int)config.divider), proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
 }
 
 static bool twowire_pin_init(t_hydra_console *con)
