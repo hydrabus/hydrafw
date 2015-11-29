@@ -660,7 +660,6 @@
 		<Unit filename="hydrabus\hydrabus_dac.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="hydrabus\hydrabus_microrl.h" />
 		<Unit filename="hydrabus\hydrabus_mode.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -668,8 +667,7 @@
 		<Unit filename="hydrabus\hydrabus_mode_can.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="hydrabus\hydrabus_mode_conf.h" />
-		<Unit filename="hydrabus\hydrabus_mode_hiz.h" />
+		<Unit filename="hydrabus\hydrabus_mode_can.h" />
 		<Unit filename="hydrabus\hydrabus_mode_i2c.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -677,6 +675,7 @@
 		<Unit filename="hydrabus\hydrabus_mode_jtag.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="hydrabus\hydrabus_mode_jtag.h" />
 		<Unit filename="hydrabus\hydrabus_mode_spi.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -684,6 +683,7 @@
 		<Unit filename="hydrabus\hydrabus_mode_twowire.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="hydrabus\hydrabus_mode_twowire.h" />
 		<Unit filename="hydrabus\hydrabus_mode_uart.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -697,6 +697,7 @@
 		<Unit filename="hydrabus\hydrabus_sump.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="hydrabus\hydrabus_sump.h" />
 		<Unit filename="hydrafw_rules.ld" />
 		<Unit filename="hydrafw_STM32F405xG.ld" />
 		<Unit filename="hydranfc\hydranfc.c">
