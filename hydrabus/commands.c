@@ -686,7 +686,7 @@ t_token tokens_mode_jtag[] = {
 	{
 		T_BRUTE,
 		.subtokens = tokens_mode_brute,
-		.help = "Bruteforce JTAG pins on x pins starting from PC0"
+		.help = "Bruteforce JTAG pins on x pins starting from PB0"
 	},
 	{
 		T_BYPASS,
@@ -795,7 +795,8 @@ t_token tokens_mode_twowire[] = {
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
 	},
-	{\
+	{
+		\
 		T_FREQUENCY,\
 		.arg_type = T_ARG_FLOAT,\
 		.help = "Bus frequency"\
