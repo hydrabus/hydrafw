@@ -439,6 +439,11 @@ t_token tokens_mode_can[] = {
 	},
 	/* BP commands */
 	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
 		T_EXIT,
 		.help = "Exit UART mode"
 	},
