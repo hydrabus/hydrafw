@@ -1,6 +1,42 @@
 # CHANGELOG of 'hydrafw'
 ----------------------
 
+#### 29.11.2015 - [HydraFW v0.6 Beta](https://github.com/bvernoux/hydrafw/releases/tag/v0.6-beta)
+
+##### Generic:
+* Update of [tokenline](https://github.com/biot/tokenline), now both ```T_ARG_INT``` and ```T_ARG_FLOAT``` take **k**, **m** and **g** suffixes and apply a decimal factor on both argument types.
+It is always compatible with old syntax **khz**, **mhz**, **ghz** (only first character is checked).
+
+##### HydraBus specific:
+* Added **2-wire** mode (support frequency up to 1MHz) (thanks to [Baldanos](https://github.com/Baldanos))
+* Added **random** command new token **~** (```T_TILDE```) to write random byte (thanks to [Baldanos](https://github.com/Baldanos))
+ * Random number generator (using STM32 hardware RNG) see command which returns a 32bit random number in hex (thanks to [Baldanos](https://github.com/Baldanos))
+* Added **jtag** scanner/debugger mode (thanks to [Baldanos](https://github.com/Baldanos))
+	 * Classic JTAG (TDI/TDO/TMS/TCK)
+	 * Can be used with command line
+	 * BusPirate-compatible OpenOCD binary mode (**openocd** command)
+	 * Can scan a JTAG bus with IDCODE and BYPASS methods (**idcode** and **bypass** commands)
+	 * Can try to find JTAG bus on all GPIOB pins (like [JTAGulator](http://www.grandideastudio.com/portfolio/jtagulator/)) (**brute** command)
+* Added **sump** mode, Logic Analyzer  up to 1MHz 16chan with SUMP support (thanks to [Baldanos](https://github.com/Baldanos))
+ * Compatible with [ols-0.9.7.2](http://ols.lxtreme.nl) see also ols [profile](https://github.com/bvernoux/hydrafw/blob/master/ols.profile-hydrabus.cfg) for hydrabus
+ * Compatible with [sigrok](http://sigrok.org): [sigrok-cli & PulseView](http://sigrok.org/wiki/Downloads) 
+* Added **can** mode (thanks to [Baldanos](https://github.com/Baldanos) & [smillier](https://github.com/smillier))
+	* Needs a [dedicated shield like HydraOBD](https://github.com/smillier/HydraOBD) to communicate with a real CAN bus
+	 * Support CAN bus 1 or 2 (speed up to 2M)
+	 * Support **read**, read **continuous**, write, **id** and **filter** commands
+* Added in **uart** mode the **bridge** command to be used as UART Raw sniffer (thanks to [Baldanos](https://github.com/Baldanos))
+* UART: fix bug in baudrate->BRR (thanks to [doegox](https://github.com/doegox))
+
+##### HydraNFC specific:
+* HydraNFC Tag Emulation UID Mifare 1K & ISO14443A
+ * Mifare Emulation (Anticol+UID+HALT) see new command **emul-mifare**
+ * ISO14443A Emulation (TRF7970A hardware Anticol/UID) see new command **emul-3a**
+* Rename command **mifare** to **typea** (ISO14443A) as it was not specific to MIFARE
+* **scan** command now support 4 and 7bytes UID (thanks to [NicoHub](https://github.com/NicoHub))
+* Sniffer new command **sniff-dbg** with following new features:
+ * Add after each 8bits/byte the parity (ASCII char "0" or "1" + space)
+ * End Of Frame Timestamp + RSSI
+
 #### 11.02.2015 - [HydraFW v0.5 Beta](https://github.com/bvernoux/hydrafw/releases/tag/v0.5-beta)
 * New USB VID_0x1d50/PID_0x60a7 using OpenMoko HydraFW, update with new drivers
   * Windows see driver_usb_cdc/hydrabus_usb_cdc.inf
