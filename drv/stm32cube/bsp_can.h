@@ -1,5 +1,5 @@
 /*
-HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2014-2015 Benjamin VERNOUX
 HydraBus/HydraNFC - Copyright (C) 2015 Nicolas OBERLI
 
 Licensed under the Apache License, Version 2.0 (the "License");

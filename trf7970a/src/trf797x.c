@@ -5,7 +5,7 @@
 * communication the TRF796x via the selected interface.
 *
 * Copyright (C) 2010 Texas Instruments, Inc.
-* HydraBus/HydraNFC - Copyright (C) 2012-2014 Benjamin VERNOUX
+* HydraBus/HydraNFC - Copyright (C) 2014-2015 Benjamin VERNOUX
 *
 * AUTHOR(S): Reiser Peter DATE: 02 DEC 2010
 * 	Vernoux Benjamin DATE: 2012-2014
