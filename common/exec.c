@@ -41,8 +41,10 @@ char get_char(t_hydra_console *con)
 {
 	uint8_t c;
 
-	if (chSequentialStreamRead(con->sdu, &c, 1) == 0)
+	if (chSequentialStreamRead(con->sdu, &c, 1) == 0) {
+		cprintf(con, "No received byte\r\n", 18); 
 		c = 0;
+	}
 
 	return c;
 }
