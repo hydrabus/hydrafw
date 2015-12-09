@@ -445,7 +445,7 @@ t_token tokens_mode_can[] = {
 	},
 	{
 		T_EXIT,
-		.help = "Exit UART mode"
+		.help = "Exit CAN mode"
 	},
 	{ }
 };
@@ -529,7 +529,7 @@ t_token tokens_mode_i2c[] = {
 	},
 	{
 		T_EXIT,
-		.help = "Exit SPI mode"
+		.help = "Exit I2C mode"
 	},
 	{ }
 };
