@@ -56,8 +56,8 @@ static void tim_init(void)
 {
 	htim.Instance = TIM4;
 
-	htim.Init.Period = 42 - 1;
-	htim.Init.Prescaler = (config.divider+1) - 1;
+	htim.Init.Period = 21 - 1;
+	htim.Init.Prescaler = 2*(config.divider) - 1;
 	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
 
@@ -70,7 +70,7 @@ static void tim_init(void)
 static void tim_set_prescaler(void)
 {
 	HAL_TIM_Base_DeInit(&htim);
-	htim.Init.Prescaler = 2*(config.divider+1) - 1;
+	htim.Init.Prescaler = 2*(config.divider) - 1;
 	HAL_TIM_Base_Init(&htim);
 }
 
@@ -80,27 +80,43 @@ static void sump_init(void)
 	tim_init();
 }
 
-static void get_sample(void)
+static void get_samples(void)
 {
-	*(buffer+INDEX) = GPIOC->IDR;
+	HAL_TIM_Base_Start(&htim);
 
-	if (config.state == SUMP_STATE_TRIGGED) {
-		config.delay_count--;
-	} else if (config.state == SUMP_STATE_ARMED) {
-		if ( !((*(buffer+INDEX) ^ config.trigger_values[0]) & config.trigger_masks[0]) ) {
-			config.state = SUMP_STATE_TRIGGED;
+	if(config.state == SUMP_STATE_ARMED) {
+		while(1) {
+			while( !(TIM4->SR & TIM_SR_UIF)) {
+				//Wait for timer...
+			}
+
+			*(buffer+INDEX) = GPIOC->IDR;
+			TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+			if ( !((*(buffer+INDEX) ^ config.trigger_values[0]) & config.trigger_masks[0]) ) {
+				config.state = SUMP_STATE_TRIGGED;
+				break;
+			}
+			INDEX++;
+			INDEX &= STATES_LEN-1;
 		}
 	}
 
-	if (config.delay_count == 0) {
-		config.state = SUMP_STATE_IDLE;
-		HAL_TIM_Base_Stop(&htim);
+	if(config.state == SUMP_STATE_TRIGGED) {
+		while(config.delay_count > 0) {
+			while( !(TIM4->SR & TIM_SR_UIF)) {
+				//Wait for timer...
+			}
+
+			*(buffer+INDEX) = GPIOC->IDR;
+			TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+			config.delay_count--;
+			INDEX++;
+			INDEX &= STATES_LEN-1;
+		}
 	}
 
-	INDEX++;
-	INDEX %= STATES_LEN;
-
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+	config.state = SUMP_STATE_IDLE;
+	HAL_TIM_Base_Stop(&htim);
 }
 
 static void sump_deinit(void)
@@ -141,13 +157,7 @@ int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p
 			case SUMP_RUN:
 				INDEX=0;
 				config.state = SUMP_STATE_ARMED;
-				HAL_TIM_Base_Start(&htim);
-
-				while(TIM4->CR1 & TIM_CR1_CEN) { /* Sleep for capture to finish */
-					if (TIM4->SR & TIM_SR_UIF) {
-						get_sample();
-					}
-				}
+				get_samples();
 
 				while(config.read_count > 0) {
 					if (INDEX == 0) {
@@ -180,12 +190,13 @@ int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p
 				cprintf(con, "%c", 0x00);
 				cprintf(con, "%c", 0x20);
 				cprintf(con, "%c", 0x00);
-				//sample rate (1MHz)
+				//sample rate (2MHz)
 				cprintf(con, "%c", 0x23);
 				cprintf(con, "%c", 0x00);
-				cprintf(con, "%c", 0x0F);
-				cprintf(con, "%c", 0x42);
-				cprintf(con, "%c", 0x40);
+				cprintf(con, "%c", 0x1E);
+				cprintf(con, "%c", 0x84);
+				cprintf(con, "%c", 0x80);
+				//b
 				//number of probes (16)
 				cprintf(con, "%c", 0x40);
 				cprintf(con, "%c", 0x10);
@@ -247,7 +258,8 @@ int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p
 						config.divider |= sump_parameters[1];
 						config.divider <<= 8;
 						config.divider |= sump_parameters[0];
-						config.divider /= 100; /* Assuming 100MHz base frequency */
+						config.divider /= 50; /* Assuming 100MHz base frequency */
+						config.divider++;
 						tim_set_prescaler();
 						break;
 					case SUMP_FLAGS:
