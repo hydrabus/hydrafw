@@ -26,6 +26,7 @@
 #include <ctype.h>
 
 #include "bsp_spi.h"
+#include "hydrabus_mode_jtag.h"
 
 static void bbio_spi_init_proto_default(t_hydra_console *con)
 {
@@ -182,6 +183,10 @@ int cmd_bbio(t_hydra_console *con)
 			case BBIO_RAWWIRE:
 				cprint(con, "RAW1", 4);
 				//TODO
+				break;
+			case BBIO_JTAG:
+				cprint(con, "OCD1", 4);
+				openOCD(con);
 				break;
 			case BBIO_RESET_HW:
 				return TRUE;
