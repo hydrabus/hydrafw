@@ -33,13 +33,58 @@ static void bbio_spi_init_proto_default(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	/* Defaults */
-	proto->dev_num = 0;
+	proto->dev_num = BSP_DEV_SPI1;
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 	proto->dev_mode = DEV_SPI_MASTER;
 	proto->dev_speed = 0;
 	proto->dev_polarity = 0;
 	proto->dev_phase = 0;
 	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
+}
+
+static void bbio_spi_sniff(t_hydra_console *con)
+{
+	uint8_t cs_state, data, rx_data[2];
+	mode_config_proto_t* proto = &con->mode->proto;
+	bsp_status_t status;
+
+	proto->dev_mode = DEV_SPI_SLAVE;
+	status = bsp_spi_init(proto->dev_num, proto);
+	status = bsp_spi_init(proto->dev_num+1, proto);
+
+	if(status == BSP_OK) {
+		cprint(con, "\x01", 1);
+	} else {
+		cprint(con, "\x00", 1);
+		proto->dev_mode = DEV_SPI_MASTER;
+		status = bsp_spi_init(proto->dev_num, proto);
+		status = bsp_spi_deinit(proto->dev_num+1);
+		return;
+	}
+	cs_state = 1;
+	while(!USER_BUTTON || chnReadTimeout(con->sdu, &data, 1,1)) {
+		if (cs_state == 0 && bsp_spi_get_cs(proto->dev_num)) {
+			cprint(con, "]", 1);
+			cs_state = 1;
+		} else if (cs_state == 1 && !(bsp_spi_get_cs(proto->dev_num))) {
+			cprint(con, "[", 1);
+			cs_state = 0;
+		}
+		if(bsp_spi_rxne(proto->dev_num)){
+			bsp_spi_read_u8(proto->dev_num,	&rx_data[0], 1);
+
+			if(bsp_spi_rxne(proto->dev_num+1)){
+				bsp_spi_read_u8(proto->dev_num+1, &rx_data[1], 1);
+			} else {
+				rx_data[1] = 0;
+			}
+
+			cprintf(con, "\\%c%c", rx_data[0], rx_data[1]);
+		}
+	}
+	proto->dev_mode = DEV_SPI_MASTER;
+	status = bsp_spi_init(proto->dev_num, proto);
+	status = bsp_spi_deinit(proto->dev_num+1);
 }
 
 static void bbio_mode_spi(t_hydra_console *con)
@@ -59,6 +104,7 @@ static void bbio_mode_spi(t_hydra_console *con)
 		if(chSequentialStreamRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
+				bsp_spi_deinit(proto->dev_num);
 				return;
 			case BBIO_SPI_CS_LOW:
 				bsp_spi_select(proto->dev_num);
@@ -71,30 +117,7 @@ static void bbio_mode_spi(t_hydra_console *con)
 			case BBIO_SPI_SNIFF_ALL:
 			case BBIO_SPI_SNIFF_CS_LOW:
 			case BBIO_SPI_SNIFF_CS_HIGH:
-				proto->dev_mode = DEV_SPI_SLAVE;
-				status = bsp_spi_init(proto->dev_num, proto);
-				if(status == BSP_OK) {
-					cprint(con, "\x01", 1);
-				} else {
-					cprint(con, "\x00", 1);
-					break;
-				}
-				data = 1;
-				while(!USER_BUTTON) {
-					if (data == 0 && bsp_spi_get_cs(proto->dev_num)) {
-						cprint(con, "]", 1);
-						data = 1;
-					}
-					if(bsp_spi_rxne(proto->dev_num)){
-						bsp_spi_read_u8(proto->dev_num,
-								rx_data, 1);
-						if(data == 1) {
-							cprint(con, "[", 1);
-							data = 0;
-						}
-						cprintf(con, "\\%c", rx_data[0]);
-					}
-				}
+				bbio_spi_sniff(con);
 				break;
 			case BBIO_SPI_WRITE_READ:
 			case BBIO_SPI_WRITE_READ_NCS:
