@@ -19,6 +19,8 @@
 
 #include "hydrabus_mode.h"
 
+#define JTAG_MAX_FREQ 1000000
+
 #define TMS     0b10
 
 #define CMD_OCD_UNKNOWN       0x00
@@ -51,6 +53,7 @@ typedef enum {
 } jtag_state;
 
 typedef struct {
+	uint32_t divider;
 	uint8_t tdi_pin;
 	uint8_t tdo_pin;
 	uint8_t tms_pin;

@@ -664,6 +664,11 @@ t_token tokens_mode_jtag[] = {
 		.help = "Write byte (repeat with :<num>)"
 	},
 	{
+		T_FREQUENCY,
+		.arg_type = T_ARG_FLOAT,
+		.help = "Bus frequency"
+	},
+	{
 		T_ARG_INT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
@@ -801,10 +806,9 @@ t_token tokens_mode_twowire[] = {
 		.help = "Write byte (repeat with :<num>)"
 	},
 	{
-		\
-		T_FREQUENCY,\
-		.arg_type = T_ARG_FLOAT,\
-		.help = "Bus frequency"\
+		T_FREQUENCY,
+		.arg_type = T_ARG_FLOAT,
+		.help = "Bus frequency"
 	},
 	{
 		T_ARG_INT,

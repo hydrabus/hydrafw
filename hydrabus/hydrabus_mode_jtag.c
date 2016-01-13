@@ -22,6 +22,7 @@
 #include "bsp.h"
 #include "bsp_gpio.h"
 #include "hydrabus_mode_jtag.h"
+#include "stm32f4xx_hal.h"
 #include <string.h>
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
@@ -33,6 +34,7 @@ static void datl(t_hydra_console *con);
 static void clk(t_hydra_console *con);
 
 static jtag_config config;
+static TIM_HandleTypeDef htim;
 
 static const char* str_prompt_jtag[] = {
 	"jtag1" PROMPT,
@@ -48,6 +50,7 @@ static void init_proto_default(t_hydra_console *con)
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
 
+	config.divider = 1;
 	config.tdi_pin = 7;
 	config.tdi_pin = 8;
 	config.tdo_pin = 9;
@@ -65,8 +68,8 @@ static void show_params(t_hydra_console *con)
 		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
 		"floating");
 
-	cprintf(con, "Bit order: %s first\r\n",
-		proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
+	cprintf(con, "Frequency: %dHz\r\nBit order: %s first\r\n",
+		(JTAG_MAX_FREQ/(int)config.divider), proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
 }
 
 static bool jtag_pin_init(t_hydra_console *con)
@@ -97,6 +100,32 @@ static bool jtag_pin_init(t_hydra_console *con)
 	return true;
 }
 
+static void tim_init(void)
+{
+	htim.Instance = TIM4;
+
+	htim.Init.Period = 42 - 1;
+	htim.Init.Prescaler = (config.divider) - 1;
+	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
+
+	HAL_TIM_Base_MspInit(&htim);
+	__TIM4_CLK_ENABLE();
+	HAL_TIM_Base_Init(&htim);
+	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+	HAL_TIM_Base_Start(&htim);
+}
+
+static void tim_set_prescaler(void)
+{
+	HAL_TIM_Base_Stop(&htim);
+	HAL_TIM_Base_DeInit(&htim);
+	htim.Init.Prescaler = (config.divider) - 1;
+	HAL_TIM_Base_Init(&htim);
+	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+	HAL_TIM_Base_Start(&htim);
+}
+
 static inline void jtag_tms_high(void)
 {
 	bsp_gpio_set(BSP_GPIO_PORTB, config.tms_pin);
@@ -109,12 +138,18 @@ static inline void jtag_tms_low(void)
 
 static inline void jtag_clk_high(void)
 {
+	while (!(TIM4->SR & TIM_SR_UIF)) {
+	}
 	bsp_gpio_set(BSP_GPIO_PORTB, config.tck_pin);
+	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
 
 static inline void jtag_clk_low(void)
 {
+	while (!(TIM4->SR & TIM_SR_UIF)) {
+	}
 	bsp_gpio_clr(BSP_GPIO_PORTB, config.tck_pin);
+	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
 
 static inline void jtag_tdi_high(void)
@@ -624,6 +659,8 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	tokens_used = 1 + exec(con, p, 1);
 
 	jtag_pin_init(con);
+	tim_init();
+
 	jtag_clk_low();
 	jtag_tms_low();
 	jtag_tdi_low();
@@ -638,6 +675,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int arg_int, t;
+	float arg_float;
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
@@ -730,6 +768,16 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_OOCD:
 			openOCD(con);
+			break;
+		case T_FREQUENCY:
+			t += 2;
+			memcpy(&arg_float, p->buf + p->tokens[t], sizeof(float));
+			if(arg_float > JTAG_MAX_FREQ) {
+				cprintf(con, "Frequency too high\r\n");
+			} else {
+				config.divider = JTAG_MAX_FREQ/(int)arg_float;
+				tim_set_prescaler();
+			}
 			break;
 		default:
 			return t - token_pos;
