@@ -27,12 +27,16 @@
 #define BBIO_RAWWIRE	0b00000101
 #define BBIO_JTAG	0b00000110
 
+//Hydrabus specific
+#define BBIO_CAN	0b00001000
+
 #define BBIO_RESET_HW	0b00001111
 #define BBIO_PWM	0b00010010
 #define BBIO_PWM_CLEAR	0b00010010
 #define BBIO_VOLT	0b00010100
 #define BBIO_VOLT_CONT	0b00010101
 #define BBIO_FREQ	0b00010110
+
 
 /*
  * SPI-specific commands
@@ -49,5 +53,16 @@
 #define BBIO_SPI_CONFIG_PERIPH	0b01000000
 #define BBIO_SPI_SET_SPEED	0b01100000
 #define BBIO_SPI_CONFIG		0b10000000
+
+/*
+ * CAN-specific commands
+ */
+#define BBIO_CAN_READ		0b00000010
+#define BBIO_CAN_ID		0b00000011
+#define BBIO_CAN_FILTER_OFF	0b00000100
+#define BBIO_CAN_FILTER_ON	0b00000101
+#define BBIO_CAN_FILTER		0b00000110
+#define BBIO_CAN_WRITE		0b00001000
+
 
 int cmd_bbio(t_hydra_console *con);

@@ -26,7 +26,16 @@
 #include <ctype.h>
 
 #include "bsp_spi.h"
+#include "bsp_can.h"
 #include "hydrabus_mode_jtag.h"
+
+static void print_raw_uint32(t_hydra_console *con, uint32_t num)
+{
+	cprintf(con, "%c%c%c%c",((num>>24)&0xFF),
+		((num>>16)&0xFF),
+		((num>>8)&0xFF),
+		(num&0xFF));
+}
 
 static void bbio_spi_init_proto_default(t_hydra_console *con)
 {
@@ -201,6 +210,130 @@ static void bbio_mode_spi(t_hydra_console *con)
 	}
 }
 
+static void bbio_mode_can(t_hydra_console *con)
+{
+	uint8_t bbio_subcommand;
+	bsp_status_t status;
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	uint8_t rx_buff[10], i, to_tx;
+	CanTxMsgTypeDef tx_msg;
+	CanRxMsgTypeDef rx_msg;
+	uint32_t can_id;
+	uint32_t filter_low=0, filter_high=0;
+
+	proto->dev_num = 0;
+	proto->dev_speed = 500000;
+
+	bsp_can_init(proto->dev_num, proto);
+	bsp_can_init_filter(proto->dev_num, proto);
+
+	while(!USER_BUTTON) {
+		if(chSequentialStreamRead(con->sdu, &bbio_subcommand, 1) == 1) {
+			switch(bbio_subcommand) {
+			case BBIO_RESET:
+				bsp_can_deinit(proto->dev_num);
+				return;
+			case BBIO_CAN_ID:
+				chSequentialStreamRead(con->sdu, rx_buff, 4);
+				can_id =  rx_buff[0] << 24;
+				can_id += rx_buff[1] << 16;
+				can_id += rx_buff[2] << 8;
+				can_id += rx_buff[3];
+				cprint(con, "\x01", 1);
+				break;
+			case BBIO_CAN_FILTER_OFF:
+				status = bsp_can_init_filter(proto->dev_num, proto);
+					if(status == BSP_OK) {
+						cprint(con, "\x01", 1);
+					} else {
+						cprint(con, "\x00", 1);
+					}
+				break;
+			case BBIO_CAN_FILTER_ON:
+				status = bsp_can_set_filter(proto->dev_num, proto, filter_low, filter_high);
+				if(status == BSP_OK) {
+					cprint(con, "\x01", 1);
+				} else {
+					cprint(con, "\x00", 1);
+				}
+				break;
+			case BBIO_CAN_READ:
+				status = bsp_can_read(proto->dev_num, &rx_msg);
+				if(status == BSP_OK) {
+					cprint(con, "\x01", 1);
+					if(rx_msg.IDE == CAN_ID_STD) {
+						print_raw_uint32(con, (uint32_t)rx_msg.StdId);
+					}else{
+						print_raw_uint32(con, (uint32_t)rx_msg.ExtId);
+					}
+					cprintf(con, "%c", rx_msg.DLC);
+					for(i=0; i<rx_msg.DLC; i++){
+						cprintf(con, "%c",
+							rx_msg.Data[i]);
+					}
+
+				}else{
+					cprint(con, "\x00", 1);
+				}
+				break;
+			default:
+				if ((bbio_subcommand & BBIO_CAN_WRITE) == BBIO_CAN_WRITE) {
+
+					if (can_id < 0b11111111111) {
+						tx_msg.StdId = can_id;
+						tx_msg.IDE = CAN_ID_STD;
+					} else {
+						tx_msg.ExtId = can_id;
+						tx_msg.IDE = CAN_ID_EXT;
+					}
+
+					to_tx = (bbio_subcommand & 0b111)+1;
+
+					tx_msg.RTR = CAN_RTR_DATA;
+					tx_msg.DLC = to_tx;
+
+					chSequentialStreamRead(con->sdu, rx_buff,
+							       to_tx);
+
+					for(i=0; i<to_tx; i++) {
+						tx_msg.Data[i] = rx_buff[i];
+					}
+
+					status = bsp_can_write(proto->dev_num, &tx_msg);
+
+					if(status == BSP_OK) {
+						cprint(con, "\x01", 1);
+					} else {
+						cprint(con, "\x00", 1);
+					}
+				} else if((bbio_subcommand & BBIO_CAN_FILTER) == BBIO_CAN_FILTER) {
+					chSequentialStreamRead(con->sdu, rx_buff, 4);
+					if(bbio_subcommand & 1) {
+						filter_high =  rx_buff[0] << 24;
+						filter_high += rx_buff[1] << 16;
+						filter_high += rx_buff[2] << 8;
+						filter_high += rx_buff[3];
+					} else {
+						filter_low =  rx_buff[0] << 24;
+						filter_low += rx_buff[1] << 16;
+						filter_low += rx_buff[2] << 8;
+						filter_low += rx_buff[3];
+					}
+					status = bsp_can_set_filter(proto->dev_num, proto,
+							   filter_low, filter_high);
+					if(status == BSP_OK) {
+						cprint(con, "\x01", 1);
+					} else {
+						cprint(con, "\x00", 1);
+					}
+
+				}
+
+			}
+		}
+	}
+}
 
 int cmd_bbio(t_hydra_console *con)
 {
@@ -234,6 +367,10 @@ int cmd_bbio(t_hydra_console *con)
 			case BBIO_JTAG:
 				cprint(con, "OCD1", 4);
 				openOCD(con);
+				break;
+			case BBIO_CAN:
+				cprint(con, "CAN1", 4);
+				bbio_mode_can(con);
 				break;
 			case BBIO_RESET_HW:
 				return TRUE;
