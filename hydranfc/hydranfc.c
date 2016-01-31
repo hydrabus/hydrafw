@@ -314,7 +314,10 @@ THD_FUNCTION(key_sniff, arg)
 				D2_OFF;
 				chThdSleepMilliseconds(25);
 			}
+
+			D2_ON;
 			hydranfc_sniff_14443A(NULL);
+			D2_OFF;
 		}
 
 		if (K4_BUTTON)
