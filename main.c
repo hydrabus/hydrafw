@@ -34,6 +34,7 @@
 #include "microsd.h"
 #include "hydrabus.h"
 #include "hydranfc.h"
+#include "hydrabus/hydrabus_bbio.h"
 
 #include "bsp.h"
 
@@ -62,6 +63,8 @@ t_hydra_console consoles[] = {
 THD_FUNCTION(console, arg)
 {
 	t_hydra_console *con;
+	char input;
+	int i=0;
 
 	con = arg;
 	chRegSetThreadName(con->thread_name);
@@ -70,7 +73,15 @@ THD_FUNCTION(console, arg)
 	tl_set_callback(con->tl, execute);
 
 	while (1) {
-		tl_input(con->tl, get_char(con));
+		input = get_char(con);
+		if(input == 0) {
+			if (++i == 20) {
+				cmd_bbio(con);
+			}
+		} else {
+			i=0;
+			tl_input(con->tl, input);
+		}
 		chThdSleepMilliseconds(1);
 	}
 }

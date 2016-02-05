@@ -75,3 +75,5 @@ enum {
 	FEATURE_SRST=0x08,
 	FEATURE_PULLUP=0x10
 };
+
+void openOCD(t_hydra_console *con);

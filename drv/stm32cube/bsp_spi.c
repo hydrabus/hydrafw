@@ -274,6 +274,33 @@ void bsp_spi_unselect(bsp_dev_spi_t dev_num)
 }
 
 /**
+  * @brief  Get Chip Select pin state
+  * @param  dev_num: SPI dev num.
+  * @retval Status of the pin.
+  */
+uint8_t bsp_spi_get_cs(bsp_dev_spi_t dev_num)
+{
+	if(dev_num == BSP_DEV_SPI1) {
+		return HAL_GPIO_ReadPin(BSP_SPI1_NSS_PORT, BSP_SPI1_NSS_PIN);
+	} else { /* SPI2 */
+		return HAL_GPIO_ReadPin(BSP_SPI2_NSS_PORT, BSP_SPI2_NSS_PIN);
+	}
+}
+
+/**
+  * @brief  Checks if the SPI receive buffer is empty
+  * @param  dev_num: SPI dev num.
+  * @retval 0 if empty, 1 if data
+  */
+uint8_t bsp_spi_rxne(bsp_dev_spi_t dev_num)
+{
+	SPI_HandleTypeDef* hspi;
+	hspi = &spi_handle[dev_num];
+
+	return __HAL_SPI_GET_FLAG(hspi, SPI_FLAG_RXNE);
+}
+
+/**
   * @brief  Sends a Byte in blocking mode and return the status.
   * @param  dev_num: SPI dev num.
   * @param  tx_data: data to send.

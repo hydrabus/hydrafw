@@ -528,7 +528,7 @@ static uint8_t ocd_shift_u8(uint8_t tdi, uint8_t tms, uint8_t num_bits)
 	return tdo;
 }
 
-static void openOCD(t_hydra_console *con)
+void openOCD(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -538,16 +538,10 @@ static void openOCD(t_hydra_console *con)
 	uint16_t num_sequences, i;
 	uint16_t offset, bits;
 
-	cprintf(con, "Interrupt by pressing user button.\r\n");
-	cprint(con, "\r\n", 2);
-
 	while (!USER_BUTTON) {
 		if(chnReadTimeout(con->sdu, &ocd_command, 1, 1)) {
 			switch(ocd_command) {
 			case CMD_OCD_UNKNOWN:
-				if(chSequentialStreamRead(con->sdu, g_sbuf, 19) == 19) {
-					cprintf(con, "BBIO1");
-				}
 				break;
 			case CMD_OCD_ENTER_OOCD:
 				cprintf(con, "OCD1");
