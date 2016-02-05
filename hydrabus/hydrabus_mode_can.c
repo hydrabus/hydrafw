@@ -56,6 +56,7 @@ static void show_params(t_hydra_console *con)
 
 	cprintf(con, "Device: CAN%d\r\nSpeed: %d bps\r\n",
 		proto->dev_num + 1, proto->dev_speed);
+	cprintf(con, "ID: 0x%0X\r\n", config[proto->dev_num].can_id);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
