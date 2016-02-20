@@ -32,7 +32,7 @@ static can_config config[2];
 
 static const char* str_pins_can[] = {
 	"TX: PB9\r\nRX: PB8\r\n",
-	"TX: PB13\r\nRX: PB12\r\n",
+	"TX: PB6\r\nRX: PB5\r\n",
 };
 static const char* str_prompt_can[] = {
 	"can1" PROMPT,
