@@ -64,6 +64,7 @@
 #define BBIO_CAN_FILTER_ON	0b00000101
 #define BBIO_CAN_FILTER		0b00000110
 #define BBIO_CAN_WRITE		0b00001000
+#define BBIO_CAN_SET_SPEED	0b01100000
 
 /*
  * PIN control-specific commands
