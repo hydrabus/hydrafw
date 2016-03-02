@@ -28,6 +28,7 @@
 #include "bsp_spi.h"
 #include "bsp_can.h"
 #include "hydrabus_mode_jtag.h"
+#include "bsp_gpio.h"
 
 static void print_raw_uint32(t_hydra_console *con, uint32_t num)
 {
@@ -335,6 +336,97 @@ static void bbio_mode_can(t_hydra_console *con)
 	}
 }
 
+
+static void bbio_mode_pin(t_hydra_console *con)
+{
+	uint8_t bbio_subcommand;
+
+	uint8_t rx_buff, i, reconfig;
+	uint16_t data;
+
+	uint32_t pin_mode[8];
+	uint32_t pin_pull[8];
+
+	for(i=0; i<8; i++){
+		pin_pull[i] = MODE_CONFIG_DEV_GPIO_NOPULL;
+		pin_pull[i] = MODE_CONFIG_DEV_GPIO_IN;
+		bsp_gpio_init(BSP_GPIO_PORTA, i, pin_mode[i], pin_pull[i]);
+	}
+
+	while (true) {
+		if(chSequentialStreamRead(con->sdu, &bbio_subcommand, 1) == 1) {
+			switch(bbio_subcommand) {
+			case BBIO_RESET:
+				return;
+			case BBIO_PIN_READ:
+				data = bsp_gpio_port_read(BSP_GPIO_PORTA);
+				cprintf(con, "\x01%c", data & 0xff);
+				break;
+			case BBIO_PIN_NOPULL:
+				chSequentialStreamRead(con->sdu, &rx_buff, 1);
+				for(i=0; i<8; i++){
+					if((rx_buff>>i)&1){
+						pin_pull[i] = MODE_CONFIG_DEV_GPIO_NOPULL;
+					}
+				}
+				reconfig = 1;
+				cprint(con, "\x01", 1);
+				break;
+			case BBIO_PIN_PULLUP:
+				chSequentialStreamRead(con->sdu, &rx_buff, 1);
+				for(i=0; i<8; i++){
+					if((rx_buff>>i)&1){
+						pin_pull[i] = MODE_CONFIG_DEV_GPIO_PULLUP;
+					}
+				}
+				reconfig = 1;
+				cprint(con, "\x01", 1);
+				break;
+			case BBIO_PIN_PULLDOWN:
+				chSequentialStreamRead(con->sdu, &rx_buff, 1);
+				for(i=0; i<8; i++){
+					if((rx_buff>>i)&1){
+						pin_pull[i] = MODE_CONFIG_DEV_GPIO_PULLDOWN;
+					}
+				}
+				reconfig = 1;
+				cprint(con, "\x01", 1);
+				break;
+			case BBIO_PIN_MODE:
+				chSequentialStreamRead(con->sdu, &rx_buff, 1);
+				for(i=0; i<8; i++){
+					if((rx_buff>>i)&1){
+						pin_pull[i] = MODE_CONFIG_DEV_GPIO_IN;
+					}else{
+						pin_pull[i] = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
+					}
+				}
+				reconfig = 1;
+				cprint(con, "\x01", 1);
+				break;
+			case BBIO_PIN_WRITE:
+				chSequentialStreamRead(con->sdu, &rx_buff, 1);
+				for(i=0; i<8; i++){
+					if((data>>i)&1){
+						bsp_gpio_set(BSP_GPIO_PORTA, i);
+					}else{
+						bsp_gpio_clr(BSP_GPIO_PORTA, i);
+					}
+				}
+				cprint(con, "\x01", 1);
+				break;
+			}
+			if(reconfig == 1) {
+				for(i=0; i<8; i++){
+					bsp_gpio_init(BSP_GPIO_PORTA, i,
+						      pin_mode[i], pin_pull[i]);
+				}
+				reconfig = 0;
+			}
+		}
+	}
+}
+
 int cmd_bbio(t_hydra_console *con)
 {
 
@@ -371,6 +463,10 @@ int cmd_bbio(t_hydra_console *con)
 			case BBIO_CAN:
 				cprint(con, "CAN1", 4);
 				bbio_mode_can(con);
+				break;
+			case BBIO_PIN:
+				cprint(con, "PIN1", 4);
+				bbio_mode_pin(con);
 				break;
 			case BBIO_RESET_HW:
 				return TRUE;

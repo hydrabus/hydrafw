@@ -29,6 +29,7 @@
 
 //Hydrabus specific
 #define BBIO_CAN	0b00001000
+#define BBIO_PIN	0b00001001
 
 #define BBIO_RESET_HW	0b00001111
 #define BBIO_PWM	0b00010010
@@ -64,5 +65,14 @@
 #define BBIO_CAN_FILTER		0b00000110
 #define BBIO_CAN_WRITE		0b00001000
 
+/*
+ * PIN control-specific commands
+ */
+#define BBIO_PIN_READ		0b00000010
+#define BBIO_PIN_MODE		0b00000011
+#define BBIO_PIN_NOPULL		0b00000100
+#define BBIO_PIN_PULLUP		0b00000101
+#define BBIO_PIN_PULLDOWN	0b00000110
+#define BBIO_PIN_WRITE		0b00001000
 
 int cmd_bbio(t_hydra_console *con);
