@@ -328,6 +328,42 @@ static void bbio_mode_can(t_hydra_console *con)
 						cprint(con, "\x00", 1);
 					}
 
+				} else if((bbio_subcommand & BBIO_CAN_SET_SPEED) == BBIO_CAN_SET_SPEED) {
+					switch(bbio_subcommand & 0b111){
+					case 0:
+						proto->dev_speed = 2000000;
+						break;
+					case 1:
+						proto->dev_speed = 1000000;
+						break;
+					case 2:
+						proto->dev_speed = 500000;
+						break;
+					case 3:
+						proto->dev_speed = 250000;
+						break;
+					case 4:
+						proto->dev_speed = 125000;
+						break;
+					case 5:
+						proto->dev_speed = 100000;
+						break;
+					case 6:
+						proto->dev_speed = 50000;
+						break;
+					case 7:
+						proto->dev_speed = 40000;
+						break;
+					}
+					status = bsp_can_set_speed(proto->dev_num,
+								   proto->dev_speed);
+
+					if(status == BSP_OK) {
+						cprint(con, "\x01", 1);
+					} else {
+						cprint(con, "\x00", 1);
+					}
+
 				}
 
 			}
