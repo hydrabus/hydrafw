@@ -80,20 +80,35 @@ static void sump_init(void)
 	tim_init();
 }
 
+static void get_samples(void) __attribute__((optimize("-O3")));
 static void get_samples(void)
 {
+	uint32_t config_state;
+	config_state = config.state;
+
+	/* Lock Kernel for logic analyzer */
+	chSysLock();
+
 	HAL_TIM_Base_Start(&htim);
 
-	if(config.state == SUMP_STATE_ARMED) {
-		while(1) {
+	if(config_state == SUMP_STATE_ARMED)
+	{
+		uint32_t config_trigger_value;
+		uint32_t config_trigger_mask;
+
+		config_trigger_value =  config.trigger_values[0];
+		config_trigger_mask = config.trigger_masks[0];
+
+		while(1)
+		{
 			while( !(TIM4->SR & TIM_SR_UIF)) {
 				//Wait for timer...
 			}
 
 			*(buffer+INDEX) = GPIOC->IDR;
 			TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-			if ( !((*(buffer+INDEX) ^ config.trigger_values[0]) & config.trigger_masks[0]) ) {
-				config.state = SUMP_STATE_TRIGGED;
+			if ( !((*(buffer+INDEX) ^ config_trigger_value) & config_trigger_mask) ) {
+				config_state = SUMP_STATE_TRIGGED;
 				break;
 			}
 			INDEX++;
@@ -101,20 +116,25 @@ static void get_samples(void)
 		}
 	}
 
-	if(config.state == SUMP_STATE_TRIGGED) {
-		while(config.delay_count > 0) {
+	if(config_state == SUMP_STATE_TRIGGED)
+	{
+		register uint32_t config_delay_count = config.delay_count;
+
+		while(config_delay_count > 0)
+		{
 			while( !(TIM4->SR & TIM_SR_UIF)) {
 				//Wait for timer...
 			}
 
 			*(buffer+INDEX) = GPIOC->IDR;
 			TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-			config.delay_count--;
+			config_delay_count--;
 			INDEX++;
 			INDEX &= STATES_LEN-1;
 		}
 	}
 
+	chSysUnlock();
 	config.state = SUMP_STATE_IDLE;
 	HAL_TIM_Base_Stop(&htim);
 }
@@ -133,6 +153,7 @@ static void sump_deinit(void)
 	}
 }
 
+int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p) __attribute__((optimize("-O3")));
 int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p)
 {
 
