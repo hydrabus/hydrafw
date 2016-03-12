@@ -3,6 +3,9 @@
 # NOTE: Can be overridden externally.
 #
 
+.SUFFIXES:            # Delete the default suffixes
+MAKEFLAGS += --no-builtin-rules
+
 #Set to 1 HYDRAFW_NFC to include HydraNFC extension support
 export HYDRAFW_NFC ?= 1
 
