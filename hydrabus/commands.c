@@ -277,6 +277,7 @@ t_token tokens_mode_can_filter[] = {
 	},\
 	{\
 		T_EMUL_MIFARE,\
+		.arg_type = T_ARG_INT,\
 		.help = "Emul Tag Mifare UID"\
 	},\
 	{\

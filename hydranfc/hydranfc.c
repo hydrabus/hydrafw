@@ -695,6 +695,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	int dev_func;
 	mode_config_proto_t* proto = &con->mode->proto;
 	int action, period, continuous, t;
+	unsigned int mifare_uid = 0;
 
 	action = 0;
 	period = 1000;
@@ -721,6 +722,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_SNIFF:
 		case T_SNIFF_DBG:
 		case T_EMUL_MIFARE:
+			action = p->tokens[t];
+			t += 2;
+			memcpy(&mifare_uid, p->buf + p->tokens[t], sizeof(int));
+			break;
 		case T_EMUL_ISO14443A:
 			action = p->tokens[t];
 			break;
@@ -751,7 +756,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	} else if (action == T_SNIFF_DBG) {
 		hydranfc_sniff_14443A_dbg(con);
 	} else if (action == T_EMUL_MIFARE) {
-		hydranfc_emul_mifare(con);
+		hydranfc_emul_mifare(con, mifare_uid);
 	} else if (action == T_EMUL_ISO14443A)
 		hydranfc_emul_iso14443a(con);
 

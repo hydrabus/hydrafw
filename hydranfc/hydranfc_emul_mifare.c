@@ -49,12 +49,6 @@ Mifare/MF1S503x commands see http://www.nxp.com/documents/data_sheet/MF1S503x.pd
 #define ISO14443A_ANTICOLL_BYTE0 0x93 /* RX ANTICOLL */
 #define ISO14443A_ANTICOLL_BYTE1 0x20
 
-#define ISO14443A_UID_BYTE0 0xCD /* TX UID + BCC */
-#define ISO14443A_UID_BYTE1 0x81
-#define ISO14443A_UID_BYTE2 0x5F
-#define ISO14443A_UID_BYTE3 0x76
-#define ISO14443A_UID_BYTE4 (ISO14443A_UID_BYTE0 ^ ISO14443A_UID_BYTE1 ^ ISO14443A_UID_BYTE2 ^ ISO14443A_UID_BYTE3) /* BCC = UID Byte0 xor Byte1 xor Byte2 xor Byte 3 */
-
 #define ISO14443A_SEL_UID_BYTE0 0x93 /* RX SEL UID */
 #define ISO14443A_SEL_UID_BYTE1 0x70
 
@@ -75,6 +69,9 @@ typedef enum {
 } emul_mifare_cmd;
 
 #define ISO14443A_AUTH_KEY_A 0x60
+
+/* MIFARE UID (4bytes) + BCC (1byte) */
+unsigned char byte0, byte1, byte2, byte3, byte4;
 
 emul_mifare_state hydranfc_emul_14443a_state = EMUL_RX_MIFARE_REQA;
 
@@ -217,11 +214,11 @@ void hydranfc_emul_mifare_states(void)
 				(data_buf[0] == ISO14443A_ANTICOLL_BYTE0) &&
 				(data_buf[1] == ISO14443A_ANTICOLL_BYTE1)) {
 				/* Reply with UID + BCC => No CRC*/
-				data_buf[0] = ISO14443A_UID_BYTE0;
-				data_buf[1] = ISO14443A_UID_BYTE1;
-				data_buf[2] = ISO14443A_UID_BYTE2;
-				data_buf[3] = ISO14443A_UID_BYTE3;
-				data_buf[4] = ISO14443A_UID_BYTE4;
+				data_buf[0] = byte0;
+				data_buf[1] = byte1;
+				data_buf[2] = byte2;
+				data_buf[3] = byte3;
+				data_buf[4] = byte4;
 				wait_nbcycles(2378);
 				if(emul_mifare_tx_rawdata(data_buf, 5, 0) == 5)
 					hydranfc_emul_14443a_state = EMUL_RX_MIFARE_SEL_UID;
@@ -342,8 +339,14 @@ void hydranfc_emul_mifare_irq(void)
 	}
 }
 
-void hydranfc_emul_mifare(t_hydra_console *con)
+void hydranfc_emul_mifare(t_hydra_console *con, unsigned int mifare_uid)
 {
+	byte0 = ((mifare_uid & 0xFF000000) >> 24);
+	byte1 = ((mifare_uid & 0xFF0000) >> 16);
+	byte2 = ((mifare_uid & 0xFF00) >> 8);
+	byte3 = (mifare_uid & 0xFF);
+	byte4 = (byte0 ^ byte1 ^ byte2 ^ byte3); // BCC
+
 	/* Init TRF7970A IRQ function callback */
 	trf7970a_irq_fn = hydranfc_emul_mifare_irq;
 
