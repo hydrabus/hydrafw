@@ -237,11 +237,11 @@ void hydranfc_emul_mifare_states(void)
 			if(
 				(data_buf[0] == ISO14443A_SEL_UID_BYTE0) &&
 				(data_buf[1] == ISO14443A_SEL_UID_BYTE1) &&
-				(data_buf[2] == ISO14443A_UID_BYTE0) &&
-				(data_buf[3] == ISO14443A_UID_BYTE1) &&
-				(data_buf[4] == ISO14443A_UID_BYTE2) &&
-				(data_buf[5] == ISO14443A_UID_BYTE3) &&
-				(data_buf[6] == ISO14443A_UID_BYTE4)) {
+				(data_buf[2] == byte0) &&
+				(data_buf[3] == byte1) &&
+				(data_buf[4] == byte2) &&
+				(data_buf[5] == byte3) &&
+				(data_buf[6] == byte4)) {
 
 				/* Reply with SAK + CRC */
 				data_buf[0] = ISO14443A_SAK;
