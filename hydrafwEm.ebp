@@ -660,6 +660,18 @@
 		<Unit filename="hydrabus\hydrabus_bbio.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="hydrabus\hydrabus_bbio_can.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_bbio_can.h" />
+		<Unit filename="hydrabus\hydrabus_bbio_pin.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_bbio_pin.h" />
+		<Unit filename="hydrabus\hydrabus_bbio_spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hydrabus\hydrabus_bbio_spi.h" />
 		<Unit filename="hydrabus\hydrabus_dac.c">
 			<Option compilerVar="CC" />
 		</Unit>
