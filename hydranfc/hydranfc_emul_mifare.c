@@ -339,7 +339,7 @@ void hydranfc_emul_mifare_irq(void)
 	}
 }
 
-void hydranfc_emul_mifare(t_hydra_console *con, unsigned int mifare_uid)
+void hydranfc_emul_mifare(t_hydra_console *con, uint32_t mifare_uid)
 {
 	byte0 = ((mifare_uid & 0xFF000000) >> 24);
 	byte1 = ((mifare_uid & 0xFF0000) >> 16);
@@ -354,7 +354,7 @@ void hydranfc_emul_mifare(t_hydra_console *con, unsigned int mifare_uid)
 
 	/* Infinite loop until UBTN is pressed */
 	/*  Emulation is managed by IRQ => hydranfc_emul_mifare_irq */
-	cprintf(con, "NFC Emulation Mifare One UID started\r\nPress user button(UBTN) to stop.\r\n");
+	cprintf(con, "NFC Emulation Mifare UID 0x%02X 0x%02X 0x%02X 0x%02X started\r\nPress user button(UBTN) to stop.\r\n", byte0, byte1, byte2, byte3);
 	while(1) {
 		if(USER_BUTTON)
 			break;
