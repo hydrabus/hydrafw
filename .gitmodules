@@ -3,4 +3,4 @@
 	url = https://github.com/bvernoux/ChibiOS-RT
 [submodule "tokenline"]
 	path = tokenline
-	url = https://github.com/biot/tokenline.git
+	url = https://github.com/bvernoux/tokenline
