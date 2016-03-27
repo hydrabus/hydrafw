@@ -225,7 +225,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 				t += tokens_used;
 			break;
 		case T_TILDE:
-		case T_ARG_INT:
+		case T_ARG_UINT:
 			tokens_used = hydrabus_mode_write(con, p, t);
 			if (!tokens_used)
 				done = TRUE;
@@ -263,25 +263,26 @@ static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,
 			  int token_pos, unsigned int *num_bytes)
 {
 	mode_config_proto_t* p_proto = &con->mode->proto;
-	int arg_int, count, t, i;
+	uint32_t arg_uint;
+	int count, t, i;
 
 	t = token_pos;
 	*num_bytes = 0;
-	while ((p->tokens[t] == T_ARG_INT) || (p->tokens[t] == T_TILDE)) {
+	while ((p->tokens[t] == T_ARG_UINT) || (p->tokens[t] == T_TILDE)) {
 		if(p->tokens[t] == T_TILDE) {
 			bsp_rng_init();
-			arg_int = bsp_rng_read() & 0xff;
+			arg_uint = bsp_rng_read() & 0xff;
 			bsp_rng_deinit();
 			t++;
 		} else {
 			t++;
-			memcpy(&arg_int, p->buf + p->tokens[t++], sizeof(int));
-			if (arg_int > 0xff) {
+			memcpy(&arg_uint, p->buf + p->tokens[t++], sizeof(uint32_t));
+			if (arg_uint > 0xff) {
 				cprintf(con, "Please specify one byte at a time.\r\n");
 				return 0;
 			}
 		}
-		p_proto->buffer_tx[(*num_bytes)++] = arg_int;
+		p_proto->buffer_tx[(*num_bytes)++] = arg_uint;
 
 		if (p->tokens[t] == T_ARG_TOKEN_SUFFIX_INT) {
 			t++;
@@ -292,7 +293,7 @@ static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,
 			}
 			/* We added one already. */
 			for (i = 0; i < count - 1; i++)
-				p_proto->buffer_tx[(*num_bytes)++] = arg_int;
+				p_proto->buffer_tx[(*num_bytes)++] = arg_uint;
 		}
 	}
 
@@ -301,8 +302,8 @@ static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,
 
 /*
  * This function can be called for either T_WRITE or a free-standing
- * T_ARG_INT, so it's called with t pointing to the first token after
- * T_WRITE, or the first T_ARG_INT in the free-standing case.
+ * T_ARG_UINT, so it's called with t pointing to the first token after
+ * T_WRITE, or the first T_ARG_UINT in the free-standing case.
  *
  * Returns the number of tokens eaten.
  */
@@ -323,7 +324,7 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 		count = 1;
 	}
 
-	if ((p->tokens[t] != T_ARG_INT) && (p->tokens[t] != T_TILDE)) {
+	if ((p->tokens[t] != T_ARG_UINT) && (p->tokens[t] != T_TILDE)) {
 		cprintf(con, "No bytes to write.\r\n");
 		return 0;
 	}

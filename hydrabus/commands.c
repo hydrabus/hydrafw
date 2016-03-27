@@ -2,6 +2,7 @@
  * HydraBus/HydraNFC
  *
  * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
+ * Copyright (C) 2014-2016 Benjamin VERNOUX
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -208,7 +209,7 @@ t_token tokens_mode_can_show[] = {
 t_token tokens_mode_nfc_scan[] = {
 	{
 		T_PERIOD,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.help = "Delay between scans (msec)"
 	},
 	{
@@ -221,12 +222,12 @@ t_token tokens_mode_nfc_scan[] = {
 t_token tokens_mode_brute[] = {
 	{
 		T_BYPASS,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.help = "Performs a BYPASS scan on n pins"
 	},
 	{
 		T_IDCODE,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.help = "Performs an IDCODE scan on n pins"
 	},
 	{ }
@@ -243,12 +244,12 @@ t_token tokens_mode_can_filter[] = {
 	},
 	{
 		T_LOW,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.help = "Lower ID to include in filter"
 	},
 	{
 		T_HIGH,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.help = "Higher ID to include in filter"
 	},
 	{ }
@@ -278,7 +279,7 @@ t_token tokens_mode_can_filter[] = {
 	},\
 	{\
 		T_EMUL_MIFARE,\
-		.arg_type = T_ARG_INT,\
+		.arg_type = T_ARG_UINT,\
 		.help = "Emul Tag Mifare UID (uid)"\
 	},\
 	{\
@@ -318,12 +319,12 @@ t_token tokens_parity[] = {
 #define UART_PARAMETERS \
 	{\
 		T_DEVICE,\
-		.arg_type = T_ARG_INT,\
+		.arg_type = T_ARG_UINT,\
 		.help = "UART device (1/2)"\
 	},\
 	{\
 		T_SPEED,\
-		.arg_type = T_ARG_INT,\
+		.arg_type = T_ARG_UINT,\
 		.help = "Bus bitrate"\
 	},\
 	{\
@@ -334,7 +335,7 @@ t_token tokens_parity[] = {
 	},\
 	{\
 		T_STOP_BITS,\
-		.arg_type = T_ARG_INT,\
+		.arg_type = T_ARG_UINT,\
 		.help = "Stop bits (1/2)"\
 	},
 
@@ -357,7 +358,7 @@ t_token tokens_mode_uart[] = {
 		.help = "Write byte (repeat with :<num>)"
 	},
 	{
-		T_ARG_INT,
+		T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
 	},
@@ -396,12 +397,12 @@ t_token tokens_uart[] = {
 #define CAN_PARAMETERS \
 	{\
 		T_DEVICE,\
-		.arg_type = T_ARG_INT,\
+		.arg_type = T_ARG_UINT,\
 		.help = "CAN device (1/2)"\
 	},\
 	{\
 		T_SPEED,\
-		.arg_type = T_ARG_INT,\
+		.arg_type = T_ARG_UINT,\
 		.help = "Bus bitrate"\
 	},
 
@@ -429,7 +430,7 @@ t_token tokens_mode_can[] = {
 	},
 	{
 		T_ID,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Change next frame ID"
 	},
@@ -439,7 +440,7 @@ t_token tokens_mode_can[] = {
 		.help = "Set input filter"
 	},
 	{
-		T_ARG_INT,
+		T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write packets (repeat with :<num>)"
 	},
@@ -505,7 +506,7 @@ t_token tokens_mode_i2c[] = {
 		.help = "Write byte (repeat with :<num>)"
 	},
 	{
-		T_ARG_INT,
+		T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
 	},
@@ -547,7 +548,7 @@ t_token tokens_i2c[] = {
 
 #define SPI_PARAMETERS \
 	{ T_DEVICE, \
-		.arg_type = T_ARG_INT, \
+		.arg_type = T_ARG_UINT, \
 		.help = "SPI device (1/2)" }, \
 	{ T_PULL, \
 		.arg_type = T_ARG_TOKEN, \
@@ -561,10 +562,10 @@ t_token tokens_i2c[] = {
 		.arg_type = T_ARG_FLOAT, \
 		.help = "Bus frequency" }, \
 	{ T_POLARITY, \
-		.arg_type = T_ARG_INT, \
+		.arg_type = T_ARG_UINT, \
 		.help = "Clock polarity (0/1)" }, \
 	{ T_PHASE, \
-		.arg_type = T_ARG_INT, \
+		.arg_type = T_ARG_UINT, \
 		.help = "Clock phase (0/1)" }, \
 	{ T_MSB_FIRST, \
 		.help = "Send/receive MSB first" }, \
@@ -590,7 +591,7 @@ t_token tokens_mode_spi[] = {
 		.help = "Write byte (repeat with :<num>)"
 	},
 	{
-		T_ARG_INT,
+		T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
 	},
@@ -640,7 +641,7 @@ t_token tokens_spi[] = {
 
 #define JTAG_PARAMETERS \
 	{ T_DEVICE, \
-		.arg_type = T_ARG_INT, \
+		.arg_type = T_ARG_UINT, \
 		.help = "JTAG device (1)" }, \
 	{ T_PULL, \
 		.arg_type = T_ARG_TOKEN, \
@@ -675,28 +676,28 @@ t_token tokens_mode_jtag[] = {
 		.help = "Bus frequency"
 	},
 	{
-		T_ARG_INT,
+		T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
 	},
 	{
 		T_TCK,
-		.arg_type = T_ARG_INT, \
+		.arg_type = T_ARG_UINT, \
 		.help = "Set TCK pin number x for PBx"
 	},
 	{
 		T_TMS,
-		.arg_type = T_ARG_INT, \
+		.arg_type = T_ARG_UINT, \
 		.help = "Set TMS pin number x for PBx"
 	},
 	{
 		T_TDI,
-		.arg_type = T_ARG_INT, \
+		.arg_type = T_ARG_UINT, \
 		.help = "Set TDI pin number x for PBx"
 	},
 	{
 		T_TDO,
-		.arg_type = T_ARG_INT, \
+		.arg_type = T_ARG_UINT, \
 		.help = "Set TDO pin number x for PBx"
 	},
 	{
@@ -782,7 +783,7 @@ t_token tokens_jtag[] = {
 
 #define TWOWIRE_PARAMETERS \
 	{ T_DEVICE, \
-		.arg_type = T_ARG_INT, \
+		.arg_type = T_ARG_UINT, \
 		.help = "2-wire device (1)" }, \
 	{ T_PULL, \
 		.arg_type = T_ARG_TOKEN, \
@@ -817,7 +818,7 @@ t_token tokens_mode_twowire[] = {
 		.help = "Bus frequency"
 	},
 	{
-		T_ARG_INT,
+		T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
 	},
@@ -912,7 +913,7 @@ t_token tokens_gpio[] = {
 	},
 	{
 		T_PERIOD,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.help = "Delay between reads, in milliseconds"
 	},
 	{
@@ -953,12 +954,12 @@ t_token tokens_adc[] = {
 	},
 	{
 		T_PERIOD,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.help = "Delay between samples (msec)"
 	},
 	{
 		T_SAMPLES,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.help = "Number of samples"
 	},
 	{
@@ -984,7 +985,7 @@ t_token tokens_dac[] = {
 	},
 	{
 		T_RAW,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.help = "Raw value <0 to 4095>"
 	},
 	{
@@ -1015,12 +1016,12 @@ t_token tokens_pwm[] = {
 	},
 	{
 		T_FREQUENCY,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.help = "PWM frequency <value 1Hz to 42MHz>"
 	},
 	{
 		T_DUTY_CYCLE,
-		.arg_type = T_ARG_INT,
+		.arg_type = T_ARG_UINT,
 		.help = "Duty Cycle in % <value 0 to 100>"
 	},
 	{

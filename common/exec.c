@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2014-2015 Benjamin VERNOUX
+ * Copyright (C) 2014-2016 Benjamin VERNOUX
  * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -74,14 +74,14 @@ void token_dump(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	float arg_float;
 	uint32_t arg_uint;
-	int arg_int, i;
+	int i;
 
 	for (i = 0; p->tokens[i]; i++) {
 		cprintf(con, "%d: ", i);
 		switch (p->tokens[i]) {
-		case T_ARG_INT:
-			memcpy(&arg_int, p->buf + p->tokens[++i], sizeof(int));
-			cprintf(con, "T_ARG_INT\r\n%d: integer %d\r\n", i, arg_int);
+		case T_ARG_UINT:
+			memcpy(&arg_uint, p->buf + p->tokens[++i], sizeof(uint32_t));
+			cprintf(con, "T_ARG_UINT\r\n%d: uint32_t %u\r\n", i, arg_uint);
 			break;
 		case T_ARG_FLOAT:
 			memcpy(&arg_float, p->buf + p->tokens[++i], sizeof(float));
@@ -93,7 +93,7 @@ void token_dump(t_hydra_console *con, t_tokenline_parsed *p)
 			break;
 		case T_ARG_TOKEN_SUFFIX_INT:
 			memcpy(&arg_uint, p->buf + p->tokens[++i], sizeof(uint32_t));
-			cprintf(con, "T_ARG_TOKEN_SUFFIX_INT\r\n%d: token-suffixed integer %d\r\n", i, arg_uint);
+			cprintf(con, "T_ARG_TOKEN_SUFFIX_INT\r\n%d: token-suffixed uint32_t %u\r\n", i, arg_uint);
 			break;
 		default:
 			cprintf(con, "token %d (%s)\r\n", p->tokens[i],
