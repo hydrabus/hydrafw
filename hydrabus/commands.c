@@ -87,6 +87,7 @@ t_token_dict tl_dict[] = {
 	{ T_TYPEA, "typea" },
 	{ T_VICINITY, "vicinity" },
 	{ T_EMUL_MIFARE, "emul-mifare" },
+	{ T_EMUL_MF_ULTRALIGHT, "emul-mf-ul" },
 	{ T_EMUL_ISO14443A, "emul-3a" },
 	{ T_REGISTERS, "registers" },
 	{ T_SCAN, "scan" },
@@ -279,6 +280,10 @@ t_token tokens_mode_can_filter[] = {
 		T_EMUL_MIFARE,\
 		.arg_type = T_ARG_INT,\
 		.help = "Emul Tag Mifare UID (uid)"\
+	},\
+	{\
+		T_EMUL_MF_ULTRALIGHT,\
+		.help = "Emul Tag Mifare Ultralight"\
 	},\
 	{\
 		T_EMUL_ISO14443A,\

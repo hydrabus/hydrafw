@@ -48,6 +48,7 @@ void hydranfc_sniff_14443A_dbg(t_hydra_console *con);
 
 void hydranfc_emul_mifare(t_hydra_console *con, uint32_t mifare_uid);
 void hydranfc_emul_iso14443a(t_hydra_console *con);
+void hydranfc_emul_mf_ultralight(t_hydra_console *con);
 
 #endif /* _HYDRANFC_H_ */
 

@@ -721,6 +721,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_SCAN:
 		case T_SNIFF:
 		case T_SNIFF_DBG:
+		case T_EMUL_MF_ULTRALIGHT:
+			action = p->tokens[t];
+			t += 2;
+			break;
 		case T_EMUL_MIFARE:
 			action = p->tokens[t];
 			t += 2;
@@ -732,33 +736,52 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		}
 	}
 
-	if (action == T_SCAN) {
-		dev_func = proto->dev_function;
-		if( (dev_func == NFC_TYPEA) || (dev_func == NFC_VICINITY) ) {
-			if (continuous) {
-				cprintf(con, "Scanning %s ",
-					proto->dev_function == NFC_TYPEA ? "MIFARE" : "Vicinity");
-				cprintf(con, "with %dms period. Press user button to stop.\r\n", period);
-				while (!USER_BUTTON) {
+	switch(action)
+	{
+		case T_SCAN:
+			dev_func = proto->dev_function;
+			if( (dev_func == NFC_TYPEA) || (dev_func == NFC_VICINITY) )
+			{
+				if (continuous) {
+					cprintf(con, "Scanning %s ",
+						proto->dev_function == NFC_TYPEA ? "MIFARE" : "Vicinity");
+					cprintf(con, "with %dms period. Press user button to stop.\r\n", period);
+					while (!USER_BUTTON) {
+						scan(con);
+						chThdSleepMilliseconds(period);
+					}
+				} else {
 					scan(con);
-					chThdSleepMilliseconds(period);
 				}
 			} else {
-				scan(con);
+				cprintf(con, "Please select MIFARE or Vicinity mode first.\r\n");
+				return 0;
 			}
+		break;
 
-		} else {
-			cprintf(con, "Please select MIFARE or Vicinity mode first.\r\n");
-			return 0;
-		}
-	} else if (action == T_SNIFF) {
-		hydranfc_sniff_14443A(con);
-	} else if (action == T_SNIFF_DBG) {
-		hydranfc_sniff_14443A_dbg(con);
-	} else if (action == T_EMUL_MIFARE) {
-		hydranfc_emul_mifare(con, mifare_uid);
-	} else if (action == T_EMUL_ISO14443A)
-		hydranfc_emul_iso14443a(con);
+		case T_SNIFF:
+			hydranfc_sniff_14443A(con);
+		break;
+
+		case T_SNIFF_DBG:
+			hydranfc_sniff_14443A_dbg(con);
+		break;
+
+		case T_EMUL_MIFARE:
+			hydranfc_emul_mifare(con, mifare_uid);
+		break;
+
+		case T_EMUL_MF_ULTRALIGHT:
+			hydranfc_emul_mf_ultralight(con);
+		break;
+
+		case T_EMUL_ISO14443A:
+			hydranfc_emul_iso14443a(con);
+		break;
+
+		default:
+		break;
+	}
 
 	return t - token_pos;
 }
