@@ -80,7 +80,7 @@ void  hydranfc_emul_mifare_init(void)
 	uint8_t data_buf[2];
 
 	Trf797xInitialSettings();
-	Trf797xReset();
+	Trf797xResetFIFO();
 
 	/* Clear ISO14443 TX */
 	data_buf[0] = ISO_14443B_OPTIONS;
@@ -127,7 +127,7 @@ void  hydranfc_emul_mifare_init(void)
 	data_buf[1] = 0x40;
 	Trf797xWriteSingle(data_buf, 2);
 
-	Trf797xReset();
+	Trf797xResetFIFO();
 	Trf797xStopDecoders();
 	Trf797xRunDecoders();
 

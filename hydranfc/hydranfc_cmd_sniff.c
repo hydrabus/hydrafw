@@ -137,7 +137,7 @@ static void init_sniff_nfc(void)
 	tprintf("TRF7970A chipset init start\r\n");
 
 	/* Init TRF797x */
-	Trf797xReset();
+	Trf797xResetFIFO();
 	Trf797xInitialSettings();
 
 	/* ************************************************************* */

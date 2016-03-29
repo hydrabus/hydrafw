@@ -106,7 +106,7 @@ void  hydranfc_emul_mf_ultralight_init(void)
 	uint8_t data_buf[2];
 
 	/* Init TRF797x */
-	Trf797xReset();
+	Trf797xResetFIFO();
 	Trf797xInitialSettings();
 
 	/* Clear ISO14443 TX */
@@ -154,7 +154,7 @@ void  hydranfc_emul_mf_ultralight_init(void)
 	data_buf[1] = 0x07;
 	Trf797xWriteSingle(data_buf, 2);
 
-//Trf797xReset();
+//Trf797xResetFIFO();
 	Trf797xStopDecoders(); /* Disable Receiver */
 	Trf797xRunDecoders(); /* Enable Receiver */
 
@@ -330,7 +330,6 @@ void hydranfc_emul_mf_ultralight_states(void)
 					data_buf[0] = ISO14443A_L2_SAK;
 					wait_nbcycles(324);
 					if(emul_mf_ultralight_tx_rawdata(data_buf, 1, 1) == 1) {
-
 						/*
 							BIT1 = Disable anticollision frames for 14443A
 							(this bit should be set to 1 after anticollision is finished)
@@ -339,6 +338,10 @@ void hydranfc_emul_mf_ultralight_states(void)
 						data_buf[0] = SPECIAL_FUNCTION;
 						data_buf[1] = (BIT1 | BIT2);
 						Trf797xWriteSingle(data_buf, 2);
+
+						Trf797xReadSingle(&data_buf[1], SPECIAL_FUNCTION);
+						// Disable Anti-collision Frames for 14443A.
+						Trf797xWriteSingle(BIT2 | ui8Temp, SPECIAL_FUNCTION);
 
 						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_CMD;
 					} else

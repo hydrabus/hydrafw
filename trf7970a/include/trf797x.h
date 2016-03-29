@@ -82,7 +82,7 @@ void Trf797xRawWrite(u08_t *pbuf, u08_t length);
 void Trf797xReadCont(u08_t *pbuf, u08_t length);
 void Trf797xReadIrqStatus(u08_t *pbuf);
 void Trf797xReadSingle(u08_t *pbuf, u08_t length);
-void Trf797xReset(void);
+void Trf797xResetFIFO(void);
 void Trf797xResetIrqStatus(void);
 void Trf797xRunDecoders(void);
 void Trf797xStopDecoders(void);

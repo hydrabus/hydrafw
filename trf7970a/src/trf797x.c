@@ -137,6 +137,14 @@ int Trf797xInitialSettings(void)
 		}
 	}
 
+	/* 
+		Fix SLOZ011A–February 2014–Revised April 2015
+		NFC Target Detection Level Register(0x18) has non-zero value at power up
+	*/
+	mod_control[0] = NFC_TARGET_LEVEL;
+	mod_control[1] = 0x00;
+	Trf797xWriteSingle(mod_control, 2);
+
 	mod_control[0] = MODULATOR_CONTROL;
 	mod_control[1] = 0x21;  // 6.78MHz, OOK 100%
 	Trf797xWriteSingle(mod_control, 2);
@@ -240,7 +248,7 @@ Trf797xReadSingle(u08_t *pbuf, u08_t number)
 //===============================================================
 
 void
-Trf797xReset(void)
+Trf797xResetFIFO(void)
 {
 	command[0] = RESET;
 	Trf797xDirectCommand(command);
@@ -526,7 +534,7 @@ uint8_t Trf797x_transceive_bits(uint8_t tx_databuf, uint8_t tx_databuf_nb_bits,
 				irq_end_rx = 1;
 				break;
 			} else if(0x80 == data_buf[0]) { /* TX end */
-				Trf797xReset(); // reset the FIFO after TX
+				Trf797xResetFIFO(); // reset the FIFO after TX
 			}
 		}
 		DelayUs(10);
@@ -612,7 +620,7 @@ int Trf797x_transceive_bytes(uint8_t* tx_databuf, uint8_t tx_databuf_nb_bytes,
 				irq_end_rx = 1;
 				break;
 			} else if(0x80 == data_buf[0]) { /* TX end */
-				Trf797xReset(); // reset the FIFO after TX
+				Trf797xResetFIFO(); // reset the FIFO after TX
 			}
 		}
 		DelayUs(100);

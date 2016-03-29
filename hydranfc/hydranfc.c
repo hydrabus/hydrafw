@@ -138,7 +138,7 @@ static bool hydranfc_test_shield(void)
 	if (init_ms == TRF7970A_INIT_TIMEOUT)
 		return FALSE;
 
-	Trf797xReset();
+	Trf797xResetFIFO();
 
 	data_buf[0] = CHIP_STATE_CONTROL;
 	Trf797xReadSingle(data_buf, 1);
@@ -367,7 +367,7 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 
 	/* Test ISO14443-A/Mifare read UID */
 	Trf797xInitialSettings();
-	Trf797xReset();
+	Trf797xResetFIFO();
 
 	/*
 	 * Write Modulator and SYS_CLK Control Register (0x09) (13.56Mhz SYS_CLK
@@ -616,7 +616,7 @@ void hydranfc_scan_vicinity(t_hydra_console *con)
 
 	/* Test ISO15693 read UID */
 	Trf797xInitialSettings();
-	Trf797xReset();
+	Trf797xResetFIFO();
 
 	/* Write Modulator and SYS_CLK Control Register (0x09) (13.56Mhz SYS_CLK and default Clock 13.56Mhz)) */
 	data_buf[0] = MODULATOR_CONTROL;

@@ -63,7 +63,7 @@ void hydranfc_tag_emul_init(void)
 	uint8_t data_buf[4];
 
 	Trf797xInitialSettings();
-	Trf797xReset();
+	Trf797xResetFIFO();
 
 	/* ISO Control */
 	data_buf[0] = ISO_CONTROL;
@@ -132,7 +132,7 @@ void hydranfc_tag_emul_init(void)
 	write_emul_tag_uid(tag_uid);
 
 	Trf797xResetIrqStatus();
-	Trf797xReset();
+	Trf797xResetFIFO();
 	Trf797xStopDecoders();
 	Trf797xRunDecoders();
 }
@@ -210,7 +210,7 @@ void TagIRQ(int irq_status)
 						}
 						printf_dbg("\r\n");
 			*/
-			Trf797xReset(); //reset the FIFO after last byte has been read out
+			Trf797xResetFIFO(); //reset the FIFO after last byte has been read out
 			Trf797xResetIrqStatus();
 
 			/* Reply ATS (DESFire EV1) */
@@ -232,7 +232,7 @@ void TagIRQ(int irq_status)
 
 	/* TX complete */
 	if( (irq_status & BIT7) == BIT7) {
-		Trf797xReset(); // reset the FIFO
+		Trf797xResetFIFO(); // reset the FIFO
 	}
 }
 
