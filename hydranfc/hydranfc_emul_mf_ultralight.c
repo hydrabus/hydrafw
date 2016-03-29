@@ -338,10 +338,11 @@ void hydranfc_emul_mf_ultralight_states(void)
 						data_buf[0] = SPECIAL_FUNCTION;
 						data_buf[1] = (BIT1 | BIT2);
 						Trf797xWriteSingle(data_buf, 2);
-
+						/*
 						Trf797xReadSingle(&data_buf[1], SPECIAL_FUNCTION);
 						// Disable Anti-collision Frames for 14443A.
 						Trf797xWriteSingle(BIT2 | ui8Temp, SPECIAL_FUNCTION);
+						*/
 
 						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_CMD;
 					} else
