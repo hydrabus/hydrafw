@@ -703,6 +703,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	int action, period, continuous, t;
 	unsigned int mifare_uid = 0;
 
+	/* Stop & Start External IRQ */
+	extStop(&EXTD1);
+	trf7970a_irq_fn = NULL;
+	extStart(&EXTD1, &extcfg);
+
 	action = 0;
 	period = 1000;
 	continuous = FALSE;
@@ -737,6 +742,8 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			memcpy(&mifare_uid, p->buf + p->tokens[t], sizeof(int));
 			break;
 		case T_EMUL_ISO14443A:
+		case T_DIRECT_MODE_0:
+		case T_DIRECT_MODE_1:
 			action = p->tokens[t];
 			break;
 		}
@@ -783,6 +790,55 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 
 		case T_EMUL_ISO14443A:
 			hydranfc_emul_iso14443a(con);
+		break;
+
+		case T_DIRECT_MODE_0:
+			cprintf(con, "Enter Direct Mode 0 ISO14443A/B 106kbps\r\n");
+			cprintf(con, "TRF7970A IO6/HydraBus PC2 = digital subcarrier\r\n");
+			cprintf(con, "Press user button to stop\r\n");
+
+			/* Direct Mode 0 => TRF7970A ASK/OOK input / HydraBus PB1 output */
+			//palClearPad(GPIOB, 1); // Set to 0 for ASK 
+			palSetPad(GPIOB, 1); // Set to 1 OOK
+			palSetPadMode(GPIOB, 1, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+
+			Trf797x_DM0_DM1_Config();
+			Trf797x_DM0_Enter();
+
+			while (!USER_BUTTON) {
+				chThdSleepMilliseconds(100);
+			}
+			Trf797x_DM0_Exit();
+			
+			/* TRF7970A ASK/OOK default analog signal output / HydraBus PB1 input */
+			palSetPadMode(GPIOB, 1, PAL_MODE_INPUT);
+			cprintf(con, "Exit Direct Mode 0\r\n");
+		break;
+
+		case T_DIRECT_MODE_1:
+			cprintf(con, "Enter Direct Mode 1 ISO14443A/B 106kbps\r\n");
+			cprintf(con, "TRF7970A IO5/HydraBus PC4 = RX CLK\r\n");
+			cprintf(con, "TRF7970A IO6/HydraBus PC2 = RX Data\r\n");
+			cprintf(con, "TRF7970A IRQ/HydraBus PA1 = RX End\r\n");
+			cprintf(con, "Press user button to stop\r\n");
+
+			/* Direct Mode 1 => TRF7970A ASK/OOK input / HydraBus PB1 output */
+			//palClearPad(GPIOB, 1); // Set to 0 for ASK 
+			palSetPad(GPIOB, 1); // Set to 1 OOK
+			palSetPadMode(GPIOB, 1, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+
+			Trf797x_DM0_DM1_Config();
+			Trf797x_DM1_Enter();
+
+			while (!USER_BUTTON) {
+				chThdSleepMilliseconds(100);
+			}
+			Trf797x_DM1_Exit();
+			
+			/* TRF7970A ASK/OOK default analog signal output / HydraBus PB1 input */
+			palSetPadMode(GPIOB, 1, PAL_MODE_INPUT);
+			cprintf(con, "Exit Direct Mode 1\r\n");
+
 		break;
 
 		default:

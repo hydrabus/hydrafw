@@ -87,6 +87,8 @@ enum {
 	T_SCAN,
 	T_SNIFF,
 	T_SNIFF_DBG,
+	T_DIRECT_MODE_0,
+	T_DIRECT_MODE_1,
 	T_GPIO,
 	T_IN,
 	T_OUT,

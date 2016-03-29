@@ -103,6 +103,14 @@ int Trf797x_transceive_bytes(uint8_t* tx_databuf, uint8_t tx_databuf_nb_bytes,
 			     uint8_t timeout_ms,
 			     uint8_t flag_crc);
 
+void Trf797x_DM0_DM1_Config(void);
+
+void Trf797x_DM0_Enter(void);
+void Trf797x_DM0_Exit(void);
+
+void Trf797x_DM1_Enter(void);
+void Trf797x_DM1_Exit(void);
+
 //===============================================================
 
 #endif

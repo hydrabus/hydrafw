@@ -94,6 +94,8 @@ t_token_dict tl_dict[] = {
 	{ T_SCAN, "scan" },
 	{ T_SNIFF, "sniff" },
 	{ T_SNIFF_DBG, "sniff-dbg" },
+	{ T_DIRECT_MODE_0, "dm0" },
+	{ T_DIRECT_MODE_1, "dm1" },
 	{ T_GPIO, "gpio" },
 	{ T_IN, "in" },
 	{ T_OUT, "out" },
@@ -289,8 +291,15 @@ t_token tokens_mode_can_filter[] = {
 	{\
 		T_EMUL_ISO14443A,\
 		.help = "Emul Tag ISO14443A SDD UID"\
+	},\
+	{\
+		T_DIRECT_MODE_0,\
+		.help = "Enter Direct Mode 0 (IO6/PC2=subcarrier)"\
+	},\
+	{\
+		T_DIRECT_MODE_1,\
+		.help = "Enter Direct Mode 1 (IO5/PC4=CLK, IO6/PC2=Data)"\
 	},
-
 t_token tokens_mode_nfc[] = {
 	{
 		T_SHOW,

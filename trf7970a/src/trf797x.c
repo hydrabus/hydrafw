@@ -653,3 +653,223 @@ int Trf797x_transceive_bytes(uint8_t* tx_databuf, uint8_t tx_databuf_nb_bytes,
 		return fifo_size;
 	}
 }
+
+void Trf797x_DM0_DM1_Config(void)
+{
+	u08_t tmp_buf[2];
+
+	/* Init TRF797x */
+	Trf797xResetFIFO();
+	Trf797xInitialSettings();
+
+	/* ************************************************************* */
+	/* Configure NFC chipset as ISO14443B (works with ISO14443A too) */
+
+	/* Configure Chip Status Register (0x00) to 0x21 (RF output active and 5v operations) */
+	tmp_buf[0] = CHIP_STATE_CONTROL;
+	tmp_buf[1] = 0x21;
+	Trf797xWriteSingle(tmp_buf, 2);
+
+	/* Configure Mode ISO Control Register (0x01) to 0x21 (Passive Mode 106 kbps) */
+	tmp_buf[0] = ISO_CONTROL;
+	tmp_buf[1] = 0x21;
+	Trf797xWriteSingle(tmp_buf, 2);
+
+	/* Write Modulator and SYS_CLK Control Register (0x09) (13.56Mhz SYS_CLK and default Clock 3.39Mhz)) */
+	tmp_buf[0] = MODULATOR_CONTROL;
+	tmp_buf[1] = 0x11; /* Freq 3.39Mhz */
+	Trf797xWriteSingle(tmp_buf, 2);
+
+	/* Configure Regulator to 0x87 (Auto & 5V) */
+	tmp_buf[0] = REGULATOR_CONTROL;
+	tmp_buf[1] = 0x87;
+	Trf797xWriteSingle(tmp_buf, 2);
+
+	/* Configure RX Special Settings
+	* Bandpass 450 kHz to 1.5 MHz B5=1/Bandpass 100 kHz to 1.5 MHz=B4=1,
+	* Gain reduction for 10 dB(Can be changed) B2=0&B3=1 or Gain reduction for 0 dB => B2=0& B3=0,
+	* AGC no limit B0=1 */
+	tmp_buf[0] = RX_SPECIAL_SETTINGS;
+	tmp_buf[1] = 0x31; //0x39;
+	Trf797xWriteSingle(tmp_buf, 2);
+
+	/* Configure Test Settings 1 to BIT6/0x40 => MOD Pin becomes receiver subcarrier output (Digital Output for RX/TX) => Used for Sniffer */
+	tmp_buf[0] = TEST_SETTINGS_1;
+	tmp_buf[1] = BIT6;
+	Trf797xWriteSingle(tmp_buf, 2);
+
+	Trf797xStopDecoders(); /* Disable Receiver */
+	Trf797xRunDecoders(); /* Enable Receiver */
+}
+/*
+ * Trf797x_DM0_Enter - Enters TRF7970A's Direct Mode 0
+ * See description of DM0 in SLOS743K –AUGUST 2011–REVISED APRIL 2014
+*/
+void Trf797x_DM0_Enter(void)
+{
+	int i;
+	u08_t buf[2];
+	u08_t iso_control;
+	u08_t length;
+	u08_t *pbuf;
+/* 
+	Example register setting for ISO14443A at 106 kbps before to enter DM0:
+	• ISO Control register (0x01) to 0x08
+	• RX No Response Wait Time register (0x07) to 0x0E
+	• RX Wait Time register (0x08) to 0x07
+	• Modulator control register (0x09) to 0x21 (or any custom modulation)
+	• RX Special Settings register (0x0A) to 0x20
+*/
+/*
+	buf[0] = ISO_CONTROL;
+	buf[1] = 0x08;
+	Trf797xWriteSingle(buf, 2);
+
+	buf[0] = RX_NO_RESPONSE_WAIT_TIME;
+	buf[1] = 0x0E;
+	Trf797xWriteSingle(buf, 2);
+
+	buf[0] = RX_WAIT_TIME;
+	buf[1] = 0x07;
+	Trf797xWriteSingle(buf, 2);
+
+	buf[0] = MODULATOR_CONTROL;
+	buf[1] = 0x21;  // 6.78MHz, OOK 100%
+	Trf797xWriteSingle(buf, 2);
+
+	buf[0] = RX_SPECIAL_SETTINGS;
+	buf[1] = 0x20;
+	Trf797xWriteSingle(buf, 2);
+*/
+
+/*
+	The following registers need to be programmed to enter Direct Mode 0
+	1. Set bit B6 of the Modulator and SYS_CLK Control register (0x09) to 1.
+	2. Set bit B6 of the ISO Control (Register 01) to 0 for Direct Mode 0 (default its 0)
+	3. Set bit B6 of the Chip Status Control register (0x00) to 1 to enter Direct Mode
+	4. Send extra eight clock cycles (see Figure 6-28, this step is TRF7970A specific)
+*/
+	/* 1. Set bit B6 of the Modulator and SYS_CLK Control register (0x09) to 1. */
+	buf[0] = MODULATOR_CONTROL;
+	buf[1] = BIT4 | BIT5 | BIT6;  /* BIT0 to BIT2=0=>ASK 10%, BIT4=1&BIT5=1=>SYS_CLK Out 13.56MHz, BIT6=en_ook_p
+		If BIT6 is 1, pin 12 is configured as follows:
+		1 = OOK modulation
+		0 = Modulation as defined in BIT0 to BIT2 (0x09)
+	*/
+	Trf797xWriteSingle(buf, 2);
+
+	/* 2. Set bit B6 of the ISO Control (Register 01) to 0 for Direct Mode 0 (default its 0) */
+	buf[0] = ISO_CONTROL;
+	Trf797xReadSingle(buf, 1);
+	iso_control = buf[0];
+	/* Clear BIT6 for Direct Mode 0 */
+	buf[0] = ISO_CONTROL;
+	buf[1] = iso_control & (~BIT6);
+	Trf797xWriteSingle(buf, 2);
+
+	/* 3. Set bit B6 of the Chip Status Control register (0x00) to 1 to enter Direct Mode */
+	buf[0] = CHIP_STATE_CONTROL;
+	buf[1] = BIT0 | BIT2 | BIT5 | BIT6; /* BIT0=5V, BIT2=AGC ON, BIT5=RF_ON, BIT6=Direct Mode */
+	/* Do like a Trf797xWriteSingle() without a SPI Unselect at end */
+	SPI_LL_Select();
+	pbuf = buf;
+	length = 2;
+	while(length > 0) {
+		// Address/Command Word Bit Distribution
+		// address, write, single (fist 3 bits = 0)
+		*pbuf = (0x1f &*pbuf); // register address
+		for(i = 0; i < 2; i++) {
+			SPI_LL_Write(pbuf, 1);
+
+			pbuf++;
+			length--;
+		}
+	}
+	
+	/* 4. Send extra eight clock cycles (see Figure 6-28, this step is TRF7970A specific) */
+	buf[0] = 0;
+	SPI_LL_Write(&buf[0], 1);
+
+	/* Do not Unselect Chipselect until end of DM0 */
+}
+
+void Trf797x_DM0_Exit(void)
+{
+	/* Step 7: Terminating Direct Mode 0
+		After the EOF is received, data transmission is over, and Direct Mode 0 can be terminated by sending a
+		Stop Condition (in the case of SPI, make the Slave Select go high). The TRF7970A is returned to default
+		state.
+  */
+	SPI_LL_Unselect();
+}
+
+/*
+* Trf797x_DM1_Enter - Enter Direct Mode 1 (DM1) for receiving
+*/
+void Trf797x_DM1_Enter(void)
+{
+	int i;
+	u08_t buf[2];
+	u08_t iso_control;
+	u08_t length;
+	u08_t *pbuf;
+
+/*
+	buf[0] = ISO_CONTROL;
+	buf[1] = 0x48; // 0x48 => BIT3=Active Mode, BIT6=Direct Mode 1
+	Trf797xWriteSingle(buf, 2);				// Step 16
+*/
+	buf[0] = ISO_CONTROL;
+	Trf797xReadSingle(buf, 1);
+	iso_control = buf[0];
+	/* Set BIT6 for Direct Mode 1 */
+	buf[0] = ISO_CONTROL;
+	buf[1] = iso_control | BIT6; /* BIT6=Direct Mode 1 */
+	Trf797xWriteSingle(buf, 2);				// Step 16
+
+	// Step 17
+	buf[0] = CHIP_STATE_CONTROL;
+	buf[1] = BIT0 | BIT2 | BIT5 | BIT6; /* BIT0=5V, BIT2=AGC ON, BIT5=RF_ON, BIT6=Direct Mode */
+	/* Do like a Trf797xWriteSingle() without a SPI Unselect at end */
+	SPI_LL_Select();
+	pbuf = buf;
+	length = 2;
+	while(length > 0) {
+		// Address/Command Word Bit Distribution
+		// address, write, single (fist 3 bits = 0)
+		*pbuf = (0x1f &*pbuf); // register address
+		for(i = 0; i < 2; i++) {
+			SPI_LL_Write(pbuf, 1);
+
+			pbuf++;
+			length--;
+		}
+	}
+	
+	/* 8 dummy clocks	Step 18 */
+	buf[0] = 0;
+	SPI_LL_Write(&buf[0], 1);
+
+	/* Do not Unselect Chipselect until end of DM0 */
+}
+
+/*
+* Trf797x_DM1_Exit - Exit Direct Mode 1 (DM1)
+*/
+void Trf797x_DM1_Exit(void)
+{
+	u08_t buf[2];
+
+	SPI_LL_Unselect();	// Step 21
+
+	buf[0] = SPECIAL_FUNCTION;
+	buf[1] = 0x00;
+	Trf797xWriteSingle(buf, 2);	// Step 22
+
+	buf[0] = IRQ_STATUS;
+	Trf797xReadSingle(buf, 1);	// Step 23
+
+	buf[0] = ISO_CONTROL;
+	buf[1] = 0x88;
+	Trf797xWriteSingle(buf, 2);
+}
