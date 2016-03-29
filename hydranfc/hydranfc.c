@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2014-2015 Benjamin VERNOUX
+ * Copyright (C) 2014-2016 Benjamin VERNOUX
  * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -152,44 +152,40 @@ extern t_mode_config mode_con1;
 
 static bool init_gpio(t_hydra_console *con)
 {
-	/* PA7 as Input connected to TRF7970A MOD Pin */
-	// palSetPadMode(GPIOA, 7, PAL_MODE_INPUT);
+	/* TRF7970A IRQ output / HydraBus PA1 input (Ext IRQ Rising Edge configured by extStart(&EXTD1, &extcfg)) */
 
 	/* Configure NFC/TRF7970A in SPI mode with Chip Select */
-	/* TRF7970A IO0 (To set to "0" for SPI) */
+	/* TRF7970A IO0 input / HydraBus PA3 output (To set to "0" for SPI) */
 	palClearPad(GPIOA, 3);
 	palSetPadMode(GPIOA, 3, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
 
-	/* TRF7970A IO1 (To set to "1" for SPI) */
+	/* TRF7970A IO1 input / HydraBus PA2 output (To set to "1" for SPI) */
 	palSetPad(GPIOA, 2);
 	palSetPadMode(GPIOA, 2, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
 
-	/* TRF7970A IO2 (To set to "1" for SPI) */
+	/* TRF7970A IO2 input / HydraBus PC0 output (To set to "1" for SPI) */
 	palSetPad(GPIOC, 0);
 	palSetPadMode(GPIOC, 0, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
 
-	/*
-	 * Initializes the SPI driver 1. The SPI1 signals are routed as follows:
-	 * Shall be configured as SPI Slave for TRF7970A NFC data sampling on MOD pin.
-	 * NSS. (Not used use Software).
-	 * PA5 - SCK.(AF5)  => Connected to TRF7970A SYS_CLK pin
-	 * PA6 - MISO.(AF5) (Not Used)
-	 * PA7 - MOSI.(AF5) => Connected to TRF7970A MOD pin
-	 */
-	/* spiStart() is done in sniffer see sniffer.c */
-	/* SCK.     */
-	palSetPadMode(GPIOA, 5, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
-	/* MISO. Not used/Not connected */
-	palSetPadMode(GPIOA, 6, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
-	/* MOSI. connected to TRF7970A MOD Pin */
-	palSetPadMode(GPIOA, 7, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
+  /* Configure NFC/TRF7970A Direct Mode pins (SDM & DM1) */
+	/* TRF7970A IO3 TX SDM Data bit input / HydraBus PC5 output (To set to "0" by default) */
+	palClearPad(GPIOC, 5);
+	palSetPadMode(GPIOC, 5, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+
+	/* TRF7970A IO4_CS see SPI driver 2 init below */
+
+	/* TRF7970A IO5 TX SDM Clock or RX DM1 Clock output / HydraBus PC4 input */
+	palSetPadMode(GPIOC, 4, PAL_MODE_INPUT);
+
+	/* TRF7970A IO6_MISO see SPI driver 2 init below */
+	/* TRF7970A IO7_MOSI see SPI driver 2 init below */
 
 	/*
 	 * Initializes the SPI driver 2. The SPI2 signals are routed as follow:
-	 * PC1 - NSS.
-	 * PB10 - SCK.
-	 * PC2 - MISO.
-	 * PC3 - MOSI.
+	 * TRF7970A IO4_CS SPI mode / HydraBus PC1 - NSS
+	 * TRF7970A DATA_CLK SPI mode / HydraBus PB10 - SCK
+	 * TRF7970A IO6_MISO SPI mode / HydraBus PC2 - MISO
+	 * TRF7970A IO7_MOSI SPI mode / HydraBus PC3 - MOSI
 	 * Used for communication with TRF7970A in SPI mode with NSS.
 	 */
 	mode_con1.proto.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
@@ -200,16 +196,26 @@ static bool init_gpio(t_hydra_console *con)
 	mode_con1.proto.dev_mode = DEV_SPI_MASTER;
 	bsp_spi_init(BSP_DEV_SPI2, &mode_con1.proto);
 
-	/* NSS - ChipSelect. */
-	palSetPad(GPIOC, 1);
-	palSetPadMode(GPIOC, 1, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
-	/* SCK.     */
-	palSetPadMode(GPIOB, 10, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
-	/* MISO.    */
-	palSetPadMode(GPIOC, 2, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
-	/* MOSI.    */
-	palSetPadMode(GPIOC, 3, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
+	/*
+	 * Initializes the SPI driver 1. The SPI1 signals are routed as follows:
+	 * Shall be configured as SPI Slave for TRF7970A NFC data sampling on MOD pin.
+	 * NSS. (Not used use Software).
+	 * TRF7970A SYS_CLK output / HydraBus PA5 - SCK.(AF5) => SPI Slave CLK input
+	 * TRF7970A Not Applicable(Not Used) / HydraBus PA6 - MISO.(AF5)
+	 * TRF7970A MOD output / HydraBus PA7 - MOSI.(AF5) => SPI Slave MOSI input
+	 */
+	/* spiStart() is done in sniffer see sniffer.c */
+	/* HydraBus SPI1 Slave CLK input */
+	palSetPadMode(GPIOA, 5, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
+	/* HydraBus SPI1 Slave MISO. Not used/Not connected */
+	palSetPadMode(GPIOA, 6, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
+	/* HydraBus SPI1 Slave MOSI. connected to TRF7970A MOD Pin */
+	palSetPadMode(GPIOA, 7, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_MID1);
 
+	/* TRF7970A ASK/OOK default analog signal output / HydraBus PB1 input */
+	palSetPadMode(GPIOB, 1, PAL_MODE_INPUT);
+
+	/* TRF7970A EN input / HydraBus PB11 output */
 	/* Enable TRF7970A EN=1 (EN2 is already equal to GND) */
 	palClearPad(GPIOB, 11);
 	palSetPadMode(GPIOB, 11, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
