@@ -106,8 +106,8 @@ void  hydranfc_emul_mf_ultralight_init(void)
 	uint8_t data_buf[2];
 
 	/* Init TRF797x */
-	Trf797xResetFIFO();
 	Trf797xInitialSettings();
+	Trf797xResetFIFO();
 
 	/* Clear ISO14443 TX */
 	data_buf[0] = ISO_14443B_OPTIONS;
@@ -154,7 +154,7 @@ void  hydranfc_emul_mf_ultralight_init(void)
 	data_buf[1] = 0x07;
 	Trf797xWriteSingle(data_buf, 2);
 
-//Trf797xResetFIFO();
+	Trf797xResetFIFO();
 	Trf797xStopDecoders(); /* Disable Receiver */
 	Trf797xRunDecoders(); /* Enable Receiver */
 
