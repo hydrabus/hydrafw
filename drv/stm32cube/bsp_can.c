@@ -235,11 +235,11 @@ bsp_status_t bsp_can_init_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mod
 	hcanfilter.FilterMaskIdHigh = 0;
 	hcanfilter.FilterMaskIdLow = 0;
 	hcanfilter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
-	hcanfilter.FilterNumber = 0;
+	hcanfilter.FilterNumber = 14*dev_num;
 	hcanfilter.FilterMode = CAN_FILTERMODE_IDMASK;
 	hcanfilter.FilterScale = CAN_FILTERSCALE_16BIT;
 	hcanfilter.FilterActivation = ENABLE;
-	hcanfilter.BankNumber = 0;
+	hcanfilter.BankNumber = 14;
 
 	status = HAL_CAN_ConfigFilter(hcan, &hcanfilter);
 
@@ -247,7 +247,7 @@ bsp_status_t bsp_can_init_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mod
 }
 
 /**
-  * @brief  Set CAN device filter
+  * @brief  Set CAN device filter by ID
   * @param  dev_num: CAN dev num.
   * @param  mode_conf: Mode config proto.
   * @param  id_low: Lower ID to capture
@@ -273,11 +273,11 @@ bsp_status_t bsp_can_set_filter(bsp_dev_can_t dev_num,
 	hcanfilter.FilterMaskIdHigh = 0;
 	hcanfilter.FilterMaskIdLow = 0;
 	hcanfilter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
-	hcanfilter.FilterNumber = 0;
+	hcanfilter.FilterNumber = 14*dev_num;
 	hcanfilter.FilterMode = CAN_FILTERMODE_IDLIST;
 	hcanfilter.FilterScale = CAN_FILTERSCALE_16BIT;
 	hcanfilter.FilterActivation = ENABLE;
-	hcanfilter.BankNumber = 0;
+	hcanfilter.BankNumber = 14;
 
 	status = HAL_CAN_ConfigFilter(hcan, &hcanfilter);
 
