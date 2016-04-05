@@ -351,13 +351,13 @@ bsp_status_t bsp_can_read(bsp_dev_can_t dev_num, CanRxMsgTypeDef* rx_msg)
 
 /**
   * @brief  Checks if the CAN receive buffer is empty
-  * @retval 0 if empty
+  * @retval Number of messages in the FIFO
   */
 bsp_status_t bsp_can_rxne(bsp_dev_can_t dev_num)
 {
 	CAN_HandleTypeDef* hcan;
 	hcan = &can_handle[dev_num];
 
-	return __HAL_CAN_GET_FLAG(hcan, CAN_FLAG_FMP0);
+	return __HAL_CAN_MSG_PENDING(hcan, CAN_FIFO0);
 }
 
