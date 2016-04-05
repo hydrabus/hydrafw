@@ -329,6 +329,24 @@ bsp_status_t bsp_can_write(bsp_dev_can_t dev_num, CanTxMsgTypeDef* tx_msg)
 }
 
 /**
+  * @brief  Sends a message in non blocking mode
+  * @param  dev_num: CAN dev num.
+  * @param  tx_msg: Message to send
+  * @retval status of the transfer. Always BSP_OK
+  */
+bsp_status_t bsp_can_put(bsp_dev_can_t dev_num, CanTxMsgTypeDef* tx_msg)
+{
+	CAN_HandleTypeDef* hcan;
+
+	hcan = &can_handle[dev_num];
+
+	hcan->pTxMsg = tx_msg;
+
+	HAL_CAN_Transmit(hcan, 1);
+	return BSP_OK;
+}
+
+/**
   * @brief  Read a message in blocking mode and return the status.
   * @param  dev_num: CAN dev num.
   * @param  rx_msg: Message to receive.

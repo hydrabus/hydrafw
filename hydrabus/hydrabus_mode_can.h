@@ -24,9 +24,12 @@
 
 #endif /* _HYDRABUS_MODE_CAN_H_ */
 
+#define SLCAN_BUFF_LEN 50
+
 typedef struct {
 	uint32_t can_id;
 	uint32_t filter_id_low;
 	uint32_t filter_id_high;
 } can_config;
 
+void slcan(t_hydra_console *con);

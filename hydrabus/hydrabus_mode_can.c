@@ -23,6 +23,7 @@
 #include "hydrabus_mode_can.h"
 #include "stm32f4xx_hal.h"
 #include <string.h>
+#include <stdio.h>
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
@@ -57,6 +58,246 @@ static void show_params(t_hydra_console *con)
 	cprintf(con, "Device: CAN%d\r\nSpeed: %d bps\r\n",
 		proto->dev_num + 1, proto->dev_speed);
 	cprintf(con, "ID: 0x%0X\r\n", config[proto->dev_num].can_id);
+}
+
+static void can_slcan_out(t_hydra_console *con, CanRxMsgTypeDef *msg)
+{
+	char outcode;
+	uint8_t i;
+
+	if (msg->RTR == CAN_RTR_DATA) {
+		outcode = 't';
+	} else {
+		outcode = 'r';
+	}
+	if (msg->IDE == CAN_ID_EXT) {
+		/*Extended frames have a capital letter */
+		outcode -= 32;
+		cprintf(con, "%c%08X%d",
+			outcode, msg->ExtId, msg->DLC);
+	} else {
+		cprintf(con, "%c%03X%d",
+			outcode, msg->StdId, msg->DLC);
+	}
+
+	for (i=0; i<msg->DLC; i++) {
+		cprintf(con, "%02X", msg->Data[i]);
+	}
+	cprint(con, "\r", 1);
+}
+
+static bsp_status_t can_slcan_in(uint8_t *slcanmsg, CanTxMsgTypeDef *msg)
+{
+	uint8_t result = 0;
+	switch(slcanmsg[0]) {
+	case 't':
+		msg->RTR = CAN_RTR_DATA;
+		msg->IDE = CAN_ID_STD;
+		break;
+	case 'r':
+		msg->RTR = CAN_RTR_REMOTE;
+		msg->IDE = CAN_ID_STD;
+	        break;
+	case 'T':
+		msg->RTR = CAN_RTR_DATA;
+		msg->IDE = CAN_ID_EXT;
+		break;
+	case 'R':
+		msg->RTR = CAN_RTR_REMOTE;
+		msg->IDE = CAN_ID_EXT;
+		break;
+	default:
+		return BSP_ERROR;
+	}
+
+	if (msg->IDE == CAN_ID_STD) {
+		result = sscanf((char *)slcanmsg, "%*[tr]%3X%1d%02X%02X%02X%02X%02X%02X%02X%02X",
+		       (unsigned int *) &msg->StdId,
+		       (unsigned int *) &msg->DLC,
+		       (unsigned int *) &msg->Data[0],
+		       (unsigned int *) &msg->Data[1],
+		       (unsigned int *) &msg->Data[2],
+		       (unsigned int *) &msg->Data[3],
+		       (unsigned int *) &msg->Data[4],
+		       (unsigned int *) &msg->Data[5],
+		       (unsigned int *) &msg->Data[6],
+		       (unsigned int *) &msg->Data[7]);
+	} else {
+		result = sscanf((char *)slcanmsg, "%*[TR]%8X%1d%02X%02X%02X%02X%02X%02X%02X%02X",
+		       (unsigned int *) &msg->ExtId,
+		       (unsigned int *) &msg->DLC,
+		       (unsigned int *) &msg->Data[0],
+		       (unsigned int *) &msg->Data[1],
+		       (unsigned int *) &msg->Data[2],
+		       (unsigned int *) &msg->Data[3],
+		       (unsigned int *) &msg->Data[4],
+		       (unsigned int *) &msg->Data[5],
+		       (unsigned int *) &msg->Data[6],
+		       (unsigned int *) &msg->Data[7]);
+	}
+	if(result >= (msg->DLC+2)) {
+		return BSP_OK;
+	} else {
+		return BSP_ERROR;
+	}
+}
+
+static void slcan_read_command(t_hydra_console *con, uint8_t *buff){
+	uint8_t i=0;
+	uint8_t input = 0;
+	while(!USER_BUTTON && input!='\r' && i<SLCAN_BUFF_LEN){
+		chnRead(con->sdu, &input, 1);
+		buff[i++] = input;
+	}
+}
+
+msg_t can_reader_thread (void *arg)
+{
+	t_hydra_console *con;
+	con = arg;
+	chRegSetThreadName("CAN reader");
+	chThdSleepMilliseconds(10);
+	CanRxMsgTypeDef rx_msg;
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	while (!USER_BUTTON && !chThdShouldTerminateX()) {
+		if(bsp_can_rxne(proto->dev_num)) {
+			bsp_can_read(proto->dev_num, &rx_msg);
+			can_slcan_out(con, &rx_msg);
+		} else {
+			chThdYield();
+		}
+	}
+	chThdExit((msg_t)1);
+	return (msg_t)1;
+}
+
+void slcan(t_hydra_console *con) {
+	uint8_t buff[SLCAN_BUFF_LEN];
+	CanTxMsgTypeDef tx_msg;
+	mode_config_proto_t* proto = &con->mode->proto;
+	thread_t *rthread = NULL;
+
+	init_proto_default(con);
+
+	while (!USER_BUTTON) {
+		slcan_read_command(con, buff);
+		switch (buff[0]) {
+		case 'S':
+			/*CAN speed*/
+			switch(buff[1]) {
+			case '0':
+				proto->dev_speed = 10000;
+				break;
+			case '1':
+				proto->dev_speed = 20000;
+				break;
+			case '2':
+				proto->dev_speed = 50000;
+				break;
+			case '3':
+				proto->dev_speed = 100000;
+				break;
+			case '4':
+				proto->dev_speed = 125000;
+				break;
+			case '5':
+				proto->dev_speed = 250000;
+				break;
+			case '6':
+				proto->dev_speed = 500000;
+				break;
+			case '7':
+				proto->dev_speed = 800000;
+				break;
+			case '8':
+				proto->dev_speed = 1000000;
+				break;
+			case '9':
+				proto->dev_speed = 2000000;
+				break;
+			}
+
+			if(bsp_can_set_speed(proto->dev_num, proto->dev_speed) == BSP_OK) {
+				cprint(con, "\n", 1);
+			}else {
+				cprint(con, "\x07", 1);
+			}
+			break;
+		case 's':
+			/*BTR value*/
+			/*Not implemented*/
+			cprint(con, "\x07", 1);
+			break;
+		case 'O':
+			/*Open channel*/
+			if(bsp_can_init(proto->dev_num, proto) == BSP_OK) {
+				rthread = chThdCreateFromHeap(NULL,
+							      CONSOLE_WA_SIZE,
+							      "SLCAN reader",
+							      LOWPRIO,
+							      (tfunc_t)can_reader_thread,
+							      con);
+				cprint(con, "\r", 1);
+			}else {
+				cprint(con, "\x07", 1);
+			}
+			break;
+		case 'C':
+			/*Close channel*/
+			if(rthread != NULL) {
+				chThdTerminate(rthread);
+				chThdWait(rthread);
+			}
+			if(bsp_can_deinit(proto->dev_num) == BSP_OK) {
+				cprint(con, "\r", 1);
+			}else {
+				cprint(con, "\x07", 1);
+			}
+			break;
+		case 't':
+		case 'T':
+		case 'r':
+		case 'R':
+			/*Transmit*/
+			if(can_slcan_in(buff, &tx_msg) == BSP_OK) {
+				chSysLock();
+				if(bsp_can_write(proto->dev_num, &tx_msg) == BSP_OK) {
+					cprint(con, "\r", 1);
+				}else {
+					cprint(con, "\x07", 1);
+				}
+				chSysUnlock();
+			} else {
+				cprint(con, "\x07", 1);
+			}
+
+			break;
+		case 'F':
+			/*status*/
+			break;
+		case 'M':
+		case 'm':
+			/*Filter*/
+			bsp_can_init_filter(proto->dev_num, proto);
+			break;
+		case 'V':
+			/*Version*/
+			cprint(con, "V0101\n", 6);
+			break;
+		case 'N':
+			/*Serial*/
+			cprint(con, "NHYDR\n", 6);
+			break;
+		case 'Z':
+			/*Timestamp*/
+			/*Not implemented*/
+			cprint(con, "\x07", 1);
+			break;
+		}
+	}
+	chThdTerminate(rthread);
+	chThdWait(rthread);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -170,6 +411,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			while(!USER_BUTTON) {
 				read(con, NULL, 0);
 			}
+		case T_SLCAN:
+			slcan(con);
+			break;
 		default:
 			return t - token_pos;
 		}
@@ -216,30 +460,32 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 
 	status = BSP_ERROR;
 
-	/* Is ID an extended one ? */
-	if (config[proto->dev_num].can_id < 0b11111111111) {
-		tx_msg.StdId = config[proto->dev_num].can_id;
-		tx_msg.IDE = CAN_ID_STD;
-	} else {
-		tx_msg.ExtId = config[proto->dev_num].can_id;
-		tx_msg.IDE = CAN_ID_EXT;
-	}
+	if(can_slcan_in(tx_data, &tx_msg) != BSP_OK) {
 
-	tx_msg.RTR = CAN_RTR_DATA;
-	tx_msg.DLC = 0;
-	while(nb_data > i) {
-		tx_msg.Data[tx_msg.DLC] = tx_data[i];
-		tx_msg.DLC++;
-
-		if(tx_msg.DLC == 8) {
-			status = can_send_msg(con, &tx_msg);
-			tx_msg.DLC = 0;
+		/* Is ID an extended one ? */
+		if (config[proto->dev_num].can_id < 0b11111111111) {
+			tx_msg.StdId = config[proto->dev_num].can_id;
+			tx_msg.IDE = CAN_ID_STD;
+		} else {
+			tx_msg.ExtId = config[proto->dev_num].can_id;
+			tx_msg.IDE = CAN_ID_EXT;
 		}
-		i++;
+
+		tx_msg.RTR = CAN_RTR_DATA;
+		tx_msg.DLC = 0;
+		while(nb_data > i) {
+			tx_msg.Data[tx_msg.DLC] = tx_data[i];
+			tx_msg.DLC++;
+
+			if(tx_msg.DLC == 8) {
+				status = can_send_msg(con, &tx_msg);
+				tx_msg.DLC = 0;
+			}
+			i++;
+		}
 	}
-	if (tx_msg.DLC > 0) {
-		status = can_send_msg(con, &tx_msg);
-	}
+
+	status = can_send_msg(con, &tx_msg);
 
 	return status;
 }

@@ -24,6 +24,7 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "hydrabus_mode_can.h"
 #include "hydrabus_bbio.h"
 #include "hydrabus_bbio_can.h"
 #include "bsp_can.h"
@@ -112,6 +113,9 @@ void bbio_mode_can(t_hydra_console *con)
 				}else{
 					cprint(con, "\x00", 1);
 				}
+				break;
+			case BBIO_CAN_SLCAN:
+				slcan(con);
 				break;
 			default:
 				if ((bbio_subcommand & BBIO_CAN_WRITE) == BBIO_CAN_WRITE) {
