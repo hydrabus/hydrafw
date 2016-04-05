@@ -139,6 +139,7 @@ enum {
 	T_ONEWIRE,
 	T_FLASH,
 	T_TRIGGER,
+	T_SLCAN,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */

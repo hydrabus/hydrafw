@@ -147,6 +147,7 @@ t_token_dict tl_dict[] = {
 	{ T_ONEWIRE, "1-wire" },
 	{ T_FLASH, "flash" },
 	{ T_TRIGGER, "trigger" },
+	{ T_SLCAN, "slcan" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -559,6 +560,10 @@ t_token tokens_mode_can[] = {
 		T_TILDE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_SLCAN,
+		.help = "slcan (LAWICEL) mode"
 	},
 	{
 		T_EXIT,
