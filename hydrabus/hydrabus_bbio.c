@@ -29,6 +29,7 @@
 #include "hydrabus_bbio_pin.h"
 #include "hydrabus_mode_jtag.h"
 #include "hydrabus_bbio_can.h"
+#include "hydrabus_bbio_uart.h"
 
 int cmd_bbio(t_hydra_console *con)
 {
@@ -48,6 +49,7 @@ int cmd_bbio(t_hydra_console *con)
 				break;
 			case BBIO_UART:
 				cprint(con, "ART1", 4);
+				bbio_mode_uart(con);
 				//TODO
 				break;
 			case BBIO_1WIRE:
