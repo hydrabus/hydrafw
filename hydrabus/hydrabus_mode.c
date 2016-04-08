@@ -226,6 +226,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			break;
 		case T_TILDE:
 		case T_ARG_UINT:
+		case T_ARG_STRING:
 			tokens_used = hydrabus_mode_write(con, p, t);
 			if (!tokens_used)
 				done = TRUE;
@@ -300,6 +301,31 @@ static int chomp_integers(t_hydra_console *con, t_tokenline_parsed *p,
 	return t - token_pos;
 }
 
+static int chomp_strings(t_hydra_console *con, t_tokenline_parsed *p,
+			  int token_pos, unsigned int *num_bytes)
+{
+	mode_config_proto_t* p_proto = &con->mode->proto;
+	int count, t, i;
+	char * str;
+
+	t = token_pos;
+	t++;
+	*num_bytes = 0;
+	str = p->buf + p->tokens[t++];
+	count=0;
+	/* Poor man's strlen() */
+	while (str[count] != '\0') {
+		count++;
+	}
+	i=0;
+	while(i<count) {
+		p_proto->buffer_tx[(*num_bytes)++] = str[i];
+		i++;
+	}
+
+	return t - token_pos;
+}
+
 /*
  * This function can be called for either T_WRITE or a free-standing
  * T_ARG_UINT, so it's called with t pointing to the first token after
@@ -313,23 +339,25 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 	mode_config_proto_t* p_proto = &con->mode->proto;
 	uint32_t mode_status;
 	unsigned int num_bytes;
-	int count, tokens_used, i;
+	int tokens_used, i;
+	int count = 1;
 
 	tokens_used = 0;
-	if (p->tokens[t] == T_ARG_TOKEN_SUFFIX_INT) {
+
+	switch(p->tokens[t]) {
+	case T_ARG_TOKEN_SUFFIX_INT:
 		t++;
 		memcpy(&count, p->buf + p->tokens[t++], sizeof(int));
 		tokens_used += 2;
-	} else {
-		count = 1;
+	case T_ARG_UINT:
+	case T_TILDE:
+		tokens_used += chomp_integers(con, p, t, &num_bytes);
+		break;
+	case T_ARG_STRING:
+		tokens_used += chomp_strings(con, p, t, &num_bytes);
+		break;
 	}
 
-	if ((p->tokens[t] != T_ARG_UINT) && (p->tokens[t] != T_TILDE)) {
-		cprintf(con, "No bytes to write.\r\n");
-		return 0;
-	}
-
-	tokens_used += chomp_integers(con, p, t, &num_bytes);
 	if (!num_bytes)
 		return 0;
 
