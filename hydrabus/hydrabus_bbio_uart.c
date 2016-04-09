@@ -67,7 +67,7 @@ void bbio_mode_uart(t_hydra_console *con)
 	uint8_t data;
 	bsp_status_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
-	thread_t *rthread;
+	thread_t *rthread = NULL;
 
 	bbio_uart_init_proto_default(con);
 	bsp_uart_init(proto->dev_num, proto);
@@ -87,8 +87,11 @@ void bbio_mode_uart(t_hydra_console *con)
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_UART_STOP_ECHO:
-				chThdTerminate(rthread);
-				chThdWait(rthread);
+				if(rthread != NULL)
+				{
+					chThdTerminate(rthread);
+					chThdWait(rthread);
+				}
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_UART_BAUD_RATE:
