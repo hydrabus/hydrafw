@@ -371,6 +371,10 @@ t_token tokens_mode_uart[] = {
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
 	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
+	},
 	/* BP commands */
 	{
 		T_AMPERSAND,
@@ -453,6 +457,10 @@ t_token tokens_mode_can[] = {
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write packets (repeat with :<num>)"
 	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
+	},
 	/* BP commands */
 	{
 		T_TILDE,
@@ -518,6 +526,10 @@ t_token tokens_mode_i2c[] = {
 		T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
 	},
 	/* BP commands */
 	{
@@ -605,6 +617,10 @@ t_token tokens_mode_spi[] = {
 		.help = "Write byte (repeat with :<num>)"
 	},
 	{
+		T_ARG_STRING,
+		.help = "Write string"
+	},
+	{
 		T_CS_ON,
 		.help = "Alias for \"chip-select on\""
 	},
@@ -688,6 +704,10 @@ t_token tokens_mode_jtag[] = {
 		T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
 	},
 	{
 		T_TCK,
@@ -830,6 +850,10 @@ t_token tokens_mode_twowire[] = {
 		T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
 	},
 	/* BP commands */
 	{
