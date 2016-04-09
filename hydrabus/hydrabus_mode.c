@@ -338,7 +338,7 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 {
 	mode_config_proto_t* p_proto = &con->mode->proto;
 	uint32_t mode_status;
-	unsigned int num_bytes;
+	unsigned int num_bytes = 0;
 	int tokens_used, i;
 	int count = 1;
 
