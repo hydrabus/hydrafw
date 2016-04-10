@@ -91,6 +91,7 @@ void bbio_mode_uart(t_hydra_console *con)
 				{
 					chThdTerminate(rthread);
 					chThdWait(rthread);
+					rthread = NULL;
 				}
 				cprint(con, "\x01", 1);
 				break;
