@@ -1,7 +1,8 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2015 Nicolas OBERLI
+ * Copyright (C) 2015-2016 Nicolas OBERLI
+ * Copyright (C) 2016 Benjamin VERNOUX
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +39,6 @@
 #define BBIO_VOLT_CONT	0b00010101
 #define BBIO_FREQ	0b00010110
 
-
 /*
  * SPI-specific commands
  */
@@ -54,6 +54,20 @@
 #define BBIO_SPI_CONFIG_PERIPH	0b01000000
 #define BBIO_SPI_SET_SPEED	0b01100000
 #define BBIO_SPI_CONFIG		0b10000000
+
+/*
+ * I2C-specific commands
+ */
+#define BBIO_I2C_START_BIT	0b00000010
+#define BBIO_I2C_STOP_BIT	0b00000011
+#define BBIO_I2C_READ_BYTE	0b00000100
+#define BBIO_I2C_ACK_BIT	0b00000110
+#define BBIO_I2C_NACK_BIT	0b00000111
+#define BBIO_I2C_WRITE_READ	0b00001000
+#define BBIO_I2C_START_SNIFF	0b00001111
+#define BBIO_I2C_BULK_WRITE	0b00010000
+#define BBIO_I2C_CONFIG_PERIPH	0b01000000
+#define BBIO_I2C_SET_SPEED	0b01100000
 
 /*
  * CAN-specific commands

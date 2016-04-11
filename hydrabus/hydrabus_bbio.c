@@ -2,7 +2,7 @@
  * HydraBus/HydraNFC
  *
  * Copyright (C) 2014-2016 Benjamin VERNOUX
- * Copyright (C) 2015 Nicolas OBERLI
+ * Copyright (C) 2015-2016 Nicolas OBERLI
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@
 #include "hydrabus_mode_jtag.h"
 #include "hydrabus_bbio_can.h"
 #include "hydrabus_bbio_uart.h"
+#include "hydrabus_bbio_i2c.h"
 
 int cmd_bbio(t_hydra_console *con)
 {
@@ -45,12 +46,11 @@ int cmd_bbio(t_hydra_console *con)
 				break;
 			case BBIO_I2C:
 				cprint(con, "I2C1", 4);
-				//TODO
+				bbio_mode_i2c(con);
 				break;
 			case BBIO_UART:
 				cprint(con, "ART1", 4);
 				bbio_mode_uart(con);
-				//TODO
 				break;
 			case BBIO_1WIRE:
 				cprint(con, "1W01", 4);
