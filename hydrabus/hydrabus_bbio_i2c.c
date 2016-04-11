@@ -75,7 +75,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 				break;
 			case BBIO_I2C_READ_BYTE:
 				status = bsp_i2c_master_read_u8(proto->dev_num, &data);
-				cprintf(con, "\x01%c", data & 0xff);
+				cprintf(con, "%c", data & 0xff);
 				break;
 			case BBIO_I2C_ACK_BIT:
 				bsp_i2c_read_ack(proto->dev_num, TRUE);
