@@ -31,6 +31,7 @@
 #include "hydrabus_bbio_can.h"
 #include "hydrabus_bbio_uart.h"
 #include "hydrabus_bbio_i2c.h"
+#include "hydrabus_bbio_twowire.h"
 
 int cmd_bbio(t_hydra_console *con)
 {
@@ -58,7 +59,7 @@ int cmd_bbio(t_hydra_console *con)
 				break;
 			case BBIO_RAWWIRE:
 				cprint(con, "RAW1", 4);
-				//TODO
+				bbio_mode_twowire(con);
 				break;
 			case BBIO_JTAG:
 				cprint(con, "OCD1", 4);
