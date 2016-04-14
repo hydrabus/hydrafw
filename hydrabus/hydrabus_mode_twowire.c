@@ -35,7 +35,7 @@ static const char* str_prompt_twowire[] = {
 	"twowire1" PROMPT,
 };
 
-static void init_proto_default(t_hydra_console *con)
+void init_proto_default(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -44,8 +44,8 @@ static void init_proto_default(t_hydra_console *con)
 	proto->dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
+	proto->dev_speed = TWOWIRE_MAX_FREQ;
 
-	config.divider = 1;
 	config.clk_pin = 3;
 	config.sda_pin = 4;
 }
@@ -61,10 +61,10 @@ static void show_params(t_hydra_console *con)
 		"floating");
 
 	cprintf(con, "Frequency: %dHz\r\nBit order: %s first\r\n",
-		(TWOWIRE_MAX_FREQ/(int)config.divider), proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
+		(proto->dev_speed), proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
 }
 
-static bool twowire_pin_init(t_hydra_console *con)
+bool twowire_pin_init(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -75,12 +75,13 @@ static bool twowire_pin_init(t_hydra_console *con)
 	return true;
 }
 
-static void tim_init(void)
+void tim_init(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
 	htim.Instance = TIM4;
 
 	htim.Init.Period = 42 - 1;
-	htim.Init.Prescaler = (config.divider) - 1;
+	htim.Init.Prescaler = (TWOWIRE_MAX_FREQ/proto->dev_speed) - 1;
 	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
 
@@ -91,11 +92,13 @@ static void tim_init(void)
 	HAL_TIM_Base_Start(&htim);
 }
 
-static void tim_set_prescaler(void)
+void tim_set_prescaler(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
+
 	HAL_TIM_Base_Stop(&htim);
 	HAL_TIM_Base_DeInit(&htim);
-	htim.Init.Prescaler = (config.divider) - 1;
+	htim.Init.Prescaler = (TWOWIRE_MAX_FREQ/proto->dev_speed) - 1;
 	HAL_TIM_Base_Init(&htim);
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 	HAL_TIM_Base_Start(&htim);
@@ -115,17 +118,17 @@ static void twowire_sda_mode_output(t_hydra_console *con)
 		      proto->dev_gpio_mode, proto->dev_gpio_pull);
 }
 
-static inline void twowire_sda_high(void)
+inline void twowire_sda_high(void)
 {
 	bsp_gpio_set(BSP_GPIO_PORTB, config.sda_pin);
 }
 
-static inline void twowire_sda_low(void)
+inline void twowire_sda_low(void)
 {
 	bsp_gpio_clr(BSP_GPIO_PORTB, config.sda_pin);
 }
 
-static inline void twowire_clk_high(void)
+inline void twowire_clk_high(void)
 {
 	while (!(TIM4->SR & TIM_SR_UIF)) {
 	}
@@ -133,7 +136,7 @@ static inline void twowire_clk_high(void)
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
 
-static inline void twowire_clk_low(void)
+inline void twowire_clk_low(void)
 {
 	while (!(TIM4->SR & TIM_SR_UIF)) {
 	}
@@ -141,13 +144,13 @@ static inline void twowire_clk_low(void)
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
 
-static inline void twowire_clock(void)
+inline void twowire_clock(void)
 {
 	twowire_clk_high();
 	twowire_clk_low();
 }
 
-static void twowire_send_bit(uint8_t bit)
+void twowire_send_bit(uint8_t bit)
 {
 	if (bit) {
 		twowire_sda_high();
@@ -157,12 +160,12 @@ static void twowire_send_bit(uint8_t bit)
 	twowire_clock();
 }
 
-static uint8_t twowire_read_bit(void)
+uint8_t twowire_read_bit(void)
 {
 	return bsp_gpio_pin_read(BSP_GPIO_PORTB, config.sda_pin);
 }
 
-static uint8_t twowire_read_bit_clock(void)
+uint8_t twowire_read_bit_clock(void)
 {
 	uint8_t bit;
 	twowire_clock();
@@ -212,7 +215,7 @@ static void bitr(t_hydra_console *con)
 	cprintf(con, hydrabus_mode_str_read_one_u8, rx_data);
 }
 
-static void twowire_write_u8(t_hydra_console *con, uint8_t tx_data)
+void twowire_write_u8(t_hydra_console *con, uint8_t tx_data)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t i;
@@ -230,7 +233,7 @@ static void twowire_write_u8(t_hydra_console *con, uint8_t tx_data)
 	}
 }
 
-static uint8_t twowire_read_u8(t_hydra_console *con)
+uint8_t twowire_read_u8(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t value;
@@ -262,7 +265,7 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	tokens_used = 1 + exec(con, p, 1);
 
 	twowire_pin_init(con);
-	tim_init();
+	tim_init(con);
 
 	twowire_clk_low();
 	twowire_sda_low();
@@ -309,8 +312,8 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			if(arg_float > TWOWIRE_MAX_FREQ) {
 				cprintf(con, "Frequency too high\r\n");
 			} else {
-				config.divider = TWOWIRE_MAX_FREQ/(int)arg_float;
-				tim_set_prescaler();
+				proto->dev_speed = (int)arg_float;
+				tim_set_prescaler(con);
 			}
 			break;
 		default:

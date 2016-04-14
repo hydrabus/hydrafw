@@ -19,7 +19,8 @@ HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/hydrabus_bbio_pin.c \
             hydrabus/hydrabus_bbio_can.c \
             hydrabus/hydrabus_bbio_uart.c \
-            hydrabus/hydrabus_bbio_i2c.c
+            hydrabus/hydrabus_bbio_i2c.c \
+            hydrabus/hydrabus_bbio_twowire.c
 
 # Required include directories
 HYDRABUSINC = ./hydrabus
