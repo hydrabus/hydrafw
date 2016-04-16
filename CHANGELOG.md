@@ -1,6 +1,51 @@
 # CHANGELOG of 'hydrafw'
 ----------------------
 
+#### 16.04.2016 - [HydraFW v0.7 Beta](https://github.com/bvernoux/hydrafw/releases/tag/v0.7-beta)
+
+##### Generic:
+* Fixed ultra slow build (because of built in rules...) thanks to tuxscreen post http://hydrabus.com/forums/topic/make-is-ultra-slow/#post-696 for the fix
+* Updated 'tokenline' submodule to the latest version
+  * Change T_ARG_INT to T_ARG_UINT, supporting only unsigned integers.
+
+##### HydraBus specific:
+* Added freeform string as byte sequence (in addition to freeform integers) (thanks to [Baldanos](https://github.com/Baldanos))
+
+* Added [Binary Modes](https://github.com/bvernoux/hydrafw/wiki/HydraFW-Binary-mode-guide) full documentation in wiki
+* Added [Binary Modes](https://github.com/bvernoux/hydrafw/wiki/HydraFW-Binary-mode-guide) (USB CDC compatible with BusPirate BBIO/Bitbang) with:
+  * [PIN mode](https://github.com/bvernoux/hydrafw/wiki/HydraFW-binary-PIN-mode-guide) to manage up to 8 GPIO pins (thanks to [Baldanos](https://github.com/Baldanos))
+  * [SPI mode](https://github.com/bvernoux/hydrafw/wiki/HydraFW-Binary-SPI-mode-guide) (thanks to [Baldanos](https://github.com/Baldanos))
+  * [I2C mode](https://github.com/bvernoux/hydrafw/wiki/HydraFW-Binary-I2C-mode-guide)
+  * [2-Wire mode](https://github.com/bvernoux/hydrafw/wiki/HydraFW-binary-2-wire-mode-guide) (thanks to [Baldanos](https://github.com/Baldanos))
+  * [UART mode](https://github.com/bvernoux/hydrafw/wiki/HydraFW-binary-UART-mode-guide) (thanks to [Baldanos](https://github.com/Baldanos))
+  * [CAN mode](https://github.com/bvernoux/hydrafw/wiki/HydraFW-Binary-CAN-mode-guide) (thanks to [Baldanos](https://github.com/Baldanos))
+  * [OpenOCD JTAG](https://github.com/bvernoux/hydrafw/wiki/HydraFW-Binary-mode-guide#main-mode-commands]) (thanks to [Baldanos](https://github.com/Baldanos))
+
+* CAN (thanks to [Baldanos](https://github.com/Baldanos))
+  * Corrected filters handling. Now works for both CAN interfaces
+  * Fixed `bsp_can_rxne()`
+  * Fixed error in can2 pin description 
+  * Added speed change for CAN
+
+* Optimized **sump** critical part and Lock Kernel during get_samples()
+
+* JTAG scanner/debugger mode like JTAGulator (thanks to [Baldanos](https://github.com/Baldanos))
+  * Add support for TRST
+  * Add support for MSB/LSB when reading
+
+##### HydraNFC specific:
+* Added in standalone mode sniffing LED indication #36 LED 2 ON for Standalone mode
+* Fixed IRQ bug (stopped when enter/exit from sniffer or emul mode)
+* Fixed Trf797xInitialSettings with workaround of Errata SLOZ011A–February 2014–Revised April 2015
+
+* HydraNFC emulation commands are in alpha stage and they will be fixed in next version of HydraFW
+   * Added in **emul-mifare** display of UID parameter when started
+   * Added in **emul-mifare** 4 bytes UID parameter
+   * Added **emul-mf-ul** command for Mifare Ultralight Emulation preliminary/work in progress code
+
+* Added **dm0** command => Direct Mode 0 Sniffer Test work fine mainly for test with a Logic Analyzer on PC2
+* Added **dm1** command => Direct Mode 1 Test (Work in Progress to test TX SDM & RX DM1)
+
 #### 29.11.2015 - [HydraFW v0.6 Beta](https://github.com/bvernoux/hydrafw/releases/tag/v0.6-beta)
 
 ##### Generic:
