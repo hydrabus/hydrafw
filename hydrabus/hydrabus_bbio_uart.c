@@ -32,7 +32,7 @@ void bbio_uart_init_proto_default(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	/* Defaults */
-	proto->dev_num = 0;
+	proto->dev_num = 1;
 	proto->dev_speed = 9600;
 	proto->dev_parity = 0;
 	proto->dev_stop_bit = 1;
@@ -119,7 +119,7 @@ void bbio_mode_uart(t_hydra_console *con)
 				} else if ((bbio_subcommand & BBIO_UART_SET_SPEED) == BBIO_UART_SET_SPEED) {
 					switch(bbio_subcommand & 0b1111) {
 					case 0:
-						proto->dev_speed = 300;
+						proto->dev_speed = 640;
 						break;
 					case 1:
 						proto->dev_speed = 1200;
