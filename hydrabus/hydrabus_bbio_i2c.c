@@ -42,6 +42,7 @@ void bbio_i2c_init_proto_default(t_hydra_console *con)
 
 void bbio_i2c_sniff(t_hydra_console *con)
 {
+	(void)con;
 	/* TODO bbio_i2c_sniff code */
 }
 

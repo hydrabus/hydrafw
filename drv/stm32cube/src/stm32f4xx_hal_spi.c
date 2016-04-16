@@ -487,7 +487,7 @@ HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *pData, uint
   */
 HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size, uint32_t Timeout)
 {
-  __IO uint16_t tmpreg;
+  __IO uint16_t __attribute__((unused)) tmpreg;
   uint32_t tmp = 0;
 
   if(hspi->State == HAL_SPI_STATE_READY)
@@ -662,7 +662,7 @@ HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *hspi, uint8_t *pData, uint1
   */
 HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxData, uint8_t *pRxData, uint16_t Size, uint32_t Timeout)
 {
-  __IO uint16_t tmpreg;
+  __IO uint16_t __attribute__((unused)) tmpreg;
   uint32_t tmpstate = 0, tmp = 0;
   
   tmpstate = hspi->State; 
@@ -1804,7 +1804,7 @@ static void SPI_TxISR(SPI_HandleTypeDef *hspi)
   */
 static void SPI_RxCloseIRQHandler(SPI_HandleTypeDef *hspi)
 {
-  __IO uint16_t tmpreg;
+  __IO uint16_t __attribute__((unused)) tmpreg;
 
   if(hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLED)
   {
@@ -1993,7 +1993,7 @@ static void SPI_DMATransmitCplt(DMA_HandleTypeDef *hdma)
   */
 static void SPI_DMAReceiveCplt(DMA_HandleTypeDef *hdma)
 {
-  __IO uint16_t tmpreg;
+  __IO uint16_t __attribute__((unused)) tmpreg;
   
   SPI_HandleTypeDef* hspi = ( SPI_HandleTypeDef* )((DMA_HandleTypeDef* )hdma)->Parent;
   /* DMA Normal mode */
@@ -2064,7 +2064,7 @@ static void SPI_DMAReceiveCplt(DMA_HandleTypeDef *hdma)
   */
 static void SPI_DMATransmitReceiveCplt(DMA_HandleTypeDef *hdma)   
 {
-  __IO uint16_t tmpreg;
+  __IO uint16_t __attribute__((unused)) tmpreg;
   
   SPI_HandleTypeDef* hspi = ( SPI_HandleTypeDef* )((DMA_HandleTypeDef* )hdma)->Parent;
   if((hdma->Instance->CR & DMA_SxCR_CIRC) == 0)

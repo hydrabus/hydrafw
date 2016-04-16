@@ -342,6 +342,7 @@ HAL_StatusTypeDef HAL_CAN_Init(CAN_HandleTypeDef* hcan)
   */
 HAL_StatusTypeDef HAL_CAN_ConfigFilter(CAN_HandleTypeDef* hcan, CAN_FilterConfTypeDef* sFilterConfig)
 {
+  (void)hcan;
   uint32_t filternbrbitpos = 0;
   
   /* Check the parameters */
@@ -476,6 +477,7 @@ HAL_StatusTypeDef HAL_CAN_DeInit(CAN_HandleTypeDef* hcan)
   */
 __weak void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
 {
+  (void)hcan;
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_CAN_MspInit could be implemented in the user file
    */ 
@@ -489,6 +491,7 @@ __weak void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
   */
 __weak void HAL_CAN_MspDeInit(CAN_HandleTypeDef* hcan)
 {
+  (void)hcan;
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_CAN_MspDeInit could be implemented in the user file
    */ 
@@ -1184,6 +1187,7 @@ void HAL_CAN_IRQHandler(CAN_HandleTypeDef* hcan)
   */
 __weak void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
 {
+  (void)hcan;
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_CAN_TxCpltCallback could be implemented in the user file
    */
@@ -1197,6 +1201,7 @@ __weak void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
   */
 __weak void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
 {
+  (void)hcan;
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_CAN_RxCpltCallback could be implemented in the user file
    */
@@ -1210,6 +1215,7 @@ __weak void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
   */
 __weak void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 {
+  (void)hcan;
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_CAN_ErrorCallback could be implemented in the user file
    */
