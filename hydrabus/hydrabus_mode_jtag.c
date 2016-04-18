@@ -51,11 +51,12 @@ static void init_proto_default(t_hydra_console *con)
 	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
 
 	config.divider = 1;
-	config.tdi_pin = 7;
+	config.trst_pin = 7;
 	config.tdi_pin = 8;
 	config.tdo_pin = 9;
 	config.tms_pin = 10;
 	config.tck_pin = 11;
+
 }
 
 static void show_params(t_hydra_console *con)
@@ -836,8 +837,8 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 	tokens_used = 0;
 	if (p->tokens[1] == T_PINS) {
 		tokens_used++;
-		cprintf(con, "TMS: PB%d\r\nTCK: PB%d\r\nTDI: PB%d\r\nTDO: PB%d\r\n",
-			config.tms_pin, config.tck_pin, config.tdi_pin, config.tdo_pin);
+		cprintf(con, "TMS: PB%d\r\nTCK: PB%d\r\nTDI: PB%d\r\nTDO: PB%d\r\nTRST: PB%d\r\n",
+			config.tms_pin, config.tck_pin, config.tdi_pin, config.tdo_pin, config.trst_pin);
 	} else {
 		show_params(con);
 	}
