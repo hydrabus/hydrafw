@@ -33,9 +33,10 @@
 
 static volatile uint64_t cyclecounter64 = 0;
 
-uint8_t buf[512] __attribute__ ((section(".ccm")));
+/* CCM = .ram4 */
+uint8_t buf[512] __attribute__ ((section(".ram4")));
 /* Generic large buffer.*/
-uint8_t fbuff[2048] __attribute__ ((section(".ccm")));
+uint8_t fbuff[2048] __attribute__ ((section(".ram4")));
 
 uint32_t g_sbuf_idx;
 uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));

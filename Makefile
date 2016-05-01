@@ -260,7 +260,6 @@ ULIBS =
 
 RULESPATH = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC
 include $(RULESPATH)/rules.mk
-#include hydrafw_rules.mk
 
 # Anything that depends on FORCE will be considered out-of-date
 FORCE:
@@ -284,6 +283,9 @@ else
 	@echo Creating $@
 	@python scripts/dfu-convert.py -i $< $@
 endif
+
+# This rule hook is defined in the ChibiOS build system
+PRE_MAKE_ALL_RULE_HOOK: ./common/hydrafw_version.hdr
 
 # This rule hook is defined in the ChibiOS build system
 POST_MAKE_ALL_RULE_HOOK: $(BUILDDIR)/$(PROJECT).dfu
