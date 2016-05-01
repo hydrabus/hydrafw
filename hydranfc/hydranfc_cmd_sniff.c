@@ -21,7 +21,6 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "shell.h"
 
 #include "mcu.h"
 #include "trf797x.h"
@@ -100,10 +99,10 @@ void tprint_str(const char *data, uint32_t size)
 {
 	if (size > 0) {
 		if (SDU1.config->usbp->state == USB_ACTIVE)
-			chSequentialStreamWrite((BaseSequentialStream*)&SDU1, (uint8_t *)data, size);
+			chnWrite((BaseSequentialStream*)&SDU1, (uint8_t *)data, size);
 
 		if (SDU2.config->usbp->state == USB_ACTIVE)
-			chSequentialStreamWrite((BaseSequentialStream*)&SDU2, (uint8_t *)data, size);
+			chnWrite((BaseSequentialStream*)&SDU2, (uint8_t *)data, size);
 	}
 }
 
@@ -118,10 +117,10 @@ void tprintf(const char *fmt, ...)
 	real_size = vsnprintf(tprintf_buff, TPRINTF_BUFF_SIZE, fmt, va_args);
 
 	if (SDU1.config->usbp->state == USB_ACTIVE)
-		chSequentialStreamWrite((BaseSequentialStream*)&SDU1, (uint8_t *)tprintf_buff, real_size);
+		chnWrite((BaseSequentialStream*)&SDU1, (uint8_t *)tprintf_buff, real_size);
 
 	if (SDU2.config->usbp->state == USB_ACTIVE)
-		chSequentialStreamWrite((BaseSequentialStream*)&SDU2, (uint8_t *)tprintf_buff, real_size);
+		chnWrite((BaseSequentialStream*)&SDU2, (uint8_t *)tprintf_buff, real_size);
 
 	va_end(va_args);
 }

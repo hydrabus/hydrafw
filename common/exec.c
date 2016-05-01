@@ -41,7 +41,7 @@ char get_char(t_hydra_console *con)
 {
 	uint8_t c;
 
-	if (chSequentialStreamRead(con->sdu, &c, 1) == 0)
+	if (chnRead(con->sdu, &c, 1) == 0)
 		c = 0;
 
 	return c;

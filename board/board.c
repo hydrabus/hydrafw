@@ -1,6 +1,6 @@
 /*
-    ChibiOS/RT - Copyright (C) 2006-2013 Giovanni Di Sirio
-    HydraBus/HydraNFC - Copyright (C) 2014-2015 Benjamin VERNOUX
+    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
+    HydraBus/HydraNFC - Copyright (C) 2014..2016 Benjamin VERNOUX
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
     limitations under the License.
 */
 
-#include "ch.h"
 #include "hal.h"
 
+#if HAL_USE_PAL || defined(__DOXYGEN__)
 /**
  * @brief   PAL setup.
  * @details Digital I/O ports static configuration as defined in @p board.h.
  *          This variable is used by the HAL when initializing the PAL driver.
  */
-#if HAL_USE_PAL || defined(__DOXYGEN__)
 const PALConfig pal_default_config = {
 	{VAL_GPIOA_MODER, VAL_GPIOA_OTYPER, VAL_GPIOA_OSPEEDR, VAL_GPIOA_PUPDR, VAL_GPIOA_ODR, VAL_GPIOA_AFRL, VAL_GPIOA_AFRH},
 	{VAL_GPIOB_MODER, VAL_GPIOB_OTYPER, VAL_GPIOB_OSPEEDR, VAL_GPIOB_PUPDR, VAL_GPIOB_ODR, VAL_GPIOB_AFRL, VAL_GPIOB_AFRH},
@@ -42,33 +41,30 @@ const PALConfig pal_default_config = {
  * @details This initialization must be performed just after stack setup
  *          and before any other initialization.
  */
-void __early_init(void)
-{
+void __early_init(void) {
 
-	stm32_clock_init();
+  stm32_clock_init();
 }
 
 #if HAL_USE_SDC || defined(__DOXYGEN__)
 /**
  * @brief   SDC card detection.
  */
-bool sdc_lld_is_card_inserted(SDCDriver *sdcp)
-{
+bool sdc_lld_is_card_inserted(SDCDriver *sdcp) {
 
-	(void)sdcp;
-	/* TODO: Fill the implementation.*/
-	return TRUE;
+  (void)sdcp;
+  /* TODO: Fill the implementation.*/
+  return true;
 }
 
 /**
  * @brief   SDC card write protection detection.
  */
-bool sdc_lld_is_write_protected(SDCDriver *sdcp)
-{
+bool sdc_lld_is_write_protected(SDCDriver *sdcp) {
 
-	(void)sdcp;
-	/* TODO: Fill the implementation.*/
-	return FALSE;
+  (void)sdcp;
+  /* TODO: Fill the implementation.*/
+  return false;
 }
 #endif /* HAL_USE_SDC */
 
@@ -76,23 +72,21 @@ bool sdc_lld_is_write_protected(SDCDriver *sdcp)
 /**
  * @brief   MMC_SPI card detection.
  */
-bool mmc_lld_is_card_inserted(MMCDriver *mmcp)
-{
+bool mmc_lld_is_card_inserted(MMCDriver *mmcp) {
 
-	(void)mmcp;
-	/* TODO: Fill the implementation.*/
-	return TRUE;
+  (void)mmcp;
+  /* TODO: Fill the implementation.*/
+  return true;
 }
 
 /**
  * @brief   MMC_SPI card write protection detection.
  */
-bool mmc_lld_is_write_protected(MMCDriver *mmcp)
-{
+bool mmc_lld_is_write_protected(MMCDriver *mmcp) {
 
-	(void)mmcp;
-	/* TODO: Fill the implementation.*/
-	return FALSE;
+  (void)mmcp;
+  /* TODO: Fill the implementation.*/
+  return false;
 }
 #endif
 
@@ -100,6 +94,5 @@ bool mmc_lld_is_write_protected(MMCDriver *mmcp)
  * @brief   Board-specific initialization code.
  * @todo    Add your board-specific code, if any.
  */
-void boardInit(void)
-{
+void boardInit(void) {
 }

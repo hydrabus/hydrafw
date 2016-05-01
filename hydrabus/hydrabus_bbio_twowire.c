@@ -40,7 +40,7 @@ void bbio_mode_twowire(t_hydra_console *con)
 	twowire_sda_low();
 
 	while (!USER_BUTTON) {
-		if(chSequentialStreamRead(con->sdu, &bbio_subcommand, 1) == 1) {
+		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				return;
@@ -82,7 +82,7 @@ void bbio_mode_twowire(t_hydra_console *con)
 					// write
 					data = (bbio_subcommand & 0b1111) + 1;
 
-					chSequentialStreamRead(con->sdu, tx_data, data);
+					chnRead(con->sdu, tx_data, data);
 					for(i=0; i<data; i++) {
 						twowire_write_u8(con, tx_data[i]);
 					}
@@ -92,7 +92,7 @@ void bbio_mode_twowire(t_hydra_console *con)
 					// write
 					data = (bbio_subcommand & 0b1111) + 1;
 
-					chSequentialStreamRead(con->sdu, &tx_data[0], 1);
+					chnRead(con->sdu, &tx_data[0], 1);
 					if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
 						for (i=0; i<data; i++) {
 							twowire_send_bit((tx_data[0]>>i) & 1);

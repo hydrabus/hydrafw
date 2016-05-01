@@ -55,6 +55,13 @@ ifeq ($(USE_VERBOSE_COMPILE),)
   USE_VERBOSE_COMPILE = no
 endif
 
+# If enabled, this option makes the build process faster by not compiling
+# modules not used in the current configuration.
+# Warning if set to yes chconf.h & halconf.h shall be in same directory as this file
+ifeq ($(USE_SMART_BUILD),)
+  USE_SMART_BUILD = no
+endif
+
 #
 # Build global options
 ##############################################################################
@@ -75,7 +82,7 @@ ifeq ($(USE_EXCEPTIONS_STACKSIZE),)
   USE_EXCEPTIONS_STACKSIZE = 0x400
 endif
 
-# Enables the use of FPU on Cortex-M4 (no, softfp, hard).
+# Enables the use of FPU (no, softfp, hard).
 ifeq ($(USE_FPU),)
   USE_FPU = hard
 endif
@@ -94,12 +101,18 @@ PROJECT = hydrafw
 # Imported source files and paths
 CHIBIOS = chibios
 
-include ./board/board.mk
+# Startup files.
+include $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_stm32f4xx.mk
+# HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32F4xx/platform.mk
+include ./board/board.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
+# RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
-include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_stm32f4xx.mk
+include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
+# Other files (optional).
+include $(CHIBIOS)/os/hal/lib/streams/streams.mk
 include $(CHIBIOS)/os/various/fatfs_bindings/fatfs.mk
 include common/common.mk
 include hydrabus/hydrabus.mk
@@ -110,22 +123,24 @@ include trf7970a/trf7970a.mk
 include hydranfc/hydranfc.mk
 endif
 
-# Define linker script file here and link with lib nano
-LDSCRIPT= hydrafw_STM32F405xG.ld
+# Define linker script file here
+LDSCRIPT= $(STARTUPLD)/STM32F405xG.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CSRC = $(PORTSRC) \
+CSRC = $(STARTUPSRC) \
        $(KERNSRC) \
-       $(HALSRC) \
+       $(PORTSRC) \
        $(OSALSRC) \
+       $(HALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
        $(FATFSSRC) \
+       $(STREAMSSRC) \
+       $(CHIBIOS)/os/various/syscalls.c \
        $(COMMONSRC) \
        $(HYDRABUSSRC) \
        $(STM32CUBESRC) \
-       $(CHIBIOS)/os/various/memstreams.c \
        tokenline/tokenline.c \
        main.c
 
@@ -141,7 +156,7 @@ CPPSRC =
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
 #       option that results in lower performance and larger code size.
-ACSRC = 
+ACSRC =
 
 # C++ sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
@@ -159,15 +174,18 @@ TCSRC =
 TCPPSRC =
 
 # List ASM source files here
-ASMSRC = $(PORTASM) $(COMMONSRC_ASM)
+ASMSRC = $(COMMONSRC_ASM)
+ASMXSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 
-INCDIR = $(PORTINC) $(KERNINC) \
-         $(HALINC) $(OSALINC) $(PLATFORMINC) $(BOARDINC) \
-         $(CHIBIOS)/os/various  $(FATFSINC) \
+INCDIR = $(CHIBIOS)/os/license \
+         $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
+         $(HALINC) $(PLATFORMINC) $(BOARDINC) \
+         $(STREAMSINC) $(LWINC) $(FATFSINC) \
+         $(CHIBIOS)/os/various \
          $(COMMONINC) \
          $(HYDRABUSINC) \
          $(STM32CUBEINC) \
-		 tokenline
+         tokenline
 
 ifeq ($(HYDRAFW_NFC),1)
 INCDIR += $(TRFINC) \
@@ -195,6 +213,7 @@ LD   = $(TRGT)gcc
 #LD   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
+AR   = $(TRGT)ar
 OD   = $(TRGT)objdump
 SZ   = $(TRGT)size
 HEX  = $(CP) -O ihex
@@ -207,10 +226,10 @@ AOPT =
 TOPT = -mthumb -DTHUMB
 
 # Define C warning options here
-CWARN = -Wall -Wextra -Wstrict-prototypes
+CWARN = -Wall -Wextra -Wundef -Wstrict-prototypes
 
 # Define C++ warning options here
-CPPWARN = -Wall -Wextra
+CPPWARN = -Wall -Wextra -Wundef
 
 #
 # Compiler settings
@@ -239,4 +258,32 @@ ULIBS =
 # End of user defines
 ##############################################################################
 
-include hydrafw_rules.mk
+RULESPATH = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC
+include $(RULESPATH)/rules.mk
+#include hydrafw_rules.mk
+
+# Anything that depends on FORCE will be considered out-of-date
+FORCE:
+.PHONY: FORCE
+
+%.hdr: FORCE
+ifeq ($(USE_VERBOSE_COMPILE),yes)
+	echo Creating ./common/hydrafw_version.hdr
+	-rm -f $(OBJDIR)/common.o
+  python scripts/hydrafw-version.py ./common/hydrafw_version.hdr
+else
+	@echo Creating ./common/hydrafw_version.hdr
+	@rm -f $(OBJDIR)/common.o
+	@python scripts/hydrafw-version.py ./common/hydrafw_version.hdr
+endif
+
+%.dfu: %.hex $(LDSCRIPT)
+ifeq ($(USE_VERBOSE_COMPILE),yes)
+	python scripts/dfu-convert.py -i $< $@
+else
+	@echo Creating $@
+	@python scripts/dfu-convert.py -i $< $@
+endif
+
+# This rule hook is defined in the ChibiOS build system
+POST_MAKE_ALL_RULE_HOOK: $(BUILDDIR)/$(PROJECT).dfu

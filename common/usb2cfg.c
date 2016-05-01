@@ -1,21 +1,23 @@
 /*
-ChibiOS/RT - Copyright (C) 2006-2013 Giovanni Di Sirio
-HydraBus/HydraNFC - Copyright (C) 2014-2015 Benjamin VERNOUX
+    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
+    HydraBus/HydraNFC - Copyright (C) 2014..2016 Benjamin VERNOUX
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-http://www.apache.org/licenses/LICENSE-2.0
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
-#include "ch.h"
 #include "hal.h"
+
+extern SerialUSBDriver SDU2;
 
 #define VENDOR_ID	0x1d50
 #define PRODUCT_ID	0x60a7
@@ -205,7 +207,6 @@ static const USBDescriptor *get_descriptor(USBDriver *usbp,
 
 	(void)usbp;
 	(void)lang;
-
 	switch (dtype) {
 	case USB_DESCRIPTOR_DEVICE:
 		return &vcom_device_descriptor;
@@ -270,8 +271,6 @@ static const USBEndpointConfig ep2config = {
  */
 static void usb_event(USBDriver *usbp, usbevent_t event)
 {
-	extern SerialUSBDriver SDU2;
-
 	switch (event) {
 	case USB_EVENT_RESET:
 		return;
@@ -292,15 +291,12 @@ static void usb_event(USBDriver *usbp, usbevent_t event)
 		chSysUnlockFromISR();
 		return;
 	case USB_EVENT_SUSPEND:
-		if (usbp->state == USB_ACTIVE) {
-			// USB cable unplugged
-			chSysLockFromISR();
-			_usb_reset(usbp);
-			// Reset queues and unlock waiting threads
-			chIQResetI(&SDU2.iqueue);
-			chOQResetI(&SDU2.oqueue);
-			chSysUnlockFromISR();
-		}
+		chSysLockFromISR();
+
+		/* Disconnection event on suspend.*/
+		sduDisconnectI(&SDU2);
+
+		chSysUnlockFromISR();
 		return;
 	case USB_EVENT_WAKEUP:
 		return;
@@ -311,13 +307,25 @@ static void usb_event(USBDriver *usbp, usbevent_t event)
 }
 
 /*
+ * Handles the USB driver global events.
+ */
+static void sof_handler(USBDriver *usbp) {
+
+  (void)usbp;
+
+  osalSysLockFromISR();
+  sduSOFHookI(&SDU2);
+  osalSysUnlockFromISR();
+}
+
+/*
  * USB driver configuration.
  */
 const USBConfig usb2cfg = {
 	usb_event,
 	get_descriptor,
 	sduRequestsHook,
-	NULL
+	sof_handler
 };
 
 /*

@@ -551,7 +551,7 @@ void openOCD(t_hydra_console *con)
 				/* Not implemented */
 				break;
 			case CMD_OCD_PORT_MODE:
-				if(chSequentialStreamRead(con->sdu, ocd_parameters, 1) == 1) {
+				if(chnRead(con->sdu, ocd_parameters, 1) == 1) {
 					switch(ocd_parameters[0]) {
 					case OCD_MODE_HIZ:
 						proto->dev_gpio_mode = MODE_CONFIG_DEV_GPIO_IN;
@@ -569,7 +569,7 @@ void openOCD(t_hydra_console *con)
 				}
 				break;
 			case CMD_OCD_FEATURE:
-				if(chSequentialStreamRead(con->sdu, ocd_parameters, 2) == 2) {
+				if(chnRead(con->sdu, ocd_parameters, 2) == 2) {
 					switch(ocd_parameters[0]) {
 					case FEATURE_LED:
 						/* Not implemented */
@@ -598,12 +598,12 @@ void openOCD(t_hydra_console *con)
 				break;
 			case CMD_OCD_JTAG_SPEED:
 				//TODO
-				if(chSequentialStreamRead(con->sdu, ocd_parameters, 2) == 2) {
+				if(chnRead(con->sdu, ocd_parameters, 2) == 2) {
 				}
 				break;
 			case CMD_OCD_UART_SPEED:
 				/* Not implemented */
-				if(chSequentialStreamRead(con->sdu, ocd_parameters, 1) == 1) {
+				if(chnRead(con->sdu, ocd_parameters, 1) == 1) {
 					cprintf(con, "%c%c", CMD_OCD_UART_SPEED,
 						ocd_parameters[0]);
 				} else {
@@ -612,13 +612,13 @@ void openOCD(t_hydra_console *con)
 
 				break;
 			case CMD_OCD_TAP_SHIFT:
-				if(chSequentialStreamRead(con->sdu, ocd_parameters, 2) == 2) {
+				if(chnRead(con->sdu, ocd_parameters, 2) == 2) {
 					num_sequences = ocd_parameters[0] << 8;
 					num_sequences |= ocd_parameters[1];
 					cprintf(con, "%c%c%c", CMD_OCD_TAP_SHIFT, ocd_parameters[0],
 						ocd_parameters[1]);
 
-					chSequentialStreamRead(con->sdu, g_sbuf,((num_sequences+7)/8)*2);
+					chnRead(con->sdu, g_sbuf,((num_sequences+7)/8)*2);
 					for(i = 0; i < num_sequences; i+=8) {
 						offset = i/8;
 						if((num_sequences-8*offset) < 8) {

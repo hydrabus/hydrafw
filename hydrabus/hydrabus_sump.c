@@ -232,7 +232,7 @@ int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p
 				break;
 			default:
 				// Other commands take 4 bytes as parameters
-				if(chSequentialStreamRead(con->sdu, sump_parameters, 4) == 4) {
+				if(chnRead(con->sdu, sump_parameters, 4) == 4) {
 					switch(sump_command) {
 					case SUMP_TRIG_1:
 					case SUMP_TRIG_2:

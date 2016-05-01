@@ -50,7 +50,7 @@ void stream_write(t_hydra_console *con, const char *data, const uint32_t size)
 	if (!size)
 		return;
 
-	chSequentialStreamWrite(chp, (uint8_t *)data, size);
+	chnWrite(chp, (uint8_t *)data, size);
 
 	if (*log_dest)
 		log_add(con, (char *)data, size);
@@ -193,13 +193,13 @@ void DelayUs(uint32_t delay_us)
 
 void cmd_show_memory(t_hydra_console *con)
 {
-	size_t n, size;
+  size_t n, total, largest;
 
-	n = chHeapStatus(NULL, &size);
-	cprintf(con, "core free memory : %u bytes\r\n", chCoreStatus());
+  n = chHeapStatus(NULL, &total, &largest);
+	cprintf(con, "core free memory : %u bytes\r\n", chCoreGetStatusX());
 	cprintf(con, "heap fragments   : %u\r\n", n);
-	cprintf(con, "heap free total  : %u bytes\r\n", size);
-
+  cprintf(con, "heap free total  : %u bytes\r\n", total);
+	cprintf(con, "heap free largest: %u bytes\r\n", largest);
 }
 
 void cmd_show_threads(t_hydra_console *con)
@@ -207,15 +207,20 @@ void cmd_show_threads(t_hydra_console *con)
 	static const char *states[] = {CH_STATE_NAMES};
 	thread_t *tp;
 
-	cprintf(con, "    addr    stack prio refs state    name\r\n");
-	tp = chRegFirstThread();
-	do {
-		cprintf(con, "%.8lx %.8lx %4lu %4lu %9s %s\r\n",
-			(uint32_t)tp, (uint32_t)tp->p_ctx.r13,
-			(uint32_t)tp->p_prio, (uint32_t)(tp->p_refs - 1),
-			states[tp->p_state], tp->p_name);
-		tp = chRegNextThread(tp);
-	} while (tp != NULL);
+  cprintf(con, "stklimit    stack     addr refs prio     state         name\r\n");
+  tp = chRegFirstThread();
+  do {
+#if (CH_DBG_ENABLE_STACK_CHECK == TRUE) || (CH_CFG_USE_DYNAMIC == TRUE)
+    uint32_t stklimit = (uint32_t)tp->wabase;
+#else
+    uint32_t stklimit = 0U;
+#endif
+    cprintf(con, "%08lx %08lx %08lx %4lu %4lu %9s %12s\r\n",
+            stklimit, (uint32_t)tp->ctx.sp, (uint32_t)tp,
+            (uint32_t)tp->refs - 1, (uint32_t)tp->prio, states[tp->state],
+            tp->name == NULL ? "" : tp->name);
+    tp = chRegNextThread(tp);
+  } while (tp != NULL);
 
 }
 

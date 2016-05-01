@@ -110,10 +110,10 @@ static void bridge(t_hydra_console *con)
 	cprintf(con, "Interrupt by pressing user button.\r\n");
 	cprint(con, "\r\n", 2);
 
-	thread_t *bthread = chThdCreateFromHeap(NULL, CONSOLE_WA_SIZE,
-						LOWPRIO, bridge_thread, con);
+	thread_t *bthread = chThdCreateFromHeap(NULL, CONSOLE_WA_SIZE, "bridge_thread",
+						LOWPRIO, (tfunc_t)bridge_thread, con);
 	while(!USER_BUTTON) {
-		if(chSequentialStreamRead(con->sdu, &tx_data, 1) == 1) {
+		if(chnRead(con->sdu, &tx_data, 1) == 1) {
 			bsp_uart_write_u8(proto->dev_num, &tx_data, 1);
 		}
 	}

@@ -1,21 +1,23 @@
 /*
-ChibiOS/RT - Copyright (C) 2006-2013 Giovanni Di Sirio
-HydraBus/HydraNFC - Copyright (C) 2014-2015 Benjamin VERNOUX
+    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
+    HydraBus/HydraNFC - Copyright (C) 2014..2016 Benjamin VERNOUX
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-http://www.apache.org/licenses/LICENSE-2.0
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
-#include "ch.h"
 #include "hal.h"
+
+extern SerialUSBDriver SDU1;
 
 #define VENDOR_ID	0x1d50
 #define PRODUCT_ID	0x60a7
@@ -108,33 +110,30 @@ static const uint8_t vcom_configuration_descriptor_data[67] = {
 	/* Endpoint 2 Descriptor.*/
 	USB_DESC_ENDPOINT(
 		USBD1_INTERRUPT_REQUEST_EP|0x80,
-		0x03,          /* bmAttributes (Interrupt).        */
-		0x0008,        /* wMaxPacketSize.                  */
-		0xFF),         /* bInterval.                       */
+		0x03,          /* bmAttributes (Interrupt). */
+		0x0008,        /* wMaxPacketSize. */
+		0xFF),         /* bInterval. */
 	/* Interface Descriptor.*/
 	USB_DESC_INTERFACE(
-		0x01,          /* bInterfaceNumber.                */
-		0x00,          /* bAlternateSetting.               */
-		0x02,          /* bNumEndpoints.                   */
-		0x0A,          /* bInterfaceClass (Data Class
-                                           Interface, CDC section 4.5).     */
-		0x00,          /* bInterfaceSubClass (CDC section
-                                           4.6).                            */
-		0x00,          /* bInterfaceProtocol (CDC section
-                                           4.7).                            */
-		0x00),         /* iInterface.                      */
+		0x01,          /* bInterfaceNumber. */
+		0x00,          /* bAlternateSetting. */
+		0x02,          /* bNumEndpoints. */
+		0x0A,          /* bInterfaceClass (Data Class Interface, CDC section 4.5). */
+		0x00,          /* bInterfaceSubClass (CDC section 4.6). */
+		0x00,          /* bInterfaceProtocol (CDC section 4.7). */
+		0x00),         /* iInterface. */
 	/* Endpoint 3 Descriptor.*/
 	USB_DESC_ENDPOINT(
 		USBD1_DATA_AVAILABLE_EP,       /* bEndpointAddress.*/
-		0x02,          /* bmAttributes (Bulk).             */
-		0x0040,        /* wMaxPacketSize.                  */
-		0x00),         /* bInterval.                       */
+		0x02,          /* bmAttributes (Bulk). */
+		0x0040,        /* wMaxPacketSize. */
+		0x00),         /* bInterval. */
 	/* Endpoint 1 Descriptor.*/
 	USB_DESC_ENDPOINT(
 		USBD1_DATA_REQUEST_EP|0x80,    /* bEndpointAddress.*/
-		0x02,          /* bmAttributes (Bulk).             */
-		0x0040,        /* wMaxPacketSize.                  */
-		0x00)          /* bInterval.                       */
+		0x02,          /* bmAttributes (Bulk). */
+		0x0040,        /* wMaxPacketSize. */
+		0x00)          /* bInterval. */
 };
 
 /*
@@ -149,9 +148,9 @@ static const USBDescriptor vcom_configuration_descriptor = {
  * U.S. English language identifier.
  */
 static const uint8_t vcom_string0[] = {
-	USB_DESC_BYTE(4),                     /* bLength.                         */
-	USB_DESC_BYTE(USB_DESCRIPTOR_STRING), /* bDescriptorType.                 */
-	USB_DESC_WORD(0x0409)                 /* wLANGID (U.S. English).          */
+	USB_DESC_BYTE(4),                     /* bLength.                */
+	USB_DESC_BYTE(USB_DESCRIPTOR_STRING), /* bDescriptorType.        */
+	USB_DESC_WORD(0x0409)                 /* wLANGID (U.S. English). */
 };
 
 /*
@@ -168,8 +167,8 @@ static const uint8_t vcom_string1[] = {
  * Device Description string.
  */
 static const uint8_t vcom_string2[] = {
-	USB_DESC_BYTE(46),                    /* bLength.                         */
-	USB_DESC_BYTE(USB_DESCRIPTOR_STRING), /* bDescriptorType.                 */
+	USB_DESC_BYTE(46),                    /* bLength. */
+	USB_DESC_BYTE(USB_DESCRIPTOR_STRING), /* bDescriptorType. */
 	'H', 0, 'y', 0, 'd', 0, 'r', 0, 'a', 0, 'B', 0, 'u', 0, 's', 0,
 	' ', 0, '1', 0, '.', 0, '0', 0, ' ', 0, 'C', 0, 'O', 0, 'M', 0,
 	' ', 0, 'P', 0,  'o', 0, 'r', 0, 't', 0, '1', 0
@@ -272,8 +271,6 @@ static const USBEndpointConfig ep2config = {
  */
 static void usb_event(USBDriver *usbp, usbevent_t event)
 {
-	extern SerialUSBDriver SDU1;
-
 	switch (event) {
 	case USB_EVENT_RESET:
 		return;
@@ -294,15 +291,12 @@ static void usb_event(USBDriver *usbp, usbevent_t event)
 		chSysUnlockFromISR();
 		return;
 	case USB_EVENT_SUSPEND:
-		if (usbp->state == USB_ACTIVE) {
-			// USB cable unplugged
-			chSysLockFromISR();
-			_usb_reset(usbp);
-			// Reset queues and unlock waiting threads
-			chIQResetI(&SDU1.iqueue);
-			chOQResetI(&SDU1.oqueue);
-			chSysUnlockFromISR();
-		}
+		chSysLockFromISR();
+
+		/* Disconnection event on suspend.*/
+		sduDisconnectI(&SDU1);
+
+		chSysUnlockFromISR();
 		return;
 	case USB_EVENT_WAKEUP:
 		return;
@@ -313,13 +307,25 @@ static void usb_event(USBDriver *usbp, usbevent_t event)
 }
 
 /*
+ * Handles the USB driver global events.
+ */
+static void sof_handler(USBDriver *usbp) {
+
+  (void)usbp;
+
+  osalSysLockFromISR();
+  sduSOFHookI(&SDU1);
+  osalSysUnlockFromISR();
+}
+
+/*
  * USB driver configuration.
  */
 const USBConfig usb1cfg = {
 	usb_event,
 	get_descriptor,
 	sduRequestsHook,
-	NULL
+	sof_handler
 };
 
 /*

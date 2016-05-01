@@ -54,13 +54,13 @@ void bbio_mode_can(t_hydra_console *con)
 	bsp_can_init_filter(proto->dev_num, proto);
 
 	while(!USER_BUTTON) {
-		if(chSequentialStreamRead(con->sdu, &bbio_subcommand, 1) == 1) {
+		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				bsp_can_deinit(proto->dev_num);
 				return;
 			case BBIO_CAN_ID:
-				chSequentialStreamRead(con->sdu, rx_buff, 4);
+				chnRead(con->sdu, rx_buff, 4);
 				can_id =  rx_buff[0] << 24;
 				can_id += rx_buff[1] << 16;
 				can_id += rx_buff[2] << 8;
@@ -118,7 +118,7 @@ void bbio_mode_can(t_hydra_console *con)
 					tx_msg.RTR = CAN_RTR_DATA;
 					tx_msg.DLC = to_tx;
 
-					chSequentialStreamRead(con->sdu, rx_buff,
+					chnRead(con->sdu, rx_buff,
 							       to_tx);
 
 					for(i=0; i<to_tx; i++) {
@@ -133,7 +133,7 @@ void bbio_mode_can(t_hydra_console *con)
 						cprint(con, "\x00", 1);
 					}
 				} else if((bbio_subcommand & BBIO_CAN_FILTER) == BBIO_CAN_FILTER) {
-					chSequentialStreamRead(con->sdu, rx_buff, 4);
+					chnRead(con->sdu, rx_buff, 4);
 					if(bbio_subcommand & 1) {
 						filter_high =  rx_buff[0] << 24;
 						filter_high += rx_buff[1] << 16;
