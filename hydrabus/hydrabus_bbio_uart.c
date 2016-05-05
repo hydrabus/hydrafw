@@ -73,7 +73,7 @@ void bbio_mode_uart(t_hydra_console *con)
 	bsp_uart_init(proto->dev_num, proto);
 
 	while (!USER_BUTTON) {
-		if(chSequentialStreamRead(con->sdu, &bbio_subcommand, 1) == 1) {
+		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				bsp_uart_deinit(proto->dev_num);
@@ -81,8 +81,9 @@ void bbio_mode_uart(t_hydra_console *con)
 			case BBIO_UART_START_ECHO:
 				rthread = chThdCreateFromHeap(NULL,
 							      CONSOLE_WA_SIZE,
+							      "uart_reader",
 							      NORMALPRIO,
-							      uart_reader_thread,
+							      (tfunc_t)uart_reader_thread,
 							      con);
 				cprint(con, "\x01", 1);
 				break;
@@ -107,7 +108,7 @@ void bbio_mode_uart(t_hydra_console *con)
 
 					i=0;
 					while(i < data) {
-						chSequentialStreamRead(con->sdu,
+						chnRead(con->sdu,
 								       &tx_data,
 								       1);
 						bsp_uart_write_u8(proto->dev_num,

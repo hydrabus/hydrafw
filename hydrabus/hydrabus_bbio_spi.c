@@ -100,7 +100,7 @@ void bbio_mode_spi(t_hydra_console *con)
 	bsp_spi_init(proto->dev_num, proto);
 
 	while (!USER_BUTTON) {
-		if(chSequentialStreamRead(con->sdu, &bbio_subcommand, 1) == 1) {
+		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				bsp_spi_deinit(proto->dev_num);
@@ -120,14 +120,14 @@ void bbio_mode_spi(t_hydra_console *con)
 				break;
 			case BBIO_SPI_WRITE_READ:
 			case BBIO_SPI_WRITE_READ_NCS:
-				chSequentialStreamRead(con->sdu, rx_data, 4);
+				chnRead(con->sdu, rx_data, 4);
 				to_tx = (rx_data[0] << 8) + rx_data[1];
 				to_rx = (rx_data[2] << 8) + rx_data[3];
 				if ((to_tx > 4096) || (to_rx > 4096)) {
 					cprint(con, "\x00", 1);
 					break;
 				}
-				chSequentialStreamRead(con->sdu, tx_data, to_tx);
+				chnRead(con->sdu, tx_data, to_tx);
 
 				if(bbio_subcommand == BBIO_SPI_WRITE_READ) {
 					bsp_spi_select(proto->dev_num);
@@ -163,7 +163,7 @@ void bbio_mode_spi(t_hydra_console *con)
 					// write
 					data = (bbio_subcommand & 0b1111) + 1;
 
-					chSequentialStreamRead(con->sdu, tx_data, data);
+					chnRead(con->sdu, tx_data, data);
 					bsp_spi_write_read_u8(proto->dev_num,
 					                      tx_data,
 					                      rx_data,

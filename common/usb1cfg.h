@@ -1,5 +1,6 @@
 /*
-    ChibiOS/RT - Copyright (C) 2006-2013 Giovanni Di Sirio
+    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
+    HydraBus/HydraNFC - Copyright (C) 2014..2016 Benjamin VERNOUX
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,12 +15,12 @@
     limitations under the License.
 */
 
-#ifndef _USB1CFG_H_
-#define _USB1CFG_H_
+#ifndef USB1CFG_H
+#define USB1CFG_H
 
 extern const USBConfig usb1cfg;
 extern SerialUSBConfig serusb1cfg;
 
-#endif  /* _USB1CFG_H_ */
+#endif  /* USB1CFG_H */
 
 /** @} */

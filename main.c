@@ -173,7 +173,8 @@ int main(void)
 					continue;
 				/* Spawn new console thread.*/
 				consoles[i].thread = chThdCreateFromHeap(NULL,
-						     CONSOLE_WA_SIZE, NORMALPRIO, console, &consoles[i]);
+						     CONSOLE_WA_SIZE, consoles[i].thread_name, NORMALPRIO,
+						     console, &consoles[i]);
 			} else {
 				if (chThdTerminatedX(consoles[i].thread))
 					/* This console thread terminated. */

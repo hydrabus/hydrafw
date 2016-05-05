@@ -22,8 +22,8 @@
 
 #include <stdarg.h>
 #include "ch.h"
-#include "chprintf.h"
 #include "hal.h"
+#include "chprintf.h"
 #include "tokenline.h"
 #include "commands.h"
 #include "mode_config.h"

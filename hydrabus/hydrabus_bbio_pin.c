@@ -44,7 +44,7 @@ void bbio_mode_pin(t_hydra_console *con)
 	}
 
 	while (true) {
-		if(chSequentialStreamRead(con->sdu, &bbio_subcommand, 1) == 1) {
+		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				return;
@@ -53,7 +53,7 @@ void bbio_mode_pin(t_hydra_console *con)
 				cprintf(con, "\x01%c", data & 0xff);
 				break;
 			case BBIO_PIN_NOPULL:
-				chSequentialStreamRead(con->sdu, &rx_buff, 1);
+				chnRead(con->sdu, &rx_buff, 1);
 				for(i=0; i<8; i++){
 					if((rx_buff>>i)&1){
 						pin_pull[i] = MODE_CONFIG_DEV_GPIO_NOPULL;
@@ -63,7 +63,7 @@ void bbio_mode_pin(t_hydra_console *con)
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_PIN_PULLUP:
-				chSequentialStreamRead(con->sdu, &rx_buff, 1);
+				chnRead(con->sdu, &rx_buff, 1);
 				for(i=0; i<8; i++){
 					if((rx_buff>>i)&1){
 						pin_pull[i] = MODE_CONFIG_DEV_GPIO_PULLUP;
@@ -73,7 +73,7 @@ void bbio_mode_pin(t_hydra_console *con)
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_PIN_PULLDOWN:
-				chSequentialStreamRead(con->sdu, &rx_buff, 1);
+				chnRead(con->sdu, &rx_buff, 1);
 				for(i=0; i<8; i++){
 					if((rx_buff>>i)&1){
 						pin_pull[i] = MODE_CONFIG_DEV_GPIO_PULLDOWN;
@@ -83,7 +83,7 @@ void bbio_mode_pin(t_hydra_console *con)
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_PIN_MODE:
-				chSequentialStreamRead(con->sdu, &rx_buff, 1);
+				chnRead(con->sdu, &rx_buff, 1);
 				for(i=0; i<8; i++){
 					if((rx_buff>>i)&1){
 						pin_pull[i] = MODE_CONFIG_DEV_GPIO_IN;
@@ -95,7 +95,7 @@ void bbio_mode_pin(t_hydra_console *con)
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_PIN_WRITE:
-				chSequentialStreamRead(con->sdu, &rx_buff, 1);
+				chnRead(con->sdu, &rx_buff, 1);
 				for(i=0; i<8; i++){
 					if((rx_buff>>i)&1){
 						bsp_gpio_set(BSP_GPIO_PORTA, i);

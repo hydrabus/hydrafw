@@ -39,7 +39,7 @@ int cmd_bbio(t_hydra_console *con)
 	cprint(con, "BBIO1", 5);
 
 	while (!palReadPad(GPIOA, 0)) {
-		if(chSequentialStreamRead(con->sdu, &bbio_mode, 1) == 1) {
+		if(chnRead(con->sdu, &bbio_mode, 1) == 1) {
 			switch(bbio_mode) {
 			case BBIO_SPI:
 				cprint(con, "SPI1", 4);

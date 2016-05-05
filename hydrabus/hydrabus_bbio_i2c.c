@@ -61,7 +61,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 	bsp_i2c_init(proto->dev_num, proto);
 
 	while (!USER_BUTTON) {
-		if(chSequentialStreamRead(con->sdu, &bbio_subcommand, 1) == 1) {
+		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				bsp_i2c_deinit(proto->dev_num);
@@ -90,14 +90,14 @@ void bbio_mode_i2c(t_hydra_console *con)
 				bbio_i2c_sniff(con);
 				break;
 			case BBIO_I2C_WRITE_READ:
-				chSequentialStreamRead(con->sdu, rx_data, 4);
+				chnRead(con->sdu, rx_data, 4);
 				to_tx = (rx_data[0] << 8) + rx_data[1];
 				to_rx = (rx_data[2] << 8) + rx_data[3];
 				if ((to_tx > 4096) || (to_rx > 4096)) {
 					cprint(con, "\x00", 1);
 					break;
 				}
-				chSequentialStreamRead(con->sdu, tx_data, to_tx);
+				chnRead(con->sdu, tx_data, to_tx);
 				
 				/* Send I2C Start */
 				bsp_i2c_start(proto->dev_num);
@@ -150,7 +150,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 					data = (bbio_subcommand & 0b1111) + 1;
 					cprint(con, "\x01", 1);
 
-					chSequentialStreamRead(con->sdu, tx_data, data);
+					chnRead(con->sdu, tx_data, data);
 					/* Send all I2C Data */
 					for(i = 0; i < data; i++)
 					{

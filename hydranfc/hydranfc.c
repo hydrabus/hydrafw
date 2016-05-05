@@ -332,12 +332,12 @@ THD_FUNCTION(key_sniff, arg)
 			D5_OFF;
 
 		if (chThdShouldTerminateX())
-			return 0;
+			return;
 
 		chThdSleepMilliseconds(100);
 	}
 
-	return 0;
+	return;
 }
 
 #define MIFARE_ATQA_MAX (4)

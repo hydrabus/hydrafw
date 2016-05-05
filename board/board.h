@@ -34,19 +34,18 @@
  * NOTE: LSE not fitted.
  */
 #if !defined(STM32_LSECLK)
-#define STM32_LSECLK      0
+#define STM32_LSECLK                0U
 #endif
 
 #if !defined(STM32_HSECLK)
-#define STM32_HSECLK      8000000
+#define STM32_HSECLK                8000000U
 #endif
-
 
 /*
  * Board voltages.
  * Required for performance limits calculation.
  */
-#define STM32_VDD         300
+#define STM32_VDD                   300U
 
 /*
  * MCU type as defined in the ST header.
@@ -56,61 +55,61 @@
 /*
  * IO pins assignments.
  */
-#define GPIOA_UBTN        0
-#define GPIOA_PIN1        1
-#define GPIOA_PIN2        2
-#define GPIOA_PIN3        3
-#define GPIOA_ULED        4
-#define GPIOA_PIN5        5
-#define GPIOA_PIN6        6
-#define GPIOA_PIN7        7
-#define GPIOA_PIN8        8
-#define GPIOA_PIN9        9
-#define GPIOA_PIN10       10
-#define GPIOA_OTG_FS_DM   11
-#define GPIOA_OTG_FS_DP   12
-#define GPIOA_SWDIO       13
-#define GPIOA_SWCLK       14
-#define GPIOA_PIN15       15
+#define GPIOA_UBTN        0U
+#define GPIOA_PIN1        1U
+#define GPIOA_PIN2        2U
+#define GPIOA_PIN3        3U
+#define GPIOA_ULED        4U
+#define GPIOA_PIN5        5U
+#define GPIOA_PIN6        6U
+#define GPIOA_PIN7        7U
+#define GPIOA_PIN8        8U
+#define GPIOA_PIN9        9U
+#define GPIOA_PIN10       10U
+#define GPIOA_OTG_FS_DM   11U
+#define GPIOA_OTG_FS_DP   12U
+#define GPIOA_SWDIO       13U
+#define GPIOA_SWCLK       14U
+#define GPIOA_PIN15       15U
 
-#define GPIOB_PIN0        0
-#define GPIOB_PIN1        1
-#define GPIOB_PIN2        2
-#define GPIOB_PIN3        3
-#define GPIOB_PIN4        4
-#define GPIOB_PIN5        5
-#define GPIOB_PIN6        6
-#define GPIOB_PIN7        7
-#define GPIOB_PIN8        8
-#define GPIOB_PIN9        9
-#define GPIOB_PIN10       10
-#define GPIOB_PIN11       11
-#define GPIOB_OTG_HS_ID   12
-#define GPIOB_OTG_HS_VBUS 13
-#define GPIOB_OTG_HS_DM   14
-#define GPIOB_OTG_HS_DP   15
+#define GPIOB_PIN0        0U
+#define GPIOB_PIN1        1U
+#define GPIOB_PIN2        2U
+#define GPIOB_PIN3        3U
+#define GPIOB_PIN4        4U
+#define GPIOB_PIN5        5U
+#define GPIOB_PIN6        6U
+#define GPIOB_PIN7        7U
+#define GPIOB_PIN8        8U
+#define GPIOB_PIN9        9U
+#define GPIOB_PIN10       10U
+#define GPIOB_PIN11       11U
+#define GPIOB_OTG_HS_ID   12U
+#define GPIOB_OTG_HS_VBUS 13U
+#define GPIOB_OTG_HS_DM   14U
+#define GPIOB_OTG_HS_DP   15U
 
-#define GPIOC_PIN0        0
-#define GPIOC_PIN1        1
-#define GPIOC_PIN2        2
-#define GPIOC_PIN3        3
-#define GPIOC_PIN4        4
-#define GPIOC_PIN5        5
-#define GPIOC_PIN6        6
-#define GPIOC_PIN7        7
-#define GPIOC_SDIO_D0     8
-#define GPIOC_SDIO_D1     9
-#define GPIOC_SDIO_D2     10
-#define GPIOC_SDIO_D3     11
-#define GPIOC_SDIO_CK     12
-#define GPIOC_PIN13       13
-#define GPIOC_PIN14       14
-#define GPIOC_PIN15       15
+#define GPIOC_PIN0        0U
+#define GPIOC_PIN1        1U
+#define GPIOC_PIN2        2U
+#define GPIOC_PIN3        3U
+#define GPIOC_PIN4        4U
+#define GPIOC_PIN5        5U
+#define GPIOC_PIN6        6U
+#define GPIOC_PIN7        7U
+#define GPIOC_SDIO_D0     8U
+#define GPIOC_SDIO_D1     9U
+#define GPIOC_SDIO_D2     10U
+#define GPIOC_SDIO_D3     11U
+#define GPIOC_SDIO_CK     12U
+#define GPIOC_PIN13       13U
+#define GPIOC_PIN14       14U
+#define GPIOC_PIN15       15U
 
 #define GPIOD_SDIO_CMD    2
 
-#define GPIOH_OSC_IN      0
-#define GPIOH_OSC_OUT     1
+#define GPIOH_OSC_IN      0U
+#define GPIOH_OSC_OUT     1U
 
 /*
  * I/O ports initial setup, this configuration is established soon after reset
@@ -119,21 +118,25 @@
  *
  * 1 for open drain outputs denotes hi-Z state
  */
-#define PIN_MODE_INPUT(n)           (0U << ((n) * 2))
-#define PIN_MODE_OUTPUT(n)          (1U << ((n) * 2))
-#define PIN_MODE_ALTERNATE(n)       (2U << ((n) * 2))
-#define PIN_MODE_ANALOG(n)          (3U << ((n) * 2))
+#define PIN_MODE_INPUT(n)           (0U << ((n) * 2U))
+#define PIN_MODE_OUTPUT(n)          (1U << ((n) * 2U))
+#define PIN_MODE_ALTERNATE(n)       (2U << ((n) * 2U))
+#define PIN_MODE_ANALOG(n)          (3U << ((n) * 2U))
 #define PIN_ODR_LOW(n)              (0U << (n))
 #define PIN_ODR_HIGH(n)             (1U << (n))
 #define PIN_OTYPE_PUSHPULL(n)       (0U << (n))
 #define PIN_OTYPE_OPENDRAIN(n)      (1U << (n))
-#define PIN_OSPEED_2M(n)            (0U << ((n) * 2))
-#define PIN_OSPEED_25M(n)           (1U << ((n) * 2))
-#define PIN_OSPEED_50M(n)           (2U << ((n) * 2))
-#define PIN_OSPEED_100M(n)          (3U << ((n) * 2))
-#define PIN_PUDR_FLOATING(n)        (0U << ((n) * 2))
-#define PIN_PUDR_PULLUP(n)          (1U << ((n) * 2))
-#define PIN_PUDR_PULLDOWN(n)        (2U << ((n) * 2))
+#define PIN_OSPEED_VERYLOW(n)       (0U << ((n) * 2U))
+#define PIN_OSPEED_LOW(n)           (1U << ((n) * 2U))
+#define PIN_OSPEED_MEDIUM(n)        (2U << ((n) * 2U))
+#define PIN_OSPEED_HIGH(n)          (3U << ((n) * 2U))
+#define PIN_OSPEED_2M(n)            (0U << ((n) * 2U))
+#define PIN_OSPEED_25M(n)           (1U << ((n) * 2U))
+#define PIN_OSPEED_50M(n)           (2U << ((n) * 2U))
+#define PIN_OSPEED_100M(n)          (3U << ((n) * 2U))
+#define PIN_PUDR_FLOATING(n)        (0U << ((n) * 2U))
+#define PIN_PUDR_PULLUP(n)          (1U << ((n) * 2U))
+#define PIN_PUDR_PULLDOWN(n)        (2U << ((n) * 2U))
 #define PIN_AFIO_AF(n, v)           ((v##U) << ((n % 8) * 4))
 
 /*
@@ -564,7 +567,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	void boardInit(void);
+  void boardInit(void);
 #ifdef __cplusplus
 }
 #endif
