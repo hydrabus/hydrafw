@@ -480,14 +480,17 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	(void)p;
+	BaseSequentialStream* chp = con->bss;
 
 	cprintf(con, "Test debug-rx started, stop it with UBTN + Key\r\n");
 	while(1) {
+		chnRead(chp, (uint8_t *)g_sbuf, sizeof(g_sbuf) - 1);
+
 		/* Exit if User Button is pressed */
 		if (USER_BUTTON) {
 			break;
 		}
-		get_char(con);
+		//get_char(con);
 	}
 	return TRUE;
 }
