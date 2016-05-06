@@ -345,18 +345,20 @@ THD_FUNCTION(key_sniff, arg)
 #define MIFARE_HALT_MAX (4)
 #define MIFARE_CL1_MAX (5)
 #define MIFARE_CL2_MAX (5)
-
+#define MIFARE_UL_DATA_MAX (64)
+#define MIFARE_UL_DATA (16)
+//void hydranfc_read_mifare_ul(t_hydra_console *con)
 void hydranfc_scan_mifare(t_hydra_console *con)
 {
 	uint8_t data_buf[MIFARE_DATA_MAX];
 
-	uint8_t atqa_buf[MIFARE_ATQA_MAX];
+	uint8_t atqa_buf[MIFARE_ATQA_MAX] = { 0 };
 	uint8_t uid_buf[MIFARE_UID_MAX];
 	uint8_t sak1_buf[MIFARE_SAK_MAX];
 	uint8_t sak2_buf[MIFARE_SAK_MAX];
 	uint8_t CL1_buf[MIFARE_CL1_MAX];
 	uint8_t CL2_buf[MIFARE_CL2_MAX];
-	uint8_t halt_buf[MIFARE_HALT_MAX];
+	uint8_t mf_ul_data[MIFARE_UL_DATA_MAX] = { 0 };
 
 	uint8_t atqa_buf_size = 0;
 	uint8_t uid_buf_size = 0;
@@ -364,7 +366,8 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 	uint8_t sak2_buf_size = 0;
 	uint8_t CL1_buf_size = 0;
 	uint8_t CL2_buf_size = 0;
-	uint8_t halt_buf_size = 0;
+
+	uint8_t mf_ul_data_buf_size = 0;
 
 	uint8_t bcc, i;
 
@@ -499,13 +502,21 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 							20, /* 10ms TX/RX Timeout */
 							1); /* TX CRC disabled */
 
-					if (sak2_buf_size > 0) {
-						/* Send Halt(2Bytes+CRC) */
-						data_buf[0] = 0x50;
-						data_buf[1] = 0x00;
-						halt_buf_size = Trf797x_transceive_bytes(data_buf, 2, halt_buf, MIFARE_HALT_MAX,
-								5, /* 5ms TX/RX Timeout => shall not receive answer */
-								1); /* TX CRC enabled */
+					if (sak2_buf_size > 0) 
+					{
+						/* Check if it is a Mifare Ultra Light */
+						if( (atqa_buf[0] == 0x44) && (atqa_buf[1] == 0x00) )
+						{
+							for (i = 0; i < 16; i+=4) 
+							{
+								/* Send Read 16 bytes Mifare UL (2Bytes+CRC) */
+								data_buf[0] = 0x30;
+								data_buf[1] = (uint8_t)i;
+								mf_ul_data_buf_size += Trf797x_transceive_bytes(data_buf, 2, &mf_ul_data[mf_ul_data_buf_size], MIFARE_UL_DATA,
+										20, /* 20ms TX/RX Timeout */
+										1); /* TX CRC enabled */
+							}
+						}
 					}
 				}
 			}
@@ -543,12 +554,18 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 						20, /* 20ms TX/RX Timeout */
 						1); /* TX CRC enabled */
 				if (sak1_buf_size > 0) {
-					/* Send Halt(2Bytes+CRC) */
-					data_buf[0] = 0x50;
-					data_buf[1] = 0x00;
-					halt_buf_size = Trf797x_transceive_bytes(data_buf, 2, halt_buf, MIFARE_HALT_MAX,
-							5, /* 5ms TX/RX Timeout => shall not receive answer */
-							1); /* TX CRC enabled */
+					/* Check if it is a Mifare Ultra Light */
+					if( (atqa_buf[0] == 0x44) && (atqa_buf[1] == 0x00) ) {
+						for (i = 0; i < 16; i+=4) 
+						{
+							/* Send Read 16 bytes Mifare UL (2Bytes+CRC) */
+							data_buf[0] = 0x30;
+							data_buf[1] = (uint8_t)i;
+							mf_ul_data_buf_size += Trf797x_transceive_bytes(data_buf, 2, &mf_ul_data[mf_ul_data_buf_size], MIFARE_UL_DATA,
+									20, /* 20ms TX/RX Timeout */
+									1); /* TX CRC enabled */
+						}
+					}
 				}
 			}
 		}
@@ -599,10 +616,15 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 		}
 	}
 
-	if (halt_buf_size > 0) {
-		cprintf(con, "HALT: ");
-		for (i = 0; i < halt_buf_size; i++)
-			cprintf(con, " %02lX", (uint32_t)data_buf[i]);
+	if (mf_ul_data_buf_size > 0) {
+		cprintf(con, "DATA:");
+		for (i = 0; i < mf_ul_data_buf_size; i++)
+		{
+			if(i % 16 == 0)
+				cprintf(con, "\r\n");
+
+			cprintf(con, " %02X", (uint8_t)mf_ul_data[i]);
+		}
 		cprintf(con, "\r\n");
 	}
 	/*
