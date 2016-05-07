@@ -28,10 +28,36 @@
 #define MIFARE_UID_MAX      11
 #define VICINITY_UID_MAX    16
 
+#define MIFARE_ATQA_MAX (4)
+#define MIFARE_SAK_MAX (4)
+#define MIFARE_HALT_MAX (4)
+#define MIFARE_UL_DATA_MAX (64)
+
 #define NFC_TX_RAWDATA_BUF_SIZE (64)
 extern unsigned char nfc_tx_rawdata_buf[NFC_TX_RAWDATA_BUF_SIZE+1];
 
 extern void (*trf7970a_irq_fn)(void);
+
+/* Structure used & filled by hydranfc_scan_iso14443A() */
+typedef struct {
+	uint8_t atqa_buf_nb_rx_data;
+	uint8_t atqa_buf[MIFARE_ATQA_MAX];
+
+	uint8_t uid_buf_nb_rx_data;
+	uint8_t uid_buf[MIFARE_UID_MAX];
+
+	uint8_t sak1_buf_nb_rx_data;
+	uint8_t sak1_buf[MIFARE_SAK_MAX];
+
+	uint8_t sak2_buf_nb_rx_data;
+	uint8_t sak2_buf[MIFARE_SAK_MAX];
+
+	uint8_t halt_buf_nb_rx_data;
+	uint8_t halt_buf[MIFARE_HALT_MAX];
+
+	uint8_t mf_ul_data_nb_rx_data;
+	uint8_t mf_ul_data[MIFARE_UL_DATA_MAX];
+} t_hydranfc_scan_iso14443A;
 
 bool hydranfc_is_detected(void);
 
@@ -39,6 +65,8 @@ bool hydranfc_init(t_hydra_console *con);
 void hydranfc_cleanup(t_hydra_console *con);
 
 void hydranfc_show_registers(t_hydra_console *con);
+
+void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data);
 
 void hydranfc_scan_mifare(t_hydra_console *con);
 void hydranfc_scan_vicinity(t_hydra_console *con);
