@@ -167,7 +167,7 @@ static bool init_gpio(t_hydra_console *con)
 	palSetPad(GPIOC, 0);
 	palSetPadMode(GPIOC, 0, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
 
-  /* Configure NFC/TRF7970A Direct Mode pins (SDM & DM1) */
+	/* Configure NFC/TRF7970A Direct Mode pins (SDM & DM1) */
 	/* TRF7970A IO3 TX SDM Data bit input / HydraBus PC5 output (To set to "0" by default) */
 	palClearPad(GPIOC, 5);
 	palSetPadMode(GPIOC, 5, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
@@ -380,13 +380,13 @@ void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data)
 	data_buf[1] = 0x88;
 	Trf797xWriteSingle(data_buf, 2);
 
-/*
-	data_buf[0] = ISO_CONTROL;
-	Trf797xReadSingle(data_buf, 1);
-	if (data_buf[0] != 0x88)
-		cprintf(con, "Error ISO Control Register read=0x%02lX (should be 0x88)\r\n",
-			(uint32_t)data_buf[0]);
-*/
+	/*
+		data_buf[0] = ISO_CONTROL;
+		Trf797xReadSingle(data_buf, 1);
+		if (data_buf[0] != 0x88)
+			cprintf(con, "Error ISO Control Register read=0x%02lX (should be 0x88)\r\n",
+				(uint32_t)data_buf[0]);
+	*/
 
 	/* Turn RF ON (Chip Status Control Register (0x00)) */
 	Trf797xTurnRfOn();
@@ -394,15 +394,15 @@ void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data)
 	/* Send REQA (7 bits) and receive ATQA (2 bytes) */
 	data_buf[0] = 0x26; /* REQA (7bits) */
 	data->atqa_buf_nb_rx_data = Trf797x_transceive_bits(data_buf[0], 7, data->atqa_buf, MIFARE_ATQA_MAX,
-																											10, /* 10ms TX/RX Timeout */
-																											0); /* TX CRC disabled */
+				    10, /* 10ms TX/RX Timeout */
+				    0); /* TX CRC disabled */
 	/* Re-send REQA */
 	if (data->atqa_buf_nb_rx_data == 0) {
 		/* Send REQA (7 bits) and receive ATQA (2 bytes) */
 		data_buf[0] = 0x26; /* REQA (7 bits) */
 		data->atqa_buf_nb_rx_data = Trf797x_transceive_bits(data_buf[0], 7, data->atqa_buf, MIFARE_ATQA_MAX,
-																												10, /* 10ms TX/RX Timeout */
-																												0); /* TX CRC disabled */
+					    10, /* 10ms TX/RX Timeout */
+					    0); /* TX CRC disabled */
 	}
 	if (data->atqa_buf_nb_rx_data > 0) {
 		/* Send AntiColl Cascade Level1 (2 bytes) and receive CT+3 UID bytes+BCC (5 bytes) [tag 7 bytes UID]  or UID+BCC (5 bytes) [tag 4 bytes UID] */
@@ -410,8 +410,8 @@ void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data)
 		data_buf[1] = 0x20;
 
 		CL1_buf_size = Trf797x_transceive_bytes(data_buf, 2, CL1_buf, MIFARE_CL1_MAX,
-																						10, /* 10ms TX/RX Timeout */
-																						0); /* TX CRC disabled */
+							10, /* 10ms TX/RX Timeout */
+							0); /* TX CRC disabled */
 
 		/* Check tag 7 bytes UID */
 		if (CL1_buf[0] == 0x88) {
@@ -429,8 +429,8 @@ void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data)
 			}
 
 			data->sak1_buf_nb_rx_data = Trf797x_transceive_bytes(data_buf, (2 + CL1_buf_size), data->sak1_buf, MIFARE_SAK_MAX,
-																													20, /* 10ms TX/RX Timeout */
-																													1); /* TX CRC disabled */
+						    20, /* 10ms TX/RX Timeout */
+						    1); /* TX CRC disabled */
 			if(data->sak1_buf_nb_rx_data >= 3)
 				data->sak1_buf_nb_rx_data -= 2; /* Remove 2 last bytes (CRC) */
 
@@ -441,8 +441,8 @@ void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data)
 				data_buf[1] = 0x20;
 
 				CL2_buf_size = Trf797x_transceive_bytes(data_buf, 2, CL2_buf, MIFARE_CL2_MAX,
-																								10, /* 10ms TX/RX Timeout */
-																								0); /* TX CRC disabled */
+									10, /* 10ms TX/RX Timeout */
+									0); /* TX CRC disabled */
 
 				if (CL2_buf_size > 0) {
 					for (i = 0; i < 4; i++) {
@@ -450,12 +450,12 @@ void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data)
 						data->uid_buf_nb_rx_data++;
 					}
 
-/*
+					/*
 					data_buf[0] = RSSI_LEVELS;
 					Trf797xReadSingle(data_buf, 1);
 					if (data_buf[0] < 0x40)
 						cprintf(con, "RSSI error: 0x%02lX (should be > 0x40)\r\n", (uint32_t)data_buf[0]);
-*/
+					*/
 					/*
 					 * Select RX with CRC_A
 					 * Configure Mode ISO Control Register (0x01) to 0x08
@@ -475,34 +475,30 @@ void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data)
 					}
 
 					data->sak2_buf_nb_rx_data = Trf797x_transceive_bytes(data_buf, (2 + CL2_buf_size), data->sak2_buf, MIFARE_SAK_MAX,
-																															20, /* 10ms TX/RX Timeout */
-																															1); /* TX CRC disabled */
+								    20, /* 10ms TX/RX Timeout */
+								    1); /* TX CRC disabled */
 
-					if (data->sak2_buf_nb_rx_data > 0) 
-					{
+					if (data->sak2_buf_nb_rx_data > 0) {
 						/* Check if it is a Mifare Ultra Light */
 						if( (data->atqa_buf[0] == 0x44) && (data->atqa_buf[1] == 0x00) &&
-								(data->sak1_buf[0] == 0x04) && (data->sak2_buf[1] == 0x00)
-							)
-						{
-							for (i = 0; i < 16; i+=4) 
-							{
+						    (data->sak1_buf[0] == 0x04) && (data->sak2_buf[1] == 0x00)
+						  ) {
+							for (i = 0; i < 16; i+=4) {
 								/* Send Read 16 bytes Mifare UL (2Bytes+CRC) */
 								data_buf[0] = 0x30;
 								data_buf[1] = (uint8_t)i;
 								data->mf_ul_data_nb_rx_data += Trf797x_transceive_bytes(data_buf, 2, &data->mf_ul_data[data->mf_ul_data_nb_rx_data], MIFARE_UL_DATA,
-																																				20, /* 20ms TX/RX Timeout */
-																																				1); /* TX CRC enabled */
+											       20, /* 20ms TX/RX Timeout */
+											       1); /* TX CRC enabled */
 							}
 						}
-					}else
-					{
-							/* Send HALT 2Bytes (CRC is added automatically) */
-							data_buf[0] = 0x50;
-							data_buf[1] = 0x00;
-							data->halt_buf_nb_rx_data += Trf797x_transceive_bytes(data_buf, 2, data->halt_buf, MIFARE_HALT_MAX,
-																																		20, /* 20ms TX/RX Timeout */
-																																		1); /* TX CRC enabled */
+					} else {
+						/* Send HALT 2Bytes (CRC is added automatically) */
+						data_buf[0] = 0x50;
+						data_buf[1] = 0x00;
+						data->halt_buf_nb_rx_data += Trf797x_transceive_bytes(data_buf, 2, data->halt_buf, MIFARE_HALT_MAX,
+									     20, /* 20ms TX/RX Timeout */
+									     1); /* TX CRC enabled */
 					}
 				}
 			}
@@ -511,8 +507,8 @@ void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data)
 		/* tag 4 bytes UID */
 		else {
 			data->uid_buf_nb_rx_data = Trf797x_transceive_bytes(data_buf, 2, data->uid_buf, MIFARE_UID_MAX,
-																													10, /* 10ms TX/RX Timeout */
-																													0); /* TX CRC disabled */
+						   10, /* 10ms TX/RX Timeout */
+						   0); /* TX CRC disabled */
 			if (data->uid_buf_nb_rx_data > 0) {
 				/*
 				data_buf[0] = RSSI_LEVELS;
@@ -538,14 +534,14 @@ void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data)
 					data_buf[2 + i] = data->uid_buf[i];
 				}
 				data->sak1_buf_nb_rx_data = Trf797x_transceive_bytes(data_buf, (2 + data->uid_buf_nb_rx_data),  data->sak1_buf, MIFARE_SAK_MAX,
-																														20, /* 20ms TX/RX Timeout */
-																														1); /* TX CRC enabled */
+							    20, /* 20ms TX/RX Timeout */
+							    1); /* TX CRC enabled */
 				/* Send HALT 2Bytes (CRC is added automatically) */
 				data_buf[0] = 0x50;
 				data_buf[1] = 0x00;
 				data->halt_buf_nb_rx_data = Trf797x_transceive_bytes(data_buf, 2, data->halt_buf, MIFARE_HALT_MAX,
-																														20, /* 20ms TX/RX Timeout */
-																														1); /* TX CRC enabled */
+							    20, /* 20ms TX/RX Timeout */
+							    1); /* TX CRC enabled */
 			}
 		}
 	}
@@ -607,8 +603,7 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 
 	if (data->mf_ul_data_nb_rx_data > 0) {
 		cprintf(con, "DATA:");
-		for (i = 0; i < data->mf_ul_data_nb_rx_data; i++)
-		{
+		for (i = 0; i < data->mf_ul_data_nb_rx_data; i++) {
 			if(i % 16 == 0)
 				cprintf(con, "\r\n");
 
@@ -760,99 +755,97 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		}
 	}
 
-	switch(action)
-	{
-		case T_SCAN:
-			dev_func = proto->dev_function;
-			if( (dev_func == NFC_TYPEA) || (dev_func == NFC_VICINITY) )
-			{
-				if (continuous) {
-					cprintf(con, "Scanning %s ",
-						proto->dev_function == NFC_TYPEA ? "MIFARE" : "Vicinity");
-					cprintf(con, "with %dms period. Press user button to stop.\r\n", period);
-					while (!USER_BUTTON) {
-						scan(con);
-						chThdSleepMilliseconds(period);
-					}
-				} else {
+	switch(action) {
+	case T_SCAN:
+		dev_func = proto->dev_function;
+		if( (dev_func == NFC_TYPEA) || (dev_func == NFC_VICINITY) ) {
+			if (continuous) {
+				cprintf(con, "Scanning %s ",
+					proto->dev_function == NFC_TYPEA ? "MIFARE" : "Vicinity");
+				cprintf(con, "with %dms period. Press user button to stop.\r\n", period);
+				while (!USER_BUTTON) {
 					scan(con);
+					chThdSleepMilliseconds(period);
 				}
 			} else {
-				cprintf(con, "Please select MIFARE or Vicinity mode first.\r\n");
-				return 0;
+				scan(con);
 			}
+		} else {
+			cprintf(con, "Please select MIFARE or Vicinity mode first.\r\n");
+			return 0;
+		}
 		break;
 
-		case T_SNIFF:
-			hydranfc_sniff_14443A(con);
+	case T_SNIFF:
+		hydranfc_sniff_14443A(con);
 		break;
 
-		case T_SNIFF_DBG:
-			hydranfc_sniff_14443A_dbg(con);
+	case T_SNIFF_DBG:
+		hydranfc_sniff_14443A_dbg(con);
 		break;
 
-		case T_EMUL_MIFARE:
-			hydranfc_emul_mifare(con, mifare_uid);
+	case T_EMUL_MIFARE:
+		hydranfc_emul_mifare(con, mifare_uid);
 		break;
 
-		case T_EMUL_MF_ULTRALIGHT:
-			hydranfc_emul_mf_ultralight(con);
+	case T_EMUL_MF_ULTRALIGHT:
+		hydranfc_emul_mf_ultralight(con);
 		break;
 
-		case T_EMUL_ISO14443A:
-			hydranfc_emul_iso14443a(con);
+	case T_EMUL_ISO14443A:
+		hydranfc_emul_iso14443a(con);
 		break;
 
-		case T_DIRECT_MODE_0:
-			cprintf(con, "Enter Direct Mode 0 ISO14443A/B 106kbps\r\n");
-			cprintf(con, "TRF7970A IO6/HydraBus PC2 = digital subcarrier\r\n");
-			cprintf(con, "Press user button to stop\r\n");
+	case T_DIRECT_MODE_0:
+		cprintf(con, "Enter Direct Mode 0 ISO14443A/B 106kbps\r\n");
+		cprintf(con, "TRF7970A IO6/HydraBus PC2 = digital subcarrier\r\n");
+		cprintf(con, "Press user button to stop\r\n");
 
-			/* Direct Mode 0 => TRF7970A ASK/OOK input / HydraBus PB1 output */
-			//palClearPad(GPIOB, 1); // Set to 0 for ASK 
-			palSetPad(GPIOB, 1); // Set to 1 OOK
-			palSetPadMode(GPIOB, 1, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+		/* Direct Mode 0 => TRF7970A ASK/OOK input / HydraBus PB1 output */
+		//palClearPad(GPIOB, 1); // Set to 0 for ASK
+		palSetPad(GPIOB, 1); // Set to 1 OOK
+		palSetPadMode(GPIOB, 1, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
 
-			Trf797x_DM0_DM1_Config();
-			Trf797x_DM0_Enter();
+		Trf797x_DM0_DM1_Config();
+		Trf797x_DM0_Enter();
 
-			while (!USER_BUTTON) {
-				chThdSleepMilliseconds(100);
-			}
-			Trf797x_DM0_Exit();
-			
-			/* TRF7970A ASK/OOK default analog signal output / HydraBus PB1 input */
-			palSetPadMode(GPIOB, 1, PAL_MODE_INPUT);
-			cprintf(con, "Exit Direct Mode 0\r\n");
+		while (!USER_BUTTON) {
+			chThdSleepMilliseconds(100);
+		}
+		Trf797x_DM0_Exit();
+
+		/* TRF7970A ASK/OOK default analog signal output / HydraBus PB1 input */
+		palSetPadMode(GPIOB, 1, PAL_MODE_INPUT);
+		cprintf(con, "Exit Direct Mode 0\r\n");
 		break;
 
-		case T_DIRECT_MODE_1:
-			cprintf(con, "Enter Direct Mode 1 ISO14443A/B 106kbps\r\n");
-			cprintf(con, "TRF7970A IO5/HydraBus PC4 = RX CLK\r\n");
-			cprintf(con, "TRF7970A IO6/HydraBus PC2 = RX Data\r\n");
-			cprintf(con, "TRF7970A IRQ/HydraBus PA1 = RX End\r\n");
-			cprintf(con, "Press user button to stop\r\n");
+	case T_DIRECT_MODE_1:
+		cprintf(con, "Enter Direct Mode 1 ISO14443A/B 106kbps\r\n");
+		cprintf(con, "TRF7970A IO5/HydraBus PC4 = RX CLK\r\n");
+		cprintf(con, "TRF7970A IO6/HydraBus PC2 = RX Data\r\n");
+		cprintf(con, "TRF7970A IRQ/HydraBus PA1 = RX End\r\n");
+		cprintf(con, "Press user button to stop\r\n");
 
-			/* Direct Mode 1 => TRF7970A ASK/OOK input / HydraBus PB1 output */
-			//palClearPad(GPIOB, 1); // Set to 0 for ASK 
-			palSetPad(GPIOB, 1); // Set to 1 OOK
-			palSetPadMode(GPIOB, 1, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
+		/* Direct Mode 1 => TRF7970A ASK/OOK input / HydraBus PB1 output */
+		//palClearPad(GPIOB, 1); // Set to 0 for ASK
+		palSetPad(GPIOB, 1); // Set to 1 OOK
+		palSetPadMode(GPIOB, 1, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
 
-			Trf797x_DM0_DM1_Config();
-			Trf797x_DM1_Enter();
+		Trf797x_DM0_DM1_Config();
+		Trf797x_DM1_Enter();
 
-			while (!USER_BUTTON) {
-				chThdSleepMilliseconds(100);
-			}
-			Trf797x_DM1_Exit();
-			
-			/* TRF7970A ASK/OOK default analog signal output / HydraBus PB1 input */
-			palSetPadMode(GPIOB, 1, PAL_MODE_INPUT);
-			cprintf(con, "Exit Direct Mode 1\r\n");
+		while (!USER_BUTTON) {
+			chThdSleepMilliseconds(100);
+		}
+		Trf797x_DM1_Exit();
+
+		/* TRF7970A ASK/OOK default analog signal output / HydraBus PB1 input */
+		palSetPadMode(GPIOB, 1, PAL_MODE_INPUT);
+		cprintf(con, "Exit Direct Mode 1\r\n");
 
 		break;
 
-		default:
+	default:
 		break;
 	}
 
