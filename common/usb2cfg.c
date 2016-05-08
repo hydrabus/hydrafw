@@ -177,13 +177,58 @@ static const uint8_t vcom_string2[] = {
 /*
  * Serial Number string.
  */
-static const uint8_t vcom_string3[] = {
-	USB_DESC_BYTE(8),                     /* bLength.                         */
-	USB_DESC_BYTE(USB_DESCRIPTOR_STRING), /* bDescriptorType.                 */
-	'0' + CH_KERNEL_MAJOR, 0,
-	'0' + CH_KERNEL_MINOR, 0,
-	'0' + CH_KERNEL_PATCH, 0
+static uint8_t vcom_string3[] = {
+	USB_DESC_BYTE(50),                    /* bLength. */
+	USB_DESC_BYTE(USB_DESCRIPTOR_STRING), /* bDescriptorType. */
+  /* Data filled by CPU with 96bits (12bytes) Serial Number from STM32 to ASCII HEX */
+  ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00,
+  ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00,
+  ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00, ' ', 0x00
 };
+
+static const uint8_t htoa[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+#define USB_DESCRIPTOR_SN_POS (2)
+static void usb_descriptor_fill_string_serial_number(void)
+{
+  int i, j;
+  uint32_t data_u32;
+  uint8_t data_u8;
+	uint32_t sn_32b[3];
+
+	sn_32b[0] = *((uint32_t*)0x1FFF7A10);
+	sn_32b[1] = *((uint32_t*)0x1FFF7A14);
+	sn_32b[2] = *((uint32_t*)0x1FFF7A18);
+
+  j = 0;
+  for(i=0; i<3; i++)
+  {
+    data_u32 = sn_32b[i];
+
+    data_u8 = (data_u32 & 0xFF000000) >> 24;
+    vcom_string3[USB_DESCRIPTOR_SN_POS + j] = htoa[(data_u8 & 0xF0) >> 4];
+    j+=2;
+    vcom_string3[USB_DESCRIPTOR_SN_POS + j] = htoa[(data_u8 & 0x0F)];
+    j+=2;
+
+    data_u8 = (data_u32 & 0x00FF0000) >> 16;
+    vcom_string3[USB_DESCRIPTOR_SN_POS + j] = htoa[(data_u8 & 0xF0) >> 4];
+    j+=2;
+    vcom_string3[USB_DESCRIPTOR_SN_POS + j] = htoa[(data_u8 & 0x0F)];
+    j+=2;
+
+    data_u8 = (data_u32 & 0x0000FF00) >> 8;
+    vcom_string3[USB_DESCRIPTOR_SN_POS + j] = htoa[(data_u8 & 0xF0) >> 4];
+    j+=2;
+    vcom_string3[USB_DESCRIPTOR_SN_POS + j] = htoa[(data_u8 & 0x0F)];
+    j+=2;
+
+    data_u8 = (data_u32 & 0x000000FF);
+    vcom_string3[USB_DESCRIPTOR_SN_POS + j] = htoa[(data_u8 & 0xF0) >> 4];
+    j+=2;
+    vcom_string3[USB_DESCRIPTOR_SN_POS + j] = htoa[(data_u8 & 0x0F)];
+    j+=2;
+  }
+}
 
 /*
  * Strings wrappers array.
@@ -214,7 +259,11 @@ static const USBDescriptor *get_descriptor(USBDriver *usbp,
 		return &vcom_configuration_descriptor;
 	case USB_DESCRIPTOR_STRING:
 		if (dindex < 4)
+		{
+			if(dindex == 3)
+					usb_descriptor_fill_string_serial_number();
 			return &vcom_strings[dindex];
+		}
 	}
 	return NULL;
 }
