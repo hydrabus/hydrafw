@@ -16,5 +16,21 @@
  * limitations under the License.
  */
 
-void bbio_twowire_init_proto_default(t_hydra_console *con);
-void bbio_mode_twowire(t_hydra_console *con);
+void bbio_mode_rawwire(t_hydra_console *con);
+
+typedef struct mode_rawwire_exec_t {
+	void (*init)(t_hydra_console *con);
+	bool (*pin_init)(t_hydra_console *con);
+	void (*tim_init)(t_hydra_console *con);
+	void (*tim_update)(t_hydra_console *con);
+	uint8_t (*read_u8)(t_hydra_console *con);
+	uint8_t (*read_bit_clock)(void);
+	uint8_t (*read_bit)(void);
+	void (*write_u8)(t_hydra_console *con, uint8_t tx_data);
+	void (*write_bit)(uint8_t bit);
+	void (*clock)(void);
+	void (*clock_high)(void);
+	void (*clock_low)(void);
+	void (*data_high)(void);
+	void (*data_low)(void);
+} mode_rawwire_exec_t;

@@ -35,7 +35,7 @@ static const char* str_prompt_twowire[] = {
 	"twowire1" PROMPT,
 };
 
-void init_proto_default(t_hydra_console *con)
+void twowire_init_proto_default(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -75,7 +75,7 @@ bool twowire_pin_init(t_hydra_console *con)
 	return true;
 }
 
-void tim_init(t_hydra_console *con)
+void twowire_tim_init(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	htim.Instance = TIM4;
@@ -92,7 +92,7 @@ void tim_init(t_hydra_console *con)
 	HAL_TIM_Base_Start(&htim);
 }
 
-void tim_set_prescaler(t_hydra_console *con)
+void twowire_tim_set_prescaler(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -259,13 +259,13 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	int tokens_used;
 
 	/* Defaults */
-	init_proto_default(con);
+	twowire_init_proto_default(con);
 
 	/* Process cmdline arguments, skipping "twowire". */
 	tokens_used = 1 + exec(con, p, 1);
 
 	twowire_pin_init(con);
-	tim_init(con);
+	twowire_tim_init(con);
 
 	twowire_clk_low();
 	twowire_sda_low();
@@ -313,7 +313,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Frequency too high\r\n");
 			} else {
 				proto->dev_speed = (int)arg_float;
-				tim_set_prescaler(con);
+				twowire_tim_set_prescaler(con);
 			}
 			break;
 		default:

@@ -35,7 +35,7 @@ static const char* str_prompt_threewire[] = {
 	"threewire1" PROMPT,
 };
 
-static void init_proto_default(t_hydra_console *con)
+void threewire_init_proto_default(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -244,7 +244,7 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	int tokens_used;
 
 	/* Defaults */
-	init_proto_default(con);
+	threewire_init_proto_default(con);
 
 	/* Process cmdline arguments, skipping "threewire". */
 	tokens_used = 1 + exec(con, p, 1);

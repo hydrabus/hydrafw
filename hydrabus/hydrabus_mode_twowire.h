@@ -26,10 +26,10 @@ typedef struct {
 	uint8_t sda_pin;
 } twowire_config;
 
-void init_proto_default(t_hydra_console *con);
+void twowire_init_proto_default(t_hydra_console *con);
 bool twowire_pin_init(t_hydra_console *con);
-void tim_init(t_hydra_console *con);
-void tim_set_prescaler(t_hydra_console *con);
+void twowire_tim_init(t_hydra_console *con);
+void twowire_tim_set_prescaler(t_hydra_console *con);
 uint8_t twowire_read_u8(t_hydra_console *con);
 void twowire_write_u8(t_hydra_console *con, uint8_t tx_data);
 inline void twowire_clock(void);
