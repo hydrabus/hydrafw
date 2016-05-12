@@ -367,7 +367,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return BSP_OK;
 }
 
-static void cleanup(t_hydra_console *con)
+void twowire_cleanup(t_hydra_console *con)
 {
 	(void)con;
 	HAL_TIM_Base_Stop(&htim);
@@ -399,7 +399,7 @@ const mode_exec_t mode_twowire_exec = {
 	.exec = &exec,
 	.write = &write,
 	.read = &read,
-	.cleanup = &cleanup,
+	.cleanup = &twowire_cleanup,
 	.get_prompt = &get_prompt,
 	.clkl = &clkl,
 	.clkh = &clkh,

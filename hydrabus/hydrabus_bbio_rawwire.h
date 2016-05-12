@@ -33,4 +33,5 @@ typedef struct mode_rawwire_exec_t {
 	void (*clock_low)(void);
 	void (*data_high)(void);
 	void (*data_low)(void);
+	void (*cleanup)(t_hydra_console *con);
 } mode_rawwire_exec_t;

@@ -44,6 +44,7 @@ const mode_rawwire_exec_t bbio_twowire = {
 	.clock_low = &twowire_clk_low,
 	.data_high = &twowire_sda_high,
 	.data_low = &twowire_sda_low,
+	.cleanup = &twowire_cleanup,
 };
 const mode_rawwire_exec_t bbio_threewire = {
 	.init = &threewire_init_proto_default,
@@ -60,6 +61,7 @@ const mode_rawwire_exec_t bbio_threewire = {
 	.clock_low = &threewire_clk_low,
 	.data_high = &threewire_sdo_high,
 	.data_low = &threewire_sdo_low,
+	.cleanup = &threewire_cleanup,
 };
 
 void bbio_mode_rawwire(t_hydra_console *con)
@@ -80,6 +82,7 @@ void bbio_mode_rawwire(t_hydra_console *con)
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
+				curmode.cleanup(con);
 				return;
 			case BBIO_RAWWIRE_READ_BYTE:
 				rx_data[0] = curmode.read_u8(con);
@@ -167,6 +170,7 @@ void bbio_mode_rawwire(t_hydra_console *con)
 					}
 					curmode.tim_update(con);
 				} else if ((bbio_subcommand & BBIO_RAWWIRE_CONFIG) == BBIO_RAWWIRE_CONFIG) {
+					curmode.cleanup(con);
 					if(bbio_subcommand & 0b10){
 						proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
 					} else {
@@ -191,4 +195,5 @@ void bbio_mode_rawwire(t_hydra_console *con)
 			}
 		}
 	}
+	curmode.cleanup(con);
 }

@@ -41,3 +41,4 @@ inline void threewire_sdo_high(void);
 void threewire_send_bit(uint8_t bit);
 uint8_t threewire_read_bit(void);
 uint8_t threewire_read_bit_clock(void);
+void threewire_cleanup(t_hydra_console *con);

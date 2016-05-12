@@ -40,3 +40,4 @@ inline void twowire_sda_high(void);
 void twowire_send_bit(uint8_t bit);
 uint8_t twowire_read_bit(void);
 uint8_t twowire_read_bit_clock(void);
+void twowire_cleanup(t_hydra_console *con);
