@@ -41,6 +41,7 @@ extern const mode_exec_t mode_uart_exec;
 extern const mode_exec_t mode_nfc_exec;
 extern const mode_exec_t mode_jtag_exec;
 extern const mode_exec_t mode_twowire_exec;
+extern const mode_exec_t mode_threewire_exec;
 extern const mode_exec_t mode_can_exec;
 extern t_token tokens_mode_spi[];
 extern t_token tokens_mode_i2c[];
@@ -48,6 +49,7 @@ extern t_token tokens_mode_uart[];
 extern t_token tokens_mode_nfc[];
 extern t_token tokens_mode_jtag[];
 extern t_token tokens_mode_twowire[];
+extern t_token tokens_mode_threewire[];
 extern t_token tokens_mode_can[];
 
 static struct {
@@ -61,6 +63,7 @@ static struct {
 	{ T_NFC, tokens_mode_nfc, &mode_nfc_exec },
 	{ T_JTAG, tokens_mode_jtag, &mode_jtag_exec },
 	{ T_TWOWIRE, tokens_mode_twowire, &mode_twowire_exec },
+	{ T_THREEWIRE, tokens_mode_threewire, &mode_threewire_exec },
 	{ T_CAN, tokens_mode_can, &mode_can_exec },
 };
 

@@ -127,6 +127,7 @@ enum {
 	T_FILTER,
 	T_LOW,
 	T_HIGH,
+	T_THREEWIRE,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

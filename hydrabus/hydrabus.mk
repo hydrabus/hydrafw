@@ -13,6 +13,7 @@ HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/hydrabus_mode_jtag.c \
             hydrabus/hydrabus_rng.c \
             hydrabus/hydrabus_mode_twowire.c \
+            hydrabus/hydrabus_mode_threewire.c \
             hydrabus/hydrabus_mode_can.c \
             hydrabus/hydrabus_bbio.c \
             hydrabus/hydrabus_bbio_spi.c \
@@ -20,7 +21,7 @@ HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/hydrabus_bbio_can.c \
             hydrabus/hydrabus_bbio_uart.c \
             hydrabus/hydrabus_bbio_i2c.c \
-            hydrabus/hydrabus_bbio_twowire.c
+            hydrabus/hydrabus_bbio_rawwire.c
 
 # Required include directories
 HYDRABUSINC = ./hydrabus

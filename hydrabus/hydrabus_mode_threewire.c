@@ -21,21 +21,21 @@
 #include "hydrabus.h"
 #include "bsp.h"
 #include "bsp_gpio.h"
-#include "hydrabus_mode_twowire.h"
+#include "hydrabus_mode_threewire.h"
 #include "stm32f4xx_hal.h"
 #include <string.h>
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
-static twowire_config config;
+static threewire_config config;
 static TIM_HandleTypeDef htim;
 
-static const char* str_prompt_twowire[] = {
-	"twowire1" PROMPT,
+static const char* str_prompt_threewire[] = {
+	"threewire1" PROMPT,
 };
 
-void twowire_init_proto_default(t_hydra_console *con)
+void threewire_init_proto_default(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -44,17 +44,18 @@ void twowire_init_proto_default(t_hydra_console *con)
 	proto->dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
-	proto->dev_speed = TWOWIRE_MAX_FREQ;
+	proto->dev_speed = THREEWIRE_MAX_FREQ;
 
 	config.clk_pin = 3;
-	config.sda_pin = 4;
+	config.sdi_pin = 4;
+	config.sdo_pin = 5;
 }
 
 static void show_params(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "Device: twowire%d\r\nGPIO resistor: %s\r\n",
+	cprintf(con, "Device: threewire%d\r\nGPIO resistor: %s\r\n",
 		proto->dev_num + 1,
 		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
 		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
@@ -64,24 +65,26 @@ static void show_params(t_hydra_console *con)
 		(proto->dev_speed), proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
 }
 
-bool twowire_pin_init(t_hydra_console *con)
+bool threewire_pin_init(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	bsp_gpio_init(BSP_GPIO_PORTB, config.clk_pin,
 		      proto->dev_gpio_mode, proto->dev_gpio_pull);
-	bsp_gpio_init(BSP_GPIO_PORTB, config.sda_pin,
+	bsp_gpio_init(BSP_GPIO_PORTB, config.sdi_pin,
+		      MODE_CONFIG_DEV_GPIO_IN, proto->dev_gpio_pull);
+	bsp_gpio_init(BSP_GPIO_PORTB, config.sdo_pin,
 		      proto->dev_gpio_mode, proto->dev_gpio_pull);
 	return true;
 }
 
-void twowire_tim_init(t_hydra_console *con)
+void threewire_tim_init(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	htim.Instance = TIM4;
 
 	htim.Init.Period = 42 - 1;
-	htim.Init.Prescaler = (TWOWIRE_MAX_FREQ/proto->dev_speed) - 1;
+	htim.Init.Prescaler = (THREEWIRE_MAX_FREQ/proto->dev_speed) - 1;
 	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
 
@@ -92,43 +95,29 @@ void twowire_tim_init(t_hydra_console *con)
 	HAL_TIM_Base_Start(&htim);
 }
 
-void twowire_tim_set_prescaler(t_hydra_console *con)
+void threewire_tim_set_prescaler(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	HAL_TIM_Base_Stop(&htim);
 	HAL_TIM_Base_DeInit(&htim);
-	htim.Init.Prescaler = (TWOWIRE_MAX_FREQ/proto->dev_speed) - 1;
+	htim.Init.Prescaler = (THREEWIRE_MAX_FREQ/proto->dev_speed) - 1;
 	HAL_TIM_Base_Init(&htim);
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 	HAL_TIM_Base_Start(&htim);
 }
 
-static void twowire_sda_mode_input(t_hydra_console *con)
+inline void threewire_sdo_high(void)
 {
-	mode_config_proto_t* proto = &con->mode->proto;
-	bsp_gpio_init(BSP_GPIO_PORTB, config.sda_pin,
-		      MODE_CONFIG_DEV_GPIO_IN, proto->dev_gpio_pull);
+	bsp_gpio_set(BSP_GPIO_PORTB, config.sdo_pin);
 }
 
-static void twowire_sda_mode_output(t_hydra_console *con)
+inline void threewire_sdo_low(void)
 {
-	mode_config_proto_t* proto = &con->mode->proto;
-	bsp_gpio_init(BSP_GPIO_PORTB, config.sda_pin,
-		      proto->dev_gpio_mode, proto->dev_gpio_pull);
+	bsp_gpio_clr(BSP_GPIO_PORTB, config.sdo_pin);
 }
 
-inline void twowire_sda_high(void)
-{
-	bsp_gpio_set(BSP_GPIO_PORTB, config.sda_pin);
-}
-
-inline void twowire_sda_low(void)
-{
-	bsp_gpio_clr(BSP_GPIO_PORTB, config.sda_pin);
-}
-
-inline void twowire_clk_high(void)
+inline void threewire_clk_high(void)
 {
 	while (!(TIM4->SR & TIM_SR_UIF)) {
 	}
@@ -136,7 +125,7 @@ inline void twowire_clk_high(void)
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
 
-inline void twowire_clk_low(void)
+inline void threewire_clk_low(void)
 {
 	while (!(TIM4->SR & TIM_SR_UIF)) {
 	}
@@ -144,111 +133,107 @@ inline void twowire_clk_low(void)
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
 
-inline void twowire_clock(void)
+inline void threewire_clock(void)
 {
-	twowire_clk_high();
-	twowire_clk_low();
+	threewire_clk_high();
+	threewire_clk_low();
 }
 
-void twowire_send_bit(uint8_t bit)
+void threewire_send_bit(uint8_t bit)
 {
 	if (bit) {
-		twowire_sda_high();
+		threewire_sdo_high();
 	} else {
-		twowire_sda_low();
+		threewire_sdo_low();
 	}
-	twowire_clock();
+	threewire_clock();
 }
 
-uint8_t twowire_read_bit(void)
+uint8_t threewire_read_bit(void)
 {
-	return bsp_gpio_pin_read(BSP_GPIO_PORTB, config.sda_pin);
+	return bsp_gpio_pin_read(BSP_GPIO_PORTB, config.sdi_pin);
 }
 
-uint8_t twowire_read_bit_clock(void)
+uint8_t threewire_read_bit_clock(void)
 {
 	uint8_t bit;
-	twowire_clock();
-	bit = bsp_gpio_pin_read(BSP_GPIO_PORTB, config.sda_pin);
+	threewire_clock();
+	bit = bsp_gpio_pin_read(BSP_GPIO_PORTB, config.sdi_pin);
 	return bit;
 }
 
 static void clkh(t_hydra_console *con)
 {
-	twowire_clk_high();
+	threewire_clk_high();
 	cprintf(con, "CLK HIGH\r\n");
 }
 
 static void clkl(t_hydra_console *con)
 {
-	twowire_clk_low();
+	threewire_clk_low();
 	cprintf(con, "CLK LOW\r\n");
 }
 
 static void clk(t_hydra_console *con)
 {
-	twowire_clock();
+	threewire_clock();
 	cprintf(con, "CLOCK PULSE\r\n");
 }
 
 static void dath(t_hydra_console *con)
 {
-	twowire_sda_high();
-	cprintf(con, "SDA HIGH\r\n");
+	threewire_sdo_high();
+	cprintf(con, "SDO HIGH\r\n");
 }
 
 static void datl(t_hydra_console *con)
 {
-	twowire_sda_low();
-	cprintf(con, "SDA LOW\r\n");
+	threewire_sdo_low();
+	cprintf(con, "SDO LOW\r\n");
 }
 
 static void dats(t_hydra_console *con)
 {
-	uint8_t rx_data = twowire_read_bit_clock();
+	uint8_t rx_data = threewire_read_bit_clock();
 	cprintf(con, hydrabus_mode_str_read_one_u8, rx_data);
 }
 
 static void bitr(t_hydra_console *con)
 {
-	uint8_t rx_data = twowire_read_bit();
+	uint8_t rx_data = threewire_read_bit();
 	cprintf(con, hydrabus_mode_str_read_one_u8, rx_data);
 }
 
-void twowire_write_u8(t_hydra_console *con, uint8_t tx_data)
+void threewire_write_u8(t_hydra_console *con, uint8_t tx_data)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t i;
 
-	twowire_sda_mode_output(con);
-
 	if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
 		for (i=0; i<8; i++) {
-			twowire_send_bit((tx_data>>i) & 1);
+			threewire_send_bit((tx_data>>i) & 1);
 		}
 	} else {
 		for (i=0; i<8; i++) {
-			twowire_send_bit((tx_data>>(7-i)) & 1);
+			threewire_send_bit((tx_data>>(7-i)) & 1);
 		}
 	}
 }
 
-uint8_t twowire_read_u8(t_hydra_console *con)
+uint8_t threewire_read_u8(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t value;
 	uint8_t i;
 
-	twowire_sda_mode_input(con);
-
 	value = 0;
 	if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
 		for(i=0; i<8; i++) {
-			value |= (twowire_read_bit_clock() << i);
+			value |= (threewire_read_bit_clock() << i);
 		}
 	} else {
 		for(i=0; i<8; i++) {
-			value |= (twowire_read_bit_clock() << (7-i));
+			value |= (threewire_read_bit_clock() << (7-i));
 		}
 	}
 	return value;
@@ -259,16 +244,16 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	int tokens_used;
 
 	/* Defaults */
-	twowire_init_proto_default(con);
+	threewire_init_proto_default(con);
 
-	/* Process cmdline arguments, skipping "twowire". */
+	/* Process cmdline arguments, skipping "threewire". */
 	tokens_used = 1 + exec(con, p, 1);
 
-	twowire_pin_init(con);
-	twowire_tim_init(con);
+	threewire_pin_init(con);
+	threewire_tim_init(con);
 
-	twowire_clk_low();
-	twowire_sda_low();
+	threewire_clk_low();
+	threewire_sdo_low();
 
 	show_params(con);
 
@@ -298,7 +283,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 				break;
 			}
-			twowire_pin_init(con);
+			threewire_pin_init(con);
 			break;
 		case T_MSB_FIRST:
 			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
@@ -309,11 +294,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_FREQUENCY:
 			t += 2;
 			memcpy(&arg_float, p->buf + p->tokens[t], sizeof(float));
-			if(arg_float > TWOWIRE_MAX_FREQ) {
+			if(arg_float > THREEWIRE_MAX_FREQ) {
 				cprintf(con, "Frequency too high\r\n");
 			} else {
 				proto->dev_speed = (int)arg_float;
-				twowire_tim_set_prescaler(con);
+				threewire_tim_set_prescaler(con);
 			}
 			break;
 		default:
@@ -328,7 +313,7 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
 	int i;
 	for (i = 0; i < nb_data; i++) {
-		twowire_write_u8(con, tx_data[i]);
+		threewire_write_u8(con, tx_data[i]);
 	}
 	if(nb_data == 1) {
 		/* Write 1 data */
@@ -350,7 +335,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	int i;
 
 	for(i = 0; i < nb_data; i++) {
-		rx_data[i] = twowire_read_u8(con);
+		rx_data[i] = threewire_read_u8(con);
 	}
 	if(nb_data == 1) {
 		/* Read 1 data */
@@ -367,7 +352,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return BSP_OK;
 }
 
-void twowire_cleanup(t_hydra_console *con)
+void threewire_cleanup(t_hydra_console *con)
 {
 	(void)con;
 	HAL_TIM_Base_Stop(&htim);
@@ -380,8 +365,8 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 	tokens_used = 0;
 	if (p->tokens[1] == T_PINS) {
 		tokens_used++;
-		cprintf(con, "CLK: PB%d\r\nIO: PB%d\r\n",
-			config.clk_pin, config.sda_pin);
+		cprintf(con, "CLK: PB%d\r\nSDI: PB%d\r\nSDO: PB%d\r\n",
+			config.clk_pin, config.sdi_pin, config.sdo_pin);
 	} else {
 		show_params(con);
 	}
@@ -391,15 +376,15 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 static const char *get_prompt(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	return str_prompt_twowire[proto->dev_num];
+	return str_prompt_threewire[proto->dev_num];
 }
 
-const mode_exec_t mode_twowire_exec = {
+const mode_exec_t mode_threewire_exec = {
 	.init = &init,
 	.exec = &exec,
 	.write = &write,
 	.read = &read,
-	.cleanup = &twowire_cleanup,
+	.cleanup = &threewire_cleanup,
 	.get_prompt = &get_prompt,
 	.clkl = &clkl,
 	.clkh = &clkh,
