@@ -134,6 +134,7 @@ t_token_dict tl_dict[] = {
 	{ T_FILTER, "filter" },
 	{ T_LOW, "low" },
 	{ T_HIGH, "high" },
+	{ T_THREEWIRE, "3-wire" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -911,6 +912,107 @@ t_token tokens_twowire[] = {
 	{ }
 };
 
+#define THREEWIRE_PARAMETERS \
+	{ T_DEVICE, \
+		.arg_type = T_ARG_UINT, \
+		.help = "3-wire device (1)" }, \
+	{ T_PULL, \
+		.arg_type = T_ARG_TOKEN, \
+		.subtokens = tokens_gpio_pull, \
+		.help = "GPIO pull (up/down/floating)" }, \
+	{ T_MSB_FIRST, \
+		.help = "Send/receive MSB first" }, \
+	{ T_LSB_FIRST, \
+		.help = "Send/receive LSB first" },
+
+t_token tokens_mode_threewire[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show 3-wire parameters"
+	},
+	THREEWIRE_PARAMETERS
+	/* 3-wire-specific commands */
+	{
+		T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_WRITE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_FREQUENCY,
+		.arg_type = T_ARG_FLOAT,
+		.help = "Bus frequency"
+	},
+	{
+		T_ARG_UINT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
+	},
+	/* BP commands */
+	{
+		T_CARET,
+		.help = "Send one clock tick"
+	},
+	{
+		T_SLASH,
+		.help = "Toggle clock level high"
+	},
+	{
+		T_BACKSLASH,
+		.help = "Toggle clock level low"
+	},
+	{
+		T_MINUS,
+		.help = "Toggle SDO high"
+	},
+	{
+		T_UNDERSCORE,
+		.help = "Toggle SDO low"
+	},
+	{
+		T_EXCLAMATION,
+		.help = "Read bit with clock"
+	},
+	{
+		T_DOT,
+		.help = "Read bit without clock"
+	},
+	{
+		T_AMPERSAND,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 usec (repeat with :<num>)"
+	},
+	{
+		T_PERCENT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit 3-wire mode"
+	},
+	{ }
+};
+
+t_token tokens_threewire[] = {
+	THREEWIRE_PARAMETERS
+	{ }
+};
+
 t_token tokens_gpio_mode[] = {
 	{
 		T_IN,
@@ -1246,6 +1348,11 @@ t_token tl_tokens[] = {
 		T_TWOWIRE,
 		.subtokens = tokens_twowire,
 		.help = "2-wire mode"
+	},
+	{
+		T_THREEWIRE,
+		.subtokens = tokens_threewire,
+		.help = "3-wire mode"
 	},
 	{
 		T_UART,

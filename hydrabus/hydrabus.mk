@@ -13,6 +13,7 @@ HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/hydrabus_mode_jtag.c \
             hydrabus/hydrabus_rng.c \
             hydrabus/hydrabus_mode_twowire.c \
+            hydrabus/hydrabus_mode_threewire.c \
             hydrabus/hydrabus_mode_can.c \
             hydrabus/hydrabus_bbio.c \
             hydrabus/hydrabus_bbio_spi.c \
