@@ -128,24 +128,13 @@ static void extcb1(EXTDriver *extp, expchannel_t channel)
 static bool hydranfc_test_shield(void)
 {
 	int init_ms;
-	int err;
-	static uint8_t data_buf[4];
-
-	err = 0;
 
 	/* Software Init TRF7970A */
 	init_ms = Trf797xInitialSettings();
 	if (init_ms == TRF7970A_INIT_TIMEOUT)
 		return FALSE;
 
-	Trf797xResetFIFO();
-
-	data_buf[0] = CHIP_STATE_CONTROL;
-	Trf797xReadSingle(data_buf, 1);
-	if (data_buf[0] != 0x01)
-		err++;
-
-	return err == 0;
+	return TRUE;
 }
 
 extern t_mode_config mode_con1;
