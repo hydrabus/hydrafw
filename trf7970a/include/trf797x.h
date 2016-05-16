@@ -59,6 +59,7 @@
 #define RSSI_LEVELS			0x0F
 #define SPECIAL_FUNCTION		0x10
 #define RAM_START_ADDRESS		0x11	//RAM is 6 bytes long (0x11 - 0x16)
+#define NFC_FIFO_IRQ_LEVELS 0x14
 #define NFC_LOW_DETECTION		0x16
 #define NFCID				0x17
 #define NFC_TARGET_LEVEL		0x18

@@ -119,35 +119,58 @@ void Trf797x_Init(void)
 int Trf797xInitialSettings(void)
 {
 	int i;
-	u08_t mod_control[2];
+	u08_t data_buf[2];
 
 	for(i=0; i < TRF7970A_INIT_TIMEOUT; i++) {
-		mod_control[0] = SOFT_INIT;
-		Trf797xDirectCommand (mod_control);
+		data_buf[0] = SOFT_INIT;
+		Trf797xDirectCommand (data_buf);
 
-		mod_control[0] = IDLE;
-		Trf797xDirectCommand (mod_control);
+		data_buf[0] = IDLE;
+		Trf797xDirectCommand(data_buf);
 
 		McuDelayMillisecond(1);
 
-		mod_control[0] = MODULATOR_CONTROL;
-		Trf797xReadSingle(mod_control, 1);
-		if(mod_control[0] == 0x91) {
+		data_buf[0] = MODULATOR_CONTROL;
+		Trf797xReadSingle(data_buf, 1);
+		if(data_buf[0] == 0x91) {
 			break;
 		}
 	}
 
-	/* 
-		Fix SLOZ011A–February 2014–Revised April 2015
-		NFC Target Detection Level Register(0x18) has non-zero value at power up
-	*/
-	mod_control[0] = NFC_TARGET_LEVEL;
-	mod_control[1] = 0x00;
-	Trf797xWriteSingle(mod_control, 2);
+	/* Configure Chip Status Register */
+	data_buf[0] = CHIP_STATE_CONTROL;
+	data_buf[1] = 0x21;
+	Trf797xWriteSingle(data_buf, 2);
 
-	mod_control[0] = MODULATOR_CONTROL;
-	mod_control[1] = 0x21;  // 6.78MHz, OOK 100%
-	Trf797xWriteSingle(mod_control, 2);
+	data_buf[0] = MODULATOR_CONTROL;
+	data_buf[1] = 0x00;
+	Trf797xWriteSingle(data_buf, 2);
+
+	/* Configure REGULATOR_CONTROL */
+	data_buf[0] = REGULATOR_CONTROL;
+	data_buf[1] = 0x87;
+	Trf797xWriteSingle(data_buf, 2);
+
+	// Reset FIFO CMD
+	Trf797xResetFIFO();
+
+	/* Configure Chip Status Register */
+	data_buf[0] = CHIP_STATE_CONTROL;
+	data_buf[1] = 0x00;
+	Trf797xWriteSingle(data_buf, 2);
+
+	/* Configure Collision position and interrupt mask register */
+	data_buf[0] = IRQ_MASK;
+	data_buf[1] = 0x3E;
+	Trf797xWriteSingle(data_buf, 2);
+
+	/* Configure Adjustable FIFO IRQ Levels Register (96B RX & 32B TX) */
+	data_buf[0] = NFC_FIFO_IRQ_LEVELS;
+	data_buf[1] = 0x0F;
+	Trf797xWriteSingle(data_buf, 2);
+
+	/* Read IRQ Status */
+	Trf797xReadIrqStatus(data_buf);
 
 	return i;
 }
@@ -213,7 +236,7 @@ Trf797xReadIrqStatus(u08_t *pbuf)
 	*pbuf = IRQ_STATUS;
 	*(pbuf + 1) = IRQ_MASK;
 
-	Trf797xReadCont(pbuf, 2);			// read second reg. as dummy read
+	Trf797xReadCont(pbuf, 2); // read second reg. as dummy read
 }
 
 //===============================================================
