@@ -31,14 +31,23 @@ typedef enum {
 	EMUL_RX_MF_ULTRALIGHT_SEL1_UID, /* Wait RX SEL UID 0x93 0x70 0x88(CT) + UID 0, 1, 2 + BCC */
 	EMUL_RX_MF_ULTRALIGHT_ANTICOL_L2, /* Wait RX ANTICOL 0x95 0x20 */
 	EMUL_RX_MF_ULTRALIGHT_SEL2_UID, /* Wait RX SEL UID 0x95 0x70 + UID 3, 4, 5, 6 + BCC */
+	EMUL_RX_MF_ULTRALIGHT_END_ANTICOL, /* End of Anticol */
 
 	EMUL_RX_MF_ULTRALIGHT_CMD /* Wait command */
 } emul_mf_ultralight_state;
 
-#define TRF7970A_IRQ_STATUS_RX_TX 0xC0
-#define TRF7970A_IRQ_STATUS_TX 0x80
-#define TRF7970A_IRQ_STATUS_RX 0x40
-#define TRF7970A_IRQ_STATUS_FIFO 0x20
+/* IRQ Status flag for NFC and Card Emulation Operation */
+typedef enum
+{
+    IRQ_STATUS_COLLISION_ERROR = 0x01,
+    IRQ_STATUS_COLLISION_AVOID_FINISHED = 0x02,
+    IRQ_STATUS_RF_FIELD_CHANGE = 0x04,
+    IRQ_STATUS_SDD_COMPLETE = 0x08,
+    IRQ_STATUS_PROTOCOL_ERROR = 0x10,
+    IRQ_STATUS_FIFO_HIGH_OR_LOW  = 0x20,
+    IRQ_STATUS_RX_COMPLETE = 0x40,
+    IRQ_STATUS_TX_COMPLETE = 0x80
+} t_trf7970a_irq_flag;
 
 /*
 Mifare Ultralight/MF0ICU1 commands see http://cache.nxp.com/documents/data_sheet/MF0ICU1.pdf?pspll=1
@@ -106,69 +115,84 @@ void  hydranfc_emul_mf_ultralight_init(void)
 	uint8_t data_buf[2];
 
 	/* Init TRF797x */
-	Trf797xInitialSettings();
-	Trf797xResetFIFO();
-
-	/* Clear ISO14443 TX */
-	data_buf[0] = ISO_14443B_OPTIONS;
-	data_buf[1] = 0x00;
-	Trf797xWriteSingle(data_buf, 2);
+	data_buf[0] = SOFT_INIT;
+	Trf797xDirectCommand(data_buf);
+	data_buf[0] = IDLE;
+	Trf797xDirectCommand(data_buf);
 
 	/* Configure modulator OOK 100% */
 	data_buf[0] = MODULATOR_CONTROL;
 	data_buf[1] = 0x01;
 	Trf797xWriteSingle(data_buf, 2);
 
-	/* Configure REGULATOR_CONTROL (Automatic setting, 5V voltage VDD_RF) */
-	data_buf[0] = REGULATOR_CONTROL;
-	data_buf[1] = 0x87;
+	/* Configure Chip Status Register (0x00) to 0x21 (RF output active and 5v operations) */
+	data_buf[0] = CHIP_STATE_CONTROL;
+	data_buf[1] = 0x21;
+	Trf797xWriteSingle(data_buf, 2);
+
+	/*
+	 * Configure Mode ISO Control Register (0x01)
+	 * Card Emulation Mode
+	 */
+	data_buf[0] = ISO_CONTROL;
+	data_buf[1] = 0x21; // 106 kbps
 	Trf797xWriteSingle(data_buf, 2);
 
 	/* Configure RX
-	  (Bandpass 450 kHz to 1.5 MHZ & Bandpass 100 kHz to 1.5 MHz Gain reduced for 18 dB)
-	  * AGC no limit B0=1 */
+		[AGC 8 subcarrier pulses]
+		[AGC activation level change:5x]
+		[Gain reduction 0 dB]
+		[Bandpass 100 kHz to 1.5 MHz (Gain reduced for 18 dB)]
+		[Bandpass 450 kHz to 1.5 MHz] [Bandpass 200 kHz to 900 kHz] [Bandpass 110 kHz to 570 kHz] 
+  */
 	data_buf[0] = RX_SPECIAL_SETTINGS;
-	data_buf[1] = 0x31;
+	data_buf[1] = 0xF0;
 	Trf797xWriteSingle(data_buf, 2);
 
-	/* Configure Test Settings 1 to BIT6/0x40 => MOD Pin becomes receiver subcarrier output (Digital Output for RX/TX) => Used for Sniffer */
-	data_buf[0] = TEST_SETTINGS_1;
-	data_buf[1] = BIT6;
+	/* Configure REGULATOR_CONTROL */
+	data_buf[0] = REGULATOR_CONTROL;
+	data_buf[1] = 0x01;
 	Trf797xWriteSingle(data_buf, 2);
 
 	/* Configure Adjustable FIFO IRQ Levels Register (96B RX & 32B TX) */
-	data_buf[0] = 0x14;
+	data_buf[0] = NFC_FIFO_IRQ_LEVELS;
 	data_buf[1] = 0x0F;
 	Trf797xWriteSingle(data_buf, 2);
 
 	/* Configure NFC Low Field Level Register */
 	/* NFC passive 106-kbps and ISO14443A card emulation */
-	/* RF field level for RF collision avoidance b011 250mV See Table 6-16 */
-	data_buf[0] = 0x16;
-	data_buf[1] = 0x83;
+	/* NFC Low Field Detection Level=0x03 See Table 6-16 */
+	data_buf[0] = NFC_LOW_DETECTION;
+	data_buf[1] = 0x03;
 	Trf797xWriteSingle(data_buf, 2);
 
 	/* Configure NFC Target Detection Level Register */
 	/* RF field level required for system wakeup to max */
-	data_buf[0] = 0x18;
+	data_buf[0] = NFC_TARGET_LEVEL;
 	data_buf[1] = 0x07;
 	Trf797xWriteSingle(data_buf, 2);
 
-	Trf797xResetFIFO();
+	/* Read IRQ Status */
+	Trf797xReadIrqStatus(data_buf);
+
+	/* Read NFC Target Protocol */
+	data_buf[0] = NFC_TARGET_PROTOCOL;
+	Trf797xReadSingle(data_buf, 1);  // determine the number of bytes left in FIFO
+
+	Trf797xRunDecoders(); /* Enable Receiver */
+
+#if 0
+	/* Configure Test Settings 1 to BIT6/0x40 => MOD Pin becomes receiver subcarrier output (Digital Output for RX/TX) => Used for Sniffer */
+	data_buf[0] = TEST_SETTINGS_1;
+	data_buf[1] = BIT6;
+	Trf797xWriteSingle(data_buf, 2);
+
 	Trf797xStopDecoders(); /* Disable Receiver */
 	Trf797xRunDecoders(); /* Enable Receiver */
 
-	/*
-	 * Configure Mode ISO Control Register (0x01) to 0xA4
-	 * NFC or Card Emulation Mode, no RX CRC (CRC is not present in the response)
-	 * Card Emulation Mode
-	 */
-	data_buf[0] = ISO_CONTROL;
-	data_buf[1] = 0xA4;
-	Trf797xWriteSingle(data_buf, 2);
-
 	/* Turn RF ON (Chip Status Control Register (0x00)) */
 	Trf797xTurnRfOn();
+#endif
 }
 
 /* Return Nb data sent (0 if error) */
@@ -331,20 +355,11 @@ void hydranfc_emul_mf_ultralight_states(void)
 					wait_nbcycles(324);
 					if(emul_mf_ultralight_tx_rawdata(data_buf, 1, 1) == 1) {
 						/*
-							BIT1 = Disable anticollision frames for 14443A
-							(this bit should be set to 1 after anticollision is finished)
-							BIT2 = 4-bit receive, Enable 4-bit replay for example, ACK, NACK used by MIFARE Ultralight
-						*/
-						data_buf[0] = SPECIAL_FUNCTION;
-						data_buf[1] = (BIT1 | BIT2);
-						Trf797xWriteSingle(data_buf, 2);
-						/*
 						Trf797xReadSingle(&data_buf[1], SPECIAL_FUNCTION);
 						// Disable Anti-collision Frames for 14443A.
 						Trf797xWriteSingle(BIT2 | ui8Temp, SPECIAL_FUNCTION);
 						*/
-
-						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_CMD;
+						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_END_ANTICOL;
 					} else
 						error=1;
 				} else
@@ -353,11 +368,13 @@ void hydranfc_emul_mf_ultralight_states(void)
 				error=1;
 			break;
 
+		case EMUL_RX_MF_ULTRALIGHT_END_ANTICOL:
+			emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_CMD;
 		case EMUL_RX_MF_ULTRALIGHT_CMD:
 			data_buf[0] = FIFO;
 			Trf797xReadCont(data_buf, fifo_size);
 
-			if(fifo_size >= 4)
+			if(fifo_size >= 2)
 			{
 				switch(data_buf[0])
 				{
@@ -376,7 +393,7 @@ void hydranfc_emul_mf_ultralight_states(void)
 						if(page_num > 12)
 							page_num = 12; // Limit the page num to avoid buffer overflow
 
-						if(emul_mf_ultralight_tx_rawdata(&mf_ultralight_data[page_num][0], 16, 1) == 1) {
+						if(emul_mf_ultralight_tx_rawdata(&mf_ultralight_data[page_num][0], 16, 1) == 16) {
 							emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_CMD;
 						} else
 							error=1;
@@ -408,55 +425,112 @@ void hydranfc_emul_mf_ultralight_states(void)
 	/* Error on Protocol */
 	if(error > 0) {
 		emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_REQA_WUPA;
-
 		/* Re-Init TRF7970A on status error */
-		data_buf[0] = SOFT_INIT;
-		Trf797xDirectCommand(data_buf);
-		data_buf[0] = IDLE;
-		Trf797xDirectCommand(data_buf);
 		hydranfc_emul_mf_ultralight_init();
 	}
 }
 
+static t_trf7970a_irq_flag status;
+static uint8_t nfc_target_protocol;
 void hydranfc_emul_mf_ultralight_irq(void)
 {
 	uint8_t data_buf[2];
-	int status;
-	//uint8_t nfc_target_protocol;
+	int error = 0;
+
+	/* Read NFC Target Protocol */
+	data_buf[0] = NFC_TARGET_PROTOCOL;
+	Trf797xReadSingle(data_buf, 1);  // determine the number of bytes left in FIFO
+	nfc_target_protocol = data_buf[0];
 
 	/* Read IRQ Status */
 	Trf797xReadIrqStatus(data_buf);
 	status = data_buf[0];
 
-	/* Read NFC Target Protocol */
-	/*
-	data_buf[0] = NFC_TARGET_PROTOCOL;
-	Trf797xReadSingle (data_buf, 1);
-	nfc_target_protocol = data_buf[0];
-	*/
+	if(status & IRQ_STATUS_TX_COMPLETE)
+	{
+		if(status == IRQ_STATUS_TX_COMPLETE)
+		{
+			// Reset FIFO CMD
+			Trf797xResetFIFO();
 
-	switch(status) {
-	case TRF7970A_IRQ_STATUS_TX:
-		//data_buf[0] = RSSI_LEVELS;
-		//Trf797xReadSingle(data_buf, 1);
-		break;
+			switch(emul_mf_ultralight_14443a_state)
+			{
+				case EMUL_RX_MF_ULTRALIGHT_ANTICOL_L1:
+					/*
+					 * Configure Mode ISO Control Register (0x01) to 0xA4 (no RX CRC)
+					 */
+					data_buf[0] = ISO_CONTROL;
+					data_buf[1] = 0xA4;
+					Trf797xWriteSingle(data_buf, 2);
+				break;
 
-	case TRF7970A_IRQ_STATUS_RX:
-		hydranfc_emul_mf_ultralight_states();
-		break;
+				case EMUL_RX_MF_ULTRALIGHT_END_ANTICOL:
+					/*
+					 * Configure Mode ISO Control Register (0x01) to 0x24 (RX CRC)
+					 */
+					data_buf[0] = ISO_CONTROL;
+					data_buf[1] = 0x24;
+					Trf797xWriteSingle(data_buf, 2);
 
-	default:
+					/*
+						BIT1 = Disable anticollision frames for 14443A
+						(this bit should be set to 1 after anticollision is finished)
+					*/
+					data_buf[0] = SPECIAL_FUNCTION;
+					data_buf[1] = BIT1;
+					Trf797xWriteSingle(data_buf, 2);
+				break;
+
+				default:
+				break;
+			}
+		}else
+		{
+			/* Read FIFO Status(0x1C=>0x5C) */
+			data_buf[0] = FIFO_CONTROL;
+			Trf797xReadSingle(data_buf, 1);  // determine the number of bytes left in FIFO
+		}
+	}
+
+	if(status & IRQ_STATUS_RX_COMPLETE)
+	{
+		if(nfc_target_protocol == 0xC9) /* 106kbps RF Level OK */
+		{
+			hydranfc_emul_mf_ultralight_states();
+		}else
+		{
+			error = 1;
+		}
+	}
+
+	if(status & IRQ_STATUS_RF_FIELD_CHANGE)
+	{
+		if(nfc_target_protocol != 0xC9) /* 106kbps RF Level OK */
+		{
+			error = 1;
+		}
+	}
+
+	if(status & IRQ_STATUS_PROTOCOL_ERROR)
+	{
+		error = 1;
+	}
+
+	if(status & IRQ_STATUS_COLLISION_ERROR)
+	{
+		error = 1;
+	}
+
+	if(status & IRQ_STATUS_COLLISION_AVOID_FINISHED)
+	{
+		error = 1;
+	}
+
+	if(error > 0)
+	{
 		/* Re-Init Internal Emul 14443A state */
 		emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_REQA_WUPA;
-
-		/* Re-Init TRF7970A on status error */
-		data_buf[0] = SOFT_INIT;
-		Trf797xDirectCommand(data_buf);
-		data_buf[0] = IDLE;
-		Trf797xDirectCommand(data_buf);
-
 		hydranfc_emul_mf_ultralight_init();
-		break;
 	}
 }
 
