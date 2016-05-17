@@ -46,6 +46,9 @@ int execute_script(t_hydra_console *con, char *filename)
 	while(!f_eof(&fp)) {
 		f_gets((TCHAR *)inbuf, IN_OUT_BUF_SIZE, &fp);
 		i=0;
+		if(inbuf[0] == '#') {
+			continue;
+		}
 		while(inbuf[i] != '\0') {
 			tl_input(con->tl, inbuf[i]);
 			i++;
