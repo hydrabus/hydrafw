@@ -29,6 +29,7 @@ typedef struct {
 } filename_t;
 
 bool is_fs_ready(void);
+bool is_file_present(char * filename);
 
 int write_file(uint8_t* buffer, uint32_t size);
 void write_file_get_last_filename(filename_t* out_filename);

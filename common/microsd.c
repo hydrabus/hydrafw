@@ -61,6 +61,23 @@ bool is_fs_ready(void)
 	return fs_ready;
 }
 
+bool is_file_present(char * filename)
+{
+	FRESULT err;
+	if (!fs_ready) {
+		err = mount();
+		if(err) {
+			return FALSE;
+		}
+	}
+
+	err = f_stat(filename, NULL);
+	if (err == FR_OK) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
 /**
  * @brief   Parody of UNIX badblocks program.
  *
