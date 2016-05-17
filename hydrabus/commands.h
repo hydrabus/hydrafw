@@ -128,6 +128,7 @@ enum {
 	T_LOW,
 	T_HIGH,
 	T_THREEWIRE,
+	T_SCRIPT,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

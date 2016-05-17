@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2014-2015 Benjamin VERNOUX
+ * Copyright (C) 2016 Nicolas OBERLI
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,4 @@
  * limitations under the License.
  */
 
-#ifndef _MICROSD_H_
-#define _MICROSD_H_
-
-#define SDC_BURST_SIZE  4 /* how many sectors reads at once */
-#define IN_OUT_BUF_SIZE (MMCSD_BLOCK_SIZE * SDC_BURST_SIZE)
-
-#include "common.h"
-
-typedef struct {
-	char filename[255];
-} filename_t;
-
-bool is_fs_ready(void);
-
-int write_file(uint8_t* buffer, uint32_t size);
-void write_file_get_last_filename(filename_t* out_filename);
-
-int mount(void);
-int umount(void);
-
-#endif /* _MICROSD_H_ */
+int execute_script(t_hydra_console *con, char *filename);

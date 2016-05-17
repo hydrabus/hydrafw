@@ -135,6 +135,7 @@ t_token_dict tl_dict[] = {
 	{ T_LOW, "low" },
 	{ T_HIGH, "high" },
 	{ T_THREEWIRE, "3-wire" },
+	{ T_SCRIPT, "script" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -1225,6 +1226,11 @@ t_token tokens_sd[] = {
 		T_MKDIR,
 		.arg_type = T_ARG_STRING,
 		.help = "Create new directory"
+	},
+	{
+		T_SCRIPT,
+		.arg_type = T_ARG_STRING,
+		.help = "Execute script from file"
 	},
 	{ }
 };
