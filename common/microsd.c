@@ -30,8 +30,8 @@
 #include "microsd.h"
 #include "common.h"
 
-#define SDC_BURST_SIZE  4 /* how many sectors reads at once */
-#define IN_OUT_BUF_SIZE (MMCSD_BLOCK_SIZE * SDC_BURST_SIZE)
+#include "script.h"
+
 static uint8_t outbuf[IN_OUT_BUF_SIZE+8];
 static uint8_t inbuf[IN_OUT_BUF_SIZE+8];
 
@@ -59,6 +59,23 @@ int write_file(uint8_t* buffer, uint32_t size);
 bool is_fs_ready(void)
 {
 	return fs_ready;
+}
+
+bool is_file_present(char * filename)
+{
+	FRESULT err;
+	if (!fs_ready) {
+		err = mount();
+		if(err) {
+			return FALSE;
+		}
+	}
+
+	err = f_stat(filename, NULL);
+	if (err == FR_OK) {
+		return TRUE;
+	}
+	return FALSE;
 }
 
 /**
@@ -948,6 +965,22 @@ int cmd_sd_mkdir(t_hydra_console *con, t_tokenline_parsed *p)
 	return TRUE;
 }
 
+int cmd_sd_script(t_hydra_console *con, t_tokenline_parsed *p)
+{
+#define MAX_FILE_SIZE (524288)
+	int str_offset;
+
+	if (p->tokens[2] != T_ARG_STRING || p->tokens[4] != 0)
+		return FALSE;
+
+	memcpy(&str_offset, &p->tokens[3], sizeof(int));
+	snprintf(filename, FILENAME_SIZE, "0:%s", p->buf + str_offset);
+
+	execute_script(con, filename);
+
+	return TRUE;
+}
+
 int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	int ret;
@@ -990,6 +1023,9 @@ int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p)
 		break;
 	case T_MKDIR:
 		ret = cmd_sd_mkdir(con, p);
+		break;
+	case T_SCRIPT:
+		ret = cmd_sd_script(con, p);
 		break;
 	default:
 		return FALSE;

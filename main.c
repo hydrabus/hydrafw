@@ -38,6 +38,10 @@
 
 #include "bsp.h"
 
+#include "script.h"
+
+#define INIT_SCRIPT_NAME "initscript"
+
 volatile int nb_console = 0;
 
 /* USB1: Virtual serial port over USB. */
@@ -71,6 +75,10 @@ THD_FUNCTION(console, arg)
 	tl_init(con->tl, tl_tokens, tl_dict, print, con);
 	tl_set_prompt(con->tl, PROMPT);
 	tl_set_callback(con->tl, execute);
+
+	if(is_file_present(INIT_SCRIPT_NAME)) {
+		execute_script(con,INIT_SCRIPT_NAME);
+	}
 
 	while (1) {
 		input = get_char(con);
