@@ -729,7 +729,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_SNIFF_DBG:
 		case T_EMUL_MF_ULTRALIGHT:
 			action = p->tokens[t];
-			t += 2;
 			break;
 		case T_EMUL_MIFARE:
 			action = p->tokens[t];
