@@ -551,21 +551,21 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 	hydranfc_scan_iso14443A(data);
 
 	if(data->atqa_buf_nb_rx_data > 0) {
-		cprintf(con, "ATQA: ");
+		cprintf(con, "ATQA:");
 		for (i = 0; i < data->atqa_buf_nb_rx_data; i++)
 			cprintf(con, " %02X", data->atqa_buf[i]);
 		cprintf(con, "\r\n");
 	}
 
 	if(data->sak1_buf_nb_rx_data > 0) {
-		cprintf(con, "SAK1: ");
+		cprintf(con, "SAK1:");
 		for (i = 0; i < data->sak1_buf_nb_rx_data; i++)
 			cprintf(con, " %02X", data->sak1_buf[i]);
 		cprintf(con, "\r\n");
 	}
 
 	if(data->sak2_buf_nb_rx_data > 0) {
-		cprintf(con, "SAK2: ");
+		cprintf(con, "SAK2:");
 		for (i = 0; i < data->sak2_buf_nb_rx_data; i++)
 			cprintf(con, " %02X", data->sak2_buf[i]);
 		cprintf(con, "\r\n");
@@ -573,13 +573,13 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 
 	if(data->uid_buf_nb_rx_data > 0) {
 		if(data->uid_buf_nb_rx_data >= 7) {
-			cprintf(con, "UID: ");
+			cprintf(con, "UID:");
 			for (i = 0; i < data->uid_buf_nb_rx_data ; i++) {
 				cprintf(con, " %02X", data->uid_buf[i]);
 			}
 			cprintf(con, "\r\n");
 		} else {
-			cprintf(con, "UID: ");
+			cprintf(con, "UID:");
 			bcc = 0;
 			for (i = 0; i < data->uid_buf_nb_rx_data - 1; i++) {
 				cprintf(con, " %02X", data->uid_buf[i]);
@@ -591,6 +591,12 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 	}
 
 	if (data->mf_ul_data_nb_rx_data > 0) {
+		#define ISO14443A_SEL_L1_CT 0x88 /* TX CT for 1st Byte */
+		uint8_t expected_uid_bcc0;
+		uint8_t obtained_uid_bcc0;
+		uint8_t expected_uid_bcc1;
+		uint8_t obtained_uid_bcc1;
+
 		cprintf(con, "DATA:");
 		for (i = 0; i < data->mf_ul_data_nb_rx_data; i++) {
 			if(i % 16 == 0)
@@ -599,6 +605,24 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 			cprintf(con, " %02X", data->mf_ul_data[i]);
 		}
 		cprintf(con, "\r\n");
+
+		/* Check Data UID with BCC */
+		cprintf(con, "DATA UID:");
+		for (i = 0; i < 3; i++)
+			cprintf(con, " %02X", data->mf_ul_data[i]);
+		for (i = 4; i < 8; i++)
+			cprintf(con, " %02X", data->mf_ul_data[i]);
+		cprintf(con, "\r\n");
+
+		expected_uid_bcc0 = (ISO14443A_SEL_L1_CT ^ data->mf_ul_data[0] ^ data->mf_ul_data[1] ^ data->mf_ul_data[2]); // BCC1
+		obtained_uid_bcc0 = data->mf_ul_data[3];
+		cprintf(con, " (DATA BCC0 %02X %s)\r\n", expected_uid_bcc0,
+			expected_uid_bcc0 == obtained_uid_bcc0 ? "ok" : "NOT OK");
+
+		expected_uid_bcc1 = (data->mf_ul_data[4] ^ data->mf_ul_data[5] ^ data->mf_ul_data[6] ^ data->mf_ul_data[7]); // BCC2
+		obtained_uid_bcc1 = data->mf_ul_data[8];
+		cprintf(con, " (DATA BCC1 %02X %s)\r\n", expected_uid_bcc1,
+			expected_uid_bcc1 == obtained_uid_bcc1 ? "ok" : "NOT OK");
 	}
 	/*
 	cprintf(con, "irq_count: 0x%02ld\r\n", (uint32_t)irq_count);
