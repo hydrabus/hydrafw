@@ -22,7 +22,11 @@
 #include "hydranfc.h"
 #include "trf797x.h"
 #include "bsp_spi.h"
+#include "ff.h"
+#include "microsd.h"
 #include <string.h>
+
+#define MFC_ULTRALIGHT_DATA_SIZE (16 * 4)
 
 typedef enum {
 	EMUL_RX_MF_ULTRALIGHT_REQA_WUPA, /* Wait RX REQA 0x26 or RX WUPA 0x52 */
@@ -56,9 +60,6 @@ Mifare Ultralight/MF0ICU1 commands see http://cache.nxp.com/documents/data_sheet
 #define ISO14443A_REQA 0x26 /* RX REQA 7bit */
 #define ISO14443A_WUPA 0x52 /* RX WUPA 7bit */
 
-#define ISO14443A_ATQA_BYTE0 0x44 /* TX ATQA Mifare Ultralight Byte0 & 1 */
-#define ISO14443A_ATQA_BYTE1 0x00
-
 /* Cascade level 1: ANTICOLLISION and SELECT commands */
 #define ISO14443A_ANTICOL_L1_BYTE0 0x93 /* RX ANTICOLLISION Cascade Level1 Byte0 & 1 */
 #define ISO14443A_ANTICOL_L1_BYTE1 0x20
@@ -67,16 +68,12 @@ Mifare Ultralight/MF0ICU1 commands see http://cache.nxp.com/documents/data_sheet
 #define ISO14443A_SEL_L1_BYTE1 0x70
 #define ISO14443A_SEL_L1_CT 0x88 /* TX CT for 1st Byte */
 
-#define ISO14443A_L1_SAK 0x04 /* TX SAK Cascade Level1 MIFARE Ultralight = 0x04 */
-
 /* Cascade level 2: ANTICOLLISION and SELECT commands */
 #define ISO14443A_ANTICOL_L2_BYTE0 0x95 /* RX SELECT Cascade Level2 Byte0 & 1 */
 #define ISO14443A_ANTICOL_L2_BYTE1 0x20
 
 #define ISO14443A_SEL_L2_BYTE0 0x95 /* RX SELECT Cascade Level2 Byte0 & 1 */
 #define ISO14443A_SEL_L2_BYTE1 0x70
-
-#define ISO14443A_L2_SAK 0x00 /* TX SAK Cascade Level2 MIFARE Ultralight = 0x00 */
 
 typedef enum {
 	EMUL_MF_ULTRALIGHT_READ = 0x30, /* Read 16bytes data */
@@ -85,28 +82,45 @@ typedef enum {
 	EMUL_MF_ULTRALIGHT_COMPAT_WRITE = 0xA0 /* Write 16bytes data but chipset keep only 4bytes */
 } emul_mf_ultralight_cmd;
 
-/* MIFARE Ultralight 7Bytes UID */
-unsigned char mf_ultralight_uid[7] =
+/* MIFARE Ultralight ATQA 2 Bytes */
+const uint8_t mf_ultralight_atqa[2] =
 {
-	//0x04, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06
-  0x04, 0x29, 0x8c, 0xfa, 0x2e, 0x31, 0x82
+  0x44, 0x00
 };
 
-/* BCC1 & BCC2 for mf_ultralight_uid 7Bytes UID */
-unsigned char mf_ultralight_uid_bcc[2];
+/* MIFARE Ultralight SAK1 & SAK2 2 Bytes */
+const uint8_t mf_ultralight_sak[2] =
+{
+  0x04, 0x00
+};
+
+/* MIFARE Ultralight 7Bytes UID default data */
+const uint8_t mf_ultralight_uid_default[7] =
+{
+  0x04, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06
+};
 
 /* Mifare Ultralight EEPROM emulation 512 bits, organized in 16 pages of 4 bytes per page */
-unsigned char mf_ultralight_data[16][4] = 
+const uint8_t mf_ultralight_data_default[MFC_ULTRALIGHT_DATA_SIZE] = 
 {
-	{ 0x00, 0x01, 0x02, 0x03 },	{ 0x04, 0x05, 0x06, 0x07 },
-	{ 0x08, 0x09, 0x0A, 0x0B },	{ 0x0C, 0x0D, 0x0E, 0x0F },
-	{ 0x10, 0x11, 0x12, 0x13 },	{ 0x14, 0x15, 0x16, 0x17 },
-	{ 0x18, 0x19, 0x1A, 0x1B },	{ 0x1C, 0x1D, 0x1E, 0x1F },
-	{ 0x20, 0x21, 0x22, 0x23 },	{ 0x24, 0x25, 0x26, 0x27 },
-	{ 0x28, 0x29, 0x2A, 0x2B },	{ 0x2C, 0x2D, 0x2E, 0x2F },
-	{ 0x30, 0x31, 0x32, 0x33 }, { 0x34, 0x35, 0x36, 0x37 },
-	{ 0x38, 0x39, 0x3A, 0x3B }, { 0x3C, 0x3D, 0x3E, 0x3F }
+	0x04, 0x01, 0x02, 0x8F, 0x03, 0x04, 0x05, 0x06,
+	0x04, 0x09, 0x0A, 0x0B,	0x0C, 0x0D, 0x0E, 0x0F,
+	0x10, 0x11, 0x12, 0x13,	0x14, 0x15, 0x16, 0x17,
+	0x18, 0x19, 0x1A, 0x1B,	0x1C, 0x1D, 0x1E, 0x1F,
+	0x20, 0x21, 0x22, 0x23,	0x24, 0x25, 0x26, 0x27,
+	0x28, 0x29, 0x2A, 0x2B,	0x2C, 0x2D, 0x2E, 0x2F,
+	0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+	0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F
 };
+
+/* MIFARE Ultralight 7Bytes UID */
+uint8_t mf_ultralight_uid[7];
+
+/* BCC1 & BCC2 for mf_ultralight_uid 7Bytes UID */
+uint8_t mf_ultralight_uid_bcc[2];
+
+/* Mifare UltraLight Data */
+uint8_t mf_ultralight_data[MFC_ULTRALIGHT_DATA_SIZE];
 
 static emul_mf_ultralight_state emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_REQA_WUPA;
 
@@ -187,16 +201,11 @@ void  hydranfc_emul_mf_ultralight_init(void)
 	data_buf[1] = BIT6;
 	Trf797xWriteSingle(data_buf, 2);
 
-	Trf797xStopDecoders(); /* Disable Receiver */
-	Trf797xRunDecoders(); /* Enable Receiver */
-
-	/* Turn RF ON (Chip Status Control Register (0x00)) */
-	Trf797xTurnRfOn();
 #endif
 }
 
 /* Return Nb data sent (0 if error) */
-int emul_mf_ultralight_tx_rawdata(unsigned char* tx_data, int tx_nb_data, int flag_crc)
+int emul_mf_ultralight_tx_rawdata(uint8_t* tx_data, int tx_nb_data, int flag_crc)
 {
 	int i;
 
@@ -245,9 +254,9 @@ void hydranfc_emul_mf_ultralight_states(void)
 				if( (data_buf[0] == ISO14443A_REQA) ||
 						(data_buf[0] == ISO14443A_WUPA) ) 
 				{
-					/* Reply with ATQA 0x44 0x00 */
-					data_buf[0] = ISO14443A_ATQA_BYTE0;
-					data_buf[1] = ISO14443A_ATQA_BYTE1;
+					/* Reply with ATQA */
+					data_buf[0] = mf_ultralight_atqa[0];
+					data_buf[1] = mf_ultralight_atqa[1];
 					wait_nbcycles(3791);
 					if(emul_mf_ultralight_tx_rawdata(data_buf, 2, 0) == 2)
 						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_ANTICOL_L1;
@@ -299,7 +308,7 @@ void hydranfc_emul_mf_ultralight_states(void)
 					(data_buf[6] == mf_ultralight_uid_bcc[0])) 
 				{
 					/* Reply with SAK L1 + CRC */
-					data_buf[0] = ISO14443A_L1_SAK;
+					data_buf[0] = mf_ultralight_sak[0];
 					wait_nbcycles(324);
 					if(emul_mf_ultralight_tx_rawdata(data_buf, 1, 1) == 1) {
 						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_ANTICOL_L2;
@@ -351,14 +360,9 @@ void hydranfc_emul_mf_ultralight_states(void)
 					(data_buf[6] == mf_ultralight_uid_bcc[1])) 
 				{
 					/* Reply with SAK L2 + CRC */
-					data_buf[0] = ISO14443A_L2_SAK;
+					data_buf[0] =  mf_ultralight_sak[1];
 					wait_nbcycles(324);
 					if(emul_mf_ultralight_tx_rawdata(data_buf, 1, 1) == 1) {
-						/*
-						Trf797xReadSingle(&data_buf[1], SPECIAL_FUNCTION);
-						// Disable Anti-collision Frames for 14443A.
-						Trf797xWriteSingle(BIT2 | ui8Temp, SPECIAL_FUNCTION);
-						*/
 						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_END_ANTICOL;
 					} else
 						error=1;
@@ -393,7 +397,7 @@ void hydranfc_emul_mf_ultralight_states(void)
 						if(page_num > 12)
 							page_num = 12; // Limit the page num to avoid buffer overflow
 
-						if(emul_mf_ultralight_tx_rawdata(&mf_ultralight_data[page_num][0], 16, 1) == 16) {
+						if(emul_mf_ultralight_tx_rawdata(&mf_ultralight_data[page_num*4], 16, 1) == 16) {
 							emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_CMD;
 						} else
 							error=1;
@@ -534,12 +538,9 @@ void hydranfc_emul_mf_ultralight_irq(void)
 	}
 }
 
-void hydranfc_emul_mf_ultralight(t_hydra_console *con)
-{
-	/* TODO take 7 Bytes UID from parameter (instead of using a hardcoded 7Bytes UID) */
-	mf_ultralight_uid_bcc[0] = (ISO14443A_SEL_L1_CT ^ mf_ultralight_uid[0] ^ mf_ultralight_uid[1] ^ mf_ultralight_uid[2]); // BCC1
-	mf_ultralight_uid_bcc[1] = (mf_ultralight_uid[3] ^ mf_ultralight_uid[4] ^ mf_ultralight_uid[5] ^ mf_ultralight_uid[6]); // BCC2
 
+static void hydranfc_emul_mf_ultralight_run(t_hydra_console *con)
+{
 	/* Init TRF7970A IRQ function callback */
 	trf7970a_irq_fn = hydranfc_emul_mf_ultralight_irq;
 
@@ -547,9 +548,14 @@ void hydranfc_emul_mf_ultralight(t_hydra_console *con)
 
 	/* Infinite loop until UBTN is pressed */
 	/*  Emulation is managed by IRQ => hydranfc_emul_mf_ultralight_irq */
-	cprintf(con, "NFC Emulation Mifare Ultralight started\r\n7Bytes UID 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\nPress user button(UBTN) to stop.\r\n", 
+	cprintf(con, "NFC Emulation Mifare Ultralight started\r\n");
+	cprintf(con, "7Bytes UID: %02X %02X %02X %02X %02X %02X %02X\r\n", 
 					mf_ultralight_uid[0], mf_ultralight_uid[1], mf_ultralight_uid[2], mf_ultralight_uid[3],
 					mf_ultralight_uid[4], mf_ultralight_uid[5], mf_ultralight_uid[6]);
+	cprintf(con, "ATQA: %02X %02X\r\n", mf_ultralight_atqa[0], mf_ultralight_atqa[1]);
+	cprintf(con, "SAK1: %02X\r\n", mf_ultralight_sak[0]);
+	cprintf(con, "SAK2: %02X\r\n", mf_ultralight_sak[1]);
+	cprintf(con, "Press user button(UBTN) to stop.\r\n");
 	while(1) {
 		if(USER_BUTTON)
 			break;
@@ -558,3 +564,107 @@ void hydranfc_emul_mf_ultralight(t_hydra_console *con)
 
 	trf7970a_irq_fn = NULL;
 }
+
+/* Return TRUE if success or FALSE if error */
+int hydranfc_emul_mf_ultralight_file(t_hydra_console *con, char* filename)
+{
+	int i, j, filelen;
+	FRESULT err;
+	FIL fp;
+	uint32_t cnt;
+	uint8_t expected_uid_bcc0;
+	uint8_t obtained_uid_bcc0;
+	uint8_t expected_uid_bcc1;
+	uint8_t obtained_uid_bcc1;
+
+	if (!is_fs_ready()) {
+		err = mount();
+		if(err) {
+			cprintf(con, "Mount failed: error %d\r\n", err);
+			return FALSE;
+		}
+	}
+
+	err = f_open(&fp, (TCHAR *)filename, FA_READ | FA_OPEN_EXISTING);
+	if (err != FR_OK) {
+		cprintf(con, "Failed to open file %s: error %d\r\n", filename, err);
+		return FALSE;
+	}
+
+	filelen = fp.fsize;
+	if(filelen != MFC_ULTRALIGHT_DATA_SIZE) {
+		cprintf(con, "Expected file size shall be equal to %d Bytes and it is %d Bytes\r\n", MFC_ULTRALIGHT_DATA_SIZE, filelen);
+		return FALSE;
+	}
+
+	cnt = MFC_ULTRALIGHT_DATA_SIZE;
+	err = f_read(&fp, mf_ultralight_data, cnt, (void *)&cnt);
+	if (err != FR_OK) {
+		cprintf(con, "Failed to read file: error %d\r\n", err);
+		return FALSE;
+	}
+	if (!cnt)
+	{
+		cprintf(con, "Failed to read %d bytes in file (cnt %d)\r\n", MFC_ULTRALIGHT_DATA_SIZE, cnt);
+		return FALSE;
+	}
+	f_close(&fp);
+	umount();
+
+	cprintf(con, "DATA:");
+	for (i = 0; i < MFC_ULTRALIGHT_DATA_SIZE; i++) {
+		if(i % 16 == 0)
+			cprintf(con, "\r\n");
+
+		cprintf(con, " %02X", mf_ultralight_data[i]);
+	}
+	cprintf(con, "\r\n");
+
+	/* Check Data UID with BCC */
+	cprintf(con, "DATA UID:");
+	for (i = 0; i < 3; i++)
+		cprintf(con, " %02X", mf_ultralight_data[i]);
+	for (i = 4; i < 7; i++)
+		cprintf(con, " %02X", mf_ultralight_data[i]);
+	cprintf(con, "\r\n");
+
+	expected_uid_bcc0 = (ISO14443A_SEL_L1_CT ^ mf_ultralight_data[0] ^ mf_ultralight_data[1] ^ mf_ultralight_data[2]); // BCC1
+	obtained_uid_bcc0 = mf_ultralight_data[3];
+	cprintf(con, " (DATA BCC0 %02X %s)\r\n", expected_uid_bcc0,
+		expected_uid_bcc0 == obtained_uid_bcc0 ? "ok" : "NOT OK");
+
+	expected_uid_bcc1 = (mf_ultralight_data[4] ^ mf_ultralight_data[5] ^ mf_ultralight_data[6] ^ mf_ultralight_data[7]); // BCC2
+	obtained_uid_bcc1 = mf_ultralight_data[8];
+	cprintf(con, " (DATA BCC1 %02X %s)\r\n", expected_uid_bcc1,
+		expected_uid_bcc1 == obtained_uid_bcc1 ? "ok" : "NOT OK");
+
+	if( (expected_uid_bcc0 == obtained_uid_bcc0) && (expected_uid_bcc1 == obtained_uid_bcc1) )
+	{
+		j = 0;
+		for (i = 0; i < 3; i++)
+			mf_ultralight_uid[j++] = mf_ultralight_data[i];
+		for (i = 4; i < 8; i++)
+			mf_ultralight_uid[j++] = mf_ultralight_data[i];
+
+		mf_ultralight_uid_bcc[0] = obtained_uid_bcc0; // BCC1
+		mf_ultralight_uid_bcc[1] = obtained_uid_bcc1; // BCC2
+
+		hydranfc_emul_mf_ultralight_run(con);
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+void hydranfc_emul_mf_ultralight(t_hydra_console *con)
+{
+	memcpy(mf_ultralight_uid, mf_ultralight_uid_default, sizeof(mf_ultralight_uid_default));
+	mf_ultralight_uid_bcc[0] = mf_ultralight_data[3]; // BCC1
+	mf_ultralight_uid_bcc[1] = mf_ultralight_data[8]; // BCC2
+	memcpy(mf_ultralight_data, mf_ultralight_data_default, sizeof(mf_ultralight_data_default));
+
+	hydranfc_emul_mf_ultralight_run(con);
+}
+

@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <stdio.h> /* sprintf */
 #include "ch.h"
 #include "common.h"
 #include "tokenline.h"
@@ -25,6 +26,8 @@
 #include "hydranfc.h"
 #include "trf797x.h"
 #include "bsp_spi.h"
+#include "ff.h"
+#include "microsd.h"
 #include <string.h>
 
 static void extcb1(EXTDriver *extp, expchannel_t channel);
@@ -539,7 +542,6 @@ void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data)
 	Trf797xTurnRfOff();
 }
 
-//void hydranfc_read_mifare_ul(t_hydra_console *con)
 void hydranfc_scan_mifare(t_hydra_console *con)
 {
 	int i;
@@ -623,6 +625,141 @@ void hydranfc_scan_mifare(t_hydra_console *con)
 		obtained_uid_bcc1 = data->mf_ul_data[8];
 		cprintf(con, " (DATA BCC1 %02X %s)\r\n", expected_uid_bcc1,
 			expected_uid_bcc1 == obtained_uid_bcc1 ? "ok" : "NOT OK");
+	}
+	/*
+	cprintf(con, "irq_count: 0x%02ld\r\n", (uint32_t)irq_count);
+	irq_count = 0;
+	*/
+}
+
+/* Return TRUE if success or FALSE if error */
+int hydranfc_read_mifare_ul(t_hydra_console *con, char* filename)
+{
+	int i;
+	FRESULT err;
+	FIL fp;
+	uint32_t cnt;
+	uint8_t bcc;
+	t_hydranfc_scan_iso14443A* data;
+	t_hydranfc_scan_iso14443A data_buf;
+
+	data = &data_buf;
+	hydranfc_scan_iso14443A(data);
+
+	if(data->atqa_buf_nb_rx_data > 0) {
+		cprintf(con, "ATQA:");
+		for (i = 0; i < data->atqa_buf_nb_rx_data; i++)
+			cprintf(con, " %02X", data->atqa_buf[i]);
+		cprintf(con, "\r\n");
+	}
+
+	if(data->sak1_buf_nb_rx_data > 0) {
+		cprintf(con, "SAK1:");
+		for (i = 0; i < data->sak1_buf_nb_rx_data; i++)
+			cprintf(con, " %02X", data->sak1_buf[i]);
+		cprintf(con, "\r\n");
+	}
+
+	if(data->sak2_buf_nb_rx_data > 0) {
+		cprintf(con, "SAK2:");
+		for (i = 0; i < data->sak2_buf_nb_rx_data; i++)
+			cprintf(con, " %02X", data->sak2_buf[i]);
+		cprintf(con, "\r\n");
+	}
+
+	if(data->uid_buf_nb_rx_data > 0) {
+		if(data->uid_buf_nb_rx_data >= 7) {
+			cprintf(con, "UID:");
+			for (i = 0; i < data->uid_buf_nb_rx_data ; i++) {
+				cprintf(con, " %02X", data->uid_buf[i]);
+			}
+			cprintf(con, "\r\n");
+		} else {
+			cprintf(con, "UID:");
+			bcc = 0;
+			for (i = 0; i < data->uid_buf_nb_rx_data - 1; i++) {
+				cprintf(con, " %02X", data->uid_buf[i]);
+				bcc ^= data->uid_buf[i];
+			}
+			cprintf(con, " (BCC %02X %s)\r\n", data->uid_buf[i],
+				bcc == data->uid_buf[i] ? "ok" : "NOT OK");
+		}
+	}
+
+	if (data->mf_ul_data_nb_rx_data > 0) {
+		#define ISO14443A_SEL_L1_CT 0x88 /* TX CT for 1st Byte */
+		uint8_t expected_uid_bcc0;
+		uint8_t obtained_uid_bcc0;
+		uint8_t expected_uid_bcc1;
+		uint8_t obtained_uid_bcc1;
+
+		cprintf(con, "DATA:");
+		for (i = 0; i < data->mf_ul_data_nb_rx_data; i++) {
+			if(i % 16 == 0)
+				cprintf(con, "\r\n");
+
+			cprintf(con, " %02X", data->mf_ul_data[i]);
+		}
+		cprintf(con, "\r\n");
+
+		/* Check Data UID with BCC */
+		cprintf(con, "DATA UID:");
+		for (i = 0; i < 3; i++)
+			cprintf(con, " %02X", data->mf_ul_data[i]);
+		for (i = 4; i < 8; i++)
+			cprintf(con, " %02X", data->mf_ul_data[i]);
+		cprintf(con, "\r\n");
+
+		expected_uid_bcc0 = (ISO14443A_SEL_L1_CT ^ data->mf_ul_data[0] ^ data->mf_ul_data[1] ^ data->mf_ul_data[2]); // BCC1
+		obtained_uid_bcc0 = data->mf_ul_data[3];
+		cprintf(con, " (DATA BCC0 %02X %s)\r\n", expected_uid_bcc0,
+			expected_uid_bcc0 == obtained_uid_bcc0 ? "ok" : "NOT OK");
+
+		expected_uid_bcc1 = (data->mf_ul_data[4] ^ data->mf_ul_data[5] ^ data->mf_ul_data[6] ^ data->mf_ul_data[7]); // BCC2
+		obtained_uid_bcc1 = data->mf_ul_data[8];
+		cprintf(con, " (DATA BCC1 %02X %s)\r\n", expected_uid_bcc1,
+			expected_uid_bcc1 == obtained_uid_bcc1 ? "ok" : "NOT OK");
+
+		if( (expected_uid_bcc0 == obtained_uid_bcc0) && (expected_uid_bcc1 == obtained_uid_bcc1) )
+		{
+			if (!is_fs_ready()) {
+				err = mount();
+				if(err) {
+					cprintf(con, "Mount failed: error %d\r\n", err);
+					return FALSE;
+				}
+			}
+
+			err = f_open(&fp,(TCHAR *)filename, FA_WRITE | FA_OPEN_ALWAYS);
+			if (err != FR_OK) {
+				cprintf(con, "Failed to open file %s: error %d\r\n", filename, err);
+				return FALSE;
+			}
+			err = f_write(&fp, data->mf_ul_data, data->mf_ul_data_nb_rx_data, (void *)&cnt);
+			if(err != FR_OK) {
+				cprintf(con, "Failed to write file %s: error %d\r\n", filename, err);
+				f_close(&fp);
+				umount();
+				return FALSE;
+			}
+			err = f_close(&fp);
+			if (err != FR_OK) {
+				cprintf(con, "Failed to close file %s: error %d\r\n", filename, err);
+				umount();
+				return FALSE;
+			}
+			umount();
+			cprintf(con, "write file %s with success\r\n", filename);
+			return TRUE;
+		}else
+		{
+			cprintf(con, "Error invalid BCC0/BCC1, file %s not written\r\n", filename);
+			return FALSE;
+		}
+	}else
+	{
+			cprintf(con, "Error no data, file %s not written\r\n", filename);
+			return FALSE;
 	}
 	/*
 	cprintf(con, "irq_count: 0x%02ld\r\n", (uint32_t)irq_count);
@@ -721,6 +858,8 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	mode_config_proto_t* proto = &con->mode->proto;
 	int action, period, continuous, t;
 	unsigned int mifare_uid = 0;
+	filename_t sd_file;
+	int str_offset;
 
 	/* Stop & Start External IRQ */
 	extStop(&EXTD1);
@@ -730,30 +869,58 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	action = 0;
 	period = 1000;
 	continuous = FALSE;
+	sd_file.filename[0] = 0;
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
 		case T_SHOW:
 			t += show(con, p);
 			break;
+
 		case T_TYPEA:
 			proto->dev_function = NFC_TYPEA;
 			break;
+
 		case T_VICINITY:
 			proto->dev_function = NFC_VICINITY;
 			break;
+
 		case T_PERIOD:
 			t += 2;
 			memcpy(&period, p->buf + p->tokens[t], sizeof(int));
 			break;
+
 		case T_CONTINUOUS:
 			continuous = TRUE;
 			break;
+
+		case T_FILE:
+				/* Filename specified */
+				memcpy(&str_offset, &p->tokens[t+3], sizeof(int));
+				snprintf(sd_file.filename, FILENAME_SIZE, "0:%s", p->buf + str_offset);
+			break;
+
 		case T_SCAN:
-		case T_SNIFF:
-		case T_SNIFF_DBG:
-		case T_EMUL_MF_ULTRALIGHT:
 			action = p->tokens[t];
 			break;
+
+		case T_READ_MF_ULTRALIGHT:
+			action = p->tokens[t];
+			if (p->tokens[t+1] != T_ARG_STRING || p->tokens[t+3] != 0)
+				return FALSE;
+			memcpy(&str_offset, &p->tokens[t+2], sizeof(int));
+			snprintf(sd_file.filename, FILENAME_SIZE, "0:%s", p->buf + str_offset);
+			break;
+
+		case T_EMUL_MF_ULTRALIGHT:
+		case T_CLONE_MF_ULTRALIGHT:
+			action = p->tokens[t];
+			break;
+
+		case T_SNIFF:
+		case T_SNIFF_DBG:
+			action = p->tokens[t];
+			break;
+
 		case T_EMUL_MIFARE:
 			action = p->tokens[t];
 			t += 2;
@@ -788,6 +955,24 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		}
 		break;
 
+	case T_READ_MF_ULTRALIGHT:
+		hydranfc_read_mifare_ul(con, sd_file.filename);
+		break;
+
+	case T_EMUL_MF_ULTRALIGHT:
+		if(sd_file.filename[0] != 0)
+		{
+			hydranfc_emul_mf_ultralight_file(con, sd_file.filename);
+		}else
+		{
+			hydranfc_emul_mf_ultralight(con);
+		}
+		break;
+
+	case T_CLONE_MF_ULTRALIGHT:
+		cprintf(con, "T_CLONE_MF_ULTRALIGHT not implemented.\r\n");
+		break;
+
 	case T_SNIFF:
 		hydranfc_sniff_14443A(con);
 		break;
@@ -798,10 +983,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 
 	case T_EMUL_MIFARE:
 		hydranfc_emul_mifare(con, mifare_uid);
-		break;
-
-	case T_EMUL_MF_ULTRALIGHT:
-		hydranfc_emul_mf_ultralight(con);
 		break;
 
 	case T_EMUL_ISO14443A:

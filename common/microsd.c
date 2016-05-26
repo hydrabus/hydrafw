@@ -42,7 +42,6 @@ static FATFS SDC_FS;
 /* FS mounted and ready.*/
 bool fs_ready = FALSE;
 
-#define FILENAME_SIZE (255)
 char filename[FILENAME_SIZE+4] = { 0 };
 
 #define DATA_TEST_SIZE (18)

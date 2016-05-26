@@ -88,10 +88,12 @@ t_token_dict tl_dict[] = {
 	{ T_TYPEA, "typea" },
 	{ T_VICINITY, "vicinity" },
 	{ T_EMUL_MIFARE, "emul-mifare" },
-	{ T_EMUL_MF_ULTRALIGHT, "emul-mf-ul" },
 	{ T_EMUL_ISO14443A, "emul-3a" },
 	{ T_REGISTERS, "registers" },
 	{ T_SCAN, "scan" },
+	{ T_READ_MF_ULTRALIGHT, "read-mf-ul" },
+	{ T_EMUL_MF_ULTRALIGHT, "emul-mf-ul" },
+	{ T_CLONE_MF_ULTRALIGHT, "clone-mf-ul" },
 	{ T_SNIFF, "sniff" },
 	{ T_SNIFF_DBG, "sniff-dbg" },
 	{ T_DIRECT_MODE_0, "dm0" },
@@ -136,6 +138,7 @@ t_token_dict tl_dict[] = {
 	{ T_HIGH, "high" },
 	{ T_THREEWIRE, "3-wire" },
 	{ T_SCRIPT, "script" },
+	{ T_FILE, "filename" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -259,6 +262,15 @@ t_token tokens_mode_can_filter[] = {
 	{ }
 };
 
+t_token tokens_mode_nfc_emul_mf_ul[] = {
+	{
+		T_FILE,
+		.arg_type = T_ARG_STRING,
+		.help = "microSD filename"
+	},
+	{ }
+};
+
 #define NFC_PARAMETERS \
 	{\
 		T_TYPEA,\
@@ -274,6 +286,20 @@ t_token tokens_mode_can_filter[] = {
 		.help = "Scan"\
 	},\
 	{\
+		T_READ_MF_ULTRALIGHT,\
+		.arg_type = T_ARG_STRING,\
+		.help = "Read Mifare UltraLight write to microSD filename"\
+	},\
+	{\
+		T_EMUL_MF_ULTRALIGHT,\
+		.subtokens = tokens_mode_nfc_emul_mf_ul,\
+		.help = "Emul Tag Mifare Ultralight (optional read from microSD filename)"\
+	},\
+	{\
+		T_CLONE_MF_ULTRALIGHT,\
+		.help = "Clone Mifare UltraLight"\
+	},\
+	{\
 		T_SNIFF,\
 		.help = "Sniff (ISO14443A only)"\
 	},\
@@ -285,10 +311,6 @@ t_token tokens_mode_can_filter[] = {
 		T_EMUL_MIFARE,\
 		.arg_type = T_ARG_UINT,\
 		.help = "Emul Tag Mifare UID (uid)"\
-	},\
-	{\
-		T_EMUL_MF_ULTRALIGHT,\
-		.help = "Emul Tag Mifare Ultralight"\
 	},\
 	{\
 		T_EMUL_ISO14443A,\

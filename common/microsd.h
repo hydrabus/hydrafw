@@ -24,8 +24,10 @@
 
 #include "common.h"
 
+#define FILENAME_SIZE (255)
+
 typedef struct {
-	char filename[255];
+	char filename[FILENAME_SIZE];
 } filename_t;
 
 bool is_fs_ready(void);
