@@ -142,6 +142,7 @@ t_token_dict tl_dict[] = {
 	{ T_SCRIPT, "script" },
 	{ T_FILE, "filename" },
 	{ T_ONEWIRE, "1-wire" },
+	{ T_FLASH, "flash" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -1185,6 +1186,52 @@ t_token tokens_threewire[] = {
 	{ }
 };
 
+#define FLASH_PARAMETERS \
+	{ T_MSB_FIRST, \
+		.help = "Send/receive MSB first" }, \
+	{ T_LSB_FIRST, \
+		.help = "Send/receive LSB first" },
+
+t_token tokens_mode_flash[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show flash parameters"
+	},
+	FLASH_PARAMETERS
+	/* 2-wire-specific commands */
+	{
+		T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_WRITE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_UINT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
+	},
+	/* BP commands */
+	{
+		T_EXIT,
+		.help = "Exit flash mode"
+	},
+	{ }
+};
+
+t_token tokens_flash[] = {
+	FLASH_PARAMETERS
+	{ }
+};
+
 t_token tokens_gpio_mode[] = {
 	{
 		T_IN,
@@ -1580,6 +1627,10 @@ t_token tl_tokens[] = {
 	{
 		T_RNG,
 		.help = "Random number"
+	},
+	{
+		T_FLASH,
+		.help = "NAND flash mode"
 	},
 	{
 		T_DEBUG,
