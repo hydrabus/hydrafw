@@ -44,6 +44,7 @@ extern const mode_exec_t mode_onewire_exec;
 extern const mode_exec_t mode_twowire_exec;
 extern const mode_exec_t mode_threewire_exec;
 extern const mode_exec_t mode_can_exec;
+extern const mode_exec_t mode_flash_exec;
 extern t_token tokens_mode_spi[];
 extern t_token tokens_mode_i2c[];
 extern t_token tokens_mode_uart[];
@@ -53,6 +54,7 @@ extern t_token tokens_mode_onewire[];
 extern t_token tokens_mode_twowire[];
 extern t_token tokens_mode_threewire[];
 extern t_token tokens_mode_can[];
+extern t_token tokens_mode_flash[];
 
 static struct {
 	int token;
@@ -68,6 +70,7 @@ static struct {
 	{ T_TWOWIRE, tokens_mode_twowire, &mode_twowire_exec },
 	{ T_THREEWIRE, tokens_mode_threewire, &mode_threewire_exec },
 	{ T_CAN, tokens_mode_can, &mode_can_exec },
+	{ T_FLASH, tokens_mode_flash, &mode_flash_exec },
 };
 
 const char hydrabus_mode_str_cs_enabled[] =  "/CS ENABLED\r\n";
