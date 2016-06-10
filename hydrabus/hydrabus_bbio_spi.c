@@ -48,32 +48,32 @@ void bbio_spi_sniff(t_hydra_console *con)
 	bsp_status_t status;
 
 	proto->dev_mode = DEV_SPI_SLAVE;
-	status = bsp_spi_init(proto->dev_num, proto);
-	status = bsp_spi_init(proto->dev_num+1, proto);
+	status = bsp_spi_init(BSP_DEV_SPI1, proto);
+	status = bsp_spi_init(BSP_DEV_SPI2, proto);
 
 	if(status == BSP_OK) {
 		cprint(con, "\x01", 1);
 	} else {
 		cprint(con, "\x00", 1);
 		proto->dev_mode = DEV_SPI_MASTER;
-		status = bsp_spi_init(proto->dev_num, proto);
-		status = bsp_spi_deinit(proto->dev_num+1);
+		status = bsp_spi_init(BSP_DEV_SPI1, proto);
+		status = bsp_spi_deinit(BSP_DEV_SPI2);
 		return;
 	}
 	cs_state = 1;
 	while(!USER_BUTTON || chnReadTimeout(con->sdu, &data, 1,1)) {
-		if (cs_state == 0 && bsp_spi_get_cs(proto->dev_num)) {
+		if (cs_state == 0 && bsp_spi_get_cs(BSP_DEV_SPI1)) {
 			cprint(con, "]", 1);
 			cs_state = 1;
-		} else if (cs_state == 1 && !(bsp_spi_get_cs(proto->dev_num))) {
+		} else if (cs_state == 1 && !(bsp_spi_get_cs(BSP_DEV_SPI1))) {
 			cprint(con, "[", 1);
 			cs_state = 0;
 		}
-		if(bsp_spi_rxne(proto->dev_num)){
-			bsp_spi_read_u8(proto->dev_num,	&rx_data[0], 1);
+		if(bsp_spi_rxne(BSP_DEV_SPI1)){
+			bsp_spi_read_u8(BSP_DEV_SPI1,	&rx_data[0], 1);
 
-			if(bsp_spi_rxne(proto->dev_num+1)){
-				bsp_spi_read_u8(proto->dev_num+1, &rx_data[1], 1);
+			if(bsp_spi_rxne(BSP_DEV_SPI2)){
+				bsp_spi_read_u8(BSP_DEV_SPI2, &rx_data[1], 1);
 			} else {
 				rx_data[1] = 0;
 			}
@@ -82,8 +82,8 @@ void bbio_spi_sniff(t_hydra_console *con)
 		}
 	}
 	proto->dev_mode = DEV_SPI_MASTER;
-	status = bsp_spi_init(proto->dev_num, proto);
-	status = bsp_spi_deinit(proto->dev_num+1);
+	status = bsp_spi_init(BSP_DEV_SPI1, proto);
+	status = bsp_spi_deinit(BSP_DEV_SPI2);
 }
 
 void bbio_mode_spi(t_hydra_console *con)
@@ -185,6 +185,7 @@ void bbio_mode_spi(t_hydra_console *con)
 				} else if ((bbio_subcommand & BBIO_SPI_CONFIG) == BBIO_SPI_CONFIG) {
 					proto->dev_polarity = (bbio_subcommand & 0b100)?1:0;
 					proto->dev_phase = (bbio_subcommand & 0b10)?1:0;
+					proto->dev_num = (bbio_subcommand & 0b1)?BSP_DEV_SPI2:BSP_DEV_SPI1;
 					status = bsp_spi_init(proto->dev_num, proto);
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);
