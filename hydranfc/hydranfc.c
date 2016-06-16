@@ -861,6 +861,12 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	filename_t sd_file;
 	int str_offset;
 
+	if(p->tokens[token_pos] == T_SD)
+	{
+		t = cmd_sd(con, p);
+		return t;
+	}
+
 	/* Stop & Start External IRQ */
 	extStop(&EXTD1);
 	trf7970a_irq_fn = NULL;
@@ -1122,8 +1128,8 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 
 	/* Process cmdline arguments, skipping "nfc". */
 	if(p != NULL) {
-		tokens_used = 1 + exec(con, p, 1);
-	}
+					tokens_used = 1 + exec(con, p, 1);
+				}
 
 	return tokens_used;
 }

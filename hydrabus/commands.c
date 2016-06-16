@@ -288,12 +288,12 @@ t_token tokens_mode_nfc_emul_mf_ul[] = {
 	{\
 		T_READ_MF_ULTRALIGHT,\
 		.arg_type = T_ARG_STRING,\
-		.help = "Read Mifare UltraLight write to microSD filename"\
+		.help = "Read Mifare UltraLight write to microSD"\
 	},\
 	{\
 		T_EMUL_MF_ULTRALIGHT,\
 		.subtokens = tokens_mode_nfc_emul_mf_ul,\
-		.help = "Emul Tag Mifare Ultralight (optional read from microSD filename)"\
+		.help = "Emul Tag Mifare Ultralight (optional read from microSD)"\
 	},\
 	{\
 		T_CLONE_MF_ULTRALIGHT,\
@@ -324,7 +324,14 @@ t_token tokens_mode_nfc_emul_mf_ul[] = {
 		T_DIRECT_MODE_1,\
 		.help = "Enter Direct Mode 1 (IO5/PC4=CLK, IO6/PC2=Data)"\
 	},
+
+t_token tokens_sd[];
 t_token tokens_mode_nfc[] = {
+	{
+		T_SD,
+		.subtokens = tokens_sd,
+		.help = "SD card management"
+	},
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_nfc_show,
