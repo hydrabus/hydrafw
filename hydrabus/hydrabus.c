@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2014-2015 Benjamin VERNOUX
+ * Copyright (C) 2014-2016 Benjamin VERNOUX
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,16 @@
 #define ULED_OFF (palClearPad(GPIOA, 4))
 
 /*
+ * Working area for driver.
+ */
+static uint8_t sd_scratchpad[512];
+
+/*
  * SDIO configuration.
  */
 static const SDCConfig sdccfg = {
-	0
+  sd_scratchpad,
+  SDC_MODE_4BIT
 };
 
 /* HydraBus specific init */
