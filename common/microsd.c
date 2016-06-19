@@ -185,7 +185,7 @@ static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offse
 #define PERFRUN_SECONDS 1
 static int sd_perf(t_hydra_console *con, int offset)
 {
-	int nb_sectors;
+	uint32_t nb_sectors;
 	int ret;
 
 	cprintf(con, "%sligned sequential reads:\r\n", offset ? "Una" : "A");
@@ -571,7 +571,7 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed *p)
 {
 #define MAX_FILE_SIZE (524288)
 	bool hex;
-	int str_offset, offset, filelen;
+	uint32_t str_offset, offset, filelen;
 	uint32_t cnt;
 	FRESULT err;
 	FIL fp;
