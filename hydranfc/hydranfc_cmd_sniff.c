@@ -51,9 +51,14 @@ static uint32_t old_u32_data, u32_data, old_data_bit;
 * Speed not used in Slave mode, CPHA=0, CPOL=0, 8bits frames, MSb transmitted first.
 * The slave select line is internally selected.
 */
-static const SPIConfig spi1cfg = {NULL, /* spicb, */
-				  /* HW dependent part.*/GPIOA, 15, (SPI_CR1_BR_2)
-				 };
+static const SPIConfig spi1cfg = {
+	NULL, /* spicb, */
+	/* HW dependent part.*/
+	GPIOA, /* Port */
+	15, /* Pin */
+	(SPI_CR1_BR_2), /* CR1 Register */
+	0 /* CR2 Register */
+};
 
 #define CountLeadingZero(x) (__CLZ(x))
 #define SWAP32(x) (__REV(x))
