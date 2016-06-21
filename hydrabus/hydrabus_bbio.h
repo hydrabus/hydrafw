@@ -124,4 +124,11 @@
 #define BBIO_RAWWIRE_SET_SPEED	0b01100000
 #define BBIO_RAWWIRE_CONFIG	0b10000000
 
+/*
+ * 1-Wire-specific commands
+ */
+#define BBIO_ONEWIRE_RESET	0b00000010
+#define BBIO_ONEWIRE_READ	0b00000100
+#define BBIO_ONEWIRE_BULK_TRANSFER 0b00010000
+
 int cmd_bbio(t_hydra_console *con);

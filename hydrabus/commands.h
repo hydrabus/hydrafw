@@ -134,6 +134,7 @@ enum {
 	T_THREEWIRE,
 	T_SCRIPT,
 	T_FILE,
+	T_ONEWIRE,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,
