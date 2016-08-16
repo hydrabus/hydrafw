@@ -164,6 +164,7 @@ void log_close(void);
 int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_dac(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_pwm(t_hydra_console *con, t_tokenline_parsed *p);
+int cmd_freq(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_gpio(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_sump(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_rng(t_hydra_console *con, t_tokenline_parsed *p);
