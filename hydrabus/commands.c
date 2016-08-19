@@ -1196,6 +1196,16 @@ t_token tokens_pwm[] = {
 	{ }
 };
 
+t_token tokens_freq[] = {
+	{
+		T_HELP,
+		.arg_type = T_ARG_HELP,
+		.help = "FREQ1 (PC6)"
+	},
+	{ }
+};
+
+
 t_token tokens_really[] = {
 	{ T_REALLY },
 	{ }
@@ -1360,6 +1370,12 @@ t_token tl_tokens[] = {
 		.subtokens = tokens_pwm,
 		.help = "Write PWM",
 		.help_full = "Usage: pwm <frequency (1Hz to 42MHz)> [duty-cycle (0 to 100%)] [exit]"
+	},
+	{
+		T_FREQUENCY,
+		.subtokens = tokens_freq,
+		.help = "Read frequency",
+		.help_full = "Usage: frequency"
 	},
 	{
 		T_GPIO,
