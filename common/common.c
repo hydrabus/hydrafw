@@ -78,6 +78,37 @@ void cprint(t_hydra_console *con, const char *data, const uint32_t size)
 	stream_write(con, data, size);
 }
 
+
+void print_hex(t_hydra_console *con, uint8_t* data, uint8_t size)
+{
+	uint8_t ascii[17];
+	uint8_t i, j;
+	ascii[16] = '\0';
+	for (i = 0; i < size; ++i) {
+		cprintf(con, "%02X ", data[i]);
+		if (data[i] >= 0x20 && data[i] <= 0x7f) {
+			ascii[i % 16] = data[i];
+		} else {
+			ascii[i % 16] = '.';
+		}
+		if ((i+1) % 8 == 0 || i+1 == size) {
+			cprintf(con, " ");
+			if ((i+1) % 16 == 0) {
+				cprintf(con, "|  %s \r\n", ascii);
+			} else if (i+1 == size) {
+				ascii[(i+1) % 16] = '\0';
+				if ((i+1) % 16 <= 8) {
+					cprintf(con, " ");
+				}
+				for (j = (i+1) % 16; j < 16; ++j) {
+					cprintf(con, "   ");
+				}
+				cprintf(con, "|  %s \r\n", ascii);
+			}
+		}
+	}
+}
+
 void cprintf(t_hydra_console *con, const char *fmt, ...)
 {
 	va_list va_args;
