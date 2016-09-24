@@ -174,5 +174,6 @@ void cprint(t_hydra_console *con, const char *data, const uint32_t size);
 void cprintf(t_hydra_console *con, const char *fmt, ...);
 void print_dbg(const char *data, const uint32_t size);
 void printf_dbg(const char *fmt, ...);
+void print_hex(t_hydra_console *con, uint8_t* data, uint8_t size);
 
 #endif /* _COMMON_H_ */

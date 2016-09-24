@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+#include "common.h"
 #include "hydrabus_mode_uart.h"
 #include "bsp_uart.h"
 #include <string.h>
@@ -24,6 +25,7 @@
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
 
 static const char* str_pins_uart[] = {
 	"TX: PA9\r\nRX: PA10\r\n",
@@ -222,6 +224,16 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_BRIDGE:
 			bridge(con);
 			break;
+		case T_HD:
+			/* Integer parameter. */
+			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
+				t += 2;
+				memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			} else {
+				arg_int = 1;
+			}
+			dump(con, proto->buffer_rx, arg_int);
+			break;
 		default:
 			return t - token_pos;
 		}
@@ -272,6 +284,18 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 			}
 			cprintf(con, hydrabus_mode_str_mul_br);
 		}
+	}
+	return status;
+}
+
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
+{
+	uint32_t status;
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	status = bsp_uart_read_u8(proto->dev_num, rx_data, nb_data);
+	if(status == BSP_OK) {
+		print_hex(con, rx_data, nb_data);
 	}
 	return status;
 }

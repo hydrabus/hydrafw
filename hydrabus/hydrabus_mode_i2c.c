@@ -24,6 +24,7 @@
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 static void scan(t_hydra_console *con, t_tokenline_parsed *p);
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
 
 #define I2C_DEV_NUM (1)
 
@@ -102,7 +103,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	float arg_float;
-	int t, i;
+	int arg_int, t, i;
 	bsp_status_t bsp_status;
 
 	for (t = token_pos; p->tokens[t]; t++) {
@@ -149,6 +150,16 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_SCAN:
 			scan(con, p);
+			break;
+		case T_HD:
+			/* Integer parameter. */
+			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
+				t += 2;
+				memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			} else {
+				arg_int = 1;
+			}
+			dump(con, proto->buffer_rx, arg_int);
 			break;
 		default:
 			return t - token_pos;
@@ -239,6 +250,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 		}
 
 		status = bsp_i2c_master_read_u8(proto->dev_num, rx_data);
+		proto->buffer_rx[i] = *rx_data;
 		/* Read 1 data */
 		cprintf(con, hydrabus_mode_str_mul_read);
 		cprintf(con, hydrabus_mode_str_mul_value_u8, rx_data[0]);
@@ -247,6 +259,32 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 
 		proto->ack_pending = 1;
 	}
+	return status;
+}
+
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
+{
+	int i;
+	uint32_t status;
+	uint8_t tmp;
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	status = BSP_ERROR;
+	for(i = 0; i < nb_data; i++) {
+		if(proto->ack_pending) {
+			/* Send I2C ACK */
+			bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
+		}
+
+		status = bsp_i2c_master_read_u8(proto->dev_num, &tmp);
+		rx_data[i] = tmp;
+		/* Read 1 data */
+		if(status != BSP_OK)
+			break;
+
+		proto->ack_pending = 1;
+	}
+	print_hex(con, rx_data, nb_data);
 	return status;
 }
 
