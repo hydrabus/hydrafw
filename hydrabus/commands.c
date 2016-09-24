@@ -549,6 +549,11 @@ t_token tokens_mode_i2c[] = {
 		.help = "Read byte (repeat with :<num>)"
 	},
 	{
+		T_HD,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>) and print hexdump"
+	},
+	{
 		T_WRITE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
