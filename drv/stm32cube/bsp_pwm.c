@@ -130,6 +130,7 @@ bsp_status_t bsp_pwm_init(bsp_dev_pwm_t dev_num)
 
 	/* Init TIM */
 	htim.Instance = TIM2;
+	htim.State = HAL_TIM_STATE_RESET;
 	htim.Init.Period = 0;
 	htim.Init.Prescaler = 0;
 	htim.Init.ClockDivision = 0;
