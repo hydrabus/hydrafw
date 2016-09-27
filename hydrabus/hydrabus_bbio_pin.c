@@ -38,8 +38,8 @@ void bbio_mode_pin(t_hydra_console *con)
 	uint32_t pin_pull[8];
 
 	for(i=0; i<8; i++){
+		pin_mode[i] = MODE_CONFIG_DEV_GPIO_IN;
 		pin_pull[i] = MODE_CONFIG_DEV_GPIO_NOPULL;
-		pin_pull[i] = MODE_CONFIG_DEV_GPIO_IN;
 		bsp_gpio_init(BSP_GPIO_PORTA, i, pin_mode[i], pin_pull[i]);
 	}
 
@@ -86,9 +86,9 @@ void bbio_mode_pin(t_hydra_console *con)
 				chnRead(con->sdu, &rx_buff, 1);
 				for(i=0; i<8; i++){
 					if((rx_buff>>i)&1){
-						pin_pull[i] = MODE_CONFIG_DEV_GPIO_IN;
+						pin_mode[i] = MODE_CONFIG_DEV_GPIO_IN;
 					}else{
-						pin_pull[i] = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
+						pin_mode[i] = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
 					}
 				}
 				reconfig = 1;
