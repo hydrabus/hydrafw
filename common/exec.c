@@ -166,9 +166,9 @@ static int cmd_logging(t_hydra_console *con, t_tokenline_parsed *p)
 		}
 		if (filename[0] != '/') {
 			strcpy(log_dest, "/");
-			strncat(log_dest, filename, sizeof(log_dest) - 1);
+			strncat(log_dest, filename, sizeof(log_dest) - 2); /* -2 to include "/" +  terminating null-character */
 		} else {
-			strncpy(log_dest, filename, sizeof(log_dest));
+			strncpy(log_dest, filename, sizeof(log_dest) - 1);/* -1 to include terminating null-character */
 		}
 		log_open(con);
 	} else {
