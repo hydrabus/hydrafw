@@ -37,6 +37,8 @@ void bbio_mode_pin(t_hydra_console *con)
 	uint32_t pin_mode[8];
 	uint32_t pin_pull[8];
 
+	reconfig = 0;
+
 	for(i=0; i<8; i++){
 		pin_mode[i] = MODE_CONFIG_DEV_GPIO_IN;
 		pin_pull[i] = MODE_CONFIG_DEV_GPIO_NOPULL;
