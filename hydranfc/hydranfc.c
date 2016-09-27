@@ -1054,20 +1054,20 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 void show_registers(t_hydra_console *con)
 {
 	unsigned int i;
-	static uint8_t data_buf;
+	uint8_t data_buf[2];
 
 	memset(buf, 0x20, 30);
 	buf[30] = 0;
 	cprintf(con, "TRF7970A Registers:\r\n");
 	for (i = 0; i < ARRAY_SIZE(registers); i++) {
-		data_buf = registers[i].reg;
-		if (data_buf == IRQ_STATUS)
-			Trf797xReadIrqStatus(&data_buf);
+		data_buf[0] = registers[i].reg;
+		if (data_buf[0] == IRQ_STATUS)
+			Trf797xReadIrqStatus(data_buf);
 		else
-			Trf797xReadSingle(&data_buf, 1);
+			Trf797xReadSingle(&data_buf[0], 1);
 		cprintf(con, "0x%02x\t%s%s: 0x%02x\r\n", registers[i].reg,
 			registers[i].name, buf + strlen(registers[i].name),
-			data_buf);
+			data_buf[0]);
 	}
 }
 
