@@ -61,7 +61,10 @@ int cmd_freq(t_hydra_console *con, t_tokenline_parsed *p)
 	duty = bsp_freq_getchannel(proto->dev_num, 2);
 	v = 1/(scale*period/BSP_FREQ_BASE_FREQ);
 	cprintf(con, "Frequency : %dHz\r\n", (int)v);
-	cprintf(con, "Duty : %d%%\r\n", (duty*100)/period);
+	if(period > 0)
+	{
+		cprintf(con, "Duty : %d%%\r\n", (duty*100)/period);
+	}
 	cprintf(con, "\r\n");
 
 	bsp_freq_deinit(proto->dev_num);
