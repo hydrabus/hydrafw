@@ -80,6 +80,7 @@ bsp_status_t bsp_freq_init(bsp_dev_freq_t dev_num, uint16_t scale)
 
 	/* Init TIM */
 	htim.Instance = BSP_FREQ1_TIMER;
+	htim.State = HAL_TIM_STATE_RESET;
 	htim.Init.Period = 0xffff;
 	htim.Init.Prescaler = scale-1;
 	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
