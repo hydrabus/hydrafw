@@ -374,6 +374,8 @@ void hydranfc_emul_mf_ultralight_states(void)
 
 		case EMUL_RX_MF_ULTRALIGHT_END_ANTICOL:
 			emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_CMD;
+			break;
+
 		case EMUL_RX_MF_ULTRALIGHT_CMD:
 			data_buf[0] = FIFO;
 			Trf797xReadCont(data_buf, fifo_size);
