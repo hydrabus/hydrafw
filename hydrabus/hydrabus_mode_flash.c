@@ -34,12 +34,6 @@ static const char* str_prompt_flash[] = {
 	"nandflash" PROMPT,
 };
 
-static inline void tempo(volatile uint16_t num)
-{
-	while(num != 0) {
-		num--;
-	}
-}
 
 void flash_init_proto_default(t_hydra_console *con)
 {
@@ -123,6 +117,7 @@ static void flash_data_mode_input(void)
 	}
 	*/
 	GPIOC->MODER &= 0x0000;
+	GPIOC->PUPDR &= 0x0000;
 }
 
 static void flash_data_mode_output(void)
@@ -238,13 +233,13 @@ static void flash_write_command(t_hydra_console *con, uint8_t tx_data)
 {
 	flash_cmd_high();
 	flash_write_en_low();
-	tempo(100);
+
 	flash_write_u8(con, tx_data);
-	tempo(100);
+
 	flash_write_en_high();
-	tempo(100);
+
 	flash_cmd_low();
-	tempo(100);
+
 	flash_write_u8(con, 0x00);
 }
 
@@ -252,13 +247,13 @@ static void flash_write_address(t_hydra_console *con, uint8_t tx_data)
 {
 	flash_addr_high();
 	flash_write_en_low();
-	tempo(100);
+
 	flash_write_u8(con, tx_data);
-	tempo(100);
+
 	flash_write_en_high();
-	tempo(100);
+
 	flash_addr_low();
-	tempo(100);
+
 	flash_write_u8(con, 0x00);
 }
 
@@ -269,9 +264,11 @@ static uint8_t flash_read_value(t_hydra_console *con)
 	flash_data_mode_input();
 
 	flash_read_en_low();
-	tempo(100);
+
+	flash_read_u8(con);
+
 	flash_read_en_high();
-	tempo(100);
+
 	result = flash_read_u8(con);
 
 	return result;
@@ -393,6 +390,7 @@ void flash_cleanup(t_hydra_console *con)
 static int show(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	int tokens_used;
+	uint8_t data;
 
 	tokens_used = 0;
 	if (p->tokens[1] == T_PINS) {
@@ -401,31 +399,38 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 		show_params(con);
 	}
 
-	flash_chip_en_low();
-
 	cprintf(con, "Reading ID...\r\n");
 
-	flash_write_command(con, 0x09);
+	chSysLock();
+
+	flash_chip_en_low();
+
+	flash_write_command(con, 0x90);
 	flash_write_address(con, 0x00);
 
-	cprintf(con, "%x\r\n", flash_read_value(con));
-	cprintf(con, "%x\r\n", flash_read_value(con));
-	cprintf(con, "%x\r\n", flash_read_value(con));
-	cprintf(con, "%x\r\n", flash_read_value(con));
-	cprintf(con, "%x\r\n", flash_read_value(con));
+	data = flash_read_value(con);
 
 	flash_chip_en_high();
-	tempo(100);
-	flash_chip_en_low();
+
+	chSysUnlock();
+
+	cprintf(con, "%x\r\n", data);
 
 	cprintf(con, "Reading status...\r\n");
 
-	flash_write_command(con, 0x0e);
+	chSysLock();
 
-	cprintf(con, "%x\r\n", flash_read_value(con));
+	flash_chip_en_low();
 
+	flash_write_command(con, 0x70);
+
+	data = flash_read_value(con);
 
 	flash_chip_en_high();
+
+	chSysUnlock();
+
+	cprintf(con, "%x\r\n", data);
 
 	return tokens_used;
 }
