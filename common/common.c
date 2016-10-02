@@ -258,6 +258,7 @@ void cmd_show_threads(t_hydra_console *con)
 
 void cmd_show_system(t_hydra_console *con)
 {
+  systime_t system_time;
 	uint32_t cycles_start;
 	uint32_t cycles_stop;
 	uint32_t cycles_delta;
@@ -267,7 +268,8 @@ void cmd_show_system(t_hydra_console *con)
 
 	cycles_start = get_cyclecounter();
 	cycles64 = get_cyclecounter64();
-
+  system_time = osalOsGetSystemTimeX();
+	cprintf(con, "sysTime: 0x%08x.\r\n", system_time);
 	cprintf(con, "cyclecounter: 0x%08x cycles.\r\n", cycles_start);
 	cprintf(con, "cyclecounter64: 0x%08x%08x cycles.\r\n",
 		(uint32_t)(cycles64 >> 32),
