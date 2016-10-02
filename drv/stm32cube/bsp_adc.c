@@ -18,7 +18,7 @@ limitations under the License.
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_rcc.h"
 
-#define ADCx_TIMEOUT_MAX (2000) // About 1msec can be aborted by UBTN too
+#define ADCx_TIMEOUT_MAX (10) // About 1msec (see common/chconf.h/CH_CFG_ST_FREQUENCY) can be aborted by UBTN too
 #define NB_ADC (BSP_DEV_ADC_END)
 static ADC_HandleTypeDef adc_handle[NB_ADC];
 static ADC_ChannelConfTypeDef adc_chan_conf[NB_ADC];
