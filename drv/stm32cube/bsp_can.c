@@ -19,7 +19,7 @@ limitations under the License.
 /*
 Warning in order to use this driver all GPIOs peripherals shall be enabled.
 */
-#define CANx_TIMEOUT_MAX (20000000) // About 10sec can be aborted by UBTN too
+#define CANx_TIMEOUT_MAX (100000) // About 10sec (see common/chconf.h/CH_CFG_ST_FREQUENCY) can be aborted by UBTN too
 #define NB_CAN (BSP_DEV_CAN_END)
 
 /* For whatever reason, this flag is not in stm32f4xx_hal_can.h */

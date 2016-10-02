@@ -20,7 +20,7 @@ limitations under the License.
 /*
 Warning in order to use this driver all GPIOs peripherals shall be enabled.
 */
-#define UARTx_TIMEOUT_MAX (20000000) // About 10sec can be aborted by UBTN too
+#define UARTx_TIMEOUT_MAX (100000) // About 10sec (see common/chconf.h/CH_CFG_ST_FREQUENCY) can be aborted by UBTN too
 #define NB_UART (BSP_DEV_UART_END)
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
 

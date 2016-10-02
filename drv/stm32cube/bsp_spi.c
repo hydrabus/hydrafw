@@ -20,7 +20,7 @@ limitations under the License.
 /*
 Warning in order to use this driver all GPIOs peripherals shall be enabled.
 */
-#define SPIx_TIMEOUT_MAX (20000000) // About 10sec can be aborted by UBTN too
+#define SPIx_TIMEOUT_MAX (100000) // About 10sec (see common/chconf.h/CH_CFG_ST_FREQUENCY) can be aborted by UBTN too
 #define NB_SPI (BSP_DEV_SPI_END)
 static SPI_HandleTypeDef spi_handle[NB_SPI];
 static mode_config_proto_t* spi_mode_conf[NB_SPI];
