@@ -14,14 +14,13 @@ limitations under the License.
 */
 
 #include "ch.h"
+#include "osal.h"
 
 #include "bsp.h"
 #include "stm32f405xx.h"
 #include "stm32f4xx_hal.h"
 
 #include "bsp_gpio.h"
-
-static uint32_t uwTick = 0;
 
 /* Internal Cycle Counter */
 #if !defined(IOREG32) || defined(__DOXYGEN__)
@@ -45,20 +44,10 @@ typedef struct {
 #if !defined(get_cyclecounter) || defined(__DOXYGEN__)
 #define get_cyclecounter() ( DWTBase->CYCCNT )
 #endif
-extern volatile int nb_console ;
-
-void HAL_IncTick(void)
-{
-	uwTick++;
-
-	if(nb_console > 1)
-		chThdSleepMicroseconds(1);
-}
 
 uint32_t HAL_GetTick(void)
 {
-	HAL_IncTick();
-	return uwTick;
+	return osalOsGetSystemTimeX();
 }
 
 uint32_t HAL_RCC_GetPCLK1Freq(void)
