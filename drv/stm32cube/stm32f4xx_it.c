@@ -1,16 +1,16 @@
 /**
   ******************************************************************************
-  * @file    SPI/SPI_FullDuplex_ComIT/Src/stm32f4xx_it.c 
+  * @file    Templates/Src/stm32f4xx_it.c 
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    26-June-2014
+  * @version V1.0.3
+  * @date    06-May-2016
   * @brief   Main Interrupt Service Routines.
   *          This file provides template for all exceptions handler and 
   *          peripherals interrupt service routine.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2014 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -40,12 +40,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
-   
+
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
   */
 
-/** @addtogroup SPI_FullDuplex_ComIT
+/** @addtogroup Templates
   * @{
   */
 
@@ -53,9 +53,6 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-/* SPI handler declared in "main.c" file */
-extern SPI_HandleTypeDef SpiHandle;
-
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -167,16 +164,6 @@ void SysTick_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f4xx.s).                                               */
 /******************************************************************************/
-
-/**
-  * @brief  This function handles SPI interrupt request.  
-  * @param  None
-  * @retval None  
-  */
-void SPIx_IRQHandler(void)
-{
-  HAL_SPI_IRQHandler(&SpiHandle);
-}
 
 /**
   * @brief  This function handles PPP interrupt request.
