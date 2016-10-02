@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_can.c
   * @author  MCD Application Team
-  *          BVX fixed warnings on unused parameter
+  *          BVX added Timeout exit when USER_BUTTON is pressed, fix warnings
   * @version V1.5.1
   * @date    01-July-2016
   * @brief   This file provides firmware functions to manage the following 
@@ -124,7 +124,7 @@
 /** @addtogroup CAN_Private_Constants
   * @{
   */
-#define CAN_TIMEOUT_VALUE  10U
+#define CAN_TIMEOUT_VALUE  1000U
 /**
   * @}
   */
@@ -216,7 +216,7 @@ HAL_StatusTypeDef HAL_CAN_Init(CAN_HandleTypeDef* hcan)
   /* Wait the acknowledge */
   while((hcan->Instance->MSR & CAN_MSR_INAK) != CAN_MSR_INAK)
   {
-    if((HAL_GetTick() - tickstart ) > CAN_TIMEOUT_VALUE)
+    if((USER_BUTTON) || (HAL_GetTick() - tickstart ) > CAN_TIMEOUT_VALUE)
     {
       hcan->State= HAL_CAN_STATE_TIMEOUT;
       /* Process unlocked */
@@ -308,7 +308,7 @@ HAL_StatusTypeDef HAL_CAN_Init(CAN_HandleTypeDef* hcan)
    /* Wait the acknowledge */
    while((hcan->Instance->MSR & CAN_MSR_INAK) == CAN_MSR_INAK)
    {
-    if((HAL_GetTick() - tickstart ) > CAN_TIMEOUT_VALUE)
+    if((USER_BUTTON) || (HAL_GetTick() - tickstart ) > CAN_TIMEOUT_VALUE)
      {
        hcan->State= HAL_CAN_STATE_TIMEOUT;
        /* Process unlocked */
@@ -631,7 +631,7 @@ HAL_StatusTypeDef HAL_CAN_Transmit(CAN_HandleTypeDef* hcan, uint32_t Timeout)
       /* Check for the Timeout */
       if(Timeout != HAL_MAX_DELAY)
       {
-       if((Timeout == 0U)||((HAL_GetTick() - tickstart ) > Timeout))
+       if((USER_BUTTON) || (Timeout == 0U) || ((HAL_GetTick() - tickstart ) > Timeout))
        {
          hcan->State = HAL_CAN_STATE_TIMEOUT;
          /* Process unlocked */
@@ -822,7 +822,7 @@ HAL_StatusTypeDef HAL_CAN_Receive(CAN_HandleTypeDef* hcan, uint8_t FIFONumber, u
     /* Check for the Timeout */
     if(Timeout != HAL_MAX_DELAY)
     {
-      if((Timeout == 0U)||((HAL_GetTick() - tickstart ) > Timeout))
+      if((USER_BUTTON) || (Timeout == 0U) || ((HAL_GetTick() - tickstart ) > Timeout))
       {
         hcan->State = HAL_CAN_STATE_TIMEOUT;
         /* Process unlocked */
@@ -999,7 +999,7 @@ HAL_StatusTypeDef HAL_CAN_Sleep(CAN_HandleTypeDef* hcan)
   /* Wait the acknowledge */
   while((hcan->Instance->MSR & (CAN_MSR_SLAK|CAN_MSR_INAK)) != CAN_MSR_SLAK)
   {
-    if((HAL_GetTick()  - tickstart) > CAN_TIMEOUT_VALUE)
+    if((USER_BUTTON) || (HAL_GetTick()  - tickstart) > CAN_TIMEOUT_VALUE)
     {
       hcan->State = HAL_CAN_STATE_TIMEOUT;
       /* Process unlocked */
@@ -1044,7 +1044,7 @@ HAL_StatusTypeDef HAL_CAN_WakeUp(CAN_HandleTypeDef* hcan)
   /* Sleep mode status */
   while((hcan->Instance->MSR & CAN_MSR_SLAK) == CAN_MSR_SLAK)
   {
-    if((HAL_GetTick()  - tickstart) > CAN_TIMEOUT_VALUE)
+    if((USER_BUTTON) || (HAL_GetTick()  - tickstart) > CAN_TIMEOUT_VALUE)
     {
       hcan->State= HAL_CAN_STATE_TIMEOUT;
       /* Process unlocked */
