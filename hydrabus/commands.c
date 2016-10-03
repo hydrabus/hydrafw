@@ -96,6 +96,7 @@ t_token_dict tl_dict[] = {
 	{ T_CLONE_MF_ULTRALIGHT, "clone-mf-ul" },
 	{ T_SNIFF, "sniff" },
 	{ T_SNIFF_DBG, "sniff-dbg" },
+	{ T_SNIFF_RAW, "sniff-raw" },
 	{ T_DIRECT_MODE_0, "dm0" },
 	{ T_DIRECT_MODE_1, "dm1" },
 	{ T_GPIO, "gpio" },
@@ -306,6 +307,10 @@ t_token tokens_mode_nfc_emul_mf_ul[] = {
 	{\
 		T_SNIFF_DBG,\
 		.help = "Sniff debug (ISO14443A only)"\
+	},\
+	{\
+		T_SNIFF_RAW,\
+		.help = "Sniff raw (ISO14443A/B)"\
 	},\
 	{\
 		T_EMUL_MIFARE,\

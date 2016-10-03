@@ -924,6 +924,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 
 		case T_SNIFF:
 		case T_SNIFF_DBG:
+		case T_SNIFF_RAW:
 			action = p->tokens[t];
 			break;
 
@@ -985,6 +986,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 
 	case T_SNIFF_DBG:
 		hydranfc_sniff_14443A_dbg(con);
+		break;
+
+	case T_SNIFF_RAW:
+		hydranfc_sniff_14443AB_raw(con);
 		break;
 
 	case T_EMUL_MIFARE:

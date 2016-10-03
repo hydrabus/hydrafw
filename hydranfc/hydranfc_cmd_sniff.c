@@ -34,6 +34,12 @@
 #include "microsd.h"
 #include "ff.h"
 
+/* INIT_NFC_PROTOCOL */
+typedef enum {
+	ISO14443A = 0,
+	ISO14443B
+} INIT_NFC_PROTOCOL;
+
 filename_t write_filename;
 
 #define TRF7970_DATA_SIZE (384)
@@ -136,7 +142,7 @@ void terminate_sniff_nfc(void)
 	spiStop(&SPID1);
 }
 
-static void init_sniff_nfc(void)
+static void init_sniff_nfc(INIT_NFC_PROTOCOL iso_proto)
 {
 	tprintf("TRF7970A chipset init start\r\n");
 
@@ -147,14 +153,23 @@ static void init_sniff_nfc(void)
 	/* ************************************************************* */
 	/* Configure NFC chipset as ISO14443B (works with ISO14443A too) */
 
-	/* Configure Chip Status Register (0x00) to 0x21 (RF output active and 5v operations) */
+	/* Configure Chip Status Register (0x00) to 0x21 (RF output active, 5v operations) */
 	tmp_buf[0] = CHIP_STATE_CONTROL;
 	tmp_buf[1] = 0x21;
 	Trf797xWriteSingle(tmp_buf, 2);
 
-	/* Configure Mode ISO Control Register (0x01) to 0x25 (NFC Card Emulation, Type B) */
 	tmp_buf[0] = ISO_CONTROL;
-	tmp_buf[1] = 0x25;
+	/* Default configure Mode ISO Control Register (0x01) to 0x24 (NFC Card Emulation, Type A) */
+	tmp_buf[1] = 0x24;
+	if(iso_proto == ISO14443A)
+	{
+		/* Configure Mode ISO Control Register (0x01) to 0x24 (NFC Card Emulation, Type A) */
+		tmp_buf[1] = 0x24;
+	}else if(iso_proto == ISO14443B)
+	{
+		/* Configure Mode ISO Control Register (0x01) to 0x25 (NFC Card Emulation, Type B) */
+		tmp_buf[1] = 0x25;
+	}
 	Trf797xWriteSingle(tmp_buf, 2);
 
 	/* Write Modulator and SYS_CLK Control Register (0x09) (13.56Mhz SYS_CLK and default Clock 3.39Mhz)) */
@@ -169,10 +184,10 @@ static void init_sniff_nfc(void)
 
 	/* Configure RX Special Settings
 	* Bandpass 450 kHz to 1.5 MHz B5=1/Bandpass 100 kHz to 1.5 MHz=B4=1,
-	* Gain reduction for 10 dB(Can be changed) B2=0&B3=1 or Gain reduction for 0 dB => B2=0& B3=0,
+	* Gain reduction for 5 dB(Can be changed) B2=1&B3=0
 	* AGC no limit B0=1 */
 	tmp_buf[0] = RX_SPECIAL_SETTINGS;
-	tmp_buf[1] = 0x31; //0x39;
+	tmp_buf[1] = 0x35;
 	Trf797xWriteSingle(tmp_buf, 2);
 
 	/* Configure Test Settings 1 to BIT6/0x40 => MOD Pin becomes receiver subcarrier output (Digital Output for RX/TX) => Used for Sniffer */
@@ -189,7 +204,7 @@ static void init_sniff_nfc(void)
 
 	tmp_buf[0] = ISO_CONTROL;
 	Trf797xReadSingle(tmp_buf, 1);
-	tprintf("ISO Control Register(0x01) read=0x%.2lX (shall be 0x25)\r\n", (uint32_t)tmp_buf[0]);
+	tprintf("ISO Control Register(0x01) read=0x%.2lX (shall be 0x24 TypeA / 0x25 TypeB)\r\n", (uint32_t)tmp_buf[0]);
 
 	tmp_buf[0] = ISO_14443B_OPTIONS;
 	Trf797xReadSingle(tmp_buf, 1);
@@ -496,6 +511,38 @@ void sniff_write_unknown_protocol(uint8_t data)
 	g_sbuf_idx +=15;
 }
 
+void sniff_write_raw_protocol(void)
+{
+	/* Raw Protocol */
+	uint32_t i, nb_cycles;
+	uint8_t val;
+
+	i = g_sbuf_idx;
+	g_sbuf[i+0] = '\r';
+	g_sbuf[i+1] = '\n';
+
+	nb_cycles = get_cyclecounter();
+	val = ((nb_cycles & 0xFF000000) >> 24);
+	g_sbuf[i+2] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+3] = htoa[(val & 0x0F)];
+	val = ((nb_cycles & 0x00FF0000) >> 16);
+	g_sbuf[i+4] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+5] = htoa[(val & 0x0F)];
+	val = ((nb_cycles & 0x0000FF00) >> 8);
+	g_sbuf[i+6] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+7] = htoa[(val & 0x0F)];
+	val = (nb_cycles & 0x000000FF);
+	g_sbuf[i+8] = htoa[(val & 0xF0) >> 4];
+	g_sbuf[i+9] = htoa[(val & 0x0F)];
+	g_sbuf[i+10] = '\t';
+
+	g_sbuf[i+11] = 'R';
+	g_sbuf[i+12] = 'A';
+	g_sbuf[i+13] = 'W';
+	g_sbuf[i+14] = '\t';
+	g_sbuf_idx +=15;
+}
+
 __attribute__ ((always_inline)) static inline
 void sniff_write_eof_protocol(uint32_t timestamp_nb_cycles)
 {
@@ -575,7 +622,7 @@ void hydranfc_sniff_14443A(t_hydra_console *con)
 
 	tprintf("cmd_nfc_sniff_14443A start TRF7970A configuration as sniffer mode\r\n");
 	tprintf("Abort/Exit by pressing K4 button\r\n");
-	init_sniff_nfc();
+	init_sniff_nfc(ISO14443A);
 
 	tprintf("Starting Sniffer ISO14443-A 106kbps ...\r\n");
 	/* Wait a bit in order to display all text */
@@ -827,7 +874,7 @@ void hydranfc_sniff_14443A_dbg(t_hydra_console *con)
 
 	tprintf("cmd_nfc_sniff_14443A start TRF7970A configuration as sniffer mode\r\n");
 	tprintf("Abort/Exit by pressing K4 button\r\n");
-	init_sniff_nfc();
+	init_sniff_nfc(ISO14443A);
 
 	tprintf("Starting Sniffer ISO14443-A 106kbps ...\r\n");
 	/* Wait a bit in order to display all text */
@@ -1041,6 +1088,167 @@ void hydranfc_sniff_14443A_dbg(t_hydra_console *con)
 			}
 			sniff_write_eof_protocol(timestamp_nb_cycles);
 
+#if 0
+			/* Send data if data are available (at least 4bytes) */
+			if ( g_sbuf_idx >= 4 ) {
+
+				chSysUnlock();
+				tprint_str( "%s\r\n", &g_sbuf[0]);
+				/* Wait chprintf() end */
+				chThdSleepMilliseconds(5);
+				chSysLock();
+
+				/* Swap Current Buffer*/
+				/*
+				      // Clear Index
+				      g_sbuf_idx = 0;
+				*/
+			}
+#endif
+			/* For safety to avoid buffer overflow ... */
+			if (g_sbuf_idx >= NB_SBUFFER) {
+				g_sbuf_idx = NB_SBUFFER;
+			}
+			TST_OFF;
+		}
+	} // Main While Loop
+}
+
+
+/* Special raw data sniffer for ISO14443 TypeA or TypeB @106kbps with:
+ - Each output byte(8bits) shall represent 1 bit data TypeA or TypeB @106kbps with following Modulation & Bit Coding:
+   - PCD to PICC TypeA => Modulation 100% ASK, Bit Coding Modified Miller
+   - PICC to PCD TypeA => Modulation OOK, Bit Coding Manchester
+   - PCD to PICC TypeB => Modulation 10% ASK, Bit Coding NRZ
+   - PICC to PCD TypeB => Modulation BPSK, Bit Coding NRZ - L
+*/
+void hydranfc_sniff_14443AB_raw(t_hydra_console *con)
+{
+	(void)con;
+
+	uint8_t  ds_data;
+	uint32_t f_data, lsh_bit, rsh_bit;
+	uint32_t old_data_counter;
+
+	tprintf("hydranfc_sniff_14443AB_raw start\r\n");
+	tprintf("Abort/Exit by pressing K4 button\r\n");
+	init_sniff_nfc(ISO14443B);
+
+	tprintf("Starting raw sniffer ISO14443-A/B 106kbps\r\n");
+	/* Wait a bit in order to display all text */
+	chThdSleepMilliseconds(50);
+
+	g_sbuf_idx = 0;
+
+	/* Lock Kernel for sniffer */
+	chSysLock();
+
+	/* Main Loop */
+	while (TRUE) {
+		lsh_bit = 0;
+		rsh_bit = 0;
+		irq_no = 0;
+
+		while (TRUE) {
+			D4_OFF;
+			old_data_bit = 0;
+			f_data = 0;
+
+			u32_data = WaitGetDMABuffer();
+			old_data_bit = (uint32_t)(u32_data&1);
+			old_u32_data = u32_data;
+
+			/* Wait until data change or K4 is pressed to stop/exit */
+			if (sniff_wait_data_change_or_exit() == TRUE) {
+				return;
+			}
+			
+			/* Start of Frame detected */
+			TST_ON;
+			D4_ON;
+
+			/* Search first edge bit position to synchronize stream */
+			/* Search an edge on each bit from MSB to LSB */
+			/* Old bit = 1 so new bit will be 0 => 11111111 10000000 => 00000000 01111111 just need to reverse it to count leading zero */
+			/* Old bit = 0 so new bit will be 1 => 00000000 01111111 no need to reverse to count leading zero */
+			lsh_bit = old_data_bit ? (~u32_data) : u32_data;
+			lsh_bit = CountLeadingZero(lsh_bit);
+			rsh_bit = 32-lsh_bit;
+
+			/* Shift data */
+			f_data = u32_data<<lsh_bit;
+			/* Next Data */
+			TST_OFF;
+			u32_data = WaitGetDMABuffer();
+			TST_ON;
+			f_data |= u32_data>>rsh_bit;
+
+			// DownSampling by 4 (input 32bits output 8bits filtered)
+			// In Freq of 3.39MHz => 105.9375KHz on 8bits (each bit is 848KHz so 2bits=423.75KHz)
+			ds_data  = ((downsample_4x[(f_data>>24)])<<6) |
+				   ((downsample_4x[((f_data&0x00FF0000)>>16)])<<4) |
+				   ((downsample_4x[((f_data&0x0000FF00)>>8)])<<2) |
+				   (downsample_4x[(f_data&0x000000FF)]);
+
+			sniff_write_raw_protocol();
+			/* Raw protocol */
+			/* Convert Hex to ASCII */
+			sniff_write_8b_ASCII_HEX(ds_data, FALSE);
+
+			/* Decode Data until end of frame detected */
+			old_u32_data = f_data;
+			old_data_counter = 0;
+			while (1) {
+				if ( (K4_BUTTON) || (USER_BUTTON) ) {
+					break;
+				}
+
+				/* New Word */
+				f_data = u32_data<<lsh_bit;
+
+				/* Next Data */
+				TST_OFF;
+				u32_data = WaitGetDMABuffer();
+				TST_ON;
+
+				f_data |= u32_data>>rsh_bit;
+
+				/* In New Data 32bits */
+				if (u32_data != old_u32_data) {
+					old_u32_data = u32_data;
+					old_data_counter = 0;
+				} else {
+					old_u32_data = u32_data;
+					/* No new data */
+					if ( (u32_data==0xFFFFFFFF) || (u32_data==0x00000000) ) {
+						old_data_counter++;
+						if (old_data_counter>1) {
+							/* No new data => End Of Frame detected => Wait new data & synchro */
+							break;
+						}
+					} else {
+						old_data_counter = 0;
+					}
+				}
+
+				// DownSampling by 4 (input 32bits output 8bits filtered)
+				// In Freq of 3.39MHz => 105.9375KHz on 8bits (each bit is 848KHz so 2bits=423.75KHz)
+				ds_data  = ((downsample_4x[(f_data>>24)])<<6) |
+					   ((downsample_4x[((f_data&0x00FF0000)>>16)])<<4) |
+					   ((downsample_4x[((f_data&0x0000FF00)>>8)])<<2) |
+					   (downsample_4x[(f_data&0x000000FF)]);
+
+				/* Raw protocol */
+				/* Convert Hex to ASCII */
+				sniff_write_8b_ASCII_HEX(ds_data, FALSE);
+
+				/* For safety to avoid potential buffer overflow ... */
+				if (g_sbuf_idx >= NB_SBUFFER) {
+					g_sbuf_idx = NB_SBUFFER;
+				}
+			}
+
+			/* End of Frame detected */
 #if 0
 			/* Send data if data are available (at least 4bytes) */
 			if ( g_sbuf_idx >= 4 ) {
