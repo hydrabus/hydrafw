@@ -33,6 +33,20 @@
 #include "common.h"
 #include "microsd.h"
 #include "ff.h"
+#include "bsp_uart.h"
+
+/* Disable D4 & TST output pin (used only for debug purpose) */
+#undef D4_OFF
+#define D4_OFF
+
+#undef D4_ON
+#define D4_ON
+
+#undef TST_OFF
+#define TST_OFF
+
+#undef TST_ON
+#define TST_ON
 
 /* INIT_NFC_PROTOCOL */
 typedef enum {
@@ -134,6 +148,29 @@ void tprintf(const char *fmt, ...)
 		chnWrite((BaseSequentialStream*)&SDU2, (uint8_t *)tprintf_buff, real_size);
 
 	va_end(va_args);
+}
+
+void initUART1_sniff(void)
+{
+	mode_config_proto_t mode_conf;
+	bsp_status_t uart_bsp_status;
+
+	mode_conf.dev_speed = 8400000; /* 8.4Megabauds */
+	mode_conf.dev_parity = 0; /* 0 No Parity */
+	mode_conf.dev_stop_bit = 1; /* 1 Stop Bit */
+	uart_bsp_status = bsp_uart_init(BSP_DEV_UART1,&mode_conf);
+	if(uart_bsp_status == BSP_OK)
+	{
+		tprintf("Init UART1 8.4Mbauds 8N1 OK\r\nConnect FTDI C232HM-DDHSL-0 RXD(Yellow) to PA9(HydraBus UART1 TXD) for live sniffing session\r\n");
+	}else
+	{
+		tprintf("Init UART1 6Mbauds 8N1 Error:%d\r\n", uart_bsp_status);
+	}
+}
+
+void deinitUART1_sniff(void)
+{
+	bsp_uart_deinit(BSP_DEV_UART1);
 }
 
 /* Stop driver to exit Sniff NFC mode */
@@ -609,7 +646,7 @@ void sniff_write_Parity_ASCII(uint8_t data)
 	g_sbuf_idx +=2;
 }
 
-void hydranfc_sniff_14443A(t_hydra_console *con)
+void hydranfc_sniff_14443A(t_hydra_console *con, bool sniff_trace_uart1)
 {
 	(void)con;
 
@@ -619,15 +656,29 @@ void hydranfc_sniff_14443A(t_hydra_console *con)
 	uint32_t protocol_found, old_protocol_found; /* 0=Unknown, 1=106kb Miller Modified, 2=106kb Manchester */
 	uint32_t old_data_counter;
 	uint32_t nb_data;
-
-	tprintf("cmd_nfc_sniff_14443A start TRF7970A configuration as sniffer mode\r\n");
+	uint32_t uart_buf_pos;
+/*
+	uint32_t uart_min;
+	uint32_t uart_max;
+	uint32_t uart_nb_loop;
+	uint32_t ticks;
+*/
+	tprintf("sniff start\r\n");
 	tprintf("Abort/Exit by pressing K4 button\r\n");
 	init_sniff_nfc(ISO14443A);
+
+	if(sniff_trace_uart1)
+		initUART1_sniff();
 
 	tprintf("Starting Sniffer ISO14443-A 106kbps ...\r\n");
 	/* Wait a bit in order to display all text */
 	chThdSleepMilliseconds(50);
-
+/*
+	uart_min = 0xFFFFFFFF;
+	uart_max = 0;
+	uart_nb_loop = 0;
+*/
+	uart_buf_pos = 0;
 	old_protocol_found = 0;
 	protocol_found = 0;
 	g_sbuf_idx = 0;
@@ -652,6 +703,11 @@ void hydranfc_sniff_14443A(t_hydra_console *con)
 
 			/* Wait until data change or K4 is pressed to stop/exit */
 			if (sniff_wait_data_change_or_exit() == TRUE) {
+//				tprintf("\r\nuart_nb_loop=%u uart_min=%u uart_max=%u\r\n", uart_nb_loop, uart_min, uart_max);
+				/* Wait a bit in order to display all text */
+				chThdSleepMilliseconds(50);
+				if(sniff_trace_uart1)
+					deinitUART1_sniff();
 				return;
 			}
 
@@ -830,37 +886,50 @@ void hydranfc_sniff_14443A(t_hydra_console *con)
 				sniff_write_8b_ASCII_HEX(tmp_u8_data, FALSE);
 			}
 
-#if 0
-			/* Send data if data are available (at least 4bytes) */
-			if ( g_sbuf_idx >= 4 ) {
+			if(sniff_trace_uart1)
+			{
+				uint32_t uart_buf_size;
+				uart_buf_size = (g_sbuf_idx - uart_buf_pos);
+				if (uart_buf_size > 0) {
+	//			ticks = get_cyclecounter();
+					bsp_uart_write_u8(BSP_DEV_UART1, &g_sbuf[uart_buf_pos], uart_buf_size);
+					uart_buf_pos = g_sbuf_idx;
+	/*
+					ticks = (get_cyclecounter() - ticks);
+					uart_nb_loop++;
 
-				chSysUnlock();
-				tprint_str( "%s\r\n", &g_sbuf[0]);
-				/* Wait chprintf() end */
-				chThdSleepMilliseconds(5);
-				chSysLock();
+					if(ticks < uart_min)
+						uart_min = ticks;
 
-				/* Swap Current Buffer*/
-				/*
-				      // Clear Index
-				      g_sbuf_idx = 0;
-				*/
+					if(ticks > uart_max)
+						uart_max = ticks;
+	*/
+				}
+				/* For safety to avoid buffer overflow and restart buffer */
+				if (g_sbuf_idx >= NB_SBUFFER) {
+					g_sbuf_idx = 0;
+					uart_buf_pos = 0;
+				}
+			}else
+			{
+				/* For safety to avoid buffer overflow */
+				if (g_sbuf_idx >= NB_SBUFFER) {
+					g_sbuf_idx = NB_SBUFFER;
+				}
 			}
-#endif
-			/* For safety to avoid buffer overflow ... */
-			if (g_sbuf_idx >= NB_SBUFFER) {
-				g_sbuf_idx = NB_SBUFFER;
-			}
+
 			TST_OFF;
 		}
 	} // Main While Loop
+
+	
 }
 
 /* Special version with:
  - Parity information for each byte (if total nb bits per frame > 8)
  - End Of Frame TimeStamp
 */
-void hydranfc_sniff_14443A_dbg(t_hydra_console *con)
+void hydranfc_sniff_14443A_dbg(t_hydra_console *con, bool sniff_trace_uart1)
 {
 	(void)con;
 
@@ -871,15 +940,20 @@ void hydranfc_sniff_14443A_dbg(t_hydra_console *con)
 	uint32_t old_data_counter;
 	uint32_t nb_data;
 	uint32_t timestamp_nb_cycles;
+	uint32_t uart_buf_pos;
 
-	tprintf("cmd_nfc_sniff_14443A start TRF7970A configuration as sniffer mode\r\n");
+	tprintf("sniff debug start\r\n");
 	tprintf("Abort/Exit by pressing K4 button\r\n");
 	init_sniff_nfc(ISO14443A);
+
+	if(sniff_trace_uart1)
+		initUART1_sniff();
 
 	tprintf("Starting Sniffer ISO14443-A 106kbps ...\r\n");
 	/* Wait a bit in order to display all text */
 	chThdSleepMilliseconds(50);
 
+	uart_buf_pos = 0;
 	old_protocol_found = 0;
 	protocol_found = 0;
 	g_sbuf_idx = 0;
@@ -904,6 +978,8 @@ void hydranfc_sniff_14443A_dbg(t_hydra_console *con)
 
 			/* Wait until data change or K4 is pressed to stop/exit */
 			if (sniff_wait_data_change_or_exit() == TRUE) {
+				if(sniff_trace_uart1)
+					deinitUART1_sniff();
 				return;
 			}
 
@@ -1088,27 +1164,36 @@ void hydranfc_sniff_14443A_dbg(t_hydra_console *con)
 			}
 			sniff_write_eof_protocol(timestamp_nb_cycles);
 
-#if 0
-			/* Send data if data are available (at least 4bytes) */
-			if ( g_sbuf_idx >= 4 ) {
-
-				chSysUnlock();
-				tprint_str( "%s\r\n", &g_sbuf[0]);
-				/* Wait chprintf() end */
-				chThdSleepMilliseconds(5);
-				chSysLock();
-
-				/* Swap Current Buffer*/
-				/*
-				      // Clear Index
-				      g_sbuf_idx = 0;
-				*/
+			if(sniff_trace_uart1)
+			{
+				uint32_t uart_buf_size;
+				uart_buf_size = (g_sbuf_idx - uart_buf_pos);
+				if (uart_buf_size > 0) {
+	//			ticks = get_cyclecounter();
+					bsp_uart_write_u8(BSP_DEV_UART1, &g_sbuf[uart_buf_pos], uart_buf_size);
+					uart_buf_pos = g_sbuf_idx;
+	/*
+					ticks = (get_cyclecounter() - ticks);
+					uart_nb_loop++;
+					if(ticks < uart_min)
+						uart_min = ticks;
+					if(ticks > uart_max)
+						uart_max = ticks;
+	*/
+				}
+				/* For safety to avoid buffer overflow and restart buffer */
+				if (g_sbuf_idx >= NB_SBUFFER) {
+					g_sbuf_idx = 0;
+					uart_buf_pos = 0;
+				}
+			}else
+			{
+				/* For safety to avoid buffer overflow */
+				if (g_sbuf_idx >= NB_SBUFFER) {
+					g_sbuf_idx = NB_SBUFFER;
+				}
 			}
-#endif
-			/* For safety to avoid buffer overflow ... */
-			if (g_sbuf_idx >= NB_SBUFFER) {
-				g_sbuf_idx = NB_SBUFFER;
-			}
+
 			TST_OFF;
 		}
 	} // Main While Loop
@@ -1122,22 +1207,27 @@ void hydranfc_sniff_14443A_dbg(t_hydra_console *con)
    - PCD to PICC TypeB => Modulation 10% ASK, Bit Coding NRZ
    - PICC to PCD TypeB => Modulation BPSK, Bit Coding NRZ - L
 */
-void hydranfc_sniff_14443AB_raw(t_hydra_console *con)
+void hydranfc_sniff_14443AB_raw(t_hydra_console *con, bool sniff_trace_uart1)
 {
 	(void)con;
 
 	uint8_t  ds_data;
 	uint32_t f_data, lsh_bit, rsh_bit;
 	uint32_t old_data_counter;
+	uint32_t uart_buf_pos;
 
-	tprintf("hydranfc_sniff_14443AB_raw start\r\n");
+	tprintf("sniff raw start\r\n");
 	tprintf("Abort/Exit by pressing K4 button\r\n");
 	init_sniff_nfc(ISO14443B);
+
+	if(sniff_trace_uart1)
+		initUART1_sniff();
 
 	tprintf("Starting raw sniffer ISO14443-A/B 106kbps\r\n");
 	/* Wait a bit in order to display all text */
 	chThdSleepMilliseconds(50);
 
+	uart_buf_pos = 0;
 	g_sbuf_idx = 0;
 
 	/* Lock Kernel for sniffer */
@@ -1160,6 +1250,8 @@ void hydranfc_sniff_14443AB_raw(t_hydra_console *con)
 
 			/* Wait until data change or K4 is pressed to stop/exit */
 			if (sniff_wait_data_change_or_exit() == TRUE) {
+				if(sniff_trace_uart1)
+					deinitUART1_sniff();
 				return;
 			}
 			
@@ -1247,29 +1339,37 @@ void hydranfc_sniff_14443AB_raw(t_hydra_console *con)
 					g_sbuf_idx = NB_SBUFFER;
 				}
 			}
-
 			/* End of Frame detected */
-#if 0
-			/* Send data if data are available (at least 4bytes) */
-			if ( g_sbuf_idx >= 4 ) {
-
-				chSysUnlock();
-				tprint_str( "%s\r\n", &g_sbuf[0]);
-				/* Wait chprintf() end */
-				chThdSleepMilliseconds(5);
-				chSysLock();
-
-				/* Swap Current Buffer*/
-				/*
-				      // Clear Index
-				      g_sbuf_idx = 0;
-				*/
+			if(sniff_trace_uart1)
+			{
+				uint32_t uart_buf_size;
+				uart_buf_size = (g_sbuf_idx - uart_buf_pos);
+				if (uart_buf_size > 0) {
+	//			ticks = get_cyclecounter();
+					bsp_uart_write_u8(BSP_DEV_UART1, &g_sbuf[uart_buf_pos], uart_buf_size);
+					uart_buf_pos = g_sbuf_idx;
+	/*
+					ticks = (get_cyclecounter() - ticks);
+					uart_nb_loop++;
+					if(ticks < uart_min)
+						uart_min = ticks;
+					if(ticks > uart_max)
+						uart_max = ticks;
+	*/
+				}
+				/* For safety to avoid buffer overflow and restart buffer */
+				if (g_sbuf_idx >= NB_SBUFFER) {
+					g_sbuf_idx = 0;
+					uart_buf_pos = 0;
+				}
+			}else
+			{
+				/* For safety to avoid buffer overflow */
+				if (g_sbuf_idx >= NB_SBUFFER) {
+					g_sbuf_idx = NB_SBUFFER;
+				}
 			}
-#endif
-			/* For safety to avoid buffer overflow ... */
-			if (g_sbuf_idx >= NB_SBUFFER) {
-				g_sbuf_idx = NB_SBUFFER;
-			}
+
 			TST_OFF;
 		}
 	} // Main While Loop

@@ -95,8 +95,7 @@ t_token_dict tl_dict[] = {
 	{ T_EMUL_MF_ULTRALIGHT, "emul-mf-ul" },
 	{ T_CLONE_MF_ULTRALIGHT, "clone-mf-ul" },
 	{ T_SNIFF, "sniff" },
-	{ T_SNIFF_DBG, "sniff-dbg" },
-	{ T_SNIFF_RAW, "sniff-raw" },
+	{ T_TRACE_UART1, "trace-uart1" },
 	{ T_DIRECT_MODE_0, "dm0" },
 	{ T_DIRECT_MODE_1, "dm1" },
 	{ T_GPIO, "gpio" },
@@ -272,6 +271,22 @@ t_token tokens_mode_nfc_emul_mf_ul[] = {
 	{ }
 };
 
+t_token tokens_mode_nfc_sniff[] = {
+	{
+		T_TRACE_UART1,
+		.help = "Output realtime sniff trace on UART1(PA9@8.4Mbauds 8N1)"
+	},
+	{
+		T_DEBUG,
+		.help = "Enable debug sniff trace (ISO14443A)"
+	},
+	{
+		T_RAW,
+		.help = "Enable raw sniff trace (ISO14443A/B)"
+	},
+	{ }
+};
+
 #define NFC_PARAMETERS \
 	{\
 		T_TYPEA,\
@@ -302,15 +317,8 @@ t_token tokens_mode_nfc_emul_mf_ul[] = {
 	},\
 	{\
 		T_SNIFF,\
-		.help = "Sniff (ISO14443A only)"\
-	},\
-	{\
-		T_SNIFF_DBG,\
-		.help = "Sniff debug (ISO14443A only)"\
-	},\
-	{\
-		T_SNIFF_RAW,\
-		.help = "Sniff raw (ISO14443A/B)"\
+		.subtokens = tokens_mode_nfc_sniff,\
+		.help = "Sniff (default ISO14443A see options for more details)"\
 	},\
 	{\
 		T_EMUL_MIFARE,\
