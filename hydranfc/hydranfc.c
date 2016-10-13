@@ -314,7 +314,7 @@ THD_FUNCTION(key_sniff, arg)
 			}
 
 			D2_ON;
-			hydranfc_sniff_14443A(NULL, FALSE);
+			hydranfc_sniff_14443A(NULL, TRUE, FALSE, FALSE);
 			D2_OFF;
 		}
 
@@ -862,8 +862,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	filename_t sd_file;
 	int str_offset;
 	bool sniff_trace_uart1;
-	bool sniff_debug;
 	bool sniff_raw;
+	bool sniff_bin;
+	bool sniff_frame_time;
+	bool sniff_parity;
 
 	if(p->tokens[token_pos] == T_SD)
 	{
@@ -877,8 +879,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	extStart(&EXTD1, &extcfg);
 
 	sniff_trace_uart1 = FALSE;
-	sniff_debug = FALSE;
 	sniff_raw = FALSE;
+	sniff_bin = FALSE;
+	sniff_frame_time = FALSE;
+	sniff_parity = FALSE;
 	action = 0;
 	period = 1000;
 	continuous = FALSE;
@@ -933,8 +937,16 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			sniff_trace_uart1 = TRUE;
 			break;
 
-		case T_DEBUG:
-			sniff_debug = TRUE;
+		case T_FRAME_TIME:
+			sniff_frame_time = TRUE;
+			break;
+
+		case T_BIN:
+			sniff_bin = TRUE;
+			break;
+
+		case T_PARITY:
+			sniff_parity = TRUE;
 			break;
 
 		case T_RAW:
@@ -998,15 +1010,36 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		break;
 
 	case T_SNIFF:
-		if(sniff_debug)
+		if(sniff_bin)
 		{
-			hydranfc_sniff_14443A_dbg(con, sniff_trace_uart1);
-		}else if(sniff_raw)
-		{
-			hydranfc_sniff_14443AB_raw(con, sniff_trace_uart1);
+			if(sniff_raw)
+			{
+				/* Sniffer Binary RAW UART1 only */
+				hydranfc_sniff_14443AB_bin_raw(con, sniff_frame_time, sniff_frame_time);
+			}else
+			{
+				/* Sniffer Binary UART1 only */
+				hydranfc_sniff_14443A_bin(con, sniff_frame_time, sniff_frame_time, sniff_parity);
+			}
 		}else
 		{
-			hydranfc_sniff_14443A(con, sniff_trace_uart1);
+			if(sniff_raw)
+			{
+				/* Sniffer Binary RAW UART1 only */
+				hydranfc_sniff_14443AB_bin_raw(con, sniff_frame_time, sniff_frame_time);
+			}else
+			{
+				/* Sniffer ASCII */
+				if(sniff_trace_uart1)
+				{
+					if(sniff_frame_time)
+						cprintf(con, "frame-time disabled for trace-uart1 in ASCII\r\n");
+					hydranfc_sniff_14443A(con, FALSE, FALSE, TRUE);
+				}else
+				{
+					hydranfc_sniff_14443A(con, sniff_frame_time, sniff_frame_time, FALSE);
+				}
+			}
 		}
 		break;
 

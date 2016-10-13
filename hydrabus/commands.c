@@ -96,6 +96,8 @@ t_token_dict tl_dict[] = {
 	{ T_CLONE_MF_ULTRALIGHT, "clone-mf-ul" },
 	{ T_SNIFF, "sniff" },
 	{ T_TRACE_UART1, "trace-uart1" },
+	{ T_FRAME_TIME, "frame-time" },
+	{ T_BIN, "bin" },
 	{ T_DIRECT_MODE_0, "dm0" },
 	{ T_DIRECT_MODE_1, "dm1" },
 	{ T_GPIO, "gpio" },
@@ -277,12 +279,20 @@ t_token tokens_mode_nfc_sniff[] = {
 		.help = "Output realtime sniff trace on UART1(PA9@8.4Mbauds 8N1)"
 	},
 	{
-		T_DEBUG,
-		.help = "Enable debug sniff trace (ISO14443A)"
+		T_BIN,
+		.help = "Force binary sniff trace(UART1 only)"
 	},
 	{
 		T_RAW,
-		.help = "Enable raw sniff trace (ISO14443A/B)"
+		.help = "Enable binary raw sniff trace(ISO14443A/B)(UART1 only)"
+	},
+	{
+		T_PARITY,
+		.help = "Add parity bit information in binary sniff trace(UART1 only)"
+	},
+	{
+		T_FRAME_TIME,
+		.help = "Add start/end frame timestamp(in CPU cycles)"
 	},
 	{ }
 };
