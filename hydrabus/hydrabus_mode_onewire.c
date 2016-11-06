@@ -203,7 +203,7 @@ void onewire_scan(t_hydra_console *con)
 	onewire_start(con);
 	onewire_write_u8(con, 0xf0);
 	cprintf(con, "Discovered devices : ");
-	while(!LastDeviceFlag) {
+	while(!LastDeviceFlag && !palReadPad(GPIOA, 0)) {
 		do{
 			id_bit = onewire_read_bit(con);
 			cmp_id_bit = onewire_read_bit(con);
