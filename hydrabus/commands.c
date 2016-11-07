@@ -141,6 +141,7 @@ t_token_dict tl_dict[] = {
 	{ T_THREEWIRE, "3-wire" },
 	{ T_SCRIPT, "script" },
 	{ T_FILE, "filename" },
+	{ T_ONEWIRE, "1-wire" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -879,6 +880,99 @@ t_token tokens_jtag[] = {
 	{ }
 };
 
+#define ONEWIRE_PARAMETERS \
+	{ T_DEVICE, \
+		.arg_type = T_ARG_UINT, \
+		.help = "1-wire device (1)" }, \
+	{ T_PULL, \
+		.arg_type = T_ARG_TOKEN, \
+		.subtokens = tokens_gpio_pull, \
+		.help = "GPIO pull (up/down/floating)" }, \
+	{ T_MSB_FIRST, \
+		.help = "Send/receive MSB first" }, \
+	{ T_LSB_FIRST, \
+		.help = "Send/receive LSB first" },
+
+t_token tokens_mode_onewire[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show 1-wire parameters"
+	},
+	ONEWIRE_PARAMETERS
+	/* 1-wire-specific commands */
+	{
+		T_SCAN,
+		.help = "Scan for connected devices"
+	},
+	{
+		T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_HD,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>) and print hexdump"
+	},
+	{
+		T_WRITE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_UINT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
+	},
+	/* BP commands */
+	{
+		T_LEFT_SQ,
+		.help = "Reset bus"
+	},
+	{
+		T_MINUS,
+		.help = "Toggle pin high"
+	},
+	{
+		T_UNDERSCORE,
+		.help = "Toggle pin low"
+	},
+	{
+		T_DOT,
+		.help = "Read bit"
+	},
+	{
+		T_AMPERSAND,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 usec (repeat with :<num>)"
+	},
+	{
+		T_PERCENT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit 1-wire mode"
+	},
+	{ }
+};
+
+t_token tokens_onewire[] = {
+	ONEWIRE_PARAMETERS
+	{ }
+};
+
 #define TWOWIRE_PARAMETERS \
 	{ T_DEVICE, \
 		.arg_type = T_ARG_UINT, \
@@ -1442,6 +1536,11 @@ t_token tl_tokens[] = {
 		.subtokens = tokens_i2c,
 		.help = "I2C mode",
 		.help_full = "Configuration: i2c [pull (up/down/floating)] [frequency (value hz/khz/mhz)]\r\nInteraction: [<start>] [<stop>] <read/write (value:repeat)>"
+	},
+	{
+		T_ONEWIRE,
+		.subtokens = tokens_onewire,
+		.help = "1-wire mode"
 	},
 	{
 		T_TWOWIRE,
