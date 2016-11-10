@@ -245,13 +245,13 @@ void bbio_mode_spi(t_hydra_console *con)
 					// data contains the number of bytes to
 					// write
 					data = (bbio_subcommand & 0b1111) + 1;
+					cprint(con, "\x01", 1);
 
 					chnRead(con->sdu, tx_data, data);
 					bsp_spi_write_read_u8(proto->dev_num,
 					                      tx_data,
 					                      rx_data,
 					                      data);
-					cprint(con, "\x01", 1);
 					i=0;
 					while(i < data) {
 						cprintf(con, "%c", rx_data[i]);
