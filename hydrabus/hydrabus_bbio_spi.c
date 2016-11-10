@@ -138,13 +138,15 @@ void bbio_mode_spi(t_hydra_console *con)
 					cprint(con, "\x00", 1);
 					break;
 				}
-				chnRead(con->sdu, tx_data, to_tx);
+				if(to_rx > 0) {
+					chnRead(con->sdu, tx_data, to_tx);
 
-				if(bbio_subcommand == BBIO_SPI_WRITE_READ) {
-					bsp_spi_select(proto->dev_num);
+					if(bbio_subcommand == BBIO_SPI_WRITE_READ) {
+						bsp_spi_select(proto->dev_num);
+					}
+					bsp_spi_write_u8(proto->dev_num, tx_data,
+							 to_tx);
 				}
-				bsp_spi_write_u8(proto->dev_num, tx_data,
-				                 to_tx);
 				i=0;
 				while(i<to_rx) {
 					if((to_rx-i) >= 255) {
