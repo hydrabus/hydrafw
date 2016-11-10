@@ -16,5 +16,7 @@
  * limitations under the License.
  */
 
+#define BBIO_UART_HEADER	"ART1"
+
 void bbio_uart_init_proto_default(t_hydra_console *con);
 void bbio_mode_uart(t_hydra_console *con);

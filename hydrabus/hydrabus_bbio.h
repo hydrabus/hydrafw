@@ -28,6 +28,9 @@
 #define BBIO_RAWWIRE	0b00000101
 #define BBIO_JTAG	0b00000110
 
+//Common modes command
+#define BBIO_MODE_ID	0b00000001
+
 //Hydrabus specific
 #define BBIO_CAN	0b00001000
 #define BBIO_PIN	0b00001001

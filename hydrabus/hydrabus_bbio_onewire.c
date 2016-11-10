@@ -28,6 +28,11 @@
 #include "hydrabus_mode_onewire.h"
 
 
+static void bbio_mode_id(t_hydra_console *con)
+{
+	cprint(con, BBIO_ONEWIRE_HEADER, 4);
+}
+
 void bbio_mode_onewire(t_hydra_console *con)
 {
 	uint8_t bbio_subcommand, i;
@@ -37,12 +42,17 @@ void bbio_mode_onewire(t_hydra_console *con)
 	onewire_init_proto_default(con);
 	onewire_pin_init(con);
 
+	bbio_mode_id(con);
+
 	while (!USER_BUTTON) {
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				onewire_cleanup(con);
 				return;
+			case BBIO_MODE_ID:
+				bbio_mode_id(con);
+				break;
 			case BBIO_ONEWIRE_RESET:
 				onewire_start(con);
 			case BBIO_ONEWIRE_READ:

@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+#define BBIO_RAWWIRE_HEADER	"RAW1"
+
 void bbio_mode_rawwire(t_hydra_console *con);
 
 typedef struct mode_rawwire_exec_t {

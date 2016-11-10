@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#define BBIO_I2C_HEADER		"I2C1"
+
 void bbio_i2c_init_proto_default(t_hydra_console *con);
 void bbio_i2c_sniff(t_hydra_console *con);
 void bbio_mode_i2c(t_hydra_console *con);

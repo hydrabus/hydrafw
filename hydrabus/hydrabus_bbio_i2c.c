@@ -25,6 +25,7 @@
 #include <ctype.h>
 
 #include "hydrabus_bbio.h"
+#include "hydrabus_bbio_i2c.h"
 #include "bsp_i2c.h"
 
 #define I2C_DEV_NUM (1)
@@ -46,6 +47,11 @@ void bbio_i2c_sniff(t_hydra_console *con)
 	/* TODO bbio_i2c_sniff code */
 }
 
+static void bbio_mode_id(t_hydra_console *con)
+{
+	cprint(con, BBIO_I2C_HEADER, 4);
+}
+
 void bbio_mode_i2c(t_hydra_console *con)
 {
 	uint8_t bbio_subcommand;
@@ -60,12 +66,17 @@ void bbio_mode_i2c(t_hydra_console *con)
 	bbio_i2c_init_proto_default(con);
 	bsp_i2c_init(proto->dev_num, proto);
 
+	bbio_mode_id(con);
+
 	while (!USER_BUTTON) {
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				bsp_i2c_deinit(proto->dev_num);
 				return;
+			case BBIO_MODE_ID:
+				bbio_mode_id(con);
+				break;
 			case BBIO_I2C_START_BIT:
 				bsp_i2c_start(proto->dev_num);
 				cprint(con, "\x01", 1);
