@@ -95,7 +95,7 @@ static void bbio_mode_id(t_hydra_console *con)
 void bbio_mode_spi(t_hydra_console *con)
 {
 	uint8_t bbio_subcommand;
-	uint16_t to_rx, to_tx, i;
+	uint32_t to_rx, to_tx, i;
 	uint8_t *tx_data = (uint8_t *)g_sbuf;
 	uint8_t *rx_data = (uint8_t *)g_sbuf+4096;
 	uint8_t data;
@@ -170,6 +170,76 @@ void bbio_mode_spi(t_hydra_console *con)
 					i++;
 				}
 				break;
+			case BBIO_SPI_AVR:
+				cprint(con, "\x01", 1);
+				// data contains the subcommand in AVR mode
+				chnRead(con->sdu, &data, 1);
+				switch(data) {
+				case BBIO_SPI_AVR_NULL:
+					cprint(con, "\x01", 1);
+					break;
+				case BBIO_SPI_AVR_VERSION:
+					cprint(con, "\x01\x00\x01", 3);
+					break;
+				case BBIO_SPI_AVR_READ:
+					// to_tx contains the base address
+					chnRead(con->sdu, rx_data, 4);
+					to_tx =(rx_data[0]<<24) + (rx_data[1]<<16);
+					to_tx +=(rx_data[2]<<8) + rx_data[3];
+					// to_tx contains the number of bytes to
+					// read
+					chnRead(con->sdu, rx_data, 4);
+					to_rx =(rx_data[0]<<24) + (rx_data[1]<<16);
+					to_rx +=(rx_data[2]<<8) + rx_data[3];
+
+					if ((to_tx > 4096) || (to_rx > 4096) ||
+					    (to_tx + to_rx > 4096)) {
+						cprint(con, "\x00", 1);
+						break;
+					}
+
+					cprint(con, "\x01", 1);
+
+					for(i=to_tx; to_rx>0; i++) {
+						// Fetch low byte
+						data = 0x20;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						data = i>>8;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						data = i&0xff;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						bsp_spi_read_u8(proto->dev_num,
+								&data, 1);
+						cprint(con, (char *)&data, 1);
+						to_rx--;
+
+						if(to_rx == 0) break;
+
+						data = 0x28;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						data = i>>8;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						data = i&0xff;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						bsp_spi_read_u8(proto->dev_num,
+								&data, 1);
+						cprint(con, (char *)&data, 1);
+						to_rx--;
+					}
+				default:
+					cprint(con, "\x00", 1);
+					break;
+				}
+				break;
+
+
+
 			default:
 				if ((bbio_subcommand & BBIO_SPI_BULK_TRANSFER) == BBIO_SPI_BULK_TRANSFER) {
 					// data contains the number of bytes to
