@@ -70,9 +70,9 @@ int cmd_bbio(t_hydra_console *con)
 			case BBIO_RESET_HW:
 				return TRUE;
 			default:
+				cprint(con, "\x01", 1);
 				break;
 			}
-			cprint(con, "BBIO1", 5);
 		}
 	}
 	return TRUE;
