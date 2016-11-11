@@ -16,4 +16,6 @@
  * limitations under the License.
  */
 
+#define BBIO_ONEWIRE_HEADER	"1W01"
+
 void bbio_mode_onewire(t_hydra_console *con);

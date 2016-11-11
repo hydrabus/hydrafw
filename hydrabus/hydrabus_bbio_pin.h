@@ -16,4 +16,6 @@
  * limitations under the License.
  */
 
+#define BBIO_PIN_HEADER		"PIN1"
+
 void bbio_mode_pin(t_hydra_console *con);

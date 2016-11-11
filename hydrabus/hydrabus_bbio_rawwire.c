@@ -64,6 +64,11 @@ const mode_rawwire_exec_t bbio_threewire = {
 	.cleanup = &threewire_cleanup,
 };
 
+static void bbio_mode_id(t_hydra_console *con)
+{
+	cprint(con, BBIO_RAWWIRE_HEADER, 4);
+}
+
 void bbio_mode_rawwire(t_hydra_console *con)
 {
 	uint8_t bbio_subcommand, i;
@@ -78,12 +83,17 @@ void bbio_mode_rawwire(t_hydra_console *con)
 	curmode.clock_low();
 	curmode.data_low();
 
+	bbio_mode_id(con);
+
 	while (!USER_BUTTON) {
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				curmode.cleanup(con);
 				return;
+			case BBIO_MODE_ID:
+				bbio_mode_id(con);
+				break;
 			case BBIO_RAWWIRE_READ_BYTE:
 				rx_data[0] = curmode.read_u8(con);
 				cprint(con, (char *)&rx_data[0], 1);

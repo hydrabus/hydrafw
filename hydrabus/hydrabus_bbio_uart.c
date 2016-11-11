@@ -25,6 +25,7 @@
 #include <ctype.h>
 
 #include "hydrabus_bbio.h"
+#include "hydrabus_bbio_uart.h"
 #include "bsp_uart.h"
 
 void bbio_uart_init_proto_default(t_hydra_console *con)
@@ -60,6 +61,11 @@ msg_t uart_reader_thread (void *arg)
 	return (msg_t)1;
 }
 
+static void bbio_mode_id(t_hydra_console *con)
+{
+	cprint(con, BBIO_UART_HEADER, 4);
+}
+
 void bbio_mode_uart(t_hydra_console *con)
 {
 	uint8_t bbio_subcommand, i;
@@ -72,12 +78,17 @@ void bbio_mode_uart(t_hydra_console *con)
 	bbio_uart_init_proto_default(con);
 	bsp_uart_init(proto->dev_num, proto);
 
+	bbio_mode_id(con);
+
 	while (!USER_BUTTON) {
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				bsp_uart_deinit(proto->dev_num);
 				return;
+			case BBIO_MODE_ID:
+				bbio_mode_id(con);
+				break;
 			case BBIO_UART_START_ECHO:
 				rthread = chThdCreateFromHeap(NULL,
 							      CONSOLE_WA_SIZE,

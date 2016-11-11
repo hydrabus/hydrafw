@@ -16,4 +16,6 @@
  * limitations under the License.
  */
 
+#define BBIO_CAN_HEADER		"CAN1"
+
 void bbio_mode_can(t_hydra_console *con);

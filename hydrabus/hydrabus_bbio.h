@@ -28,6 +28,9 @@
 #define BBIO_RAWWIRE	0b00000101
 #define BBIO_JTAG	0b00000110
 
+//Common modes command
+#define BBIO_MODE_ID	0b00000001
+
 //Hydrabus specific
 #define BBIO_CAN	0b00001000
 #define BBIO_PIN	0b00001001
@@ -54,6 +57,10 @@
 #define BBIO_SPI_CONFIG_PERIPH	0b01000000
 #define BBIO_SPI_SET_SPEED	0b01100000
 #define BBIO_SPI_CONFIG		0b10000000
+#define BBIO_SPI_AVR		0b00000110
+#define BBIO_SPI_AVR_NULL	0b00000000
+#define BBIO_SPI_AVR_VERSION	0b00000001
+#define BBIO_SPI_AVR_READ	0b00000010
 
 /*
  * I2C-specific commands

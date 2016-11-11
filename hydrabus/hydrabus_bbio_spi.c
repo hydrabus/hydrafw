@@ -25,6 +25,7 @@
 #include <ctype.h>
 
 #include "hydrabus_bbio.h"
+#include "hydrabus_bbio_spi.h"
 #include "bsp_spi.h"
 
 void bbio_spi_init_proto_default(t_hydra_console *con)
@@ -86,10 +87,15 @@ void bbio_spi_sniff(t_hydra_console *con)
 	status = bsp_spi_deinit(BSP_DEV_SPI2);
 }
 
+static void bbio_mode_id(t_hydra_console *con)
+{
+	cprint(con, BBIO_SPI_HEADER, 4);
+}
+
 void bbio_mode_spi(t_hydra_console *con)
 {
 	uint8_t bbio_subcommand;
-	uint16_t to_rx, to_tx, i;
+	uint32_t to_rx, to_tx, i;
 	uint8_t *tx_data = (uint8_t *)g_sbuf;
 	uint8_t *rx_data = (uint8_t *)g_sbuf+4096;
 	uint8_t data;
@@ -99,12 +105,17 @@ void bbio_mode_spi(t_hydra_console *con)
 	bbio_spi_init_proto_default(con);
 	bsp_spi_init(proto->dev_num, proto);
 
+	bbio_mode_id(con);
+
 	while (!USER_BUTTON) {
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				bsp_spi_deinit(proto->dev_num);
 				return;
+			case BBIO_MODE_ID:
+				bbio_mode_id(con);
+				break;
 			case BBIO_SPI_CS_LOW:
 				bsp_spi_select(proto->dev_num);
 				cprint(con, "\x01", 1);
@@ -127,13 +138,15 @@ void bbio_mode_spi(t_hydra_console *con)
 					cprint(con, "\x00", 1);
 					break;
 				}
-				chnRead(con->sdu, tx_data, to_tx);
+				if(to_rx > 0) {
+					chnRead(con->sdu, tx_data, to_tx);
 
-				if(bbio_subcommand == BBIO_SPI_WRITE_READ) {
-					bsp_spi_select(proto->dev_num);
+					if(bbio_subcommand == BBIO_SPI_WRITE_READ) {
+						bsp_spi_select(proto->dev_num);
+					}
+					bsp_spi_write_u8(proto->dev_num, tx_data,
+							 to_tx);
 				}
-				bsp_spi_write_u8(proto->dev_num, tx_data,
-				                 to_tx);
 				i=0;
 				while(i<to_rx) {
 					if((to_rx-i) >= 255) {
@@ -157,18 +170,88 @@ void bbio_mode_spi(t_hydra_console *con)
 					i++;
 				}
 				break;
+			case BBIO_SPI_AVR:
+				cprint(con, "\x01", 1);
+				// data contains the subcommand in AVR mode
+				chnRead(con->sdu, &data, 1);
+				switch(data) {
+				case BBIO_SPI_AVR_NULL:
+					cprint(con, "\x01", 1);
+					break;
+				case BBIO_SPI_AVR_VERSION:
+					cprint(con, "\x01\x00\x01", 3);
+					break;
+				case BBIO_SPI_AVR_READ:
+					// to_tx contains the base address
+					chnRead(con->sdu, rx_data, 4);
+					to_tx =(rx_data[0]<<24) + (rx_data[1]<<16);
+					to_tx +=(rx_data[2]<<8) + rx_data[3];
+					// to_tx contains the number of bytes to
+					// read
+					chnRead(con->sdu, rx_data, 4);
+					to_rx =(rx_data[0]<<24) + (rx_data[1]<<16);
+					to_rx +=(rx_data[2]<<8) + rx_data[3];
+
+					if ((to_tx > 4096) || (to_rx > 4096) ||
+					    (to_tx + to_rx > 4096)) {
+						cprint(con, "\x00", 1);
+						break;
+					}
+
+					cprint(con, "\x01", 1);
+
+					for(i=to_tx; to_rx>0; i++) {
+						// Fetch low byte
+						data = 0x20;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						data = i>>8;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						data = i&0xff;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						bsp_spi_read_u8(proto->dev_num,
+								&data, 1);
+						cprint(con, (char *)&data, 1);
+						to_rx--;
+
+						if(to_rx == 0) break;
+
+						data = 0x28;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						data = i>>8;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						data = i&0xff;
+						bsp_spi_write_u8(proto->dev_num,
+								 &data, 1);
+						bsp_spi_read_u8(proto->dev_num,
+								&data, 1);
+						cprint(con, (char *)&data, 1);
+						to_rx--;
+					}
+				default:
+					cprint(con, "\x00", 1);
+					break;
+				}
+				break;
+
+
+
 			default:
 				if ((bbio_subcommand & BBIO_SPI_BULK_TRANSFER) == BBIO_SPI_BULK_TRANSFER) {
 					// data contains the number of bytes to
 					// write
 					data = (bbio_subcommand & 0b1111) + 1;
+					cprint(con, "\x01", 1);
 
 					chnRead(con->sdu, tx_data, data);
 					bsp_spi_write_read_u8(proto->dev_num,
 					                      tx_data,
 					                      rx_data,
 					                      data);
-					cprint(con, "\x01", 1);
 					i=0;
 					while(i < data) {
 						cprintf(con, "%c", rx_data[i]);

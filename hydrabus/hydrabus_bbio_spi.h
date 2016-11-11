@@ -16,6 +16,9 @@
  * limitations under the License.
  */
 
+
+#define BBIO_SPI_HEADER		"SPI1"
+
 void bbio_spi_init_proto_default(t_hydra_console *con);
 void bbio_spi_sniff(t_hydra_console *con);
 void bbio_mode_spi(t_hydra_console *con);

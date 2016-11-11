@@ -25,6 +25,7 @@
 #include <ctype.h>
 
 #include "hydrabus_bbio.h"
+#include "hydrabus_bbio_can.h"
 #include "bsp_can.h"
 
 static void print_raw_uint32(t_hydra_console *con, uint32_t num)
@@ -33,6 +34,11 @@ static void print_raw_uint32(t_hydra_console *con, uint32_t num)
 		((num>>16)&0xFF),
 		((num>>8)&0xFF),
 		(num&0xFF));
+}
+
+static void bbio_mode_id(t_hydra_console *con)
+{
+	cprint(con, BBIO_CAN_HEADER, 4);
 }
 
 void bbio_mode_can(t_hydra_console *con)
@@ -53,12 +59,17 @@ void bbio_mode_can(t_hydra_console *con)
 	bsp_can_init(proto->dev_num, proto);
 	bsp_can_init_filter(proto->dev_num, proto);
 
+	bbio_mode_id(con);
+
 	while(!USER_BUTTON) {
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				bsp_can_deinit(proto->dev_num);
 				return;
+			case BBIO_MODE_ID:
+				bbio_mode_id(con);
+				break;
 			case BBIO_CAN_ID:
 				chnRead(con->sdu, rx_buff, 4);
 				can_id =  rx_buff[0] << 24;

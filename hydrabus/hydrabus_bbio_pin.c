@@ -25,7 +25,13 @@
 #include <ctype.h>
 
 #include "hydrabus_bbio.h"
+#include "hydrabus_bbio_pin.h"
 #include "bsp_gpio.h"
+
+static void bbio_mode_id(t_hydra_console *con)
+{
+	cprint(con, BBIO_PIN_HEADER, 4);
+}
 
 void bbio_mode_pin(t_hydra_console *con)
 {
@@ -45,11 +51,16 @@ void bbio_mode_pin(t_hydra_console *con)
 		bsp_gpio_init(BSP_GPIO_PORTA, i, pin_mode[i], pin_pull[i]);
 	}
 
+	bbio_mode_id(con);
+
 	while (true) {
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
 				return;
+			case BBIO_MODE_ID:
+				bbio_mode_id(con);
+				break;
 			case BBIO_PIN_READ:
 				data = bsp_gpio_port_read(BSP_GPIO_PORTA);
 				cprintf(con, "\x01%c", data & 0xff);
