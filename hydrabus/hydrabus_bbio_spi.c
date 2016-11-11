@@ -267,7 +267,7 @@ void bbio_mode_spi(t_hydra_console *con)
 					}
 				} else if ((bbio_subcommand & BBIO_SPI_CONFIG) == BBIO_SPI_CONFIG) {
 					proto->dev_polarity = (bbio_subcommand & 0b100)?1:0;
-					proto->dev_phase = (bbio_subcommand & 0b10)?1:0;
+					proto->dev_phase = (bbio_subcommand & 0b10)?0:1;
 					proto->dev_num = (bbio_subcommand & 0b1)?BSP_DEV_SPI2:BSP_DEV_SPI1;
 					status = bsp_spi_init(proto->dev_num, proto);
 					if(status == BSP_OK) {
@@ -276,6 +276,11 @@ void bbio_mode_spi(t_hydra_console *con)
 						cprint(con, "\x00", 1);
 					}
 				} else if ((bbio_subcommand & BBIO_SPI_CONFIG_PERIPH) == BBIO_SPI_CONFIG_PERIPH) {
+					if (bbio_subcommand & 0b1) {
+						bsp_spi_unselect(proto->dev_num);
+					} else {
+						bsp_spi_select(proto->dev_num);
+					}
 					cprint(con, "\x01", 1);
 				}
 
