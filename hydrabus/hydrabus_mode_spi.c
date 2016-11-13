@@ -25,7 +25,7 @@
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
-static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint32_t nb_data);
 
 static const char* str_pins_spi1= {
 	"CS:   PA15\r\nSCK:  PB3\r\nMISO: PB4\r\nMOSI: PB5\r\n"
@@ -130,6 +130,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	float arg_float;
+	uint32_t arg_u32;
 	int arg_int, t, i;
 	bsp_status_t bsp_status;
 
@@ -249,11 +250,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			/* Integer parameter. */
 			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
 				t += 2;
-				memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+				memcpy(&arg_u32, p->buf + p->tokens[t], sizeof(uint32_t));
 			} else {
-				arg_int = 1;
+				arg_u32 = 1;
 			}
-			dump(con, proto->buffer_rx, arg_int);
+			dump(con, proto->buffer_rx, arg_u32);
 			break;
 		default:
 			return t - token_pos;
@@ -325,14 +326,27 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return status;
 }
 
-static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint32_t nb_data)
 {
 	uint32_t status;
+	uint32_t bytes_read = 0;
+	uint8_t to_rx;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	status = bsp_spi_read_u8(proto->dev_num, rx_data, nb_data);
-	if (status == BSP_OK) {
-		print_hex(con, rx_data, nb_data);
+	while(bytes_read < nb_data){
+		/* using 240 to stay aligned in hexdump */
+		if((nb_data-bytes_read) >= 240) {
+			to_rx = 240;
+		} else {
+			to_rx = (nb_data-bytes_read);
+		}
+
+		status = bsp_spi_read_u8(proto->dev_num, rx_data, to_rx);
+		if (status == BSP_OK) {
+			print_hex(con, rx_data, to_rx);
+		}
+
+		bytes_read += to_rx;
 	}
 	return status;
 }

@@ -24,7 +24,7 @@
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 static void scan(t_hydra_console *con, t_tokenline_parsed *p);
-static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint32_t nb_data);
 
 #define I2C_DEV_NUM (1)
 
@@ -103,7 +103,8 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	float arg_float;
-	int arg_int, t, i;
+	uint32_t arg_u32;
+	int t, i;
 	bsp_status_t bsp_status;
 
 	for (t = token_pos; p->tokens[t]; t++) {
@@ -155,11 +156,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			/* Integer parameter. */
 			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
 				t += 2;
-				memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+				memcpy(&arg_u32, p->buf + p->tokens[t], sizeof(uint32_t));
 			} else {
-				arg_int = 1;
+				arg_u32 = 1;
 			}
-			dump(con, proto->buffer_rx, arg_int);
+			dump(con, proto->buffer_rx, arg_u32);
 			break;
 		default:
 			return t - token_pos;
@@ -262,29 +263,40 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return status;
 }
 
-static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint32_t nb_data)
 {
-	int i;
 	uint32_t status;
-	uint8_t tmp;
+	uint32_t bytes_read = 0;
+	uint8_t i, tmp, to_rx;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	status = BSP_ERROR;
-	for(i = 0; i < nb_data; i++) {
-		if(proto->ack_pending) {
-			/* Send I2C ACK */
-			bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
+	while(bytes_read < nb_data){
+		/* using 240 to stay aligned in hexdump */
+		if((nb_data-bytes_read) >= 240) {
+			to_rx = 240;
+		} else {
+			to_rx = (nb_data-bytes_read);
 		}
 
-		status = bsp_i2c_master_read_u8(proto->dev_num, &tmp);
-		rx_data[i] = tmp;
-		/* Read 1 data */
-		if(status != BSP_OK)
-			break;
+		status = BSP_ERROR;
+		for(i = 0; i < to_rx; i++) {
+			if(proto->ack_pending) {
+				/* Send I2C ACK */
+				bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
+			}
 
-		proto->ack_pending = 1;
+			status = bsp_i2c_master_read_u8(proto->dev_num, &tmp);
+			rx_data[i] = tmp;
+			/* Read 1 data */
+			if(status != BSP_OK)
+				break;
+
+			proto->ack_pending = 1;
+		}
+		print_hex(con, rx_data, to_rx);
+
+		bytes_read += to_rx;
 	}
-	print_hex(con, rx_data, nb_data);
 	return status;
 }
 
