@@ -264,8 +264,8 @@ static uint8_t flash_read_value(t_hydra_console *con)
 	flash_data_mode_input();
 
 	flash_read_en_low();
-
-	flash_read_u8(con);
+	__asm__("nop");
+	__asm__("nop");
 
 	flash_read_en_high();
 
@@ -287,15 +287,14 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	flash_pin_init(con);
 	flash_tim_init(con);
 
+	/* Chip is now disabled */
+	flash_chip_en_high();
+
 	/* Initial lines status */
 	flash_addr_low();
 	flash_cmd_low();
 	flash_write_en_high();
 	flash_read_en_high();
-
-	/* Chip is now disabled */
-	flash_chip_en_high();
-
 
 	return tokens_used;
 }
@@ -387,9 +386,24 @@ void flash_cleanup(t_hydra_console *con)
 	//HAL_TIM_Base_Stop(&htim);
 }
 
+static void delay_tWHR(void)
+{
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+}
+
 static int show(t_hydra_console *con, t_tokenline_parsed *p)
 {
+	int i;
 	int tokens_used;
+	#define READ_ID_DATA_NB_DATA (5)
+	uint8_t read_data[READ_ID_DATA_NB_DATA];
 	uint8_t data;
 
 	tokens_used = 0;
@@ -402,35 +416,46 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 	cprintf(con, "Reading ID...\r\n");
 
 	chSysLock();
+	memset(read_data, 0, READ_ID_DATA_NB_DATA);
+	/* Initial lines status */
+	flash_chip_en_high();
+	flash_addr_low();
+	flash_cmd_low();
+	flash_write_en_high();
+	flash_read_en_high();
 
+	/* Read ID Operation */
 	flash_chip_en_low();
 
 	flash_write_command(con, 0x90);
 	flash_write_address(con, 0x00);
+	/* Wait a Delay after address => tWHR (WE# HIGH to RE# LOW) 60ns on Micron */
+	delay_tWHR();
 
-	data = flash_read_value(con);
+	for(i = 0; i < READ_ID_DATA_NB_DATA; i++)
+		read_data[i] = flash_read_value(con);
 
 	flash_chip_en_high();
 
 	chSysUnlock();
 
-	cprintf(con, "%x\r\n", data);
+	for(i=0; i<READ_ID_DATA_NB_DATA; i++)
+	{
+		cprintf(con, "0x%X\r\n", read_data[i]);
+	}
 
+	/* Status Read Cycle */
 	cprintf(con, "Reading status...\r\n");
-
 	chSysLock();
-
 	flash_chip_en_low();
-
 	flash_write_command(con, 0x70);
-
+	/* Wait a Delay after command => tWHR (WE# HIGH to RE# LOW) 60ns on Micron */
+	delay_tWHR();
 	data = flash_read_value(con);
-
 	flash_chip_en_high();
-
 	chSysUnlock();
 
-	cprintf(con, "%x\r\n", data);
+	cprintf(con, "0x%X\r\n", data);
 
 	return tokens_used;
 }
