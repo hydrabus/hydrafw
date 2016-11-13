@@ -138,12 +138,11 @@ void bbio_mode_spi(t_hydra_console *con)
 					cprint(con, "\x00", 1);
 					break;
 				}
-				if(to_rx > 0) {
+				if(bbio_subcommand == BBIO_SPI_WRITE_READ) {
+					bsp_spi_select(proto->dev_num);
+				}
+				if(to_tx > 0) {
 					chnRead(con->sdu, tx_data, to_tx);
-
-					if(bbio_subcommand == BBIO_SPI_WRITE_READ) {
-						bsp_spi_select(proto->dev_num);
-					}
 					bsp_spi_write_u8(proto->dev_num, tx_data,
 							 to_tx);
 				}
