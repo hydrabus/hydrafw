@@ -138,14 +138,24 @@ void bbio_mode_spi(t_hydra_console *con)
 					cprint(con, "\x00", 1);
 					break;
 				}
-				if(to_rx > 0) {
+				if(bbio_subcommand == BBIO_SPI_WRITE_READ) {
+					bsp_spi_select(proto->dev_num);
+				}
+				if(to_tx > 0) {
 					chnRead(con->sdu, tx_data, to_tx);
-
-					if(bbio_subcommand == BBIO_SPI_WRITE_READ) {
-						bsp_spi_select(proto->dev_num);
+					i=0;
+					while(i<to_tx) {
+						if((to_tx-i) >= 255) {
+							bsp_spi_write_u8(proto->dev_num,
+									tx_data+i,
+									255);
+						} else {
+							bsp_spi_write_u8(proto->dev_num,
+									tx_data+i,
+									to_tx-i);
+						}
+						i+=255;
 					}
-					bsp_spi_write_u8(proto->dev_num, tx_data,
-							 to_tx);
 				}
 				i=0;
 				while(i<to_rx) {
@@ -232,6 +242,7 @@ void bbio_mode_spi(t_hydra_console *con)
 						cprint(con, (char *)&data, 1);
 						to_rx--;
 					}
+					break;
 				default:
 					cprint(con, "\x00", 1);
 					break;
@@ -267,8 +278,8 @@ void bbio_mode_spi(t_hydra_console *con)
 					}
 				} else if ((bbio_subcommand & BBIO_SPI_CONFIG) == BBIO_SPI_CONFIG) {
 					proto->dev_polarity = (bbio_subcommand & 0b100)?1:0;
-					proto->dev_phase = (bbio_subcommand & 0b10)?1:0;
-					proto->dev_num = (bbio_subcommand & 0b1)?BSP_DEV_SPI2:BSP_DEV_SPI1;
+					proto->dev_phase = (bbio_subcommand & 0b10)?0:1;
+					proto->dev_num = (bbio_subcommand & 0b1)?BSP_DEV_SPI1:BSP_DEV_SPI2;
 					status = bsp_spi_init(proto->dev_num, proto);
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);
@@ -276,6 +287,11 @@ void bbio_mode_spi(t_hydra_console *con)
 						cprint(con, "\x00", 1);
 					}
 				} else if ((bbio_subcommand & BBIO_SPI_CONFIG_PERIPH) == BBIO_SPI_CONFIG_PERIPH) {
+					if (bbio_subcommand & 0b1) {
+						bsp_spi_unselect(proto->dev_num);
+					} else {
+						bsp_spi_select(proto->dev_num);
+					}
 					cprint(con, "\x01", 1);
 				}
 
