@@ -27,13 +27,34 @@
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
-
-static TIM_HandleTypeDef htim;
+static void flash_display_id(t_hydra_console *con);
+static void dump(t_hydra_console *con, uint8_t *rx_data, uint32_t nb_data, uint32_t address);
 
 static const char* str_prompt_flash[] = {
 	"nandflash" PROMPT,
 };
 
+/* WE# High to RE# low - Around 60ns */
+static void delay_tWHR(void)
+{
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+}
+
+/* RE# Access Time - Around 30ns */
+static void delay_tREA(void)
+{
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+}
 
 void flash_init_proto_default(t_hydra_console *con)
 {
@@ -44,12 +65,14 @@ void flash_init_proto_default(t_hydra_console *con)
 	proto->dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
 	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
-	proto->dev_speed = FLASH_MAX_FREQ/2;
+	proto->dev_numbits = 3;
 }
 
 static void show_params(t_hydra_console *con)
 {
-	(void)con;
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	cprintf(con, "Address bytes : %d\r\n", proto->dev_numbits);
 }
 
 bool flash_pin_init(t_hydra_console *con)
@@ -75,35 +98,6 @@ bool flash_pin_init(t_hydra_console *con)
 	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_READ_BUSY,
 		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_PULLUP);
 	return true;
-}
-
-void flash_tim_init(t_hydra_console *con)
-{
-	mode_config_proto_t* proto = &con->mode->proto;
-	htim.Instance = TIM4;
-
-	htim.Init.Period = 42 - 1;
-	htim.Init.Prescaler = (FLASH_MAX_FREQ/proto->dev_speed) - 1;
-	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
-
-	HAL_TIM_Base_MspInit(&htim);
-	__TIM4_CLK_ENABLE();
-	HAL_TIM_Base_Init(&htim);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-	HAL_TIM_Base_Start(&htim);
-}
-
-void flash_tim_set_prescaler(t_hydra_console *con)
-{
-	mode_config_proto_t* proto = &con->mode->proto;
-
-	HAL_TIM_Base_Stop(&htim);
-	HAL_TIM_Base_DeInit(&htim);
-	htim.Init.Prescaler = (FLASH_MAX_FREQ/proto->dev_speed) - 1;
-	HAL_TIM_Base_Init(&htim);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-	HAL_TIM_Base_Start(&htim);
 }
 
 static void flash_data_mode_input(void)
@@ -134,6 +128,12 @@ static void flash_data_mode_output(void)
 	GPIOC->MODER |= 0x5555;
 }
 
+inline void flash_wait_ready(void)
+{
+	while(!(GPIOB->IDR&(1<<FLASH_READ_BUSY))){};
+}
+
+
 inline void flash_addr_high(void)
 {
 	bsp_gpio_set(BSP_GPIO_PORTB, FLASH_ADDR_LATCH);
@@ -154,12 +154,12 @@ inline void flash_cmd_low(void)
 	bsp_gpio_clr(BSP_GPIO_PORTB, FLASH_CMD_LATCH);
 }
 
-inline void flash_chip_en_high(void)
+void flash_chip_en_high(void)
 {
 	bsp_gpio_set(BSP_GPIO_PORTB, FLASH_CHIP_ENABLE);
 }
 
-inline void flash_chip_en_low(void)
+void flash_chip_en_low(void)
 {
 	bsp_gpio_clr(BSP_GPIO_PORTB, FLASH_CHIP_ENABLE);
 }
@@ -184,31 +184,6 @@ inline void flash_write_en_low(void)
 	bsp_gpio_clr(BSP_GPIO_PORTB, FLASH_WRITE_ENABLE);
 }
 
-inline void flash_wait_tick(void)
-{
-	while (!(TIM4->SR & TIM_SR_UIF)) {
-	}
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-}
-
-/*
-inline void flash_clk_high(void)
-{
-	while (!(TIM4->SR & TIM_SR_UIF)) {
-	}
-	bsp_gpio_set(BSP_GPIO_PORTB, config.clk_pin);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-}
-
-inline void flash_clk_low(void)
-{
-	while (!(TIM4->SR & TIM_SR_UIF)) {
-	}
-	bsp_gpio_clr(BSP_GPIO_PORTB, config.clk_pin);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-}
-*/
-
 void flash_write_u8(t_hydra_console *con, uint8_t tx_data)
 {
 	(void)con;
@@ -229,7 +204,7 @@ uint8_t flash_read_u8(t_hydra_console *con)
 	return value;
 }
 
-static void flash_write_command(t_hydra_console *con, uint8_t tx_data)
+void flash_write_command(t_hydra_console *con, uint8_t tx_data)
 {
 	flash_cmd_high();
 	flash_write_en_low();
@@ -243,7 +218,7 @@ static void flash_write_command(t_hydra_console *con, uint8_t tx_data)
 	flash_write_u8(con, 0x00);
 }
 
-static void flash_write_address(t_hydra_console *con, uint8_t tx_data)
+void flash_write_address(t_hydra_console *con, uint8_t tx_data)
 {
 	flash_addr_high();
 	flash_write_en_low();
@@ -257,19 +232,28 @@ static void flash_write_address(t_hydra_console *con, uint8_t tx_data)
 	flash_write_u8(con, 0x00);
 }
 
-static uint8_t flash_read_value(t_hydra_console *con)
+void flash_write_value(t_hydra_console *con, uint8_t tx_data)
+{
+	flash_write_en_low();
+
+	flash_write_u8(con, tx_data);
+
+	flash_write_en_high();
+
+	flash_write_u8(con, 0x00);
+}
+
+uint8_t flash_read_value(t_hydra_console *con)
 {
 	uint8_t result;
 
 	flash_data_mode_input();
 
 	flash_read_en_low();
-	__asm__("nop");
-	__asm__("nop");
+	delay_tREA();
+	result = flash_read_u8(con);
 
 	flash_read_en_high();
-
-	result = flash_read_u8(con);
 
 	return result;
 }
@@ -285,7 +269,6 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	tokens_used = 1 + exec(con, p, 1);
 
 	flash_pin_init(con);
-	flash_tim_init(con);
 
 	/* Chip is now disabled */
 	flash_chip_en_high();
@@ -296,6 +279,13 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	flash_write_en_high();
 	flash_read_en_high();
 
+	/* Query chip status */
+	flash_chip_en_low();
+	flash_write_command(con, 0x70);
+	delay_tWHR();
+	flash_read_value(con);
+	flash_chip_en_high();
+
 	return tokens_used;
 }
 
@@ -303,6 +293,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int t;
+	uint32_t arg_uint32, to_rx, address;
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
@@ -329,6 +320,36 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_LSB_FIRST:
 			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
 			break;
+		case T_ADDRESS:
+			/* Integer parameter. */
+			if (p->tokens[t + 1] == T_ARG_UINT) {
+				t += 2;
+				memcpy(&arg_uint32, p->buf + p->tokens[t], sizeof(uint32_t));
+			} else {
+				to_rx = 3;
+			}
+			proto->dev_numbits = arg_uint32;
+			break;
+		case T_HD:
+			/* Integer parameter. */
+			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
+				t += 2;
+				memcpy(&to_rx, p->buf + p->tokens[t], sizeof(uint32_t));
+			} else {
+				to_rx = 1;
+			}
+			/* Integer parameter. */
+			if (p->tokens[t + 1] == T_ARG_UINT) {
+				t += 2;
+				memcpy(&address, p->buf + p->tokens[t], sizeof(uint32_t));
+			} else {
+				address = 0;
+			}
+			dump(con, proto->buffer_rx, to_rx, address);
+			break;
+		case T_ID:
+			flash_display_id(con);
+			break;
 		default:
 			return t - token_pos;
 		}
@@ -337,92 +358,61 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	return t - token_pos;
 }
 
-static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
+static void dump(t_hydra_console *con, uint8_t *rx_data, uint32_t nb_data, uint32_t address)
 {
-	int i;
-	for (i = 0; i < nb_data; i++) {
-		flash_write_u8(con, tx_data[i]);
-	}
-	if(nb_data == 1) {
-		/* Write 1 data */
-		cprintf(con, hydrabus_mode_str_write_one_u8, tx_data[0]);
-	} else if(nb_data > 1) {
-		/* Write n data */
-		cprintf(con, hydrabus_mode_str_mul_write);
-		for(i = 0; i < nb_data; i++) {
-			cprintf(con, hydrabus_mode_str_mul_value_u8,
-				tx_data[i]);
-		}
-		cprintf(con, hydrabus_mode_str_mul_br);
-	}
-	return BSP_OK;
-}
+	uint32_t bytes_read = 0;
+	uint8_t to_rx, i;
 
-static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
-{
-	int i;
+	chSysLock();
 
-	for(i = 0; i < nb_data; i++) {
-		rx_data[i] = flash_read_u8(con);
-	}
-	if(nb_data == 1) {
-		/* Read 1 data */
-		cprintf(con, hydrabus_mode_str_read_one_u8, rx_data[0]);
-	} else if(nb_data > 1) {
-		/* Read n data */
-		cprintf(con, hydrabus_mode_str_mul_read);
-		for(i = 0; i < nb_data; i++) {
-			cprintf(con, hydrabus_mode_str_mul_value_u8,
-				rx_data[i]);
+	/* Read ID Operation */
+	flash_chip_en_low();
+
+	flash_write_command(con, 0x00);
+	flash_write_address(con, (address>>0)&0xFF);
+	flash_write_address(con, (address>>8)&0xFF);
+	flash_write_address(con, (address>>16)&0xFF);
+	/* Wait a Delay after address => tWHR (WE# HIGH to RE# LOW) 60ns on Micron */
+	delay_tWHR();
+	/* Wait for READ/BUSY pin (data is ready) */
+	flash_wait_ready();
+
+	while(bytes_read < nb_data && !palReadPad(GPIOA, 0)){
+		/* using 240 to stay aligned in hexdump */
+		if((nb_data-bytes_read) >= 240) {
+			to_rx = 240;
+		} else {
+			to_rx = (nb_data-bytes_read);
 		}
-		cprintf(con, hydrabus_mode_str_mul_br);
+
+		for(i=0; i<to_rx; i++) {
+			rx_data[i] = flash_read_value(con);
+		}
+		print_hex(con, rx_data, to_rx);
+
+		bytes_read += to_rx;
 	}
-	return BSP_OK;
+	flash_chip_en_high();
+
+	chSysUnlock();
 }
 
 void flash_cleanup(t_hydra_console *con)
 {
 	(void)con;
-	//HAL_TIM_Base_Stop(&htim);
 }
 
-static void delay_tWHR(void)
-{
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-	__asm__("nop");
-}
-
-static int show(t_hydra_console *con, t_tokenline_parsed *p)
+static void flash_display_id(t_hydra_console *con)
 {
 	int i;
-	int tokens_used;
 	#define READ_ID_DATA_NB_DATA (5)
 	uint8_t read_data[READ_ID_DATA_NB_DATA];
 	uint8_t data;
 
-	tokens_used = 0;
-	if (p->tokens[1] == T_PINS) {
-		tokens_used++;
-	} else {
-		show_params(con);
-	}
-
-	cprintf(con, "Reading ID...\r\n");
+	cprintf(con, "IDCode : ");
 
 	chSysLock();
 	memset(read_data, 0, READ_ID_DATA_NB_DATA);
-	/* Initial lines status */
-	flash_chip_en_high();
-	flash_addr_low();
-	flash_cmd_low();
-	flash_write_en_high();
-	flash_read_en_high();
 
 	/* Read ID Operation */
 	flash_chip_en_low();
@@ -441,13 +431,15 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 
 	for(i=0; i<READ_ID_DATA_NB_DATA; i++)
 	{
-		cprintf(con, "0x%X\r\n", read_data[i]);
+		cprintf(con, "%02X ", read_data[i]);
 	}
+	cprintf(con, "\r\n");
 
-	/* Status Read Cycle */
-	cprintf(con, "Reading status...\r\n");
+	cprintf(con, "Status register : ");
+	/* Read status Operation */
 	chSysLock();
 	flash_chip_en_low();
+
 	flash_write_command(con, 0x70);
 	/* Wait a Delay after command => tWHR (WE# HIGH to RE# LOW) 60ns on Micron */
 	delay_tWHR();
@@ -455,7 +447,19 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 	flash_chip_en_high();
 	chSysUnlock();
 
-	cprintf(con, "0x%X\r\n", data);
+	cprintf(con, "%02X\r\n", data);
+}
+
+static int show(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	int tokens_used;
+
+	tokens_used = 0;
+	if (p->tokens[1] == T_PINS) {
+		tokens_used++;
+	} else {
+		show_params(con);
+	}
 
 	return tokens_used;
 }
@@ -469,8 +473,6 @@ static const char *get_prompt(t_hydra_console *con)
 const mode_exec_t mode_flash_exec = {
 	.init = &init,
 	.exec = &exec,
-	.write = &write,
-	.read = &read,
 	.cleanup = &flash_cleanup,
 	.get_prompt = &get_prompt,
 };

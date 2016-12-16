@@ -30,16 +30,9 @@
 
 void flash_init_proto_default(t_hydra_console *con);
 bool flash_pin_init(t_hydra_console *con);
-void flash_tim_init(t_hydra_console *con);
-void flash_tim_set_prescaler(t_hydra_console *con);
-uint8_t flash_read_u8(t_hydra_console *con);
-void flash_write_u8(t_hydra_console *con, uint8_t tx_data);
-inline void flash_clock(void);
-inline void flash_clk_low(void);
-inline void flash_clk_high(void);
-inline void flash_sda_low(void);
-inline void flash_sda_high(void);
 void flash_send_bit(uint8_t bit);
-uint8_t flash_read_bit(void);
-uint8_t flash_read_bit_clock(void);
+void flash_write_value(t_hydra_console *con, uint8_t tx_data);
+void flash_write_command(t_hydra_console *con, uint8_t tx_data);
+void flash_write_address(t_hydra_console *con, uint8_t tx_data);
+inline void flash_wait_ready(void);
 void flash_cleanup(t_hydra_console *con);

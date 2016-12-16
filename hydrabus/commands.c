@@ -143,6 +143,7 @@ t_token_dict tl_dict[] = {
 	{ T_FILE, "filename" },
 	{ T_ONEWIRE, "1-wire" },
 	{ T_FLASH, "flash" },
+	{ T_ADDRESS, "address" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -1190,7 +1191,7 @@ t_token tokens_threewire[] = {
 	{ T_MSB_FIRST, \
 		.help = "Send/receive MSB first" }, \
 	{ T_LSB_FIRST, \
-		.help = "Send/receive LSB first" },
+		.help = "Send/receive LSB first" }, \
 
 t_token tokens_mode_flash[] = {
 	{
@@ -1199,25 +1200,16 @@ t_token tokens_mode_flash[] = {
 		.help = "Show flash parameters"
 	},
 	FLASH_PARAMETERS
-	/* 2-wire-specific commands */
+	/* flash-specific commands */
 	{
-		T_READ,
-		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Read byte (repeat with :<num>)"
+		T_ID,
+		.help = "Displays the ID and status registers"
 	},
 	{
-		T_WRITE,
+		T_HD,
+		.arg_type = T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Write byte (repeat with :<num>)"
-	},
-	{
-		T_ARG_UINT,
-		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Write byte (repeat with :<num>)"
-	},
-	{
-		T_ARG_STRING,
-		.help = "Write string"
+		.help = "Read byte using READ0 command. repeat with :<num>. Specify an address after "
 	},
 	/* BP commands */
 	{
@@ -1630,6 +1622,7 @@ t_token tl_tokens[] = {
 	},
 	{
 		T_FLASH,
+		.subtokens = tokens_flash,
 		.help = "NAND flash mode"
 	},
 	{
