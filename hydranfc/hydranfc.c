@@ -1163,10 +1163,14 @@ static const char *get_prompt(t_hydra_console *con)
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
 {
-	mode_config_proto_t* proto = &con->mode->proto;
+	mode_config_proto_t* proto;
 	int tokens_used = 0;
 
-	proto->dev_function = NFC_TYPEA;
+	if(con != NULL)
+	{
+		proto = &con->mode->proto;
+		proto->dev_function = NFC_TYPEA;
+	}
 
 	if(init_gpio(con) ==  FALSE) {
 		deinit_gpio();
