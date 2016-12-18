@@ -143,7 +143,6 @@ t_token_dict tl_dict[] = {
 	{ T_FILE, "filename" },
 	{ T_ONEWIRE, "1-wire" },
 	{ T_FLASH, "flash" },
-	{ T_ADDRESS, "address" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },

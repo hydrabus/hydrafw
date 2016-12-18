@@ -19,8 +19,6 @@
 
 #include "hydrabus_mode.h"
 
-#define FLASH_MAX_FREQ 1000000
-
 #define FLASH_ADDR_LATCH	2
 #define FLASH_CMD_LATCH		3
 #define FLASH_CHIP_ENABLE	4
