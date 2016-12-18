@@ -321,8 +321,6 @@ static const USBEndpointConfig ep2config = {
 static void usb_event(USBDriver *usbp, usbevent_t event)
 {
 	switch (event) {
-	case USB_EVENT_RESET:
-		return;
 	case USB_EVENT_ADDRESS:
 		return;
 	case USB_EVENT_CONFIGURED:
@@ -339,20 +337,28 @@ static void usb_event(USBDriver *usbp, usbevent_t event)
 
 		chSysUnlockFromISR();
 		return;
-	case USB_EVENT_UNCONFIGURED:
-		return;
-	case USB_EVENT_SUSPEND:
+  case USB_EVENT_RESET:
+    /* Falls into.*/
+  case USB_EVENT_UNCONFIGURED:
+    /* Falls into.*/
+  case USB_EVENT_SUSPEND:
 		chSysLockFromISR();
 
 		/* Disconnection event on suspend.*/
-		sduDisconnectI(&SDU2);
+		sduSuspendHookI(&SDU2);
 
 		chSysUnlockFromISR();
 		return;
-	case USB_EVENT_WAKEUP:
-		return;
-	case USB_EVENT_STALLED:
-		return;
+  case USB_EVENT_WAKEUP:
+    chSysLockFromISR();
+
+    /* Disconnection event on suspend.*/
+    sduWakeupHookI(&SDU2);
+
+    chSysUnlockFromISR();
+    return;
+  case USB_EVENT_STALLED:
+    return;
 	}
 	return;
 }
