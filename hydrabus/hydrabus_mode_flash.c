@@ -1,8 +1,8 @@
 /*
 * HydraBus/HydraNFC
 *
-* Copyright (C) 2014-2015 Benjamin VERNOUX
-* Copyright (C) 2015 Nicolas OBERLI
+* Copyright (C) 2014-2016 Benjamin VERNOUX
+* Copyright (C) 2016 Nicolas OBERLI
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
