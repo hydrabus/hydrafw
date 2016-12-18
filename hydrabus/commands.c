@@ -1187,29 +1187,16 @@ t_token tokens_threewire[] = {
 	{ }
 };
 
-#define FLASH_PARAMETERS \
-	{ T_MSB_FIRST, \
-		.help = "Send/receive MSB first" }, \
-	{ T_LSB_FIRST, \
-		.help = "Send/receive LSB first" }, \
-
 t_token tokens_mode_flash[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
 		.help = "Show flash parameters"
 	},
-	FLASH_PARAMETERS
 	/* flash-specific commands */
 	{
 		T_ID,
 		.help = "Displays the ID and status registers"
-	},
-	{
-		T_HD,
-		.arg_type = T_ARG_UINT,
-		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Read byte using READ0 command. repeat with :<num>. Specify an address after "
 	},
 	/* BP commands */
 	{
@@ -1220,7 +1207,6 @@ t_token tokens_mode_flash[] = {
 };
 
 t_token tokens_flash[] = {
-	FLASH_PARAMETERS
 	{ }
 };
 

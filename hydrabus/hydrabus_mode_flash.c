@@ -28,7 +28,6 @@
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 static void flash_display_id(t_hydra_console *con);
-static void dump(t_hydra_console *con, uint8_t *rx_data, uint32_t nb_data, uint32_t address);
 
 static const char* str_prompt_flash[] = {
 	"nandflash" PROMPT,
@@ -293,7 +292,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int t;
-	uint32_t arg_uint32, to_rx, address;
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
@@ -320,33 +318,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_LSB_FIRST:
 			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
 			break;
-		case T_ADDRESS:
-			/* Integer parameter. */
-			if (p->tokens[t + 1] == T_ARG_UINT) {
-				t += 2;
-				memcpy(&arg_uint32, p->buf + p->tokens[t], sizeof(uint32_t));
-			} else {
-				to_rx = 3;
-			}
-			proto->dev_numbits = arg_uint32;
-			break;
-		case T_HD:
-			/* Integer parameter. */
-			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
-				t += 2;
-				memcpy(&to_rx, p->buf + p->tokens[t], sizeof(uint32_t));
-			} else {
-				to_rx = 1;
-			}
-			/* Integer parameter. */
-			if (p->tokens[t + 1] == T_ARG_UINT) {
-				t += 2;
-				memcpy(&address, p->buf + p->tokens[t], sizeof(uint32_t));
-			} else {
-				address = 0;
-			}
-			dump(con, proto->buffer_rx, to_rx, address);
-			break;
 		case T_ID:
 			flash_display_id(con);
 			break;
@@ -356,45 +327,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	}
 
 	return t - token_pos;
-}
-
-static void dump(t_hydra_console *con, uint8_t *rx_data, uint32_t nb_data, uint32_t address)
-{
-	uint32_t bytes_read = 0;
-	uint8_t to_rx, i;
-
-	chSysLock();
-
-	/* Read ID Operation */
-	flash_chip_en_low();
-
-	flash_write_command(con, 0x00);
-	flash_write_address(con, (address>>0)&0xFF);
-	flash_write_address(con, (address>>8)&0xFF);
-	flash_write_address(con, (address>>16)&0xFF);
-	/* Wait a Delay after address => tWHR (WE# HIGH to RE# LOW) 60ns on Micron */
-	delay_tWHR();
-	/* Wait for READ/BUSY pin (data is ready) */
-	flash_wait_ready();
-
-	while(bytes_read < nb_data && !palReadPad(GPIOA, 0)){
-		/* using 240 to stay aligned in hexdump */
-		if((nb_data-bytes_read) >= 240) {
-			to_rx = 240;
-		} else {
-			to_rx = (nb_data-bytes_read);
-		}
-
-		for(i=0; i<to_rx; i++) {
-			rx_data[i] = flash_read_value(con);
-		}
-		print_hex(con, rx_data, to_rx);
-
-		bytes_read += to_rx;
-	}
-	flash_chip_en_high();
-
-	chSysUnlock();
 }
 
 void flash_cleanup(t_hydra_console *con)
@@ -457,6 +389,9 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 	tokens_used = 0;
 	if (p->tokens[1] == T_PINS) {
 		tokens_used++;
+		cprintf(con, "CE: PB%d\r\nRB: PB%d\r\nWE: PB%d\r\nRE: PB%d\r\nAL: PB%d\r\nCL: PB%d\r\n",
+			FLASH_CHIP_ENABLE, FLASH_READ_BUSY, FLASH_WRITE_ENABLE,
+			FLASH_READ_ENABLE, FLASH_ADDR_LATCH, FLASH_CMD_LATCH);
 	} else {
 		show_params(con);
 	}
