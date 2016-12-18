@@ -142,6 +142,7 @@ t_token_dict tl_dict[] = {
 	{ T_SCRIPT, "script" },
 	{ T_FILE, "filename" },
 	{ T_ONEWIRE, "1-wire" },
+	{ T_FLASH, "flash" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -1185,6 +1186,29 @@ t_token tokens_threewire[] = {
 	{ }
 };
 
+t_token tokens_mode_flash[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show flash parameters"
+	},
+	/* flash-specific commands */
+	{
+		T_ID,
+		.help = "Displays the ID and status registers"
+	},
+	/* BP commands */
+	{
+		T_EXIT,
+		.help = "Exit flash mode"
+	},
+	{ }
+};
+
+t_token tokens_flash[] = {
+	{ }
+};
+
 t_token tokens_gpio_mode[] = {
 	{
 		T_IN,
@@ -1580,6 +1604,11 @@ t_token tl_tokens[] = {
 	{
 		T_RNG,
 		.help = "Random number"
+	},
+	{
+		T_FLASH,
+		.subtokens = tokens_flash,
+		.help = "NAND flash mode"
 	},
 	{
 		T_DEBUG,
