@@ -129,6 +129,24 @@ void bbio_mode_spi(t_hydra_console *con)
 			case BBIO_SPI_SNIFF_CS_HIGH:
 				bbio_spi_sniff(con);
 				break;
+			case BBIO_SPI_STREAM:
+			case BBIO_SPI_STREAM_ZERO:
+				cprint(con, "\x01", 1);
+				if(bbio_subcommand == BBIO_SPI_STREAM_ZERO) {
+					bsp_spi_write_u8(proto->dev_num, "\x00", 1);
+					bsp_spi_read_u8(proto->dev_num, tx_data, 1);
+					cprint(con, tx_data, 1);
+				}
+				while (1) {
+					chnRead(con->sdu,  rx_data, 1);
+					if(rx_data[0] == 0)
+						break;
+					bsp_spi_write_u8(proto->dev_num, rx_data, 1);
+					bsp_spi_read_u8(proto->dev_num, tx_data, 1);
+					cprint(con, tx_data, 1);
+				}
+				cprint(con, "\x01", 1);
+				break;
 			case BBIO_SPI_WRITE_READ:
 			case BBIO_SPI_WRITE_READ_NCS:
 				chnRead(con->sdu, rx_data, 4);
