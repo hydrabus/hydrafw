@@ -139,7 +139,7 @@ void bbio_mode_spi(t_hydra_console *con)
 				}
 				while (!USER_BUTTON) {
 					chnRead(con->sdu,  tx_data, 1);
-					if(rx_data[0] == 0)
+					if(tx_data[0] == 0)
 						break;
 					bsp_spi_write_read_u8(proto->dev_num, tx_data, rx_data, 1);
 					cprintf(con, "%c", rx_data[0]);
