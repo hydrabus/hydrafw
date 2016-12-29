@@ -133,16 +133,16 @@ void bbio_mode_spi(t_hydra_console *con)
 			case BBIO_SPI_STREAM_ZERO:
 				cprint(con, "\x01", 1);
 				if(bbio_subcommand == BBIO_SPI_STREAM_ZERO) {
-					rx_data[0] = 0;
-					bsp_spi_write_read_u8(proto->dev_num, rx_data, tx_data, 1);
-					cprintf(con, "%c", tx_data[0]);
+					tx_data[0] = 0;
+					bsp_spi_write_read_u8(proto->dev_num, tx_data, rx_data, 1);
+					cprintf(con, "%c", rx_data[0]);
 				}
 				while (!USER_BUTTON) {
-					chnRead(con->sdu,  rx_data, 1);
+					chnRead(con->sdu,  tx_data, 1);
 					if(rx_data[0] == 0)
 						break;
-					bsp_spi_write_read_u8(proto->dev_num, rx_data, tx_data, 1);
-					cprintf(con, "%c", tx_data[0]);
+					bsp_spi_write_read_u8(proto->dev_num, tx_data, rx_data, 1);
+					cprintf(con, "%c", rx_data[0]);
 				}
 				cprint(con, "\x01", 1);
 				break;
