@@ -27,6 +27,7 @@
 #include "tokenline.h"
 #include "commands.h"
 #include "mode_config.h"
+#include "ff.h"
 
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
 
@@ -133,6 +134,7 @@ typedef struct hydra_console {
 	t_tokenline *tl;
 	t_mode_config *mode;
 	int console_mode;
+	FIL log_file;
 } t_hydra_console;
 
 enum console_modes {
@@ -156,11 +158,6 @@ int mode_exit(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_show(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p);
-int cmd_sd(t_hydra_console *con, t_tokenline_parsed *p);
-int cmd_show_sd(t_hydra_console *con);
-bool log_open(t_hydra_console *con);
-bool log_add(t_hydra_console *con, char *text, int text_len);
-void log_close(void);
 int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_dac(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_pwm(t_hydra_console *con, t_tokenline_parsed *p);

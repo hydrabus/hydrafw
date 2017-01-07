@@ -25,13 +25,11 @@
 #include "chprintf.h"
 #include "ff.h"
 #include "microsd.h"
+#include "hydrabus_sd.h"
 
 #include "common.h"
 
 uint32_t debug_flags = 0;
-
-char log_dest[48];
-static FIL log_file;
 
 extern t_token_dict tl_dict[];
 extern t_token tokens_mode_spi[];
@@ -142,6 +140,7 @@ static int cmd_logging(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	int t;
 	char *filename;
+	char log_dest[FILENAME_SIZE];
 	bool enable;
 
 	filename = NULL;
@@ -170,55 +169,17 @@ static int cmd_logging(t_hydra_console *con, t_tokenline_parsed *p)
 		} else {
 			strncpy(log_dest, filename, sizeof(log_dest) - 1);/* -1 to include terminating null-character */
 		}
-		log_open(con);
+		if(!file_open(&(con->log_file), log_dest, 'w')) {
+			cprintf(con, "Error. Unable to create file.\r\n");
+			enable = FALSE;
+			return FALSE;
+		}
 	} else {
 		log_dest[0] = '\0';
-		log_close();
+		file_close(&(con->log_file));
 	}
 
 	return TRUE;
-}
-
-bool log_open(t_hydra_console *con)
-{
-	FRESULT err;
-
-	if (!fs_ready && (err = mount())) {
-		cprintf(con, "mount error: %d\r\n", err);
-		return FALSE;
-	}
-
-	if ((err = f_open(&log_file, log_dest, FA_WRITE | FA_OPEN_ALWAYS))) {
-		cprintf(con, "Failed to open log file: error %d\r\n", err);
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-bool log_add(t_hydra_console *con, char *text, int text_len)
-{
-	FRESULT err;
-	UINT written;
-	int size;
-
-	size = f_size(&log_file);
-	if ((err = f_lseek(&log_file, size))) {
-		cprintf(con, "f_seek error: %d\r\n", err);
-		return FALSE;
-	}
-
-	if ((err = f_write(&log_file, text, text_len, &written))) {
-		cprintf(con, "Failed to write to log file: error %d\r\n", err);
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-void log_close(void)
-{
-	f_close(&log_file);
 }
 
 static struct cmd_map {
@@ -275,9 +236,9 @@ void execute(void *user, t_tokenline_parsed *p)
 		}
 	}
 
-	if (*log_dest) {
+	if (con->log_file.fs) {
 		/* Flush cached logging output. */
-		f_sync(&log_file);
+		file_sync(&(con->log_file));
 	}
 }
 

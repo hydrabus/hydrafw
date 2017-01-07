@@ -32,9 +32,18 @@ typedef struct {
 
 bool is_fs_ready(void);
 bool is_file_present(char * filename);
+int sd_perf(t_hydra_console *con, int offset);
+void fillbuffer(uint8_t pattern, uint8_t *b);
+void fillbuffers(uint8_t pattern);
+bool badblocks(uint32_t start, uint32_t end, uint32_t blockatonce, uint8_t pattern);
 
-int write_file(uint8_t* buffer, uint32_t size);
-void write_file_get_last_filename(filename_t* out_filename);
+bool file_open(FIL *file_handle, const char * filename, const char mode);
+uint32_t file_read(FIL *file_handle, uint8_t *data, int len);
+bool file_readline(FIL *file_handle, uint8_t *data, int len);
+bool file_append(FIL *file_handle, uint8_t *data, int len);
+bool file_create_write(uint8_t* data, uint32_t len, const char * prefix, char * filename);
+bool file_close(FIL *file_handle);
+bool file_sync(FIL * file_handle);
 
 int mount(void);
 int umount(void);

@@ -27,6 +27,8 @@
 #include <stdarg.h>
 
 #include "bsp_gpio.h"
+#include "microsd.h"
+#include "hydrabus_sd.h"
 
 #define HYDRAFW_VERSION "HydraFW (HydraBus) " HYDRAFW_GIT_TAG " " HYDRAFW_CHECKIN_DATE
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
@@ -53,8 +55,8 @@ void stream_write(t_hydra_console *con, const char *data, const uint32_t size)
 
 	chnWrite(chp, (uint8_t *)data, size);
 
-	if (*log_dest)
-		log_add(con, (char *)data, size);
+	if (con->log_file.fs)
+		file_append(&(con->log_file), (uint8_t *)data, size);
 }
 
 void print(void *user, const char *str)

@@ -28,15 +28,14 @@ int execute_script(t_hydra_console *con, char *filename)
 	int i;
 	if (!is_fs_ready()) {
 		err = mount();
-		if(err) {
+		if(!err) {
 			cprintf(con, "Mount failed: error %d.\r\n", err);
 			return FALSE;
 		}
 	}
 
-	err = f_open(&fp, (TCHAR *)filename, FA_READ | FA_OPEN_EXISTING);
-	if (err != FR_OK) {
-		cprintf(con, "Failed to open file %s: error %d.\r\n", filename, err);
+	if (!file_open(&fp, filename, 'r')) {
+		cprintf(con, "Failed to open file %s\r\n", filename);
 		return FALSE;
 	}
 
@@ -44,7 +43,7 @@ int execute_script(t_hydra_console *con, char *filename)
 	tl_input(con->tl, 0x03);
 
 	while(!f_eof(&fp)) {
-		f_gets((TCHAR *)inbuf, IN_OUT_BUF_SIZE, &fp);
+		file_readline(&fp, inbuf, IN_OUT_BUF_SIZE);
 		i=0;
 		if(inbuf[0] == '#') {
 			continue;

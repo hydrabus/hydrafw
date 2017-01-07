@@ -571,7 +571,6 @@ static void hydranfc_emul_mf_ultralight_run(t_hydra_console *con)
 int hydranfc_emul_mf_ultralight_file(t_hydra_console *con, char* filename)
 {
 	int i, j, filelen;
-	FRESULT err;
 	FIL fp;
 	uint32_t cnt;
 	uint8_t expected_uid_bcc0;
@@ -580,16 +579,14 @@ int hydranfc_emul_mf_ultralight_file(t_hydra_console *con, char* filename)
 	uint8_t obtained_uid_bcc1;
 
 	if (!is_fs_ready()) {
-		err = mount();
-		if(err) {
-			cprintf(con, "Mount failed: error %d\r\n", err);
+		if(!mount()) {
+			cprintf(con, "Mount failed\r\n");
 			return FALSE;
 		}
 	}
 
-	err = f_open(&fp, (TCHAR *)filename, FA_READ | FA_OPEN_EXISTING);
-	if (err != FR_OK) {
-		cprintf(con, "Failed to open file %s: error %d\r\n", filename, err);
+	if (!file_open(&fp, filename, 'r')) {
+		cprintf(con, "Failed to open file %s\r\n", filename);
 		return FALSE;
 	}
 
@@ -600,18 +597,13 @@ int hydranfc_emul_mf_ultralight_file(t_hydra_console *con, char* filename)
 	}
 
 	cnt = MFC_ULTRALIGHT_DATA_SIZE;
-	err = f_read(&fp, mf_ultralight_data, cnt, (void *)&cnt);
-	if (err != FR_OK) {
-		cprintf(con, "Failed to read file: error %d\r\n", err);
-		return FALSE;
-	}
+	cnt = file_read(&fp, mf_ultralight_data, cnt);
 	if (!cnt)
 	{
 		cprintf(con, "Failed to read %d bytes in file (cnt %d)\r\n", MFC_ULTRALIGHT_DATA_SIZE, cnt);
 		return FALSE;
 	}
-	f_close(&fp);
-	umount();
+	file_close(&fp);
 
 	cprintf(con, "DATA:");
 	for (i = 0; i < MFC_ULTRALIGHT_DATA_SIZE; i++) {
