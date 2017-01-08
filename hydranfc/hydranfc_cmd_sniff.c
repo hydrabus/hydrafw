@@ -350,7 +350,7 @@ void sniff_log(void)
 	D4_OFF;
 	D5_OFF;
 
-	if ( file_create_write(sniffer_get_buffer(), sniffer_get_size(), "nfc_sniff_", (char *)&write_filename) ) {
+	if ( file_create_write(sniffer_get_buffer(), sniffer_get_size(), "nfc_sniff_", (char *)&write_filename) == FALSE ) {
 		/* Display sniffed data */
 		tprintf("Sniffed data:\r\n");
 		tprint_str( (char*)sniffer_get_buffer(), sniffer_get_size() );
@@ -359,7 +359,7 @@ void sniff_log(void)
 
 		tprintf("write_file %s buffer=0x%08LX size=%ld bytes\r\n",
 			&write_filename.filename[2], sniffer_get_buffer(), sniffer_get_size());
-		tprintf("write_file() error\r\n", write_filename);
+		tprintf("write_file() error\r\n");
 		tprintf("\r\n");
 
 		/* Error Red LED blink */
