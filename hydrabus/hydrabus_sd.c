@@ -191,7 +191,7 @@ int cmd_sd_cd(t_hydra_console *con, t_tokenline_parsed *p)
 
 	if (!is_fs_ready()) {
 		err = mount();
-		if(err) {
+		if(err != 0) {
 			cprintf(con, "Mount failed: error %d.\r\n", err);
 			return FALSE;
 		}
@@ -214,7 +214,7 @@ int cmd_sd_pwd(t_hydra_console *con, t_tokenline_parsed *p)
 
 	if (!is_fs_ready()) {
 		err = mount();
-		if(err) {
+		if(err != 0) {
 			cprintf(con, "Mount failed: error %d.\r\n", err);
 			return FALSE;
 		}
@@ -244,7 +244,7 @@ int cmd_sd_ls(t_hydra_console *con, t_tokenline_parsed *p)
 
 	if (!is_fs_ready()) {
 		err = mount();
-		if(err) {
+		if(err != 0) {
 			cprintf(con, "Mount failed: error %d.\r\n", err);
 			return FALSE;
 		}
@@ -290,7 +290,7 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed *p)
 
 	if (!is_fs_ready()) {
 		err = mount();
-		if(err) {
+		if(err != 0) {
 			cprintf(con, "Mount failed: error %d.\r\n", err);
 			return FALSE;
 		}

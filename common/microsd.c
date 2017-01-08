@@ -51,8 +51,7 @@ bool is_file_present(char * filename)
 {
 	FRESULT err;
 	if (!fs_ready) {
-		err = mount();
-		if(err) {
+		if(mount() != 0) {
 			return FALSE;
 		}
 	}
@@ -79,10 +78,9 @@ bool is_file_present(char * filename)
  */
 bool file_open(FIL *file_handle, const char * filename, const char mode)
 {
-	FRESULT err;
 	BYTE flags;
 
-	if (!fs_ready && (err = mount())) {
+	if (!fs_ready && (mount() != 0)) {
 		return FALSE;
 	}
 
@@ -140,7 +138,7 @@ bool file_readline(FIL *file_handle, uint8_t *data, int len)
 		return FALSE;
 	}
 
-	if ((f_gets((TCHAR *)data, len, file_handle))) {
+	if (f_gets((TCHAR *)data, len, file_handle) == 0) {
 		return FALSE;
 	}
 
@@ -205,7 +203,7 @@ bool file_create_write(uint8_t* data, uint32_t len, const char * prefix, char * 
 	}
 
 	if(!is_fs_ready()) {
-		if(!mount()) {
+		if(mount() != 0) {
 			return FALSE;
 		}
 	}

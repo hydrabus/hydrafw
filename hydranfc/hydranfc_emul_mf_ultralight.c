@@ -579,7 +579,7 @@ int hydranfc_emul_mf_ultralight_file(t_hydra_console *con, char* filename)
 	uint8_t obtained_uid_bcc1;
 
 	if (!is_fs_ready()) {
-		if(!mount()) {
+		if(mount() != 0) {
 			cprintf(con, "Mount failed\r\n");
 			return FALSE;
 		}

@@ -23,13 +23,10 @@ static uint8_t inbuf[IN_OUT_BUF_SIZE+8];
 
 int execute_script(t_hydra_console *con, char *filename)
 {
-	FRESULT err;
 	FIL fp;
 	int i;
 	if (!is_fs_ready()) {
-		err = mount();
-		if(!err) {
-			cprintf(con, "Mount failed: error %d.\r\n", err);
+		if(mount() != 0) {
 			return FALSE;
 		}
 	}
@@ -42,8 +39,7 @@ int execute_script(t_hydra_console *con, char *filename)
 	/* Clear any input in tokenline buffer */
 	tl_input(con->tl, 0x03);
 
-	while(!f_eof(&fp)) {
-		file_readline(&fp, inbuf, IN_OUT_BUF_SIZE);
+	while(file_readline(&fp, inbuf, IN_OUT_BUF_SIZE)) {
 		i=0;
 		if(inbuf[0] == '#') {
 			continue;
@@ -53,5 +49,6 @@ int execute_script(t_hydra_console *con, char *filename)
 			i++;
 		}
 	}
+	file_close(&fp);
 	return TRUE;
 }
