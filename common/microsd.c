@@ -36,7 +36,7 @@ static uint8_t outbuf[IN_OUT_BUF_SIZE+8];
 static uint8_t inbuf[IN_OUT_BUF_SIZE+8];
 
 /* FS object.*/
-static FATFS SDC_FS;
+FATFS SDC_FS;
 /* FS Root */
 
 /* FS mounted and ready.*/
