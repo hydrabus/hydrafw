@@ -109,8 +109,8 @@ static void flash_data_mode_input(void)
 			      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
 	}
 	*/
-	GPIOC->MODER &= 0x0000;
-	GPIOC->PUPDR &= 0x0000;
+	GPIOC->MODER &= 0xFFFF0000;
+	GPIOC->PUPDR &= 0xFFFF0000;
 }
 
 static void flash_data_mode_output(void)
@@ -124,7 +124,7 @@ static void flash_data_mode_output(void)
 			      MODE_CONFIG_DEV_GPIO_NOPULL);
 	}
 	*/
-	GPIOC->MODER |= 0x5555;
+	GPIOC->MODER |= 0x00005555;
 }
 
 inline void flash_wait_ready(void)
@@ -332,6 +332,26 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 void flash_cleanup(t_hydra_console *con)
 {
 	(void)con;
+	uint8_t i;
+
+	for(i=0;i<8;i++){
+		bsp_gpio_init(BSP_GPIO_PORTC, i,
+			      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+	}
+
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_ADDR_LATCH,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_CMD_LATCH,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_CHIP_ENABLE,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_READ_ENABLE,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_WRITE_ENABLE,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_READ_BUSY,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+
 }
 
 static void flash_display_id(t_hydra_console *con)
