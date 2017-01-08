@@ -28,6 +28,7 @@
 #include "bsp_spi.h"
 #include "ff.h"
 #include "microsd.h"
+#include "hydrabus_sd.h"
 #include <string.h>
 
 static void extcb1(EXTDriver *extp, expchannel_t channel);
@@ -638,7 +639,6 @@ int hydranfc_read_mifare_ul(t_hydra_console *con, char* filename)
 	int i;
 	FRESULT err;
 	FIL fp;
-	uint32_t cnt;
 	uint8_t bcc;
 	t_hydranfc_scan_iso14443A* data;
 	t_hydranfc_scan_iso14443A data_buf;
@@ -730,25 +730,19 @@ int hydranfc_read_mifare_ul(t_hydra_console *con, char* filename)
 				}
 			}
 
-			err = f_open(&fp,(TCHAR *)filename, FA_WRITE | FA_OPEN_ALWAYS);
-			if (err != FR_OK) {
-				cprintf(con, "Failed to open file %s: error %d\r\n", filename, err);
+			if (!file_open(&fp, filename, 'w')) {
+				cprintf(con, "Failed to open file %s\r\n", filename);
 				return FALSE;
 			}
-			err = f_write(&fp, data->mf_ul_data, data->mf_ul_data_nb_rx_data, (void *)&cnt);
-			if(err != FR_OK) {
-				cprintf(con, "Failed to write file %s: error %d\r\n", filename, err);
-				f_close(&fp);
-				umount();
+			if(file_append(&fp, data->mf_ul_data, data->mf_ul_data_nb_rx_data)) {
+				cprintf(con, "Failed to write file %s\r\n", filename);
+				file_close(&fp);
 				return FALSE;
 			}
-			err = f_close(&fp);
-			if (err != FR_OK) {
-				cprintf(con, "Failed to close file %s: error %d\r\n", filename, err);
-				umount();
+			if (!file_close(&fp)) {
+				cprintf(con, "Failed to close file %s\r\n", filename);
 				return FALSE;
 			}
-			umount();
 			cprintf(con, "write file %s with success\r\n", filename);
 			return TRUE;
 		}else

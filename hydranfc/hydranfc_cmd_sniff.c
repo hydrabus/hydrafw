@@ -337,59 +337,6 @@ __attribute__ ((always_inline)) static inline uint32_t WaitGetDMABuffer(void)
 	return 0;
 }
 
-/* Return 0 if OK else < 0 error code */
-int sniff_write_file(uint8_t* buffer, uint32_t size)
-{
-	uint32_t i;
-	FRESULT err;
-	FIL FileObject;
-	uint32_t bytes_written;
-
-	if (size == 0) {
-		return -1;
-	}
-
-	if (is_fs_ready()==FALSE) {
-		if (mount() != 0) {
-			return -5;
-		}
-	} else {
-		umount();
-		if (mount() != 0) {
-			return -5;
-		}
-	}
-
-	/* Save data in file */
-	for(i=0; i<999; i++) {
-		sprintf(write_filename.filename, "0:nfc_sniff_%ld.txt", i);
-		err = f_open(&FileObject, write_filename.filename, FA_WRITE | FA_CREATE_NEW);
-		if (err == FR_OK) {
-			break;
-		}
-	}
-	if (err == FR_OK) {
-		err = f_write(&FileObject, buffer, size, (void *)&bytes_written);
-		if (err != FR_OK) {
-			f_close(&FileObject);
-			umount();
-			return -3;
-		}
-
-		err = f_close(&FileObject);
-		if (err != FR_OK) {
-			umount();
-			return -4;
-		}
-	} else {
-		umount();
-		return -2;
-	}
-
-	umount();
-	return 0;
-}
-
 /*
   Write sniffed data in file and display those data on Terminal if connected.
   In case of Write Error(No SDCard, Write error or no data) D5 LED blink quickly
@@ -403,14 +350,13 @@ void sniff_log(void)
 	D4_OFF;
 	D5_OFF;
 
-	if ( sniff_write_file(sniffer_get_buffer(), sniffer_get_size()) < 0 ) {
+	if ( file_create_write(sniffer_get_buffer(), sniffer_get_size(), "nfc_sniff_", (char *)&write_filename) ) {
 		/* Display sniffed data */
 		tprintf("Sniffed data:\r\n");
 		tprint_str( (char*)sniffer_get_buffer(), sniffer_get_size() );
 		tprintf("\r\n");
 		tprintf("\r\n");
 
-		write_file_get_last_filename(&write_filename);
 		tprintf("write_file %s buffer=0x%08LX size=%ld bytes\r\n",
 			&write_filename.filename[2], sniffer_get_buffer(), sniffer_get_size());
 		tprintf("write_file() error\r\n", write_filename);
@@ -429,7 +375,6 @@ void sniff_log(void)
 		tprint_str( (char*)sniffer_get_buffer(), sniffer_get_size() );
 		tprintf("\r\n");
 
-		write_file_get_last_filename(&write_filename);
 		tprintf("write_file %s buffer=0x%08LX size=%ld bytes\r\n",
 			&write_filename.filename[2], sniffer_get_buffer(), sniffer_get_size());
 		tprintf("write_file() OK\r\n");
