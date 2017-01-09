@@ -22,11 +22,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <microsd.h>
 
 #include "hydrabus_bbio.h"
 #include "hydrabus_bbio_flash.h"
 #include "hydrabus_mode_flash.h"
 
+static FIL outfile;
 
 static void bbio_mode_id(t_hydra_console *con)
 {
@@ -39,6 +41,7 @@ void bbio_mode_flash(t_hydra_console *con)
 	uint8_t bbio_subcommand;
 	uint8_t *tx_data = (uint8_t *)g_sbuf;
 	uint8_t *rx_data = (uint8_t *)g_sbuf+4096;
+	bool to_sd = FALSE;
 
 	flash_init_proto_default(con);
 	flash_pin_init(con);
@@ -104,8 +107,32 @@ void bbio_mode_flash(t_hydra_console *con)
 					i++;
 				}
 
-				cprint(con, "\x01", 1);
-				chnWrite(con->sdu, rx_data, to_rx);
+				if(to_sd) {
+					if(file_append(&outfile, rx_data, to_rx)) {
+						cprint(con, "\x01", 1);
+					} else {
+						cprint(con, "\x00", 1);
+					}
+				} else {
+					cprint(con, "\x01", 1);
+					cprint(con, (char *)rx_data, to_rx);
+				}
+				break;
+			case BBIO_FLASH_SD_DUMP_ON:
+				to_sd = TRUE;
+				if(file_open(&outfile, "sd_dump.bin", 'w')) {
+					cprint(con, "\x01", 1);
+				} else {
+					cprint(con, "\x00", 1);
+				}
+				break;
+			case BBIO_FLASH_SD_DUMP_OFF:
+				to_sd = FALSE;
+				if(file_close(&outfile)) {
+					cprint(con, "\x01", 1);
+				} else {
+					cprint(con, "\x00", 1);
+				}
 				break;
 			default:
 				if ((bbio_subcommand & BBIO_FLASH_WRITE_ADDR) == BBIO_FLASH_WRITE_ADDR) {
@@ -128,5 +155,6 @@ void bbio_mode_flash(t_hydra_console *con)
 			}
 		}
 	}
+	file_close(&outfile);
 	flash_cleanup(con);
 }
