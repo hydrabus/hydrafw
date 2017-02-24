@@ -157,31 +157,22 @@ bsp_status_t bsp_freq_deinit(bsp_dev_freq_t dev_num)
  */
 bsp_status_t bsp_freq_sample(bsp_dev_freq_t dev_num)
 {
-	uint32_t tmp;
-	bsp_status_t status;
+	(void)dev_num;
 	TIM_HandleTypeDef  htim;
 
 	htim.Instance = BSP_FREQ1_TIMER;
+	BSP_FREQ1_TIMER->SR ^= TIM_SR_CC1OF;
 
-	HAL_TIM_IC_Start(&htim, TIM_CHANNEL_1);
 	HAL_TIM_IC_Start(&htim, TIM_CHANNEL_2);
+	HAL_TIM_IC_Start(&htim, TIM_CHANNEL_1);
 
-	chThdSleepMilliseconds(100);
-
-	tmp = bsp_freq_getchannel(dev_num, 1);
-
-	chThdSleepMilliseconds(100);
-
-	if(tmp == bsp_freq_getchannel(dev_num, 1)) {
-		status = BSP_OK;
-	} else {
-		status = BSP_TIMEOUT;
+	while(!palReadPad(GPIOA, 0)) {
+		if((BSP_FREQ1_TIMER->SR & TIM_SR_CC1OF) != 0) {
+			return BSP_OK;
+		}
+		chThdYield();
 	}
-
-	HAL_TIM_IC_Stop(&htim, TIM_CHANNEL_1);
-	HAL_TIM_IC_Stop(&htim, TIM_CHANNEL_2);
-
-	return status;
+	return BSP_TIMEOUT;
 }
 
 /** \brief  Get FREQ capture values

@@ -30,35 +30,38 @@ int cmd_freq(t_hydra_console *con, t_tokenline_parsed *p)
 	bsp_status_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 	(void) p;
-	uint32_t period = 0, oldperiod = 0, duty = 0;
+	uint32_t period = 0, duty = 0;
 	float v = 0;
-	uint16_t scale = 0;
+	uint16_t scale = 1;
+	bool sampled = FALSE;
 
-	while(!USER_BUTTON) {
-		bsp_freq_deinit(proto->dev_num);
+	while (sampled == FALSE) {
 		if(bsp_freq_init(proto->dev_num, scale) != BSP_OK) {
 			cprintf(con, "Error\r\n");
 			return FALSE;
 		}
 		status = bsp_freq_sample(proto->dev_num);
+		cprintf(con, "%d\r\n", status);
 		if(status == BSP_TIMEOUT) {
-			continue;
-		}
-		if(scale == 0xffff) {
 			return FALSE;
 		}
 
 		period = bsp_freq_getchannel(proto->dev_num, 1);
-		if(oldperiod != period){
-			break;
-		} else {
-			oldperiod = period;
-		}
+		period +=2;
+		cprintf(con, "Period : %d\r\n", period);
 
-		scale++;
+		duty = bsp_freq_getchannel(proto->dev_num, 2);
+		duty+=2;
+		cprintf(con, "Duty : %d\r\n", duty);
+
+		if(duty > period) {
+			cprintf(con, "Autotuning...\r\n");
+			scale *=2;
+		} else {
+			sampled = TRUE;
+		}
 	}
 
-	duty = bsp_freq_getchannel(proto->dev_num, 2);
 	v = 1/(scale*period/BSP_FREQ_BASE_FREQ);
 	cprintf(con, "Frequency : %dHz\r\n", (int)v);
 	if(period > 0)
