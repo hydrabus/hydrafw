@@ -48,3 +48,4 @@ typedef struct {
 	uint8_t state;
 	uint8_t channels;
 } sump_config;
+void sump(t_hydra_console *con);
