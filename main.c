@@ -35,6 +35,7 @@
 #include "hydrabus.h"
 #include "hydranfc.h"
 #include "hydrabus/hydrabus_bbio.h"
+#include "hydrabus/hydrabus_sump.h"
 
 #include "bsp.h"
 
@@ -73,7 +74,7 @@ THD_FUNCTION(console, arg)
 	con = arg;
 	chRegSetThreadName(con->thread_name);
 	tl_init(con->tl, tl_tokens, tl_dict, print, con);
-	tl_set_prompt(con->tl, PROMPT);
+	con->tl->prompt = PROMPT;
 	tl_set_callback(con->tl, execute);
 
 	if(is_file_present(INIT_SCRIPT_NAME)) {
@@ -82,11 +83,22 @@ THD_FUNCTION(console, arg)
 
 	while (1) {
 		input = get_char(con);
-		if(input == 0) {
+		switch(input) {
+		case 0:
 			if (++i == 20) {
 				cmd_bbio(con);
+				return;
 			}
-		} else {
+			break;
+		/* SUMP identification is 5*\x00 \x02 */
+		/* Allows to enter SUMP mode autmomatically */
+		case 2:
+			if(i == 5) {
+				cprintf(con, "1ALS");
+				sump(con);
+			}
+			break;
+		default:
 			i=0;
 			tl_input(con->tl, input);
 		}

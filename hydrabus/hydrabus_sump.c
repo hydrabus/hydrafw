@@ -153,8 +153,19 @@ static void sump_deinit(void)
 	}
 }
 
-int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p) __attribute__((optimize("-O3")));
-int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p)
+int cmd_sump(t_hydra_console *con, t_tokenline_parsed *p)
+{
+	(void) p;
+	cprintf(con, "Interrupt by pressing user button.\r\n");
+	cprint(con, "\r\n", 2);
+
+	sump(con);
+
+	return TRUE;
+}
+
+void sump(t_hydra_console *con) __attribute__((optimize("-O3")));
+void sump(t_hydra_console *con)
 {
 
 	sump_init();
@@ -163,9 +174,6 @@ int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p
 	uint8_t sump_command;
 	uint8_t sump_parameters[4] = {0};
 	uint32_t index=0;
-
-	cprintf(con, "Interrupt by pressing user button.\r\n");
-	cprint(con, "\r\n", 2);
 
 	while (!palReadPad(GPIOA, 0)) {
 		if(chnReadTimeout(con->sdu, &sump_command, 1, 1)) {
@@ -296,6 +304,5 @@ int cmd_sump(t_hydra_console *con, __attribute__((unused)) t_tokenline_parsed *p
 		}
 	}
 	sump_deinit();
-	return TRUE;
 }
 
