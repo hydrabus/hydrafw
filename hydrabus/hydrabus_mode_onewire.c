@@ -27,7 +27,6 @@
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
-static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint32_t nb_data);
 
 static const char* str_prompt_onewire[] = {
 	"onewire1" PROMPT,
@@ -266,7 +265,6 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	uint32_t arg_u32;
 	int t;
 
 	for (t = token_pos; p->tokens[t]; t++) {
@@ -287,16 +285,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				break;
 			}
 			onewire_pin_init(con);
-			break;
-		case T_HD:
-			/* Integer parameter. */
-			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
-				t += 2;
-				memcpy(&arg_u32, p->buf + p->tokens[t], sizeof(uint32_t));
-			} else {
-				arg_u32 = 1;
-			}
-			dump(con, proto->buffer_rx, arg_u32);
 			break;
 		case T_MSB_FIRST:
 			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
@@ -358,25 +346,13 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return BSP_OK;
 }
 
-static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint32_t nb_data)
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 {
-	uint32_t bytes_read = 0;
-	uint8_t i, to_rx;
+	uint8_t i;
 
-	while(bytes_read < nb_data){
-		/* using 240 to stay aligned in hexdump */
-		if((nb_data-bytes_read) >= 240) {
-			to_rx = 240;
-		} else {
-			to_rx = (nb_data-bytes_read);
-		}
-
-		for(i = 0; i < to_rx; i++) {
-			rx_data[i] = onewire_read_u8(con);
-		}
-		print_hex(con, rx_data, to_rx);
-
-		bytes_read += to_rx;
+	while(i < nb_data){
+		rx_data[i] = onewire_read_u8(con);
+		i++;
 	}
 	return BSP_OK;
 }
@@ -411,6 +387,7 @@ const mode_exec_t mode_onewire_exec = {
 	.exec = &exec,
 	.write = &write,
 	.read = &read,
+	.dump = &dump,
 	.cleanup = &onewire_cleanup,
 	.get_prompt = &get_prompt,
 	.dath = &dath,

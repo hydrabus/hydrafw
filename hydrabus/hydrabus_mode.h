@@ -65,6 +65,8 @@ typedef struct mode_exec_t {
 	uint32_t (*write)(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data);
 	/* Read data command 'read' or 'read:n' (return status 0=OK) */
 	uint32_t (*read)(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
+	/* Dump data */
+	uint32_t (*dump)(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
 	/* Write & Read data (return status 0=OK) */
 	uint32_t (*write_read)(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data);
 	/* Set CLK High (x-WIRE or other raw mode) command '/' */

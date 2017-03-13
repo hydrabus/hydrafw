@@ -25,7 +25,6 @@
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
-static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
 
 static const char* str_pins_uart[] = {
 	"TX: PA9\r\nRX: PA10\r\n",
@@ -224,16 +223,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_BRIDGE:
 			bridge(con);
 			break;
-		case T_HD:
-			/* Integer parameter. */
-			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
-				t += 2;
-				memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
-			} else {
-				arg_int = 1;
-			}
-			dump(con, proto->buffer_rx, arg_int);
-			break;
 		default:
 			return t - token_pos;
 		}
@@ -294,9 +283,7 @@ static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	status = bsp_uart_read_u8(proto->dev_num, rx_data, nb_data);
-	if(status == BSP_OK) {
-		print_hex(con, rx_data, nb_data);
-	}
+
 	return status;
 }
 
@@ -356,6 +343,7 @@ const mode_exec_t mode_uart_exec = {
 	.exec = &exec,
 	.write = &write,
 	.read = &read,
+	.dump = &dump,
 	.write_read = &write_read,
 	.cleanup = &cleanup,
 	.get_prompt = &get_prompt,
