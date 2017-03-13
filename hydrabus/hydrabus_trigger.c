@@ -28,7 +28,7 @@
 #include <string.h>
 
 static uint8_t trigger_data[256];
-static uint32_t trigger_length = 0;
+static uint8_t trigger_length = 0;
 
 static void show_params(t_hydra_console *con)
 {
@@ -88,9 +88,7 @@ int cmd_trigger(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_FILTER:
 			t += 2;
 			trigger_length = strlen(p->buf + p->tokens[t]);
-			if(trigger_length<=255) {
-				memcpy(trigger_data, p->buf + p->tokens[t], trigger_length);
-			}
+			memcpy(trigger_data, p->buf + p->tokens[t], trigger_length);
 
 			show_params(con);
 			break;
