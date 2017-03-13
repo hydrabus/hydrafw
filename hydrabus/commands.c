@@ -143,6 +143,7 @@ t_token_dict tl_dict[] = {
 	{ T_FILE, "filename" },
 	{ T_ONEWIRE, "1-wire" },
 	{ T_FLASH, "flash" },
+	{ T_TRIGGER, "trigger" },
 
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
@@ -299,6 +300,24 @@ t_token tokens_mode_nfc_sniff[] = {
 	{ }
 };
 
+t_token tokens_mode_trigger[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show trigger parameters"
+	},
+	{
+		T_FILTER,
+		.arg_type = T_ARG_STRING,
+		.help = "Trigger data"
+	},
+	{
+		T_START,
+		.help = "Arm the trigger"
+	},
+	{ }
+};
+
 #define NFC_PARAMETERS \
 	{\
 		T_TYPEA,\
@@ -409,6 +428,11 @@ t_token tokens_mode_uart[] = {
 		T_SHOW,
 		.subtokens = tokens_mode_show,
 		.help = "Show UART parameters"
+	},
+	{
+		T_TRIGGER,
+		.subtokens = tokens_mode_trigger,
+		.help = "Setup UART trigger"
 	},
 	UART_PARAMETERS
 	/* UART-specific commands */
@@ -559,6 +583,11 @@ t_token tokens_mode_i2c[] = {
 		.subtokens = tokens_mode_show,
 		.help = "Show I2C parameters"
 	},
+	{
+		T_TRIGGER,
+		.subtokens = tokens_mode_trigger,
+		.help = "Setup I2C trigger"
+	},
 	I2C_PARAMETERS
 	/* I2C-specific commands */
 	{
@@ -664,6 +693,11 @@ t_token tokens_mode_spi[] = {
 		T_SHOW,
 		.subtokens = tokens_mode_show,
 		.help = "Show SPI parameters"
+	},
+	{
+		T_TRIGGER,
+		.subtokens = tokens_mode_trigger,
+		.help = "Setup SPI trigger"
 	},
 	SPI_PARAMETERS
 	/* SPI-specific commands */
@@ -900,6 +934,11 @@ t_token tokens_mode_onewire[] = {
 		.subtokens = tokens_mode_show,
 		.help = "Show 1-wire parameters"
 	},
+	{
+		T_TRIGGER,
+		.subtokens = tokens_mode_trigger,
+		.help = "Setup 1-wire trigger"
+	},
 	ONEWIRE_PARAMETERS
 	/* 1-wire-specific commands */
 	{
@@ -992,6 +1031,11 @@ t_token tokens_mode_twowire[] = {
 		T_SHOW,
 		.subtokens = tokens_mode_show,
 		.help = "Show 2-wire parameters"
+	},
+	{
+		T_TRIGGER,
+		.subtokens = tokens_mode_trigger,
+		.help = "Setup 2-wire trigger"
 	},
 	TWOWIRE_PARAMETERS
 	/* 2-wire-specific commands */
@@ -1098,6 +1142,11 @@ t_token tokens_mode_threewire[] = {
 		T_SHOW,
 		.subtokens = tokens_mode_show,
 		.help = "Show 3-wire parameters"
+	},
+	{
+		T_TRIGGER,
+		.subtokens = tokens_mode_trigger,
+		.help = "Setup 3-wire trigger"
 	},
 	THREEWIRE_PARAMETERS
 	/* 3-wire-specific commands */
