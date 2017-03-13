@@ -136,6 +136,7 @@ enum {
 	T_FILE,
 	T_ONEWIRE,
 	T_FLASH,
+	T_TRIGGER,
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,
