@@ -433,6 +433,10 @@ static int hydrabus_mode_read(t_hydra_console *con, t_tokenline_parsed *p,
 static int hydrabus_mode_hexdump(t_hydra_console *con, t_tokenline_parsed *p,
 			      int token_pos)
 {
+
+	/* Keep a multiple of 16 to be aligned in the hexdump */
+	#define HEXDUMP_CHUNK_SIZE 64
+
 	mode_config_proto_t* p_proto;
 	uint32_t mode_status;
 	uint32_t count;
@@ -452,9 +456,8 @@ static int hydrabus_mode_hexdump(t_hydra_console *con, t_tokenline_parsed *p,
 
 	while((bytes_read < count) && !palReadPad(GPIOA, 0)){
 		mode_status = !HYDRABUS_MODE_STATUS_OK;
-		/* using 240 to stay aligned in hexdump */
-		if((count-bytes_read) >= 240) {
-			to_rx = 240;
+		if((count-bytes_read) >= HEXDUMP_CHUNK_SIZE) {
+			to_rx = HEXDUMP_CHUNK_SIZE;
 		} else {
 			to_rx = (count-bytes_read);
 		}
