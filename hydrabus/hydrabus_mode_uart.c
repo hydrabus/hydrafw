@@ -95,11 +95,15 @@ msg_t bridge_thread (void *arg)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	while (!USER_BUTTON) {
-		bytes_read = bsp_uart_read_u8_timeout(proto->dev_num, rx_data, 8, 1);
-		if(bytes_read > 0) {
-			cprint(con, (char *)rx_data, bytes_read);
+		if(bsp_uart_rxne(proto->dev_num)) {
+			bytes_read = bsp_uart_read_u8_timeout(proto->dev_num,
+							      rx_data, 8, 1);
+			if(bytes_read > 0) {
+				cprint(con, (char *)rx_data, bytes_read);
+			}
+		} else {
+			chThdYield();
 		}
-		chThdYield();
 	}
 	return (msg_t)1;
 }
