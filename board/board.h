@@ -1,6 +1,6 @@
 /*
     ChibiOS/RT - Copyright (C) 2006-2013 Giovanni Di Sirio
-    HydraBus/HydraNFC - Copyright (C) 2014-2015 Benjamin VERNOUX
+    HydraBus/HydraNFC - Copyright (C) 2014-2017 Benjamin VERNOUX
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@
  * MCU type as defined in the ST header.
  */
 #define STM32F405xx
-#define PLATFORM_NAME           "STM32F405 High Performance with DSP and FPU"
+#define PLATFORM_NAME           "STM32F4x5 High Performance with DSP and FPU"
 /*
  * IO pins assignments.
  */
