@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2014-2016 Benjamin VERNOUX
+ * Copyright (C) 2014-2017 Benjamin VERNOUX
  * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -236,7 +236,7 @@ void execute(void *user, t_tokenline_parsed *p)
 		}
 	}
 
-	if (con->log_file.fs) {
+	if (con->log_file.obj.fs) {
 		/* Flush cached logging output. */
 		file_sync(&(con->log_file));
 	}

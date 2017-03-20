@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2014-2015 Benjamin VERNOUX
+ * Copyright (C) 2014-2017 Benjamin VERNOUX
  * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,7 +55,7 @@ void stream_write(t_hydra_console *con, const char *data, const uint32_t size)
 
 	chnWrite(chp, (uint8_t *)data, size);
 
-	if (con->log_file.fs)
+	if (con->log_file.obj.fs)
 		file_append(&(con->log_file), (uint8_t *)data, size);
 }
 

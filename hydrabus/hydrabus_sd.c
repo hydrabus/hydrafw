@@ -123,14 +123,9 @@ static FRESULT sd_dir_list(t_hydra_console *con, char *path)
 	uint32_t nb_dirs;
 	uint64_t file_size;
 	uint32_t file_size_mb;
-#if _USE_LFN
-	static char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
-	fno.lfname = lfn;
-	fno.lfsize = sizeof lfn;
-#endif
 
 	res = f_opendir(&dir, path);
-	if(res) {
+	if(res != FR_OK) {
 		cprintf(con, "Failed to open directory: error %d.\r\n", res);
 		return res;
 	}
@@ -140,16 +135,10 @@ static FRESULT sd_dir_list(t_hydra_console *con, char *path)
 
 	while(1) {
 		res = f_readdir(&dir, &fno);
-		if ((res != FR_OK) || !fno.fname[0]) {
+		if ((res != FR_OK) || fno.fname[0] == 0) {
 			break;
 		}
-
-		if (fno.fname[0] == '.') {
-			continue;
-		}
-
 		if (fno.fattrib & AM_DIR) {
-
 			nb_dirs++;
 		} else {
 			nb_files++;
@@ -164,11 +153,7 @@ static FRESULT sd_dir_list(t_hydra_console *con, char *path)
 			(fno.fdate >> 9) + 1980, (fno.fdate >> 5) & 15, fno.fdate & 31,
 			(fno.ftime >> 11), (fno.ftime >> 5) & 63,
 			fno.fsize,
-#if _USE_LFN
-			*fno.lfname ? fno.lfname : fno.fname);
-#else
 			fno.fname);
-#endif
 	}
 
 	file_size_mb = (uint32_t)(file_size/(uint64_t)(1024*1024));
@@ -302,7 +287,7 @@ int cmd_sd_cat(t_hydra_console *con, t_tokenline_parsed *p)
 		return FALSE;
 	}
 
-	filelen = fp.fsize;
+	filelen = f_size(&fp);
 	if(filelen > MAX_FILE_SIZE) {
 		cprintf(con, "File is too big!\r\n");
 		return FALSE;
@@ -523,7 +508,7 @@ int cmd_sd_erase(t_hydra_console *con, t_tokenline_parsed *p)
 		/* DESTRUCTIVE TEST START */
 		cprintf(con, "Formatting... ");
 		chThdSleepMilliseconds(10);
-		err = f_mkfs("",0,0);
+		err = f_mkfs("", FM_ANY, 0, g_sbuf, NB_SBUFFER);
 		if (err != FR_OK) {
 			cprintf(con, "f_mkfs err:%d\r\n", err);
 			umount();

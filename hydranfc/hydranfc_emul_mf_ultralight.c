@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2016 Benjamin VERNOUX
+ * Copyright (C) 2016-2017 Benjamin VERNOUX
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -590,7 +590,7 @@ int hydranfc_emul_mf_ultralight_file(t_hydra_console *con, char* filename)
 		return FALSE;
 	}
 
-	filelen = fp.fsize;
+	filelen = f_size(&fp);
 	if(filelen != MFC_ULTRALIGHT_DATA_SIZE) {
 		cprintf(con, "Expected file size shall be equal to %d Bytes and it is %d Bytes\r\n", MFC_ULTRALIGHT_DATA_SIZE, filelen);
 		return FALSE;
