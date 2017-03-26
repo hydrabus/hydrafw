@@ -2,7 +2,7 @@
  * HydraBus/HydraNFC
  *
  * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
- * Copyright (C) 2014-2016 Benjamin VERNOUX
+ * Copyright (C) 2014-2017 Benjamin VERNOUX
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
+/* Developer warning keep this list synchronized with same number of items and same items order as commands.h => enum */
 t_token_dict tl_dict[] = {
 	{ /* Dummy entry */ },
 	{ T_HELP, "help" },
@@ -84,13 +85,14 @@ t_token_dict tl_dict[] = {
 	{ T_SAMPLES, "samples" },
 	{ T_PERIOD, "period" },
 	{ T_CONTINUOUS, "continuous" },
+	{ T_SCAN, "scan" },
+#ifdef HYDRANFC
 	{ T_NFC, "nfc" },
 	{ T_TYPEA, "typea" },
 	{ T_VICINITY, "vicinity" },
 	{ T_EMUL_MIFARE, "emul-mifare" },
 	{ T_EMUL_ISO14443A, "emul-3a" },
 	{ T_REGISTERS, "registers" },
-	{ T_SCAN, "scan" },
 	{ T_READ_MF_ULTRALIGHT, "read-mf-ul" },
 	{ T_EMUL_MF_ULTRALIGHT, "emul-mf-ul" },
 	{ T_CLONE_MF_ULTRALIGHT, "clone-mf-ul" },
@@ -100,6 +102,7 @@ t_token_dict tl_dict[] = {
 	{ T_BIN, "bin" },
 	{ T_DIRECT_MODE_0, "dm0" },
 	{ T_DIRECT_MODE_1, "dm1" },
+#endif
 	{ T_GPIO, "gpio" },
 	{ T_IN, "in" },
 	{ T_OUT, "out" },
@@ -144,7 +147,9 @@ t_token_dict tl_dict[] = {
 	{ T_ONEWIRE, "1-wire" },
 	{ T_FLASH, "flash" },
 	{ T_TRIGGER, "trigger" },
+	/* Developer warning add new command(s) here */
 
+	/* BP-compatible commands */
 	{ T_LEFT_SQ, "[" },
 	{ T_RIGHT_SQ, "]" },
 	{ T_LEFT_CURLY, "{" },
@@ -198,14 +203,6 @@ t_token tokens_mode_show[] = {
 	{ }
 };
 
-t_token tokens_mode_nfc_show[] = {
-	{
-		T_REGISTERS,
-		.help = "Show NFC registers"
-	},
-	{ }
-};
-
 t_token tokens_mode_can_show[] = {
 	{
 		T_PINS,
@@ -214,19 +211,6 @@ t_token tokens_mode_can_show[] = {
 	{
 		T_FILTER,
 		.help = "Show CAN filter"
-	},
-	{ }
-};
-
-t_token tokens_mode_nfc_scan[] = {
-	{
-		T_PERIOD,
-		.arg_type = T_ARG_UINT,
-		.help = "Delay between scans (msec)"
-	},
-	{
-		T_CONTINUOUS,
-		.help = "Scan until interrupted"
 	},
 	{ }
 };
@@ -267,6 +251,47 @@ t_token tokens_mode_can_filter[] = {
 	{ }
 };
 
+t_token tokens_mode_trigger[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show trigger parameters"
+	},
+	{
+		T_FILTER,
+		.arg_type = T_ARG_STRING,
+		.help = "Trigger data"
+	},
+	{
+		T_START,
+		.help = "Arm the trigger"
+	},
+	{ }
+};
+
+#ifdef HYDRANFC
+
+t_token tokens_mode_nfc_show[] = {
+	{
+		T_REGISTERS,
+		.help = "Show NFC registers"
+	},
+	{ }
+};
+
+t_token tokens_mode_nfc_scan[] = {
+	{
+		T_PERIOD,
+		.arg_type = T_ARG_UINT,
+		.help = "Delay between scans (msec)"
+	},
+	{
+		T_CONTINUOUS,
+		.help = "Scan until interrupted"
+	},
+	{ }
+};
+
 t_token tokens_mode_nfc_emul_mf_ul[] = {
 	{
 		T_FILE,
@@ -296,24 +321,6 @@ t_token tokens_mode_nfc_sniff[] = {
 	{
 		T_FRAME_TIME,
 		.help = "Add start/end frame timestamp(in CPU cycles)"
-	},
-	{ }
-};
-
-t_token tokens_mode_trigger[] = {
-	{
-		T_SHOW,
-		.subtokens = tokens_mode_show,
-		.help = "Show trigger parameters"
-	},
-	{
-		T_FILTER,
-		.arg_type = T_ARG_STRING,
-		.help = "Trigger data"
-	},
-	{
-		T_START,
-		.help = "Arm the trigger"
 	},
 	{ }
 };
@@ -393,6 +400,7 @@ t_token tokens_nfc[] = {
 	NFC_PARAMETERS
 	{ }
 };
+#endif /* ifdef HYDRANFC */
 
 t_token tokens_parity[] = {
 	{ T_NONE },
@@ -1631,11 +1639,13 @@ t_token tl_tokens[] = {
 		.help = "UART mode",
 		.help_full = "Configuration: uart [device (1/2)> [speed (value in bauds)] [parity (none/even/odd)] [stop-bits (1/2)]\r\nInteraction: <read/write (value:repeat)>"
 	},
+#ifdef HYDRANFC
 	{
 		T_NFC,
 		.subtokens = tokens_nfc,
 		.help = "NFC mode"
 	},
+#endif
 	{
 		T_CAN,
 		.subtokens = tokens_can,

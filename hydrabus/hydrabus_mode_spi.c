@@ -19,7 +19,6 @@
 
 #include "hydrabus_mode_spi.h"
 #include "bsp_spi.h"
-#include "hydranfc.h"
 #include "common.h"
 #include <string.h>
 

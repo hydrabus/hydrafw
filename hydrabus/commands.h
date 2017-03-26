@@ -2,7 +2,7 @@
  * HydraBus/HydraNFC
  *
  * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
- * Copyright (C) 2014-2015 Benjamin VERNOUX
+ * Copyright (C) 2014-2017 Benjamin VERNOUX
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/* Developer warning keep this list synchronized with same number of items and same items order as commands.c => t_token_dict tl_dict */
 enum {
 	T_HELP = 1,
 	T_HISTORY,
@@ -77,13 +77,14 @@ enum {
 	T_SAMPLES,
 	T_PERIOD,
 	T_CONTINUOUS,
+	T_SCAN,
+#ifdef HYDRANFC
 	T_NFC,
 	T_TYPEA,
 	T_VICINITY,
 	T_EMUL_MIFARE,
 	T_EMUL_ISO14443A,
 	T_REGISTERS,
-	T_SCAN,
 	T_READ_MF_ULTRALIGHT,
 	T_EMUL_MF_ULTRALIGHT,
 	T_CLONE_MF_ULTRALIGHT,
@@ -93,6 +94,7 @@ enum {
 	T_BIN,
 	T_DIRECT_MODE_0,
 	T_DIRECT_MODE_1,
+#endif
 	T_GPIO,
 	T_IN,
 	T_OUT,
@@ -137,6 +139,7 @@ enum {
 	T_ONEWIRE,
 	T_FLASH,
 	T_TRIGGER,
+	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
 	T_LEFT_SQ,

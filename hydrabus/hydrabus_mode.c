@@ -50,7 +50,9 @@ extern const mode_exec_t mode_flash_exec;
 extern t_token tokens_mode_spi[];
 extern t_token tokens_mode_i2c[];
 extern t_token tokens_mode_uart[];
+#ifdef HYDRANFC
 extern t_token tokens_mode_nfc[];
+#endif
 extern t_token tokens_mode_jtag[];
 extern t_token tokens_mode_onewire[];
 extern t_token tokens_mode_twowire[];
@@ -66,7 +68,9 @@ static struct {
 	{ T_SPI, tokens_mode_spi, &mode_spi_exec },
 	{ T_I2C, tokens_mode_i2c, &mode_i2c_exec },
 	{ T_UART, tokens_mode_uart, &mode_uart_exec },
+#ifdef HYDRANFC
 	{ T_NFC, tokens_mode_nfc, &mode_nfc_exec },
+#endif
 	{ T_JTAG, tokens_mode_jtag, &mode_jtag_exec },
 	{ T_ONEWIRE, tokens_mode_onewire, &mode_onewire_exec },
 	{ T_TWOWIRE, tokens_mode_twowire, &mode_twowire_exec },

@@ -33,7 +33,9 @@
 
 #include "microsd.h"
 #include "hydrabus.h"
+#ifdef HYDRANFC
 #include "hydranfc.h"
+#endif
 #include "hydrabus/hydrabus_bbio.h"
 #include "hydrabus/hydrabus_sump.h"
 
@@ -122,7 +124,9 @@ int main(void)
 {
 	int sleep_ms, i;
 	int local_nb_console;
+#ifdef HYDRANFC
 	bool hydranfc_detected;
+#endif
 
 	bsp_enter_usb_dfu();
 
@@ -178,9 +182,10 @@ int main(void)
 	/* Wait for USB Enumeration. */
 	chThdSleepMilliseconds(100);
 
+#ifdef HYDRANFC
 	/* Check HydraNFC */
 	hydranfc_detected = hydranfc_is_detected();
-
+#endif
 	/*
 	 * Normal main() thread activity.
 	 */
@@ -231,6 +236,7 @@ int main(void)
 			sleep_ms = BLINK_SLOW;
 		ULED_OFF;
 
+#ifdef HYDRANFC
 		if(hydranfc_detected == TRUE) {
 			/* If K3_BUTTON is pressed */
 			if (K3_BUTTON) {
@@ -239,6 +245,7 @@ int main(void)
 				chThdSleepMilliseconds(1000);
 			}
 		}
+#endif
 		chThdSleepMilliseconds(sleep_ms);
 	}
 }
