@@ -22,9 +22,6 @@ Warning in order to use this driver all GPIOs peripherals shall be enabled.
 #define CANx_TIMEOUT_MAX (100000) // About 10sec (see common/chconf.h/CH_CFG_ST_FREQUENCY) can be aborted by UBTN too
 #define NB_CAN (BSP_DEV_CAN_END)
 
-/* For whatever reason, this flag is not in stm32f4xx_hal_can.h */
-#define CAN_FLAG_FMP0 ((uint32_t)0x12000003)
-
 static CAN_HandleTypeDef can_handle[NB_CAN];
 static mode_config_proto_t* can_mode_conf[NB_CAN];
 
@@ -86,6 +83,7 @@ static void can_gpio_hw_deinit(bsp_dev_can_t dev_num)
 		/* Reset peripherals */
 		__CAN1_FORCE_RESET();
 		__CAN1_RELEASE_RESET();
+		__CAN1_CLK_DISABLE();
 
 		/* Disable peripherals GPIO */
 		HAL_GPIO_DeInit(BSP_CAN1_TX_PORT, BSP_CAN1_TX_PIN);
@@ -94,6 +92,7 @@ static void can_gpio_hw_deinit(bsp_dev_can_t dev_num)
 		/* Reset peripherals */
 		__CAN2_FORCE_RESET();
 		__CAN2_RELEASE_RESET();
+		__CAN2_CLK_DISABLE();
 
 		/* Disable peripherals GPIO */
 		HAL_GPIO_DeInit(BSP_CAN2_TX_PORT, BSP_CAN2_TX_PIN);
@@ -108,9 +107,15 @@ static void can_gpio_hw_deinit(bsp_dev_can_t dev_num)
   */
 static void can_error(bsp_dev_can_t dev_num)
 {
+	CAN_HandleTypeDef* hcan;
+
+	hcan = &can_handle[dev_num];
+	__HAL_UNLOCK(hcan);
 	if(bsp_can_deinit(dev_num) == BSP_OK) {
-		/* Re-Initialize the CAN comunication bus */
+		/* Re-Initialize the CAN comunication
+		 * bus */
 		bsp_can_init(dev_num, can_mode_conf[dev_num]);
+		bsp_can_init_filter(dev_num, can_mode_conf[dev_num]);
 	}
 }
 
@@ -228,8 +233,6 @@ bsp_status_t bsp_can_init_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mod
 
 	bsp_status_t status;
 
-	can_gpio_hw_init(dev_num);
-
 	hcanfilter.FilterIdLow = 0;
 	hcanfilter.FilterIdHigh = 0;
 	hcanfilter.FilterMaskIdHigh = 0;
@@ -265,8 +268,6 @@ bsp_status_t bsp_can_set_filter(bsp_dev_can_t dev_num,
 	hcan = &can_handle[dev_num];
 
 	bsp_status_t status;
-
-	can_gpio_hw_init(dev_num);
 
 	hcanfilter.FilterIdLow = id_low<<5;
 	hcanfilter.FilterIdHigh = id_high<<5;

@@ -135,13 +135,13 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_FILTER:
 			/* Integer parameter. */
-			memcpy(&arg_int, p->buf + p->tokens[t+3], sizeof(int));
 			switch(p->tokens[t+1]) {
 			case T_OFF:
 				bsp_status = bsp_can_init_filter(proto->dev_num,
 								 proto);
 				break;
 			case T_LOW:
+				memcpy(&arg_int, p->buf + p->tokens[t+3], sizeof(int));
 				config[proto->dev_num].filter_id_low = arg_int;
 				bsp_status = bsp_can_set_filter(proto->dev_num,
 								proto,
@@ -149,6 +149,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 								config[proto->dev_num].filter_id_high);
 				break;
 			case T_HIGH:
+				memcpy(&arg_int, p->buf + p->tokens[t+3], sizeof(int));
 				config[proto->dev_num].filter_id_high = arg_int;
 				bsp_status = bsp_can_set_filter(proto->dev_num,
 								proto,
@@ -252,12 +253,12 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	status = bsp_can_read(proto->dev_num, &rx_msg);
 	if(status == BSP_OK) {
 		if (rx_msg.IDE == CAN_ID_STD) {
-			cprintf(con, "SID: %02X ", rx_msg.StdId);
+			cprintf(con, "SID: 0x%02X ", rx_msg.StdId);
 		} else {
-			cprintf(con, "EID: %02X ", rx_msg.ExtId);
+			cprintf(con, "EID: 0x%02X ", rx_msg.ExtId);
 		}
-		cprintf(con, "DLC: %02X ", rx_msg.DLC);
-		cprintf(con, "RTR: %02X ", rx_msg.RTR);
+		cprintf(con, "DLC: 0x%02X ", rx_msg.DLC);
+		cprintf(con, "RTR: 0x%02X ", rx_msg.RTR);
 		cprintf(con, "DATA: ");
 		for (nb_data = 0; nb_data < rx_msg.DLC; nb_data++) {
 			cprintf(con, "%02X", rx_msg.Data[nb_data]);
