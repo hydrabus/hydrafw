@@ -64,6 +64,7 @@ typedef struct {
 	uint32_t dev_speed;
 	uint8_t dev_parity;
 	uint8_t dev_stop_bit;
+	uint8_t bus_mode;
 } uart_config_t;
 
 typedef struct {
