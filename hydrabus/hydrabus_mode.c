@@ -24,6 +24,7 @@
 
 #include "hydrabus.h"
 #include "hydrabus_mode.h"
+#include "hydrabus_trigger.h"
 #include "mode_config.h"
 
 #include "bsp_rng.h"
@@ -256,6 +257,9 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 				 */
 				t += tokens_used - 1;
 			break;
+		case T_TRIGGER:
+			t += cmd_trigger(con, p, t + 1);
+			break;
 		case T_EXIT:
 			MAYBE_CALL(con->mode->exec->cleanup);
 			mode_exit(con, p);
@@ -323,23 +327,15 @@ static int chomp_strings(t_hydra_console *con, t_tokenline_parsed *p,
 			  int token_pos, unsigned int *num_bytes)
 {
 	mode_config_proto_t* p_proto = &con->mode->proto;
-	int count, t, i;
+	int t;
 	char * str;
 
 	t = token_pos;
 	t++;
 	*num_bytes = 0;
 	str = p->buf + p->tokens[t++];
-	count=0;
-	/* Poor man's strlen() */
-	while (str[count] != '\0') {
-		count++;
-	}
-	i=0;
-	while(i<count) {
-		p_proto->buffer_tx[(*num_bytes)++] = str[i];
-		i++;
-	}
+
+	*num_bytes = parse_escaped_string(str, p_proto->buffer_tx);
 
 	return t - token_pos;
 }

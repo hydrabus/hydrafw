@@ -172,5 +172,6 @@ void cprintf(t_hydra_console *con, const char *fmt, ...);
 void print_dbg(const char *data, const uint32_t size);
 void printf_dbg(const char *fmt, ...);
 void print_hex(t_hydra_console *con, uint8_t* data, uint8_t size);
+uint8_t parse_escaped_string(char * input, uint8_t * output);
 
 #endif /* _COMMON_H_ */

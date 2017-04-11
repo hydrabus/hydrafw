@@ -87,8 +87,7 @@ int cmd_trigger(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		switch (p->tokens[t]) {
 		case T_FILTER:
 			t += 2;
-			trigger_length = strlen(p->buf + p->tokens[t]);
-			memcpy(trigger_data, p->buf + p->tokens[t], trigger_length);
+			trigger_length = parse_escaped_string(p->buf + p->tokens[t], trigger_data);
 
 			show_params(con);
 			break;
@@ -99,6 +98,7 @@ int cmd_trigger(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_SHOW:
 			t += show(con, p, t);
+			break;
 		default:
 			return t - token_pos;
 		}

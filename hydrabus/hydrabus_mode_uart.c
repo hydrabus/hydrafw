@@ -19,7 +19,6 @@
 #include "common.h"
 #include "hydrabus_mode_uart.h"
 #include "bsp_uart.h"
-#include "hydrabus_trigger.h"
 #include <string.h>
 
 #define UART_DEFAULT_SPEED (9600)
@@ -228,10 +227,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_BRIDGE:
 			bridge(con);
-			break;
-		case T_TRIGGER:
-			t++;
-			t += cmd_trigger(con, p, t);
 			break;
 		default:
 			return t - token_pos;

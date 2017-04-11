@@ -558,3 +558,54 @@ uint64_t get_cyclecounter64I(void)
 	return cyclecounter64;
 }
 
+static uint8_t hexchartonibble(char hex)
+{
+	if (hex >= '0' && hex <= '9') return hex - '0';
+	if (hex >= 'a' && hex <='f') return hex - 'a' + 10;
+	if (hex >= 'A' && hex <='F') return hex - 'A' + 10;
+	return 0;
+}
+
+static uint8_t hex2byte(char * hex)
+{
+	uint8_t val = 0;
+	val = (hexchartonibble(hex[0]) << 4);
+	val += hexchartonibble(hex[1]);
+	return val;
+}
+
+uint8_t parse_escaped_string(char * input, uint8_t * output)
+{
+	uint8_t count=0;
+	uint8_t i=0;
+	uint8_t num_bytes=0;
+	unsigned char c;
+
+	/* Poor man's strlen() */
+	while (input[count] != '\0') {
+		count++;
+	}
+
+	while(i<count) {
+		if(input[i] == '\\'){
+			switch(input[i+1]) {
+			case '\\':
+				output[num_bytes++] = '\\';
+				i++;
+				break;
+			case 'x':
+				c = (char)hex2byte(&(input[i+2]));
+				output[num_bytes++] = c;
+				i+=3;
+				break;
+			default:
+				i++;
+				break;
+			}
+		} else {
+			output[num_bytes++] = input[i];
+		}
+		i++;
+	}
+	return num_bytes;
+}
