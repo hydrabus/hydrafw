@@ -103,6 +103,8 @@ msg_t bridge_thread (void *arg)
 			if(bytes_read > 0) {
 				cprint(con, (char *)rx_data, bytes_read);
 			}
+		} else {
+			chThdYield();
 		}
 	}
 	return (msg_t)1;
