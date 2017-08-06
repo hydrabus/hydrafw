@@ -74,31 +74,6 @@ static void show_params(t_hydra_console *con)
 	cprintf(con, "Address bytes : %d\r\n", proto->dev_numbits);
 }
 
-bool flash_pin_init(t_hydra_console *con)
-{
-	uint8_t i;
-	(void)con;
-
-	for(i=0;i<8;i++){
-		bsp_gpio_init(BSP_GPIO_PORTC, i,
-			      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
-	}
-
-	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_ADDR_LATCH,
-		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
-	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_CMD_LATCH,
-		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
-	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_CHIP_ENABLE,
-		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
-	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_READ_ENABLE,
-		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
-	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_WRITE_ENABLE,
-		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
-	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_READ_BUSY,
-		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_PULLUP);
-	return true;
-}
-
 static void flash_data_mode_input(void)
 {
 	/*
@@ -269,22 +244,6 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 
 	flash_pin_init(con);
 
-	/* Chip is now disabled */
-	flash_chip_en_high();
-
-	/* Initial lines status */
-	flash_addr_low();
-	flash_cmd_low();
-	flash_write_en_high();
-	flash_read_en_high();
-
-	/* Query chip status */
-	flash_chip_en_low();
-	flash_write_command(con, 0x70);
-	delay_tWHR();
-	flash_read_value(con);
-	flash_chip_en_high();
-
 	return tokens_used;
 }
 
@@ -423,6 +382,48 @@ static const char *get_prompt(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	return str_prompt_flash[proto->dev_num];
+}
+
+bool flash_pin_init(t_hydra_console *con)
+{
+	uint8_t i;
+	(void)con;
+
+	for(i=0;i<8;i++){
+		bsp_gpio_init(BSP_GPIO_PORTC, i,
+			      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+	}
+
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_ADDR_LATCH,
+		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_CMD_LATCH,
+		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_CHIP_ENABLE,
+		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_READ_ENABLE,
+		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_WRITE_ENABLE,
+		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, FLASH_READ_BUSY,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_PULLUP);
+
+	/* Chip is now disabled */
+	flash_chip_en_high();
+
+	/* Initial lines status */
+	flash_addr_low();
+	flash_cmd_low();
+	flash_write_en_high();
+	flash_read_en_high();
+
+	/* Query chip status */
+	flash_chip_en_low();
+	flash_write_command(con, 0x70);
+	delay_tWHR();
+	flash_read_value(con);
+	flash_chip_en_high();
+
+	return true;
 }
 
 const mode_exec_t mode_flash_exec = {
