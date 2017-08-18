@@ -418,10 +418,10 @@ bool flash_pin_init(t_hydra_console *con)
 
 	/* Query chip status */
 	flash_chip_en_low();
-	flash_write_command(con, 0x70);
-	delay_tWHR();
-	flash_read_value(con);
+	flash_write_command(con, 0xff);
 	flash_chip_en_high();
+	DelayUs(1000);
+	flash_wait_ready();
 
 	return true;
 }
