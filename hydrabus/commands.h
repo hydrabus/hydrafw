@@ -140,6 +140,9 @@ enum {
 	T_FLASH,
 	T_TRIGGER,
 	T_SLCAN,
+	T_TS1,
+	T_TS2,
+	T_SJW,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */

@@ -114,6 +114,7 @@ static void can_error(bsp_dev_can_t dev_num)
 	if(bsp_can_deinit(dev_num) == BSP_OK) {
 		/* Re-Initialize the CAN comunication
 		 * bus */
+		can_gpio_hw_init(dev_num);
 		bsp_can_init(dev_num, can_mode_conf[dev_num]);
 		bsp_can_init_filter(dev_num, can_mode_conf[dev_num]);
 	}
@@ -145,6 +146,39 @@ uint32_t bsp_can_get_speed(bsp_dev_can_t dev_num)
 	CAN_HandleTypeDef* hcan;
 	hcan = &can_handle[dev_num];
 	return 2000000/hcan->Init.Prescaler;
+}
+
+/**
+  * @brief  CANx bus timing settings
+  * @param  dev_num: CAN dev num
+  * @param  ts1: Time setting 1
+  * @param  ts2: Time setting 2
+  * @param  sjw: Resynchronization Jump Width
+  * @retval status: status of the init.
+  */
+bsp_status_t bsp_can_set_timings(bsp_dev_can_t dev_num, uint8_t ts1, uint8_t ts2, uint8_t sjw)
+{
+	CAN_HandleTypeDef* hcan;
+	bsp_status_t status;
+
+	hcan = &can_handle[dev_num];
+
+	HAL_CAN_DeInit(hcan);
+
+	hcan->Init.SJW = (uint32_t)sjw<<24;
+	hcan->Init.BS1 = (uint32_t)ts1<<16;
+	hcan->Init.BS2 = (uint32_t)ts2<<20;
+
+	status = HAL_CAN_Init(hcan);
+
+	return status;
+}
+
+uint32_t bsp_can_get_timings(bsp_dev_can_t dev_num)
+{
+	CAN_HandleTypeDef* hcan;
+	hcan = &can_handle[dev_num];
+	return hcan->Instance->BTR;
 }
 
 /**
@@ -185,7 +219,7 @@ bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 	hcan->Init.AWUM = ENABLE;
 
 	/* non-automatic retransmission mode */
-	hcan->Init.NART = DISABLE;
+	hcan->Init.NART = ENABLE;
 
 	/* receive FIFO Locked mode */
 	hcan->Init.RFLM = DISABLE;
@@ -193,12 +227,12 @@ bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 	/* transmit FIFO priority */
 	hcan->Init.TXFP = DISABLE;
 
-	hcan->Init.SJW  = CAN_SJW_1TQ;
+	hcan->Init.SJW  = CAN_SJW_2TQ;
 	hcan->Init.Mode = CAN_MODE_NORMAL;
 
 	/* CAN Baudrate */
-	hcan->Init.BS1 = CAN_BS1_14TQ;
-	hcan->Init.BS2 = CAN_BS2_6TQ;
+	hcan->Init.BS1 = CAN_BS1_15TQ;
+	hcan->Init.BS2 = CAN_BS2_5TQ;
 
 	//hcan->Init.Prescaler=1;        // 2000 kbit/s
 	//hcan->Init.Prescaler=2;        // 1000 kbit/s
@@ -322,8 +356,15 @@ bsp_status_t bsp_can_write(bsp_dev_can_t dev_num, CanTxMsgTypeDef* tx_msg)
 	hcan->pTxMsg = tx_msg;
 
 	status = HAL_CAN_Transmit(hcan, CANx_TIMEOUT_MAX);
-	if(status != BSP_OK) {
+	switch(status) {
+	case BSP_ERROR:
 		can_error(dev_num);
+		break;
+	case BSP_OK:
+	case BSP_TIMEOUT:
+	case BSP_BUSY:
+	default:
+		return status;
 	}
 	return status;
 }
@@ -362,8 +403,15 @@ bsp_status_t bsp_can_read(bsp_dev_can_t dev_num, CanRxMsgTypeDef* rx_msg)
 	hcan->pRxMsg = rx_msg;
 
 	status = HAL_CAN_Receive(hcan, CAN_FIFO0, CANx_TIMEOUT_MAX);
-	if(status != BSP_OK) {
+	switch(status) {
+	case BSP_ERROR:
 		can_error(dev_num);
+		break;
+	case BSP_OK:
+	case BSP_TIMEOUT:
+	case BSP_BUSY:
+	default:
+		return status;
 	}
 	return status;
 }
@@ -379,4 +427,3 @@ bsp_status_t bsp_can_rxne(bsp_dev_can_t dev_num)
 
 	return __HAL_CAN_MSG_PENDING(hcan, CAN_FIFO0);
 }
-
