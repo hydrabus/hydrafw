@@ -54,10 +54,15 @@ static void init_proto_default(t_hydra_console *con)
 static void show_params(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
+	uint32_t timings;
 
+	timings = bsp_can_get_timings(proto->dev_num);
 	cprintf(con, "Device: CAN%d\r\nSpeed: %d bps\r\n",
 		proto->dev_num + 1, proto->dev_speed);
 	cprintf(con, "ID: 0x%0X\r\n", config[proto->dev_num].can_id);
+	cprintf(con, "TS1: %dTQ\r\n", 1+((timings&0xf0000)>>16));
+	cprintf(con, "TS2: %dTQ\r\n", 1+((timings&0x700000)>>20));
+	cprintf(con, "SJW: %dTQ\r\n", 1+((timings&0x3000000)>>24));
 }
 
 static void can_slcan_out(t_hydra_console *con, CanRxMsgTypeDef *msg)
@@ -309,6 +314,10 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	/* Defaults */
 	init_proto_default(con);
 
+	config[proto->dev_num].ts1 = 15;
+	config[proto->dev_num].ts2 = 4;
+	config[proto->dev_num].sjw = 3;
+
 	/* Process cmdline arguments, skipping "can". */
 	tokens_used = 1 + exec(con, p, 1);
 
@@ -373,6 +382,60 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			cprintf(con, "Speed: %d bps\r\n", proto->dev_speed);
+			break;
+		case T_TS1:
+			/* Integer parameter. */
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			if(arg_int > 0 && arg_int <= 16) {
+				config[proto->dev_num].ts1 = arg_int-1;
+				bsp_status = bsp_can_set_timings(proto->dev_num,
+								 config[proto->dev_num].ts1,
+								 config[proto->dev_num].ts2,
+								 config[proto->dev_num].sjw);
+				if( bsp_status != BSP_OK) {
+					cprintf(con, str_bsp_init_err, bsp_status);
+					return t;
+				}
+			} else {
+				cprintf(con, "Incorrect value\r\n");
+			}
+			break;
+		case T_TS2:
+			/* Integer parameter. */
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			if(arg_int > 0 && arg_int <= 8) {
+				config[proto->dev_num].ts2 = arg_int-1;
+				bsp_status = bsp_can_set_timings(proto->dev_num,
+								 config[proto->dev_num].ts1,
+								 config[proto->dev_num].ts2,
+								 config[proto->dev_num].sjw);
+				if( bsp_status != BSP_OK) {
+					cprintf(con, str_bsp_init_err, bsp_status);
+					return t;
+				}
+			} else {
+				cprintf(con, "Incorrect value\r\n");
+			}
+			break;
+		case T_SJW:
+			/* Integer parameter. */
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			if(arg_int > 0 && arg_int <= 4) {
+				config[proto->dev_num].sjw = arg_int-1;
+				bsp_status = bsp_can_set_timings(proto->dev_num,
+								 config[proto->dev_num].ts1,
+								 config[proto->dev_num].ts2,
+								 config[proto->dev_num].sjw);
+				if( bsp_status != BSP_OK) {
+					cprintf(con, str_bsp_init_err, bsp_status);
+					return t;
+				}
+			} else {
+				cprintf(con, "Incorrect value\r\n");
+			}
 			break;
 		case T_FILTER:
 			/* Integer parameter. */

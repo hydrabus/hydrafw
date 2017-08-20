@@ -148,6 +148,9 @@ t_token_dict tl_dict[] = {
 	{ T_FLASH, "flash" },
 	{ T_TRIGGER, "trigger" },
 	{ T_SLCAN, "slcan" },
+	{ T_TS1, "ts1" },
+	{ T_TS2, "ts2" },
+	{ T_SJW, "sjw" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -511,6 +514,21 @@ t_token tokens_uart[] = {
 		T_SPEED,\
 		.arg_type = T_ARG_UINT,\
 		.help = "Bus bitrate"\
+	},\
+	{\
+		T_TS1,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Time segment 1 value (1-16)"\
+	},\
+	{\
+		T_TS2,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Time segment 2 value (1-8)"\
+	},\
+	{\
+		T_SJW,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Resynchronisation jump width (1-4)"\
 	},
 
 t_token tokens_mode_can[] = {
