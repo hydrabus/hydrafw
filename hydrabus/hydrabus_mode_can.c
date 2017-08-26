@@ -224,7 +224,7 @@ void slcan(t_hydra_console *con) {
 			}
 
 			if(bsp_can_set_speed(proto->dev_num, proto->dev_speed) == BSP_OK) {
-				cprint(con, "\n", 1);
+				cprint(con, "\r", 1);
 			}else {
 				cprint(con, "\x07", 1);
 			}
@@ -288,11 +288,11 @@ void slcan(t_hydra_console *con) {
 			break;
 		case 'V':
 			/*Version*/
-			cprint(con, "V0101\n", 6);
+			cprint(con, "V0101\r", 6);
 			break;
 		case 'N':
 			/*Serial*/
-			cprint(con, "NHYDR\n", 6);
+			cprint(con, "NHYDR\r", 6);
 			break;
 		case 'Z':
 			/*Timestamp*/
