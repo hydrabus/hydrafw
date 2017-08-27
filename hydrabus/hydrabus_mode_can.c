@@ -299,6 +299,9 @@ void slcan(t_hydra_console *con) {
 			/*Not implemented*/
 			cprint(con, "\x07", 1);
 			break;
+		default:
+			cprint(con, "\x07", 1);
+			break;
 		}
 	}
 	chThdTerminate(rthread);
