@@ -318,6 +318,11 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	config[proto->dev_num].ts2 = 4;
 	config[proto->dev_num].sjw = 3;
 
+	bsp_can_set_timings(proto->dev_num,
+			    config[proto->dev_num].ts1,
+			    config[proto->dev_num].ts2,
+			    config[proto->dev_num].sjw);
+
 	/* Process cmdline arguments, skipping "can". */
 	tokens_used = 1 + exec(con, p, 1);
 
@@ -388,7 +393,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			t += 2;
 			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
 			if(arg_int > 0 && arg_int <= 16) {
-				config[proto->dev_num].ts1 = arg_int-1;
+				config[proto->dev_num].ts1 = arg_int;
 				bsp_status = bsp_can_set_timings(proto->dev_num,
 								 config[proto->dev_num].ts1,
 								 config[proto->dev_num].ts2,
@@ -406,7 +411,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			t += 2;
 			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
 			if(arg_int > 0 && arg_int <= 8) {
-				config[proto->dev_num].ts2 = arg_int-1;
+				config[proto->dev_num].ts2 = arg_int;
 				bsp_status = bsp_can_set_timings(proto->dev_num,
 								 config[proto->dev_num].ts1,
 								 config[proto->dev_num].ts2,
@@ -424,7 +429,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			t += 2;
 			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
 			if(arg_int > 0 && arg_int <= 4) {
-				config[proto->dev_num].sjw = arg_int-1;
+				config[proto->dev_num].sjw = arg_int;
 				bsp_status = bsp_can_set_timings(proto->dev_num,
 								 config[proto->dev_num].ts1,
 								 config[proto->dev_num].ts2,
