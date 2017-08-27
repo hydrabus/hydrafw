@@ -165,9 +165,9 @@ bsp_status_t bsp_can_set_timings(bsp_dev_can_t dev_num, uint8_t ts1, uint8_t ts2
 
 	HAL_CAN_DeInit(hcan);
 
-	hcan->Init.SJW = (uint32_t)sjw<<24;
-	hcan->Init.BS1 = (uint32_t)ts1<<16;
-	hcan->Init.BS2 = (uint32_t)ts2<<20;
+	hcan->Init.BS1 = (uint32_t)(ts1-1)<<16;
+	hcan->Init.BS2 = (uint32_t)(ts2-1)<<20;
+	hcan->Init.SJW = (uint32_t)(sjw-1)<<24;
 
 	status = HAL_CAN_Init(hcan);
 
