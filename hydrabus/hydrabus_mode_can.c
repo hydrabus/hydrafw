@@ -68,6 +68,7 @@ static void show_params(t_hydra_console *con)
 static void can_slcan_out(t_hydra_console *con, CanRxMsgTypeDef *msg)
 {
 	char outcode;
+	char slcanmsg[27] = {0};
 	uint8_t i;
 
 	if (msg->RTR == CAN_RTR_DATA) {
@@ -78,17 +79,17 @@ static void can_slcan_out(t_hydra_console *con, CanRxMsgTypeDef *msg)
 	if (msg->IDE == CAN_ID_EXT) {
 		/*Extended frames have a capital letter */
 		outcode -= 32;
-		cprintf(con, "%c%08X%d",
-			outcode, msg->ExtId, msg->DLC);
+		snprintf(slcanmsg, 26, "%c%08X%d", 
+			outcode, (unsigned int)msg->ExtId, (int)msg->DLC);
 	} else {
-		cprintf(con, "%c%03X%d",
-			outcode, msg->StdId, msg->DLC);
+		snprintf(slcanmsg, 26, "%c%03X%d", 
+			outcode, (unsigned int)msg->StdId, (int)msg->DLC);
 	}
 
 	for (i=0; i<msg->DLC; i++) {
-		cprintf(con, "%02X", msg->Data[i]);
+		snprintf(slcanmsg, 26, "%s%02X", slcanmsg, (unsigned int)msg->Data[i]);
 	}
-	cprint(con, "\r", 1);
+	cprintf(con, "%s\r", slcanmsg);
 }
 
 static bsp_status_t can_slcan_in(uint8_t *slcanmsg, CanTxMsgTypeDef *msg)
@@ -167,8 +168,10 @@ msg_t can_reader_thread (void *arg)
 
 	while (!USER_BUTTON && !chThdShouldTerminateX()) {
 		if(bsp_can_rxne(proto->dev_num)) {
+			chSysLock();
 			bsp_can_read(proto->dev_num, &rx_msg);
 			can_slcan_out(con, &rx_msg);
+			chSysUnlock();
 		} else {
 			chThdYield();
 		}
@@ -236,15 +239,19 @@ void slcan(t_hydra_console *con) {
 			break;
 		case 'O':
 			/*Open channel*/
-			if(bsp_can_init(proto->dev_num, proto) == BSP_OK) {
-				rthread = chThdCreateFromHeap(NULL,
-							      CONSOLE_WA_SIZE,
-							      "SLCAN reader",
-							      LOWPRIO,
-							      (tfunc_t)can_reader_thread,
-							      con);
-				cprint(con, "\r", 1);
-			}else {
+			if(rthread == NULL) {
+				if(bsp_can_init(proto->dev_num, proto) == BSP_OK) {
+					rthread = chThdCreateFromHeap(NULL,
+								      CONSOLE_WA_SIZE,
+								      "SLCAN reader",
+								      LOWPRIO,
+								      (tfunc_t)can_reader_thread,
+								      con);
+					cprint(con, "\r", 1);
+				} else {
+					cprint(con, "\x07", 1);
+				}
+			} else {
 				cprint(con, "\x07", 1);
 			}
 			break;
@@ -254,6 +261,7 @@ void slcan(t_hydra_console *con) {
 				chThdTerminate(rthread);
 				chThdWait(rthread);
 			}
+			rthread = NULL;
 			if(bsp_can_deinit(proto->dev_num) == BSP_OK) {
 				cprint(con, "\r", 1);
 			}else {
