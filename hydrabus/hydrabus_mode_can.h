@@ -30,9 +30,6 @@ typedef struct {
 	uint32_t can_id;
 	uint32_t filter_id_low;
 	uint32_t filter_id_high;
-	uint8_t ts1;
-	uint8_t ts2;
-	uint8_t sjw;
 } can_config;
 
 void slcan(t_hydra_console *con);
