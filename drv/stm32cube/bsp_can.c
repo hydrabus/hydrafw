@@ -156,7 +156,25 @@ uint32_t bsp_can_get_speed(bsp_dev_can_t dev_num)
   * @param  sjw: Resynchronization Jump Width
   * @retval status: status of the init.
   */
-bsp_status_t bsp_can_set_timings(bsp_dev_can_t dev_num, uint8_t ts1, uint8_t ts2, uint8_t sjw)
+bsp_status_t bsp_can_set_timings(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
+{
+	CAN_HandleTypeDef* hcan;
+	bsp_status_t status;
+
+	hcan = &can_handle[dev_num];
+
+	HAL_CAN_DeInit(hcan);
+
+	hcan->Init.BS1 = mode_conf->bus_mode&0xf0000;
+	hcan->Init.BS2 = mode_conf->bus_mode&0x700000;
+	hcan->Init.SJW  = mode_conf->bus_mode&0x3000000;
+
+	status = HAL_CAN_Init(hcan);
+
+	return status;
+}
+
+bsp_status_t bsp_can_set_ts1(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf, uint8_t ts1)
 {
 	CAN_HandleTypeDef* hcan;
 	bsp_status_t status;
@@ -166,10 +184,43 @@ bsp_status_t bsp_can_set_timings(bsp_dev_can_t dev_num, uint8_t ts1, uint8_t ts2
 	HAL_CAN_DeInit(hcan);
 
 	hcan->Init.BS1 = (uint32_t)(ts1-1)<<16;
-	hcan->Init.BS2 = (uint32_t)(ts2-1)<<20;
-	hcan->Init.SJW = (uint32_t)(sjw-1)<<24;
-
 	status = HAL_CAN_Init(hcan);
+
+	mode_conf->bus_mode = bsp_can_get_timings(dev_num);
+
+	return status;
+}
+
+bsp_status_t bsp_can_set_ts2(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf, uint8_t ts2)
+{
+	CAN_HandleTypeDef* hcan;
+	bsp_status_t status;
+
+	hcan = &can_handle[dev_num];
+
+	HAL_CAN_DeInit(hcan);
+
+	hcan->Init.BS2 = (uint32_t)(ts2-1)<<20;
+	status = HAL_CAN_Init(hcan);
+
+	mode_conf->bus_mode = bsp_can_get_timings(dev_num);
+
+	return status;
+}
+
+bsp_status_t bsp_can_set_sjw(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf, uint8_t sjw)
+{
+	CAN_HandleTypeDef* hcan;
+	bsp_status_t status;
+
+	hcan = &can_handle[dev_num];
+
+	HAL_CAN_DeInit(hcan);
+
+	hcan->Init.SJW = (uint32_t)(sjw-1)<<24;
+	status = HAL_CAN_Init(hcan);
+
+	mode_conf->bus_mode = bsp_can_get_timings(dev_num);
 
 	return status;
 }
@@ -180,6 +231,24 @@ uint32_t bsp_can_get_timings(bsp_dev_can_t dev_num)
 	hcan = &can_handle[dev_num];
 	return hcan->Instance->BTR;
 }
+
+bsp_status_t bsp_can_mode_rw(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
+{
+	CAN_HandleTypeDef* hcan;
+	bsp_status_t status;
+
+	hcan = &can_handle[dev_num];
+
+	HAL_CAN_DeInit(hcan);
+
+	mode_conf->dev_mode = BSP_CAN_MODE_RW;
+	hcan->Init.Mode = CAN_MODE_LOOPBACK;
+
+	status = HAL_CAN_Init(hcan);
+
+	return status;
+}
+
 
 /**
   * @brief  Init CAN device.
@@ -227,24 +296,19 @@ bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 	/* transmit FIFO priority */
 	hcan->Init.TXFP = DISABLE;
 
-	hcan->Init.SJW  = CAN_SJW_2TQ;
-	hcan->Init.Mode = CAN_MODE_NORMAL;
+	if(mode_conf->dev_mode == BSP_CAN_MODE_RO) {
+		hcan->Init.Mode = CAN_MODE_SILENT;
+	} else {
+		hcan->Init.Mode = CAN_MODE_LOOPBACK;
+	}
+
+	/* CAN timing values */
+	hcan->Init.BS1 = mode_conf->bus_mode&0xf0000;
+	hcan->Init.BS2 = mode_conf->bus_mode&0x700000;
+	hcan->Init.SJW  = mode_conf->bus_mode&0x3000000;
 
 	/* CAN Baudrate */
-	hcan->Init.BS1 = CAN_BS1_15TQ;
-	hcan->Init.BS2 = CAN_BS2_5TQ;
-
-	//hcan->Init.Prescaler=1;        // 2000 kbit/s
-	//hcan->Init.Prescaler=2;        // 1000 kbit/s
-	hcan->Init.Prescaler=4;        //  500 kbit/s
-	//hcan->Init.Prescaler=5;        //  400 kbit/s
-	//hcan->Init.Prescaler=8;        //  250 kbit/s
-	//hcan->Init.Prescaler=10;       //  200 kbit/s
-	//hcan->Init.Prescaler=16;       //  125 kbit/s
-	//hcan->Init.Prescaler=20;       //  100 kbit/s
-	//hcan->Init.Prescaler=40;       //   50 kbit/s
-	//hcan->Init.Prescaler=80;       //   40 kbit/s
-	//hcan->Init.Prescaler=200;      //   10 kbit/s
+	hcan->Init.Prescaler = 2000000/mode_conf->dev_speed;
 
 	status = HAL_CAN_Init(hcan);
 

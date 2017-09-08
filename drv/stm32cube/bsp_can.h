@@ -20,6 +20,9 @@ limitations under the License.
 #include "mode_config.h"
 #include "stm32f4xx_hal.h"
 
+#define BSP_CAN_MODE_RO	0
+#define BSP_CAN_MODE_RW	1
+
 typedef enum {
 	BSP_DEV_CAN1 = 0,
 	BSP_DEV_CAN2 = 1,
@@ -38,6 +41,11 @@ bsp_status_t bsp_can_put(bsp_dev_can_t dev_num, CanTxMsgTypeDef* tx_msg);
 
 bsp_status_t bsp_can_rxne(bsp_dev_can_t dev_num);
 uint32_t bsp_can_get_timings(bsp_dev_can_t dev_num);
-bsp_status_t bsp_can_set_timings(bsp_dev_can_t dev_num, uint8_t ts1, uint8_t ts2, uint8_t sjw);
+bsp_status_t bsp_can_set_timings(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf);
+bsp_status_t bsp_can_set_ts1(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf, uint8_t ts1);
+bsp_status_t bsp_can_set_ts2(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf, uint8_t ts2);
+bsp_status_t bsp_can_set_sjw(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf, uint8_t sjw);
+bsp_status_t bsp_can_mode_rw(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf);
+
 
 #endif /* _BSP_CAN_H_ */

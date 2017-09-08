@@ -49,6 +49,10 @@ static void init_proto_default(t_hydra_console *con)
 	/* Defaults */
 	proto->dev_num = 0;
 	proto->dev_speed = 500000;
+	proto->dev_mode = BSP_CAN_MODE_RO;
+
+	/* TS1 = 15TQ, TS2 = 5TQ, SJW = 2TQ */
+	proto->bus_mode = 0x14e0000;
 }
 
 static void show_params(t_hydra_console *con)
@@ -188,8 +192,6 @@ void slcan(t_hydra_console *con) {
 	mode_config_proto_t* proto = &con->mode->proto;
 	thread_t *rthread = NULL;
 
-	init_proto_default(con);
-
 	while (!USER_BUTTON) {
 		slcan_read_command(con, buff);
 		switch (buff[0]) {
@@ -323,10 +325,6 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	/* Defaults */
 	init_proto_default(con);
 
-	config[proto->dev_num].ts1 = 15;
-	config[proto->dev_num].ts2 = 4;
-	config[proto->dev_num].sjw = 3;
-
 	/* Process cmdline arguments, skipping "can". */
 	tokens_used = 1 + exec(con, p, 1);
 
@@ -334,12 +332,6 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	if( bsp_status != BSP_OK) {
 		cprintf(con, str_bsp_init_err, bsp_status);
 	}
-
-	bsp_can_set_timings(proto->dev_num,
-			    config[proto->dev_num].ts1,
-			    config[proto->dev_num].ts2,
-			    config[proto->dev_num].sjw);
-
 
 	/* By default, get all packets */
 	if (config[proto->dev_num].filter_id_low != 0 || config[proto->dev_num].filter_id_high != 0) {
@@ -403,11 +395,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			t += 2;
 			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
 			if(arg_int > 0 && arg_int <= 16) {
-				config[proto->dev_num].ts1 = arg_int;
-				bsp_status = bsp_can_set_timings(proto->dev_num,
-								 config[proto->dev_num].ts1,
-								 config[proto->dev_num].ts2,
-								 config[proto->dev_num].sjw);
+				bsp_status = bsp_can_set_ts1(proto->dev_num, proto, arg_int);
 				if( bsp_status != BSP_OK) {
 					cprintf(con, str_bsp_init_err, bsp_status);
 					return t;
@@ -421,11 +409,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			t += 2;
 			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
 			if(arg_int > 0 && arg_int <= 8) {
-				config[proto->dev_num].ts2 = arg_int;
-				bsp_status = bsp_can_set_timings(proto->dev_num,
-								 config[proto->dev_num].ts1,
-								 config[proto->dev_num].ts2,
-								 config[proto->dev_num].sjw);
+				bsp_status = bsp_can_set_ts2(proto->dev_num, proto, arg_int);
 				if( bsp_status != BSP_OK) {
 					cprintf(con, str_bsp_init_err, bsp_status);
 					return t;
@@ -439,11 +423,8 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			t += 2;
 			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
 			if(arg_int > 0 && arg_int <= 4) {
-				config[proto->dev_num].sjw = arg_int;
-				bsp_status = bsp_can_set_timings(proto->dev_num,
-								 config[proto->dev_num].ts1,
-								 config[proto->dev_num].ts2,
-								 config[proto->dev_num].sjw);
+				bsp_status = bsp_can_set_sjw(proto->dev_num, proto, arg_int);
+
 				if( bsp_status != BSP_OK) {
 					cprintf(con, str_bsp_init_err, bsp_status);
 					return t;
@@ -490,6 +471,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				read(con, NULL, 0);
 			}
 		case T_SLCAN:
+			if(proto->dev_mode == BSP_CAN_MODE_RO) {
+				bsp_can_mode_rw(proto->dev_num, proto);
+			}
 			slcan(con);
 			break;
 		default:
@@ -536,6 +520,14 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 	uint8_t i = 0;
 	CanTxMsgTypeDef tx_msg;
 
+	if(proto->dev_mode == BSP_CAN_MODE_RO) {
+		cprintf(con, "Switching to normal bus operation\r\n");
+		status = bsp_can_mode_rw(proto->dev_num, proto);
+		if(status != BSP_OK){
+			cprintf(con, str_bsp_init_err, status);
+			return status;
+		}
+	}
 	status = BSP_ERROR;
 
 	if(can_slcan_in(tx_data, &tx_msg) != BSP_OK) {
@@ -560,6 +552,10 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 				tx_msg.DLC = 0;
 			}
 			i++;
+		}
+		/*Send leftover bytes*/
+		if(tx_msg.DLC> 0) {
+			status = can_send_msg(con, &tx_msg);
 		}
 	} else {
 		status = can_send_msg(con, &tx_msg);
