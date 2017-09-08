@@ -67,9 +67,10 @@ static void show_params(t_hydra_console *con)
 
 static void can_slcan_out(t_hydra_console *con, CanRxMsgTypeDef *msg)
 {
-	char outcode;
 	char slcanmsg[27] = {0};
+	char outcode;
 	uint8_t i;
+	uint8_t offset = 0;
 
 	if (msg->RTR == CAN_RTR_DATA) {
 		outcode = 't';
@@ -79,15 +80,16 @@ static void can_slcan_out(t_hydra_console *con, CanRxMsgTypeDef *msg)
 	if (msg->IDE == CAN_ID_EXT) {
 		/*Extended frames have a capital letter */
 		outcode -= 32;
-		snprintf(slcanmsg, 26, "%c%08X%d", 
+		offset = snprintf(slcanmsg, 27, "%c%08X%d",
 			outcode, (unsigned int)msg->ExtId, (int)msg->DLC);
 	} else {
-		snprintf(slcanmsg, 26, "%c%03X%d", 
+		offset = snprintf(slcanmsg, 27, "%c%03X%d",
 			outcode, (unsigned int)msg->StdId, (int)msg->DLC);
 	}
 
 	for (i=0; i<msg->DLC; i++) {
-		snprintf(slcanmsg, 26, "%s%02X", slcanmsg, (unsigned int)msg->Data[i]);
+		snprintf(slcanmsg+offset, 3, "%02X", (unsigned int)msg->Data[i]);
+		offset += 2;
 	}
 	cprintf(con, "%s\r", slcanmsg);
 }
@@ -240,17 +242,13 @@ void slcan(t_hydra_console *con) {
 		case 'O':
 			/*Open channel*/
 			if(rthread == NULL) {
-				if(bsp_can_init(proto->dev_num, proto) == BSP_OK) {
-					rthread = chThdCreateFromHeap(NULL,
-								      CONSOLE_WA_SIZE,
-								      "SLCAN reader",
-								      LOWPRIO,
-								      (tfunc_t)can_reader_thread,
-								      con);
-					cprint(con, "\r", 1);
-				} else {
-					cprint(con, "\x07", 1);
-				}
+				rthread = chThdCreateFromHeap(NULL,
+							      CONSOLE_WA_SIZE,
+							      "SLCAN reader",
+							      LOWPRIO,
+							      (tfunc_t)can_reader_thread,
+							      con);
+				cprint(con, "\r", 1);
 			} else {
 				cprint(con, "\x07", 1);
 			}
@@ -275,7 +273,7 @@ void slcan(t_hydra_console *con) {
 			/*Transmit*/
 			if(can_slcan_in(buff, &tx_msg) == BSP_OK) {
 				chSysLock();
-				if(bsp_can_write(proto->dev_num, &tx_msg) == BSP_OK) {
+				if(bsp_can_put(proto->dev_num, &tx_msg) == BSP_OK) {
 					cprint(con, "\r", 1);
 				}else {
 					cprint(con, "\x07", 1);
@@ -329,11 +327,6 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	config[proto->dev_num].ts2 = 4;
 	config[proto->dev_num].sjw = 3;
 
-	bsp_can_set_timings(proto->dev_num,
-			    config[proto->dev_num].ts1,
-			    config[proto->dev_num].ts2,
-			    config[proto->dev_num].sjw);
-
 	/* Process cmdline arguments, skipping "can". */
 	tokens_used = 1 + exec(con, p, 1);
 
@@ -341,6 +334,12 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	if( bsp_status != BSP_OK) {
 		cprintf(con, str_bsp_init_err, bsp_status);
 	}
+
+	bsp_can_set_timings(proto->dev_num,
+			    config[proto->dev_num].ts1,
+			    config[proto->dev_num].ts2,
+			    config[proto->dev_num].sjw);
+
 
 	/* By default, get all packets */
 	if (config[proto->dev_num].filter_id_low != 0 || config[proto->dev_num].filter_id_high != 0) {
@@ -513,7 +512,7 @@ static uint32_t can_send_msg(t_hydra_console *con, CanTxMsgTypeDef *tx_msg)
 		if (tx_msg->IDE == CAN_ID_STD) {
 			cprintf(con, "SID: %02X ", tx_msg->StdId);
 		} else {
-			cprintf(con, "EID: %02X ", tx_msg->ExtId);
+			cprintf(con, "EID: %08X ", tx_msg->ExtId);
 		}
 		cprintf(con, "DLC: %02X ", tx_msg->DLC);
 		cprintf(con, "RTR: %02X ", tx_msg->RTR);
@@ -562,9 +561,9 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 			}
 			i++;
 		}
+	} else {
+		status = can_send_msg(con, &tx_msg);
 	}
-
-	status = can_send_msg(con, &tx_msg);
 
 	return status;
 }

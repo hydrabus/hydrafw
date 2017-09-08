@@ -378,13 +378,20 @@ bsp_status_t bsp_can_write(bsp_dev_can_t dev_num, CanTxMsgTypeDef* tx_msg)
 bsp_status_t bsp_can_put(bsp_dev_can_t dev_num, CanTxMsgTypeDef* tx_msg)
 {
 	CAN_HandleTypeDef* hcan;
+	bsp_status_t status;
 
 	hcan = &can_handle[dev_num];
 
 	hcan->pTxMsg = tx_msg;
 
-	HAL_CAN_Transmit(hcan, 1);
-	return BSP_OK;
+	status = HAL_CAN_Transmit(hcan, 10);
+	switch(status){
+	case BSP_OK:
+	case BSP_TIMEOUT:
+		return BSP_OK;
+	default:
+		return BSP_ERROR;
+	}
 }
 
 /**
