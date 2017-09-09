@@ -242,7 +242,7 @@ bsp_status_t bsp_can_mode_rw(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 	HAL_CAN_DeInit(hcan);
 
 	mode_conf->dev_mode = BSP_CAN_MODE_RW;
-	hcan->Init.Mode = CAN_MODE_LOOPBACK;
+	hcan->Init.Mode = CAN_MODE_NORMAL;
 
 	status = HAL_CAN_Init(hcan);
 
@@ -299,7 +299,7 @@ bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 	if(mode_conf->dev_mode == BSP_CAN_MODE_RO) {
 		hcan->Init.Mode = CAN_MODE_SILENT;
 	} else {
-		hcan->Init.Mode = CAN_MODE_LOOPBACK;
+		hcan->Init.Mode = CAN_MODE_NORMAL;
 	}
 
 	/* CAN timing values */
