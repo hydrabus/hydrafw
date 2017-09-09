@@ -172,7 +172,7 @@ msg_t can_reader_thread (void *arg)
 	CanRxMsgTypeDef rx_msg;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	while (!USER_BUTTON && !chThdShouldTerminateX()) {
+	while (!chThdShouldTerminateX()) {
 		if(bsp_can_rxne(proto->dev_num)) {
 			chSysLock();
 			bsp_can_read(proto->dev_num, &rx_msg);
@@ -260,13 +260,9 @@ void slcan(t_hydra_console *con) {
 			if(rthread != NULL) {
 				chThdTerminate(rthread);
 				chThdWait(rthread);
+				rthread = NULL;
 			}
-			rthread = NULL;
-			if(bsp_can_deinit(proto->dev_num) == BSP_OK) {
-				cprint(con, "\r", 1);
-			}else {
-				cprint(con, "\x07", 1);
-			}
+			cprint(con, "\r", 1);
 			break;
 		case 't':
 		case 'T':
@@ -312,8 +308,11 @@ void slcan(t_hydra_console *con) {
 			break;
 		}
 	}
-	chThdTerminate(rthread);
-	chThdWait(rthread);
+	if(rthread != NULL) {
+		chThdTerminate(rthread);
+		chThdWait(rthread);
+		rthread = NULL;
+	}
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
