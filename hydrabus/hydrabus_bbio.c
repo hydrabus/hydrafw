@@ -72,6 +72,8 @@ int cmd_bbio(t_hydra_console *con)
 				bbio_mode_flash(con);
 				break;
 			case BBIO_RESET_HW:
+				/* Needed for flashrom detection */
+				cprint(con, "Hydrabus\r\n", 10);
 				return TRUE;
 			case BBIO_RESET:
 				break;
