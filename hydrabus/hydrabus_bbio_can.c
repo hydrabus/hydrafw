@@ -29,6 +29,19 @@
 #include "hydrabus_bbio_can.h"
 #include "bsp_can.h"
 
+static void bbio_can_init_proto_default(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	/* Defaults */
+	proto->dev_num = 0;
+	proto->dev_speed = 500000;
+	proto->dev_mode = BSP_CAN_MODE_RW;
+
+	/* TS1 = 15TQ, TS2 = 5TQ, SJW = 2TQ */
+	proto->bus_mode = 0x14e0000;
+}
+
 static void print_raw_uint32(t_hydra_console *con, uint32_t num)
 {
 	cprintf(con, "%c%c%c%c",((num>>24)&0xFF),
@@ -57,6 +70,7 @@ void bbio_mode_can(t_hydra_console *con)
 	proto->dev_num = 0;
 	proto->dev_speed = 500000;
 
+	bbio_can_init_proto_default(con);
 	bsp_can_init(proto->dev_num, proto);
 	bsp_can_init_filter(proto->dev_num, proto);
 
@@ -117,6 +131,28 @@ void bbio_mode_can(t_hydra_console *con)
 			case BBIO_CAN_SLCAN:
 				slcan(con);
 				break;
+			case BBIO_CAN_SET_TIMINGS:
+				chnRead(con->sdu, rx_buff, 3);
+				if(rx_buff[0] == 0 && rx_buff[0] > 16) {
+					cprint(con, "\x00", 1);
+				}
+				if(rx_buff[1] == 0 && rx_buff[1] > 8) {
+					cprint(con, "\x00", 1);
+				}
+				if(rx_buff[2] == 0 && rx_buff[2] > 4) {
+					cprint(con, "\x00", 1);
+				}
+				proto->bus_mode = rx_buff[0]<<16;
+				proto->bus_mode += rx_buff[1]<<20;
+				proto->bus_mode += rx_buff[2]<<24;
+
+				status = bsp_can_set_timings(proto->dev_num, proto);
+				if(status == BSP_OK) {
+					cprint(con, "\x01", 1);
+				} else {
+					cprint(con, "\x00", 1);
+				}
+				break;
 			default:
 				if ((bbio_subcommand & BBIO_CAN_WRITE) == BBIO_CAN_WRITE) {
 
@@ -167,7 +203,6 @@ void bbio_mode_can(t_hydra_console *con)
 					} else {
 						cprint(con, "\x00", 1);
 					}
-
 				} else if((bbio_subcommand & BBIO_CAN_SET_SPEED) == BBIO_CAN_SET_SPEED) {
 					switch(bbio_subcommand & 0b111){
 					case 0:
@@ -203,7 +238,6 @@ void bbio_mode_can(t_hydra_console *con)
 					} else {
 						cprint(con, "\x00", 1);
 					}
-
 				}
 
 			}

@@ -88,6 +88,7 @@
 #define BBIO_CAN_WRITE		0b00001000
 #define BBIO_CAN_SET_SPEED	0b01100000
 #define BBIO_CAN_SLCAN		0b10100000
+#define BBIO_CAN_SET_TIMINGS	0b11000000
 
 /*
  * PIN control-specific commands
