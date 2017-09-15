@@ -269,19 +269,19 @@ FORCE:
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	echo Creating ./common/hydrafw_version.hdr
 	-rm -f $(OBJDIR)/common.o
-  python scripts/hydrafw-version.py ./common/hydrafw_version.hdr
+  python build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
 else
 	@echo Creating ./common/hydrafw_version.hdr
 	@rm -f $(OBJDIR)/common.o
-	@python scripts/hydrafw-version.py ./common/hydrafw_version.hdr
+	@python build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
 endif
 
 %.dfu: %.hex $(LDSCRIPT)
 ifeq ($(USE_VERBOSE_COMPILE),yes)
-	python scripts/dfu-convert.py -i $< $@
+	python build-scripts/dfu-convert.py -i $< $@
 else
 	@echo Creating $@
-	@python scripts/dfu-convert.py -i $< $@
+	@python build-scripts/dfu-convert.py -i $< $@
 endif
 
 # This rule hook is defined in the ChibiOS build system

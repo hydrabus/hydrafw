@@ -1,6 +1,6 @@
 [submodule "tokenline"]
-	path = tokenline
+	path = src/tokenline
 	url = https://github.com/hydrabus/tokenline.git
 [submodule "chibios"]
-	path = chibios
+	path = src/chibios
 	url = https://github.com/hydrabus/ChibiOS.git
