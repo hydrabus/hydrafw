@@ -31,3 +31,9 @@ installed, the following root command will enable the rule without rebooting :
 
 This driver installation file can be used to use the Hydrabus on Windows. At
 the first use, just select this file when requested to select the driver.
+
+## windows_dfu_util
+
+This folder contains the binary release of the DfuSe tool from ST for Windows.
+Please see the [wiki](https://github.com/hydrabus/hydrafw/wiki/how-to-build-flash-and-use-hydrafw-on-windows) 
+for details.
