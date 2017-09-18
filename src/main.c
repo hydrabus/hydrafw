@@ -52,6 +52,13 @@ SerialUSBDriver SDU1;
 /* USB2: Virtual serial port over USB. */
 SerialUSBDriver SDU2;
 
+static SerialConfig ser_usart1_cfg = {
+ 115200,
+ 0,
+ 0,
+ 0,
+};
+
 extern t_token tl_tokens[];
 extern t_token_dict tl_dict[];
 
@@ -62,9 +69,13 @@ t_mode_config mode_con1 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=M
 t_tokenline tl_con2;
 t_mode_config mode_con2 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=MODE_CONFIG_PROTO_DEV_DEF_VAL }, .cmd={ 0 } };
 
+t_tokenline tl_con3;
+t_mode_config mode_con3 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=MODE_CONFIG_PROTO_DEV_DEF_VAL }, .cmd={ 0 } };
+
 t_hydra_console consoles[] = {
 	{ .thread_name="console USB1", .sdu=&SDU1, .tl=&tl_con1, .mode = &mode_con1 },
-	{ .thread_name="console USB2", .sdu=&SDU2, .tl=&tl_con2, .mode = &mode_con2 }
+	{ .thread_name="console USB2", .sdu=&SDU2, .tl=&tl_con2, .mode = &mode_con2 },
+	{ .thread_name="console USART1", .sd=&SD1, .tl=&tl_con3, .mode = &mode_con3 }
 };
 
 THD_FUNCTION(console, arg)
@@ -163,7 +174,7 @@ int main(void)
 	usbDisconnectBus(serusb1cfg.usbp);
 	usbDisconnectBus(serusb2cfg.usbp);
 
-	chThdSleepMilliseconds(500);
+	chThdSleepMilliseconds(200);
 
 	usbStart(serusb1cfg.usbp, &usb1cfg);
 	/*
@@ -190,6 +201,17 @@ int main(void)
 	 * Normal main() thread activity.
 	 */
 	chRegSetThreadName("main");
+	sdInit();
+	/* Configure & Enable USART1) */
+	sdStart(&SD1, &ser_usart1_cfg);
+	palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(7)); // USART1_TX => RX FTDI YELLOW
+	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(7)); // USART1_RX <= TX FTDI ORANGE
+
+	consoles[2].thread = chThdCreateFromHeap(NULL,
+			     CONSOLE_WA_SIZE, consoles[2].thread_name, NORMALPRIO,
+			     console, &consoles[2]);
+	nb_console++;
+
 	while (TRUE) {
 		local_nb_console = 0;
 		for (i = 0; i < 2; i++) {
@@ -208,7 +230,7 @@ int main(void)
 			if (consoles[i].sdu->config->usbp->state == USB_ACTIVE)
 				local_nb_console++;
 		}
-		nb_console = local_nb_console;
+		nb_console += local_nb_console;
 
 		/* HydraBus ULED blink. */
 		if (USER_BUTTON)

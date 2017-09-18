@@ -39,7 +39,7 @@ char get_char(t_hydra_console *con)
 {
 	uint8_t c;
 
-	if (chnRead(con->sdu, &c, 1) == 0)
+	if (chnRead(con->bss, &c, 1) == 0)
 		c = 0;
 
 	return c;
