@@ -755,6 +755,16 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			config.tdo_pin = arg_int;
 			t+=3;
 			break;
+		case T_TRST:
+			/* Integer parameter. */
+			memcpy(&arg_int, p->buf + p->tokens[t+3], sizeof(int));
+			if (arg_int < 0 || arg_int > 12) {
+				cprintf(con, "Pin must be between 0 and 11 (PB0-11).\r\n");
+				return t;
+			}
+			config.trst_pin = arg_int;
+			t+=3;
+			break;
 		case T_BYPASS:
 			cprintf(con, "Number of devices found : %d\r\n", jtag_scan_bypass());
 			break;

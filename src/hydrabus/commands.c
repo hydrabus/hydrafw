@@ -129,6 +129,7 @@ t_token_dict tl_dict[] = {
 	{ T_TMS, "tms" },
 	{ T_TDI, "tdi" },
 	{ T_TDO, "tdo" },
+	{ T_TRST, "trst" },
 	{ T_QUERY, "query" },
 	{ T_BRUTE, "brute" },
 	{ T_BYPASS, "bypass" },
@@ -864,6 +865,11 @@ t_token tokens_mode_jtag[] = {
 		T_TDO,
 		.arg_type = T_ARG_UINT, \
 		.help = "Set TDO pin number x for PBx"
+	},
+	{
+		T_TRST,
+		.arg_type = T_ARG_UINT, \
+		.help = "Set TRST pin number x for PBx"
 	},
 	{
 		T_BRUTE,

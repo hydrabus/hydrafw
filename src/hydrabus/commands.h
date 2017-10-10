@@ -121,6 +121,7 @@ enum {
 	T_TMS,
 	T_TDI,
 	T_TDO,
+	T_TRST,
 	T_QUERY,
 	T_BRUTE,
 	T_BYPASS,
