@@ -14,6 +14,7 @@ Usage:
 This script requires Python 3.2+, pip3 install serial hexdump
 
 Author: Pedro Ribeiro <pedrib@gmail.com>
+
 License: GPLv3 (https://choosealicense.com/licenses/gpl-3.0/)
 
 (if License conflicts with hydrafw license, hydrafw license prevails)
