@@ -53,9 +53,9 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = I2C_DEV_NUM;
-	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
-	proto->dev_speed = 1;
-	proto->ack_pending = 0;
+	proto->config.i2c.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
+	proto->config.i2c.dev_speed = 1;
+	proto->config.i2c.ack_pending = 0;
 }
 
 static void show_params(t_hydra_console *con)
@@ -64,15 +64,15 @@ static void show_params(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "GPIO resistor: %s\r\nFrequency: ",
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+		proto->config.i2c.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+		proto->config.i2c.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
 		"floating");
 
-	print_freq(con, speeds[proto->dev_speed]);
+	print_freq(con, speeds[proto->config.i2c.dev_speed]);
 
 	cprintf(con, " (");
 	for (i = 0, cnt = 0; i < SPEED_NB; i++) {
-		if (proto->dev_speed == (int)i)
+		if (proto->config.i2c.dev_speed == (int)i)
 			continue;
 		if (cnt++)
 			cprintf(con, ", ");
@@ -113,13 +113,13 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_PULL:
 			switch (p->tokens[++t]) {
 			case T_UP:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
+				proto->config.i2c.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 				break;
 			case T_DOWN:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
+				proto->config.i2c.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
 				break;
 			case T_FLOATING:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+				proto->config.i2c.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 				break;
 			}
 			bsp_status = bsp_i2c_init(proto->dev_num, proto);
@@ -133,7 +133,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			memcpy(&arg_float, p->buf + p->tokens[t], sizeof(float));
 			for (i = 0; i < SPEED_NB; i++) {
 				if (arg_float == speeds[i]) {
-					proto->dev_speed = i;
+					proto->config.i2c.dev_speed = i;
 					break;
 				}
 			}
@@ -162,11 +162,11 @@ static void start(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	if(proto->ack_pending) {
+	if(proto->config.i2c.ack_pending) {
 		/* Send I2C NACK*/
 		bsp_i2c_read_ack(I2C_DEV_NUM, FALSE);
 		cprintf(con, str_i2c_nack_br);
-		proto->ack_pending = 0;
+		proto->config.i2c.ack_pending = 0;
 	}
 
 	bsp_i2c_start(I2C_DEV_NUM);
@@ -177,11 +177,11 @@ static void stop(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	if(proto->ack_pending) {
+	if(proto->config.i2c.ack_pending) {
 		/* Send I2C NACK */
 		bsp_i2c_read_ack(I2C_DEV_NUM, FALSE);
 		cprintf(con, str_i2c_nack_br);
-		proto->ack_pending = 0;
+		proto->config.i2c.ack_pending = 0;
 	}
 	bsp_i2c_stop(I2C_DEV_NUM);
 	cprintf(con, str_i2c_stop_br);
@@ -194,11 +194,11 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 	bool tx_ack_flag;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	if(proto->ack_pending) {
+	if(proto->config.i2c.ack_pending) {
 		/* Send I2C ACK */
 		bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
 		cprintf(con, str_i2c_ack_br);
-		proto->ack_pending = 0;
+		proto->config.i2c.ack_pending = 0;
 	}
 
 	cprintf(con, hydrabus_mode_str_mul_write);
@@ -231,7 +231,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 
 	status = BSP_ERROR;
 	for(i = 0; i < nb_data; i++) {
-		if(proto->ack_pending) {
+		if(proto->config.i2c.ack_pending) {
 			/* Send I2C ACK */
 			bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
 			cprintf(con, str_i2c_ack);
@@ -246,7 +246,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 		if(status != BSP_OK)
 			break;
 
-		proto->ack_pending = 1;
+		proto->config.i2c.ack_pending = 1;
 	}
 	return status;
 }
@@ -258,7 +258,7 @@ static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	mode_config_proto_t* proto = &con->mode->proto;
 	status = BSP_ERROR;
 	for(i = 0; i < nb_data; i++) {
-		if(proto->ack_pending) {
+		if(proto->config.i2c.ack_pending) {
 			/* Send I2C ACK */
 			bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
 		}
@@ -269,7 +269,7 @@ static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 		if(status != BSP_OK)
 			break;
 
-		proto->ack_pending = 1;
+		proto->config.i2c.ack_pending = 1;
 	}
 	return status;
 }
@@ -304,9 +304,9 @@ static void scan(t_hydra_console *con, t_tokenline_parsed *p)
 
 	(void)p;
 
-	if(proto->ack_pending) {
+	if(proto->config.i2c.ack_pending) {
 		bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
-		proto->ack_pending = 0;
+		proto->config.i2c.ack_pending = 0;
 	}
 
 	/* Skip address 0x00 (general call) and >= 0x78 (10-bit address prefix) */

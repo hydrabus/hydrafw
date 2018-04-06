@@ -50,45 +50,126 @@ typedef enum {
 
 /* dev_mode */
 enum {
-	DEV_SPI_MASTER = 1,
-	DEV_SPI_SLAVE,
+	DEV_MASTER = 1,
+	DEV_SLAVE,
 };
 
 /* dev_bit_lsb_msb */
 enum {
-	DEV_SPI_FIRSTBIT_MSB = 1,
-	DEV_SPI_FIRSTBIT_LSB,
+	DEV_FIRSTBIT_MSB = 1,
+	DEV_FIRSTBIT_LSB,
 };
 
-#define MODE_CONFIG_PROTO_DEV_DEF_VAL (0) /* mode_config_proto_t for dev_xxx default safe value */
+typedef struct {
+	long dev_num;
+	long dev_speed;
+	long dev_parity;
+	long dev_stop_bit;
+} uart_config_t;
+
+typedef struct {
+	long dev_num;
+	mode_dev_gpio_pull_t dev_gpio_pull;
+	long dev_speed;
+	uint32_t ack_pending : 1;
+} i2c_config_t;
+
+typedef struct {
+	long dev_num;
+	mode_dev_gpio_pull_t dev_gpio_pull;
+	long dev_speed;
+	long dev_mode;
+	long dev_polarity;
+	long dev_phase;
+	long dev_bit_lsb_msb;
+} spi_config_t;
+
+typedef struct {
+	long dev_num;
+	mode_dev_gpio_mode_t dev_gpio_mode;
+	mode_dev_gpio_pull_t dev_gpio_pull;
+	long dev_speed;
+	long dev_mode;
+	long dev_polarity;
+	long dev_phase;
+	long dev_bit_lsb_msb;
+	uint32_t divider;
+	uint8_t tdi_pin;
+	uint8_t tdo_pin;
+	uint8_t tms_pin;
+	uint8_t tck_pin;
+	uint8_t trst_pin;
+} jtag_config_t;
+
+typedef struct {
+	long dev_num;
+	long dev_speed;
+	long dev_mode;
+	long dev_timing; /* bus_mode */
+	uint32_t can_id;
+	uint32_t filter_id_low;
+	uint32_t filter_id_high;
+} can_config_t;
+
+typedef struct {
+	long dev_num;
+	mode_dev_gpio_mode_t dev_gpio_mode;
+	mode_dev_gpio_pull_t dev_gpio_pull;
+	long dev_bit_lsb_msb;
+	long dev_numbits;
+} flash_config_t;
+
+typedef struct {
+	long dev_num;
+	mode_dev_gpio_mode_t dev_gpio_mode;
+	mode_dev_gpio_pull_t dev_gpio_pull;
+	long dev_bit_lsb_msb;
+} onewire_config_t;
+
+typedef struct {
+	long dev_num;
+	long dev_speed;
+	mode_dev_gpio_mode_t dev_gpio_mode;
+	mode_dev_gpio_pull_t dev_gpio_pull;
+	long dev_bit_lsb_msb;
+	uint8_t clk_pin;
+	uint8_t sdi_pin;
+	uint8_t sdo_pin;
+} rawwire_config_t;
+
+typedef struct {
+	uint32_t trigger_masks[4];
+	uint32_t trigger_values[4];
+	uint32_t read_count;
+	uint32_t delay_count;
+	uint32_t divider;
+	uint8_t state;
+	uint8_t channels;
+} sump_config_t;
+
+typedef struct {
+	long dev_function;
+} hydranfc_config_t;
+
 #define MODE_CONFIG_PROTO_BUFFER_SIZE (256)
 typedef struct {
-	mode_config_proto_valid_t valid;
-	long bus_mode;
 	long dev_num;
-	mode_dev_gpio_mode_t dev_gpio_mode; /* GPIO mode IN, OUT PP/OD for GPIO ...*/
-	mode_dev_gpio_pull_t dev_gpio_pull; /* GPIO Pull for SPI, I2C ...*/
-	long dev_mode;
-	long dev_speed;
-	long dev_polarity; /* For SPI */
-	long dev_phase; /* For SPI */
-	long dev_numbits;
-	long dev_bit_lsb_msb; /* For SPI */
-	long dev_parity; /* For UART */
-	long dev_stop_bit; /* For UART */
-	long dev_function; /* device function */
+	union {
+		uart_config_t uart;
+		i2c_config_t i2c;
+		spi_config_t spi;
+		jtag_config_t jtag;
+		can_config_t can;
+		flash_config_t flash;
+		onewire_config_t onewire;
+		rawwire_config_t rawwire;
+		sump_config_t sump;
+		hydranfc_config_t hydranfc;
+	} config;
 
-	uint32_t : 24; // not used reserved for future use
-	uint32_t altAUX : 2; // 4 AUX tbd
-	uint32_t periodicService : 1;
-	uint32_t lsbEN : 1;
-	uint32_t HiZ : 1;
-	uint32_t int16 : 1; // 16 bits output?
-	uint32_t ack_pending : 1; // I2C Read Ack pending
 	uint32_t wwr : 1; // write with read
-
-	uint8_t buffer_tx[256];
-	uint8_t buffer_rx[256];
+	uint8_t buffer_tx[MODE_CONFIG_PROTO_BUFFER_SIZE];
+	uint8_t buffer_rx[MODE_CONFIG_PROTO_BUFFER_SIZE];
 } mode_config_proto_t;
 
 typedef struct {

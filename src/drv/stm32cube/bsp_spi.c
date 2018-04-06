@@ -161,7 +161,7 @@ bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
 	spi_mode_conf[dev_num] = mode_conf;
 	hspi = &spi_handle[dev_num];
 
-	switch(mode_conf->dev_gpio_pull) {
+	switch(mode_conf->config.spi.dev_gpio_pull) {
 	case MODE_CONFIG_DEV_GPIO_PULLUP:
 		gpio_sck_miso_mosi_pull = GPIO_PULLUP;
 		break;
@@ -187,15 +187,15 @@ bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
 	}
 	/* SW NSS user shall call bsp_spi_select()/bsp_spi_unselect() */
 	hspi->Init.NSS = SPI_NSS_SOFT;
-	hspi->Init.BaudRatePrescaler = ((7 - mode_conf->dev_speed) * SPI_CR1_BR_0);
+	hspi->Init.BaudRatePrescaler = ((7 - mode_conf->config.spi.dev_speed) * SPI_CR1_BR_0);
 	hspi->Init.Direction = SPI_DIRECTION_2LINES;
 
-	if(mode_conf->dev_phase == 0)
+	if(mode_conf->config.spi.dev_phase == 0)
 		cpha = SPI_PHASE_1EDGE;
 	else
 		cpha = SPI_PHASE_2EDGE;
 
-	if(mode_conf->dev_polarity == 0)
+	if(mode_conf->config.spi.dev_polarity == 0)
 		cpol = SPI_POLARITY_LOW;
 	else
 		cpol = SPI_POLARITY_HIGH;
@@ -206,14 +206,14 @@ bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
 	hspi->Init.CRCPolynomial = 0;
 	hspi->Init.DataSize = SPI_DATASIZE_8BIT;
 
-	if(mode_conf->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB)
+	if(mode_conf->config.spi.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB)
 		hspi->Init.FirstBit = SPI_FIRSTBIT_MSB;
 	else
 		hspi->Init.FirstBit = SPI_FIRSTBIT_LSB;
 
 	hspi->Init.TIMode = SPI_TIMODE_DISABLED;
 
-	if(mode_conf->dev_mode == DEV_SPI_SLAVE)
+	if(mode_conf->config.spi.dev_mode == DEV_SLAVE)
 		hspi->Init.Mode = SPI_MODE_SLAVE;
 	else
 		hspi->Init.Mode = SPI_MODE_MASTER;

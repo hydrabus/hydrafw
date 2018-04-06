@@ -97,13 +97,13 @@ bsp_status_t bsp_i2c_init(bsp_dev_i2c_t dev_num, mode_config_proto_t* mode_conf)
 	bsp_i2c_deinit(dev_num);
 
 	/* I2C peripheral configuration */
-	if(mode_conf->dev_speed < I2C_SPEED_MAX)
-		i2c_speed_delay = i2c_speed[mode_conf->dev_speed];
+	if(mode_conf->config.i2c.dev_speed < I2C_SPEED_MAX)
+		i2c_speed_delay = i2c_speed[mode_conf->config.i2c.dev_speed];
 	else
 		return BSP_ERROR;
 
 	/* Init the I2C */
-	switch(mode_conf->dev_gpio_pull) {
+	switch(mode_conf->config.i2c.dev_gpio_pull) {
 	case MODE_CONFIG_DEV_GPIO_PULLUP:
 		gpio_scl_sda_pull = GPIO_PULLUP;
 		break;

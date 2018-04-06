@@ -30,7 +30,6 @@
 static uint16_t *buffer = (uint16_t *)g_sbuf;
 static uint16_t INDEX = 0;
 static TIM_HandleTypeDef htim;
-static sump_config config;
 
 static void portc_init(void)
 {
@@ -52,12 +51,13 @@ static void portc_init(void)
 	}
 }
 
-static void tim_init(void)
+static void tim_init(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
 	htim.Instance = TIM4;
 
 	htim.Init.Period = 21 - 1;
-	htim.Init.Prescaler = 2*(config.divider) - 1;
+	htim.Init.Prescaler = 2*(proto->config.sump.divider) - 1;
 	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
 
@@ -67,24 +67,27 @@ static void tim_init(void)
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
 
-static void tim_set_prescaler(void)
+static void tim_set_prescaler(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
+
 	HAL_TIM_Base_DeInit(&htim);
-	htim.Init.Prescaler = 2*(config.divider) - 1;
+	htim.Init.Prescaler = 2*(proto->config.sump.divider) - 1;
 	HAL_TIM_Base_Init(&htim);
 }
 
-static void sump_init(void)
+static void sump_init(t_hydra_console *con)
 {
 	portc_init();
-	tim_init();
+	tim_init(con);
 }
 
-static void get_samples(void) __attribute__((optimize("-O3")));
-static void get_samples(void)
+static void get_samples(t_hydra_console *con) __attribute__((optimize("-O3")));
+static void get_samples(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
 	uint32_t config_state;
-	config_state = config.state;
+	config_state = proto->config.sump.state;
 
 	/* Lock Kernel for logic analyzer */
 	chSysLock();
@@ -96,8 +99,8 @@ static void get_samples(void)
 		uint32_t config_trigger_value;
 		uint32_t config_trigger_mask;
 
-		config_trigger_value =  config.trigger_values[0];
-		config_trigger_mask = config.trigger_masks[0];
+		config_trigger_value =  proto->config.sump.trigger_values[0];
+		config_trigger_mask = proto->config.sump.trigger_masks[0];
 
 		while(1)
 		{
@@ -118,7 +121,7 @@ static void get_samples(void)
 
 	if(config_state == SUMP_STATE_TRIGGED)
 	{
-		register uint32_t config_delay_count = config.delay_count;
+		register uint32_t config_delay_count = proto->config.sump.delay_count;
 
 		while(config_delay_count > 0)
 		{
@@ -135,7 +138,7 @@ static void get_samples(void)
 	}
 
 	chSysUnlock();
-	config.state = SUMP_STATE_IDLE;
+	proto->config.sump.state = SUMP_STATE_IDLE;
 	HAL_TIM_Base_Stop(&htim);
 }
 
@@ -167,9 +170,10 @@ int cmd_sump(t_hydra_console *con, t_tokenline_parsed *p)
 void sump(t_hydra_console *con) __attribute__((optimize("-O3")));
 void sump(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
 
-	sump_init();
-	config.state = SUMP_STATE_IDLE;
+	sump_init(con);
+	proto->config.sump.state = SUMP_STATE_IDLE;
 
 	uint8_t sump_command;
 	uint8_t sump_parameters[4] = {0};
@@ -185,16 +189,16 @@ void sump(t_hydra_console *con)
 				break;
 			case SUMP_RUN:
 				INDEX=0;
-				config.state = SUMP_STATE_ARMED;
-				get_samples();
+				proto->config.sump.state = SUMP_STATE_ARMED;
+				get_samples(con);
 
-				while(config.read_count > 0) {
+				while(proto->config.sump.read_count > 0) {
 					if (INDEX == 0) {
 						INDEX = STATES_LEN-1;
 					} else {
 						INDEX--;
 					}
-					switch (config.channels) {
+					switch (proto->config.sump.channels) {
 					case 1:
 						cprintf(con, "%c\x00\x00\x00", *(buffer+INDEX) & 0xff);
 						break;
@@ -205,7 +209,7 @@ void sump(t_hydra_console *con)
 						cprintf(con, "%c%c\x00\x00", *(buffer+INDEX) & 0xff, (*(buffer+INDEX) & 0xff00)>>8);
 						break;
 					}
-					config.read_count--;
+					proto->config.sump.read_count--;
 				}
 				break;
 			case SUMP_DESC:
@@ -248,13 +252,13 @@ void sump(t_hydra_console *con)
 					case SUMP_TRIG_4:
 						// Get the trigger index
 						index = (sump_command & 0x0c) >> 2;
-						config.trigger_masks[index] = sump_parameters[3];
-						config.trigger_masks[index] <<= 8;
-						config.trigger_masks[index] |= sump_parameters[2];
-						config.trigger_masks[index] <<= 8;
-						config.trigger_masks[index] |= sump_parameters[1];
-						config.trigger_masks[index] <<= 8;
-						config.trigger_masks[index] |= sump_parameters[0];
+						proto->config.sump.trigger_masks[index] = sump_parameters[3];
+						proto->config.sump.trigger_masks[index] <<= 8;
+						proto->config.sump.trigger_masks[index] |= sump_parameters[2];
+						proto->config.sump.trigger_masks[index] <<= 8;
+						proto->config.sump.trigger_masks[index] |= sump_parameters[1];
+						proto->config.sump.trigger_masks[index] <<= 8;
+						proto->config.sump.trigger_masks[index] |= sump_parameters[0];
 						break;
 					case SUMP_TRIG_VALS_1:
 					case SUMP_TRIG_VALS_2:
@@ -262,37 +266,37 @@ void sump(t_hydra_console *con)
 					case SUMP_TRIG_VALS_4:
 						// Get the trigger index
 						index = (sump_command & 0x0c) >> 2;
-						config.trigger_values[index] = sump_parameters[3];
-						config.trigger_values[index] <<= 8;
-						config.trigger_values[index] |= sump_parameters[2];
-						config.trigger_values[index] <<= 8;
-						config.trigger_values[index] |= sump_parameters[1];
-						config.trigger_values[index] <<= 8;
-						config.trigger_values[index] |= sump_parameters[0];
+						proto->config.sump.trigger_values[index] = sump_parameters[3];
+						proto->config.sump.trigger_values[index] <<= 8;
+						proto->config.sump.trigger_values[index] |= sump_parameters[2];
+						proto->config.sump.trigger_values[index] <<= 8;
+						proto->config.sump.trigger_values[index] |= sump_parameters[1];
+						proto->config.sump.trigger_values[index] <<= 8;
+						proto->config.sump.trigger_values[index] |= sump_parameters[0];
 						break;
 					case SUMP_CNT:
-						config.delay_count = sump_parameters[3];
-						config.delay_count <<= 8;
-						config.delay_count |= sump_parameters[2];
-						config.delay_count <<= 2; /* values are multiples of 4 */
-						config.read_count = sump_parameters[1];
-						config.read_count <<= 8;
-						config.read_count |= sump_parameters[0];
-						config.read_count++;
-						config.read_count <<= 2; /* values are multiples of 4 */
+						proto->config.sump.delay_count = sump_parameters[3];
+						proto->config.sump.delay_count <<= 8;
+						proto->config.sump.delay_count |= sump_parameters[2];
+						proto->config.sump.delay_count <<= 2; /* values are multiples of 4 */
+						proto->config.sump.read_count = sump_parameters[1];
+						proto->config.sump.read_count <<= 8;
+						proto->config.sump.read_count |= sump_parameters[0];
+						proto->config.sump.read_count++;
+						proto->config.sump.read_count <<= 2; /* values are multiples of 4 */
 						break;
 					case SUMP_DIV:
-						config.divider = sump_parameters[2];
-						config.divider <<= 8;
-						config.divider |= sump_parameters[1];
-						config.divider <<= 8;
-						config.divider |= sump_parameters[0];
-						config.divider /= 50; /* Assuming 100MHz base frequency */
-						config.divider++;
-						tim_set_prescaler();
+						proto->config.sump.divider = sump_parameters[2];
+						proto->config.sump.divider <<= 8;
+						proto->config.sump.divider |= sump_parameters[1];
+						proto->config.sump.divider <<= 8;
+						proto->config.sump.divider |= sump_parameters[0];
+						proto->config.sump.divider /= 50; /* Assuming 100MHz base frequency */
+						proto->config.sump.divider++;
+						tim_set_prescaler(con);
 						break;
 					case SUMP_FLAGS:
-						config.channels = (~sump_parameters[0] >> 2) & 0x0f;
+						proto->config.sump.channels = (~sump_parameters[0] >> 2) & 0x0f;
 						/* not implemented */
 						break;
 					default:

@@ -61,17 +61,17 @@ void flash_init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
-	proto->dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
-	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
-	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
-	proto->dev_numbits = 3;
+	proto->config.flash.dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
+	proto->config.flash.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+	proto->config.flash.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
+	proto->config.flash.dev_numbits = 3;
 }
 
 static void show_params(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "Address bytes : %d\r\n", proto->dev_numbits);
+	cprintf(con, "Address bytes : %d\r\n", proto->config.flash.dev_numbits);
 }
 
 static void flash_data_mode_input(void)
@@ -260,22 +260,22 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_PULL:
 			switch (p->tokens[++t]) {
 			case T_UP:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
+				proto->config.flash.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 				break;
 			case T_DOWN:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
+				proto->config.flash.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
 				break;
 			case T_FLOATING:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+				proto->config.flash.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 				break;
 			}
 			flash_pin_init(con);
 			break;
 		case T_MSB_FIRST:
-			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
+			proto->config.flash.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
 			break;
 		case T_LSB_FIRST:
-			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
+			proto->config.flash.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
 			break;
 		case T_ID:
 			flash_display_id(con);

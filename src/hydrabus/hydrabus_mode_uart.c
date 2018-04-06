@@ -50,9 +50,9 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
-	proto->dev_speed = UART_DEFAULT_SPEED;
-	proto->dev_parity = 0;
-	proto->dev_stop_bit = 1;
+	proto->config.uart.dev_speed = UART_DEFAULT_SPEED;
+	proto->config.uart.dev_parity = 0;
+	proto->config.uart.dev_stop_bit = 1;
 }
 
 static void show_params(t_hydra_console *con)
@@ -60,10 +60,10 @@ static void show_params(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "Device: UART%d\r\nSpeed: %d bps\r\n",
-		proto->dev_num + 1, proto->dev_speed);
+		proto->dev_num + 1, proto->config.uart.dev_speed);
 	cprintf(con, "Parity: %s\r\nStop bits: %d\r\n",
-		str_dev_param_parity[proto->dev_parity],
-		proto->dev_stop_bit);
+		str_dev_param_parity[proto->config.uart.dev_parity],
+		proto->config.uart.dev_stop_bit);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -168,7 +168,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_SPEED:
 			/* Integer parameter. */
 			t += 2;
-			memcpy(&proto->dev_speed, p->buf + p->tokens[t], sizeof(int));
+			memcpy(&proto->config.uart.dev_speed, p->buf + p->tokens[t], sizeof(int));
 			bsp_status = bsp_uart_init(proto->dev_num, proto);
 			if( bsp_status != BSP_OK) {
 				cprintf(con, str_bsp_init_err, bsp_status);
@@ -177,7 +177,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 
 			final_baudrate = bsp_uart_get_final_baudrate(proto->dev_num);
 
-			baudrate_error_percent = 10000 - (int)((float)proto->dev_speed/(float)final_baudrate * 10000.0f);
+			baudrate_error_percent = 10000 - (int)((float)proto->config.uart.dev_speed/(float)final_baudrate * 10000.0f);
 			if(baudrate_error_percent < 0)
 				baudrate_error_percent = -baudrate_error_percent;
 
@@ -186,7 +186,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 
 			if( (final_baudrate < 1) || (baudrate_err_int_part > 5)) {
 				cprintf(con, "Invalid final baudrate(%d bps/%d.%02d%% err) restore default %d bauds\r\n", final_baudrate, baudrate_err_int_part, baudrate_err_dec_part, UART_DEFAULT_SPEED);
-				proto->dev_speed = UART_DEFAULT_SPEED;
+				proto->config.uart.dev_speed = UART_DEFAULT_SPEED;
 				bsp_status = bsp_uart_init(proto->dev_num, proto);
 				if( bsp_status != BSP_OK) {
 					cprintf(con, str_bsp_init_err, bsp_status);
@@ -201,13 +201,13 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			/* Token parameter. */
 			switch (p->tokens[++t]) {
 			case T_NONE:
-				proto->dev_parity = 0;
+				proto->config.uart.dev_parity = 0;
 				break;
 			case T_EVEN:
-				proto->dev_parity = 1;
+				proto->config.uart.dev_parity = 1;
 				break;
 			case T_ODD:
-				proto->dev_parity = 2;
+				proto->config.uart.dev_parity = 2;
 				break;
 			}
 			bsp_status = bsp_uart_init(proto->dev_num, proto);
@@ -224,7 +224,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Stop bits must be 1 or 2.\r\n");
 				return t;
 			}
-			proto->dev_stop_bit = arg_int;
+			proto->config.uart.dev_stop_bit = arg_int;
 			bsp_status = bsp_uart_init(proto->dev_num, proto);
 			if( bsp_status != BSP_OK) {
 				cprintf(con, str_bsp_init_err, bsp_status);

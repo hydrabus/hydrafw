@@ -34,9 +34,9 @@ void bbio_uart_init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 1;
-	proto->dev_speed = 9600;
-	proto->dev_parity = 0;
-	proto->dev_stop_bit = 1;
+	proto->config.uart.dev_speed = 9600;
+	proto->config.uart.dev_parity = 0;
+	proto->config.uart.dev_stop_bit = 1;
 }
 
 msg_t uart_reader_thread (void *arg)
@@ -131,34 +131,34 @@ void bbio_mode_uart(t_hydra_console *con)
 				} else if ((bbio_subcommand & BBIO_UART_SET_SPEED) == BBIO_UART_SET_SPEED) {
 					switch(bbio_subcommand & 0b1111) {
 					case 0:
-						proto->dev_speed = 640;
+						proto->config.uart.dev_speed = 640;
 						break;
 					case 1:
-						proto->dev_speed = 1200;
+						proto->config.uart.dev_speed = 1200;
 						break;
 					case 2:
-						proto->dev_speed = 2400;
+						proto->config.uart.dev_speed = 2400;
 						break;
 					case 3:
-						proto->dev_speed = 4800;
+						proto->config.uart.dev_speed = 4800;
 						break;
 					case 4:
-						proto->dev_speed = 9600;
+						proto->config.uart.dev_speed = 9600;
 						break;
 					case 5:
-						proto->dev_speed = 19200;
+						proto->config.uart.dev_speed = 19200;
 						break;
 					case 6:
-						proto->dev_speed = 31250;
+						proto->config.uart.dev_speed = 31250;
 						break;
 					case 7:
-						proto->dev_speed = 38400;
+						proto->config.uart.dev_speed = 38400;
 						break;
 					case 8:
-						proto->dev_speed = 57600;
+						proto->config.uart.dev_speed = 57600;
 						break;
 					case 10:
-						proto->dev_speed = 115200;
+						proto->config.uart.dev_speed = 115200;
 						break;
 					default:
 						cprint(con, "\x00", 1);
@@ -172,16 +172,16 @@ void bbio_mode_uart(t_hydra_console *con)
 						cprint(con, "\x00", 1);
 					}
 				} else if ((bbio_subcommand & BBIO_UART_CONFIG) == BBIO_UART_CONFIG) {
-					proto->dev_stop_bit = (bbio_subcommand & 0b10)?2:1;
+					proto->config.uart.dev_stop_bit = (bbio_subcommand & 0b10)?2:1;
 					switch((bbio_subcommand & 0b1100)>>2) {
 					case 0:
-						proto->dev_parity = 0;
+						proto->config.uart.dev_parity = 0;
 						break;
 					case 1:
-						proto->dev_parity = 1;
+						proto->config.uart.dev_parity = 1;
 						break;
 					case 2:
-						proto->dev_parity = 2;
+						proto->config.uart.dev_parity = 2;
 						break;
 					case 3:
 						cprint(con, "\x00", 1);

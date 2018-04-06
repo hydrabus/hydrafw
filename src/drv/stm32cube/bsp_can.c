@@ -165,9 +165,9 @@ bsp_status_t bsp_can_set_timings(bsp_dev_can_t dev_num, mode_config_proto_t* mod
 
 	HAL_CAN_DeInit(hcan);
 
-	hcan->Init.BS1 = mode_conf->bus_mode&0xf0000;
-	hcan->Init.BS2 = mode_conf->bus_mode&0x700000;
-	hcan->Init.SJW  = mode_conf->bus_mode&0x3000000;
+	hcan->Init.BS1 = mode_conf->config.can.dev_timing&0xf0000;
+	hcan->Init.BS2 = mode_conf->config.can.dev_timing&0x700000;
+	hcan->Init.SJW  = mode_conf->config.can.dev_timing&0x3000000;
 
 	status = HAL_CAN_Init(hcan);
 
@@ -186,7 +186,7 @@ bsp_status_t bsp_can_set_ts1(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 	hcan->Init.BS1 = (uint32_t)(ts1-1)<<16;
 	status = HAL_CAN_Init(hcan);
 
-	mode_conf->bus_mode = bsp_can_get_timings(dev_num);
+	mode_conf->config.can.dev_timing = bsp_can_get_timings(dev_num);
 
 	return status;
 }
@@ -203,7 +203,7 @@ bsp_status_t bsp_can_set_ts2(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 	hcan->Init.BS2 = (uint32_t)(ts2-1)<<20;
 	status = HAL_CAN_Init(hcan);
 
-	mode_conf->bus_mode = bsp_can_get_timings(dev_num);
+	mode_conf->config.can.dev_timing = bsp_can_get_timings(dev_num);
 
 	return status;
 }
@@ -220,7 +220,7 @@ bsp_status_t bsp_can_set_sjw(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 	hcan->Init.SJW = (uint32_t)(sjw-1)<<24;
 	status = HAL_CAN_Init(hcan);
 
-	mode_conf->bus_mode = bsp_can_get_timings(dev_num);
+	mode_conf->config.can.dev_timing = bsp_can_get_timings(dev_num);
 
 	return status;
 }
@@ -241,7 +241,7 @@ bsp_status_t bsp_can_mode_rw(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 
 	HAL_CAN_DeInit(hcan);
 
-	mode_conf->dev_mode = BSP_CAN_MODE_RW;
+	mode_conf->config.can.dev_mode = BSP_CAN_MODE_RW;
 	hcan->Init.Mode = CAN_MODE_NORMAL;
 
 	status = HAL_CAN_Init(hcan);
@@ -296,19 +296,19 @@ bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 	/* transmit FIFO priority */
 	hcan->Init.TXFP = DISABLE;
 
-	if(mode_conf->dev_mode == BSP_CAN_MODE_RO) {
+	if(mode_conf->config.can.dev_mode == BSP_CAN_MODE_RO) {
 		hcan->Init.Mode = CAN_MODE_SILENT;
 	} else {
 		hcan->Init.Mode = CAN_MODE_NORMAL;
 	}
 
 	/* CAN timing values */
-	hcan->Init.BS1 = mode_conf->bus_mode&0xf0000;
-	hcan->Init.BS2 = mode_conf->bus_mode&0x700000;
-	hcan->Init.SJW  = mode_conf->bus_mode&0x3000000;
+	hcan->Init.BS1 = mode_conf->config.can.dev_timing&0xf0000;
+	hcan->Init.BS2 = mode_conf->config.can.dev_timing&0x700000;
+	hcan->Init.SJW  = mode_conf->config.can.dev_timing&0x3000000;
 
 	/* CAN Baudrate */
-	hcan->Init.Prescaler = 2000000/mode_conf->dev_speed;
+	hcan->Init.Prescaler = 2000000/mode_conf->config.can.dev_speed;
 
 	status = HAL_CAN_Init(hcan);
 

@@ -186,9 +186,9 @@ void initUART1_sniff(void)
 	mode_config_proto_t mode_conf;
 	bsp_status_t uart_bsp_status;
 
-	mode_conf.dev_speed = 8400000; /* 8.4Megabauds */
-	mode_conf.dev_parity = 0; /* 0 No Parity */
-	mode_conf.dev_stop_bit = 1; /* 1 Stop Bit */
+	mode_conf.config.uart.dev_speed = 8400000; /* 8.4Megabauds */
+	mode_conf.config.uart.dev_parity = 0; /* 0 No Parity */
+	mode_conf.config.uart.dev_stop_bit = 1; /* 1 Stop Bit */
 	uart_bsp_status = bsp_uart_init(BSP_DEV_UART1,&mode_conf);
 	if(uart_bsp_status == BSP_OK)
 	{

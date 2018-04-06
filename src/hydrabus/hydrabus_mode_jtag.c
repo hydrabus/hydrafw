@@ -46,9 +46,9 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
-	proto->dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
-	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
-	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
+	proto->config.jtag.dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
+	proto->config.jtag.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+	proto->config.jtag.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
 
 	config.divider = 1;
 	config.trst_pin = 7;
@@ -65,12 +65,12 @@ static void show_params(t_hydra_console *con)
 
 	cprintf(con, "Device: JTAG%d\r\nGPIO resistor: %s\r\n",
 		proto->dev_num + 1,
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+		proto->config.jtag.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+		proto->config.jtag.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
 		"floating");
 
 	cprintf(con, "Frequency: %dHz\r\nBit order: %s first\r\n",
-		(JTAG_MAX_FREQ/(int)config.divider), proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
+		(JTAG_MAX_FREQ/(int)config.divider), proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB ? "MSB" : "LSB");
 }
 
 static bool jtag_pin_init(t_hydra_console *con)
@@ -89,15 +89,15 @@ static bool jtag_pin_init(t_hydra_console *con)
 	if(config.tdo_pin == config.trst_pin) return false;
 
 	bsp_gpio_init(BSP_GPIO_PORTB, config.tdi_pin,
-		      proto->dev_gpio_mode, proto->dev_gpio_pull);
+		      proto->config.jtag.dev_gpio_mode, proto->config.jtag.dev_gpio_pull);
 	bsp_gpio_init(BSP_GPIO_PORTB, config.tdo_pin,
-		      MODE_CONFIG_DEV_GPIO_IN, proto->dev_gpio_pull);
+		      MODE_CONFIG_DEV_GPIO_IN, proto->config.jtag.dev_gpio_pull);
 	bsp_gpio_init(BSP_GPIO_PORTB, config.tms_pin,
-		      proto->dev_gpio_mode, proto->dev_gpio_pull);
+		      proto->config.jtag.dev_gpio_mode, proto->config.jtag.dev_gpio_pull);
 	bsp_gpio_init(BSP_GPIO_PORTB, config.tck_pin,
-		      proto->dev_gpio_mode, proto->dev_gpio_pull);
+		      proto->config.jtag.dev_gpio_mode, proto->config.jtag.dev_gpio_pull);
 	bsp_gpio_init(BSP_GPIO_PORTB, config.trst_pin,
-		      proto->dev_gpio_mode, proto->dev_gpio_pull);
+		      proto->config.jtag.dev_gpio_mode, proto->config.jtag.dev_gpio_pull);
 	return true;
 }
 
@@ -216,7 +216,6 @@ static inline void jtag_reset_state(void)
 		i--;
 	}
 	jtag_tms_low();
-	config.state = JTAG_STATE_RESET;
 }
 
 static void clkh(t_hydra_console *con)
@@ -278,7 +277,7 @@ static void jtag_write_u8(t_hydra_console *con, uint8_t tx_data)
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t i;
 
-	if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
+	if(proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
 		for (i=0; i<8; i++) {
 			jtag_send_bit((tx_data>>i) & 1);
 		}
@@ -296,7 +295,7 @@ static uint8_t jtag_read_u8(t_hydra_console *con)
 	uint8_t i;
 
 	value = 0;
-	if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
+	if(proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
 		for(i=0; i<8; i++) {
 			value |= (jtag_read_bit_clock() << i);
 		}
@@ -315,7 +314,7 @@ static uint32_t jtag_read_u32(t_hydra_console *con)
 	uint8_t i;
 
 	value = 0;
-	if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
+	if(proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
 		for(i=0; i<32; i++) {
 			value |= (jtag_read_bit_clock() << i);
 		}
@@ -413,8 +412,8 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 					if (USER_BUTTON) return;
 					for(i = 0; i < num_pins; i++) {
 						bsp_gpio_init(BSP_GPIO_PORTB, i,
-							      proto->dev_gpio_mode,
-							      proto->dev_gpio_pull);
+							      proto->config.jtag.dev_gpio_mode,
+							      proto->config.jtag.dev_gpio_pull);
 						bsp_gpio_set(BSP_GPIO_PORTB, i);
 					}
 					config.tms_pin = tms;
@@ -432,8 +431,8 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 							if (trst == tdo) continue;
 							for(i = 0; i < num_pins; i++) {
 								bsp_gpio_init(BSP_GPIO_PORTB, i,
-									      proto->dev_gpio_mode,
-									      proto->dev_gpio_pull);
+									      proto->config.jtag.dev_gpio_mode,
+									      proto->config.jtag.dev_gpio_pull);
 								bsp_gpio_set(BSP_GPIO_PORTB, i);
 							}
 							config.trst_pin = trst;
@@ -468,8 +467,8 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 				if (USER_BUTTON) return;
 				for(i = 0; i < num_pins; i++) {
 					bsp_gpio_init(BSP_GPIO_PORTB, i,
-						      proto->dev_gpio_mode,
-						      proto->dev_gpio_pull);
+						      proto->config.jtag.dev_gpio_mode,
+						      proto->config.jtag.dev_gpio_pull);
 					bsp_gpio_set(BSP_GPIO_PORTB, i);
 				}
 				config.tms_pin = tms;
@@ -487,8 +486,8 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 						if (trst == tdo) continue;
 						for(i = 0; i < num_pins; i++) {
 							bsp_gpio_init(BSP_GPIO_PORTB, i,
-								      proto->dev_gpio_mode,
-								      proto->dev_gpio_pull);
+								      proto->config.jtag.dev_gpio_mode,
+								      proto->config.jtag.dev_gpio_pull);
 							bsp_gpio_set(BSP_GPIO_PORTB, i);
 						}
 						config.trst_pin = trst;
@@ -554,14 +553,14 @@ void openOCD(t_hydra_console *con)
 				if(chnRead(con->sdu, ocd_parameters, 1) == 1) {
 					switch(ocd_parameters[0]) {
 					case OCD_MODE_HIZ:
-						proto->dev_gpio_mode = MODE_CONFIG_DEV_GPIO_IN;
+						proto->config.jtag.dev_gpio_mode = MODE_CONFIG_DEV_GPIO_IN;
 						break;
 					case OCD_MODE_JTAG:
-						proto->dev_gpio_mode =
+						proto->config.jtag.dev_gpio_mode =
 							MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
 						break;
 					case OCD_MODE_JTAG_OD:
-						proto->dev_gpio_mode =
+						proto->config.jtag.dev_gpio_mode =
 							MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN;
 						break;
 					}
@@ -585,9 +584,9 @@ void openOCD(t_hydra_console *con)
 						break;
 					case FEATURE_PULLUP:
 						if(ocd_parameters[1]) {
-							proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
+							proto->config.jtag.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 						} else {
-							proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+							proto->config.jtag.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 						}
 						break;
 					}
@@ -680,22 +679,22 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_PULL:
 			switch (p->tokens[++t]) {
 			case T_UP:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
+				proto->config.jtag.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 				break;
 			case T_DOWN:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
+				proto->config.jtag.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
 				break;
 			case T_FLOATING:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+				proto->config.jtag.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 				break;
 			}
 			jtag_pin_init(con);
 			break;
 		case T_MSB_FIRST:
-			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
+			proto->config.jtag.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
 			break;
 		case T_LSB_FIRST:
-			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
+			proto->config.jtag.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
 			break;
 		case T_BRUTE:
 			/* Integer parameter. */

@@ -80,8 +80,8 @@ void bbio_mode_rawwire(t_hydra_console *con)
 	curmode.init(con);
 	curmode.pin_init(con);
 	curmode.tim_init(con);
-	curmode.clock_low();
-	curmode.data_low();
+	curmode.clock_low(con);
+	curmode.data_low(con);
 
 	bbio_mode_id(con);
 
@@ -99,31 +99,31 @@ void bbio_mode_rawwire(t_hydra_console *con)
 				cprint(con, (char *)&rx_data[0], 1);
 				break;
 			case BBIO_RAWWIRE_READ_BIT:
-				rx_data[0] = curmode.read_bit_clock();
+				rx_data[0] = curmode.read_bit_clock(con);
 				cprint(con, (char *)&rx_data[0], 1);
 				break;
 			case BBIO_RAWWIRE_PEEK_INPUT:
-				rx_data[0] = curmode.read_bit();
+				rx_data[0] = curmode.read_bit(con);
 				cprint(con, (char *)&rx_data[0], 1);
 				break;
 			case BBIO_RAWWIRE_CLK_TICK:
-				curmode.clock();
+				curmode.clock(con);
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_RAWWIRE_CLK_LOW:
-				curmode.clock_low();
+				curmode.clock_low(con);
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_RAWWIRE_CLK_HIGH:
-				curmode.clock_high();
+				curmode.clock_high(con);
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_RAWWIRE_DATA_LOW:
-				curmode.data_low();
+				curmode.data_low(con);
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_RAWWIRE_DATA_HIGH:
-				curmode.data_high();
+				curmode.data_high(con);
 				cprint(con, "\x01", 1);
 				break;
 			default:
@@ -143,13 +143,13 @@ void bbio_mode_rawwire(t_hydra_console *con)
 					data = (bbio_subcommand & 0b1111) + 1;
 
 					chnRead(con->sdu, &tx_data[0], 1);
-					if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
+					if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
 						for (i=0; i<data; i++) {
-							curmode.write_bit((tx_data[0]>>i) & 1);
+							curmode.write_bit(con, (tx_data[0]>>i) & 1);
 						}
 					} else {
 						for (i=0; i<data; i++) {
-							curmode.write_bit((tx_data[0]>>(7-i)) & 1);
+							curmode.write_bit(con, (tx_data[0]>>(7-i)) & 1);
 						}
 					}
 					cprint(con, "\x01", 1);
@@ -160,31 +160,31 @@ void bbio_mode_rawwire(t_hydra_console *con)
 					data = (bbio_subcommand & 0b1111) + 1;
 
 					for(i=0; i<data; i++) {
-						curmode.clock();
+						curmode.clock(con);
 					}
 					cprint(con, "\x01", 1);
 				} else if ((bbio_subcommand & BBIO_SPI_SET_SPEED) == BBIO_SPI_SET_SPEED) {
 					switch(bbio_subcommand & 0b11){
 					case 0:
-						proto->dev_speed = 5000;
+						proto->config.rawwire.dev_speed = 5000;
 						break;
 					case 1:
-						proto->dev_speed = 50000;
+						proto->config.rawwire.dev_speed = 50000;
 						break;
 					case 2:
-						proto->dev_speed = 100000;
+						proto->config.rawwire.dev_speed = 100000;
 						break;
 					case 3:
-						proto->dev_speed = 1000000;
+						proto->config.rawwire.dev_speed = 1000000;
 						break;
 					}
 					curmode.tim_update(con);
 				} else if ((bbio_subcommand & BBIO_RAWWIRE_CONFIG) == BBIO_RAWWIRE_CONFIG) {
 					curmode.cleanup(con);
 					if(bbio_subcommand & 0b10){
-						proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
+						proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
 					} else {
-						proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
+						proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
 					}
 					if(bbio_subcommand & 0b100){
 						curmode = bbio_threewire;
@@ -194,8 +194,8 @@ void bbio_mode_rawwire(t_hydra_console *con)
 					curmode.init(con);
 					curmode.pin_init(con);
 					curmode.tim_init(con);
-					curmode.clock_low();
-					curmode.data_low();
+					curmode.clock_low(con);
+					curmode.data_low(con);
 
 					cprint(con, "\x01", 1);
 				} else if ((bbio_subcommand & BBIO_RAWWIRE_CONFIG_PERIPH) == BBIO_RAWWIRE_CONFIG_PERIPH) {

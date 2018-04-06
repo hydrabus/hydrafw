@@ -57,10 +57,10 @@ extern t_token_dict tl_dict[];
 
 /* Create tokenline objects for each console. */
 t_tokenline tl_con1;
-t_mode_config mode_con1 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=MODE_CONFIG_PROTO_DEV_DEF_VAL }, .cmd={ 0 } };
+t_mode_config mode_con1 = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
 
 t_tokenline tl_con2;
-t_mode_config mode_con2 = { .proto={ .valid=MODE_CONFIG_PROTO_VALID, .bus_mode=MODE_CONFIG_PROTO_DEV_DEF_VAL }, .cmd={ 0 } };
+t_mode_config mode_con2 = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
 
 t_hydra_console consoles[] = {
 	{ .thread_name="console USB1", .sdu=&SDU1, .tl=&tl_con1, .mode = &mode_con1 },

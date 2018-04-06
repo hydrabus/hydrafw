@@ -147,7 +147,7 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 	} else { /* UART2 */
 		huart->Instance = BSP_UART2;
 	}
-	huart->Init.BaudRate = mode_conf->dev_speed;
+	huart->Init.BaudRate = mode_conf->config.uart.dev_speed;
 
 	if(huart->Init.BaudRate < 4800)
 		huart->Init.OverSampling = UART_OVERSAMPLING_16;
@@ -158,7 +158,7 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 	if(huart->Init.BaudRate < 81)
 		return BSP_ERROR;
 
-	switch(mode_conf->dev_parity) {
+	switch(mode_conf->config.uart.dev_parity) {
 	case 1: /* 8/even */
 		huart->Init.Parity = UART_PARITY_EVEN;
 		huart->Init.WordLength = UART_WORDLENGTH_9B;
@@ -176,7 +176,7 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 		break;
 	}
 
-	if(mode_conf->dev_stop_bit == 1)
+	if(mode_conf->config.uart.dev_stop_bit == 1)
 		huart->Init.StopBits   = UART_STOPBITS_1;
 	else
 		huart->Init.StopBits   = UART_STOPBITS_2;
