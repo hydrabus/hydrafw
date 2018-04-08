@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_flash_ramfunc.c
   * @author  MCD Application Team
-  * @version V1.5.1
-  * @date    01-July-2016
   * @brief   FLASH RAMFUNC module driver.
   *          This file provides a FLASH firmware functions which should be 
   *          executed from internal SRAM
@@ -36,7 +34,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -109,9 +107,9 @@
   * @note  This mode is only available for STM32F41xxx/STM32F446xx devices. 
   * @note  This mode couldn't be set while executing with the flash itself. 
   *        It should be done with specific routine executed from RAM.     
-  * @retval None
+  * @retval HAL status
   */
-__RAM_FUNC HAL_FLASHEx_StopFlashInterfaceClk(void)
+__RAM_FUNC HAL_StatusTypeDef HAL_FLASHEx_StopFlashInterfaceClk(void)
 {
   /* Enable Power ctrl clock */
   __HAL_RCC_PWR_CLK_ENABLE();
@@ -126,9 +124,9 @@ __RAM_FUNC HAL_FLASHEx_StopFlashInterfaceClk(void)
   * @note  This mode is only available for STM32F411xx/STM32F446xx devices. 
   * @note  This mode couldn't be set while executing with the flash itself. 
   *        It should be done with specific routine executed from RAM.     
-  * @retval None
+  * @retval HAL status
   */
-__RAM_FUNC HAL_FLASHEx_StartFlashInterfaceClk(void)
+__RAM_FUNC HAL_StatusTypeDef HAL_FLASHEx_StartFlashInterfaceClk(void)
 {
   /* Enable Power ctrl clock */
   __HAL_RCC_PWR_CLK_ENABLE();
@@ -143,9 +141,9 @@ __RAM_FUNC HAL_FLASHEx_StartFlashInterfaceClk(void)
   * @note  This mode is only available for STM32F41xxx/STM32F446xx devices. 
   * @note  This mode could n't be set while executing with the flash itself. 
   *        It should be done with specific routine executed from RAM.     
-  * @retval None
+  * @retval HAL status
   */
-__RAM_FUNC HAL_FLASHEx_EnableFlashSleepMode(void)
+__RAM_FUNC HAL_StatusTypeDef HAL_FLASHEx_EnableFlashSleepMode(void)
 {
   /* Enable Power ctrl clock */
   __HAL_RCC_PWR_CLK_ENABLE();
@@ -160,9 +158,9 @@ __RAM_FUNC HAL_FLASHEx_EnableFlashSleepMode(void)
   * @note  This mode is only available for STM32F41xxx/STM32F446xx devices. 
   * @note  This mode couldn't be set while executing with the flash itself. 
   *        It should be done with specific routine executed from RAM.     
-  * @retval None
+  * @retval HAL status
   */
-__RAM_FUNC HAL_FLASHEx_DisableFlashSleepMode(void)
+__RAM_FUNC HAL_StatusTypeDef HAL_FLASHEx_DisableFlashSleepMode(void)
 {
   /* Enable Power ctrl clock */
   __HAL_RCC_PWR_CLK_ENABLE();

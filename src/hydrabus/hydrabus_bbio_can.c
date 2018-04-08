@@ -62,8 +62,8 @@ void bbio_mode_can(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	uint8_t rx_buff[10], i, to_tx;
-	CanTxMsgTypeDef tx_msg;
-	CanRxMsgTypeDef rx_msg;
+	can_tx_frame tx_msg;
+	can_rx_frame rx_msg;
 	uint32_t can_id=0;
 	uint32_t filter_low=0, filter_high=0;
 
@@ -113,15 +113,17 @@ void bbio_mode_can(t_hydra_console *con)
 				status = bsp_can_read(proto->dev_num, &rx_msg);
 				if(status == BSP_OK) {
 					cprint(con, "\x01", 1);
-					if(rx_msg.IDE == CAN_ID_STD) {
-						print_raw_uint32(con, (uint32_t)rx_msg.StdId);
+					if(rx_msg.header.IDE == CAN_ID_STD) {
+						print_raw_uint32(con,
+								 (uint32_t)rx_msg.header.StdId);
 					}else{
-						print_raw_uint32(con, (uint32_t)rx_msg.ExtId);
+						print_raw_uint32(con,
+								 (uint32_t)rx_msg.header.ExtId);
 					}
-					cprintf(con, "%c", rx_msg.DLC);
-					for(i=0; i<rx_msg.DLC; i++){
+					cprintf(con, "%c", rx_msg.header.DLC);
+					for(i=0; i<rx_msg.header.DLC; i++){
 						cprintf(con, "%c",
-							rx_msg.Data[i]);
+							rx_msg.data[i]);
 					}
 
 				}else{
@@ -160,23 +162,23 @@ void bbio_mode_can(t_hydra_console *con)
 				if ((bbio_subcommand & BBIO_CAN_WRITE) == BBIO_CAN_WRITE) {
 
 					if (can_id < 0b11111111111) {
-						tx_msg.StdId = can_id;
-						tx_msg.IDE = CAN_ID_STD;
+						tx_msg.header.StdId = can_id;
+						tx_msg.header.IDE = CAN_ID_STD;
 					} else {
-						tx_msg.ExtId = can_id;
-						tx_msg.IDE = CAN_ID_EXT;
+						tx_msg.header.ExtId = can_id;
+						tx_msg.header.IDE = CAN_ID_EXT;
 					}
 
 					to_tx = (bbio_subcommand & 0b111)+1;
 
-					tx_msg.RTR = CAN_RTR_DATA;
-					tx_msg.DLC = to_tx;
+					tx_msg.header.RTR = CAN_RTR_DATA;
+					tx_msg.header.DLC = to_tx;
 
 					chnRead(con->sdu, rx_buff,
 							       to_tx);
 
 					for(i=0; i<to_tx; i++) {
-						tx_msg.Data[i] = rx_buff[i];
+						tx_msg.data[i] = rx_buff[i];
 					}
 
 					status = bsp_can_write(proto->dev_num, &tx_msg);

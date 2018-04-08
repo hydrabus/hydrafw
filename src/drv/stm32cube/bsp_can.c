@@ -107,10 +107,6 @@ static void can_gpio_hw_deinit(bsp_dev_can_t dev_num)
   */
 static void can_error(bsp_dev_can_t dev_num)
 {
-	CAN_HandleTypeDef* hcan;
-
-	hcan = &can_handle[dev_num];
-	__HAL_UNLOCK(hcan);
 	if(bsp_can_deinit(dev_num) == BSP_OK) {
 		/* Re-Initialize the CAN comunication
 		 * bus */
@@ -136,7 +132,9 @@ bsp_status_t bsp_can_set_speed(bsp_dev_can_t dev_num, uint32_t speed)
 	HAL_CAN_DeInit(hcan);
 
 	hcan->Init.Prescaler = 2000000/speed;
+	HAL_CAN_Stop(hcan);
 	status = HAL_CAN_Init(hcan);
+	HAL_CAN_Start(hcan);
 
 	return status;
 }
@@ -165,11 +163,13 @@ bsp_status_t bsp_can_set_timings(bsp_dev_can_t dev_num, mode_config_proto_t* mod
 
 	HAL_CAN_DeInit(hcan);
 
-	hcan->Init.BS1 = mode_conf->config.can.dev_timing&0xf0000;
-	hcan->Init.BS2 = mode_conf->config.can.dev_timing&0x700000;
-	hcan->Init.SJW  = mode_conf->config.can.dev_timing&0x3000000;
+	hcan->Init.TimeSeg1 = mode_conf->config.can.dev_timing&0xf0000;
+	hcan->Init.TimeSeg2 = mode_conf->config.can.dev_timing&0x700000;
+	hcan->Init.SyncJumpWidth  = mode_conf->config.can.dev_timing&0x3000000;
 
+	HAL_CAN_Stop(hcan);
 	status = HAL_CAN_Init(hcan);
+	HAL_CAN_Start(hcan);
 
 	return status;
 }
@@ -183,8 +183,10 @@ bsp_status_t bsp_can_set_ts1(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 
 	HAL_CAN_DeInit(hcan);
 
-	hcan->Init.BS1 = (uint32_t)(ts1-1)<<16;
+	hcan->Init.TimeSeg1 = (uint32_t)(ts1-1)<<16;
+	HAL_CAN_Stop(hcan);
 	status = HAL_CAN_Init(hcan);
+	HAL_CAN_Start(hcan);
 
 	mode_conf->config.can.dev_timing = bsp_can_get_timings(dev_num);
 
@@ -200,8 +202,10 @@ bsp_status_t bsp_can_set_ts2(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 
 	HAL_CAN_DeInit(hcan);
 
-	hcan->Init.BS2 = (uint32_t)(ts2-1)<<20;
+	hcan->Init.TimeSeg2 = (uint32_t)(ts2-1)<<20;
+	HAL_CAN_Stop(hcan);
 	status = HAL_CAN_Init(hcan);
+	HAL_CAN_Start(hcan);
 
 	mode_conf->config.can.dev_timing = bsp_can_get_timings(dev_num);
 
@@ -217,8 +221,10 @@ bsp_status_t bsp_can_set_sjw(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 
 	HAL_CAN_DeInit(hcan);
 
-	hcan->Init.SJW = (uint32_t)(sjw-1)<<24;
+	hcan->Init.SyncJumpWidth = (uint32_t)(sjw-1)<<24;
+	HAL_CAN_Stop(hcan);
 	status = HAL_CAN_Init(hcan);
+	HAL_CAN_Start(hcan);
 
 	mode_conf->config.can.dev_timing = bsp_can_get_timings(dev_num);
 
@@ -245,6 +251,7 @@ bsp_status_t bsp_can_mode_rw(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 	hcan->Init.Mode = CAN_MODE_NORMAL;
 
 	status = HAL_CAN_Init(hcan);
+	HAL_CAN_Start(hcan);
 
 	return status;
 }
@@ -279,22 +286,22 @@ bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 	/* CAN cell init */
 
 	/* time triggered communication mode */
-	hcan->Init.TTCM = DISABLE;
+	hcan->Init.TimeTriggeredMode = DISABLE;
 
 	/* automatic bus-off management */
-	hcan->Init.ABOM = ENABLE;
+	hcan->Init.AutoBusOff = ENABLE;
 
 	/* automatic wake-up mode */
-	hcan->Init.AWUM = ENABLE;
+	hcan->Init.AutoWakeUp = ENABLE;
 
 	/* non-automatic retransmission mode */
-	hcan->Init.NART = ENABLE;
+	hcan->Init.AutoRetransmission = ENABLE;
 
 	/* receive FIFO Locked mode */
-	hcan->Init.RFLM = DISABLE;
+	hcan->Init.ReceiveFifoLocked = DISABLE;
 
 	/* transmit FIFO priority */
-	hcan->Init.TXFP = DISABLE;
+	hcan->Init.TransmitFifoPriority = DISABLE;
 
 	if(mode_conf->config.can.dev_mode == BSP_CAN_MODE_RO) {
 		hcan->Init.Mode = CAN_MODE_SILENT;
@@ -303,14 +310,16 @@ bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 	}
 
 	/* CAN timing values */
-	hcan->Init.BS1 = mode_conf->config.can.dev_timing&0xf0000;
-	hcan->Init.BS2 = mode_conf->config.can.dev_timing&0x700000;
-	hcan->Init.SJW  = mode_conf->config.can.dev_timing&0x3000000;
+	hcan->Init.TimeSeg1 = mode_conf->config.can.dev_timing&0xf0000;
+	hcan->Init.TimeSeg2 = mode_conf->config.can.dev_timing&0x700000;
+	hcan->Init.SyncJumpWidth  = mode_conf->config.can.dev_timing&0x3000000;
 
 	/* CAN Baudrate */
 	hcan->Init.Prescaler = 2000000/mode_conf->config.can.dev_speed;
 
+	HAL_CAN_Stop(hcan);
 	status = HAL_CAN_Init(hcan);
+	HAL_CAN_Start(hcan);
 
 	return status;
 }
@@ -323,7 +332,7 @@ bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
   */
 bsp_status_t bsp_can_init_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 {
-	CAN_FilterConfTypeDef hcanfilter;
+	CAN_FilterTypeDef hcanfilter;
 	CAN_HandleTypeDef* hcan;
 
 	can_mode_conf[dev_num] = mode_conf;
@@ -336,13 +345,15 @@ bsp_status_t bsp_can_init_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mod
 	hcanfilter.FilterMaskIdHigh = 0;
 	hcanfilter.FilterMaskIdLow = 0;
 	hcanfilter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
-	hcanfilter.FilterNumber = 14*dev_num;
+	hcanfilter.FilterBank = 14*dev_num;
 	hcanfilter.FilterMode = CAN_FILTERMODE_IDMASK;
 	hcanfilter.FilterScale = CAN_FILTERSCALE_16BIT;
 	hcanfilter.FilterActivation = ENABLE;
-	hcanfilter.BankNumber = 14;
+	hcanfilter.SlaveStartFilterBank = 14;
 
+	HAL_CAN_Stop(hcan);
 	status = HAL_CAN_ConfigFilter(hcan, &hcanfilter);
+	HAL_CAN_Start(hcan);
 
 	return status;
 }
@@ -359,7 +370,7 @@ bsp_status_t bsp_can_set_filter(bsp_dev_can_t dev_num,
 				mode_config_proto_t* mode_conf,
 				uint32_t id_low, uint32_t id_high)
 {
-	CAN_FilterConfTypeDef hcanfilter;
+	CAN_FilterTypeDef hcanfilter;
 	CAN_HandleTypeDef* hcan;
 
 	can_mode_conf[dev_num] = mode_conf;
@@ -372,11 +383,11 @@ bsp_status_t bsp_can_set_filter(bsp_dev_can_t dev_num,
 	hcanfilter.FilterMaskIdHigh = 0;
 	hcanfilter.FilterMaskIdLow = 0;
 	hcanfilter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
-	hcanfilter.FilterNumber = 14*dev_num;
+	hcanfilter.FilterBank = 14*dev_num;
 	hcanfilter.FilterMode = CAN_FILTERMODE_IDLIST;
 	hcanfilter.FilterScale = CAN_FILTERSCALE_16BIT;
 	hcanfilter.FilterActivation = ENABLE;
-	hcanfilter.BankNumber = 14;
+	hcanfilter.SlaveStartFilterBank = 14;
 
 	status = HAL_CAN_ConfigFilter(hcan, &hcanfilter);
 
@@ -395,6 +406,9 @@ bsp_status_t bsp_can_deinit(bsp_dev_can_t dev_num)
 
 	hcan = &can_handle[dev_num];
 
+	/* Stop the CAN controller */
+	HAL_CAN_Stop(hcan);
+
 	/* De-initialize the CAN comunication bus */
 	status = HAL_CAN_DeInit(hcan);
 
@@ -410,16 +424,16 @@ bsp_status_t bsp_can_deinit(bsp_dev_can_t dev_num)
   * @param  tx_msg: Message to send
   * @retval status of the transfer.
   */
-bsp_status_t bsp_can_write(bsp_dev_can_t dev_num, CanTxMsgTypeDef* tx_msg)
+bsp_status_t bsp_can_write(bsp_dev_can_t dev_num, can_tx_frame* tx_msg)
 {
 	CAN_HandleTypeDef* hcan;
 	bsp_status_t status;
+	uint32_t dummy;
 
 	hcan = &can_handle[dev_num];
 
-	hcan->pTxMsg = tx_msg;
-
-	status = HAL_CAN_Transmit(hcan, CANx_TIMEOUT_MAX);
+	status = HAL_CAN_AddTxMessage(hcan, &(tx_msg->header), tx_msg->data, &dummy);
+	//status = HAL_CAN_Transmit(hcan, CANx_TIMEOUT_MAX);
 	switch(status) {
 	case BSP_ERROR:
 		can_error(dev_num);
@@ -434,55 +448,33 @@ bsp_status_t bsp_can_write(bsp_dev_can_t dev_num, CanTxMsgTypeDef* tx_msg)
 }
 
 /**
-  * @brief  Sends a message in non blocking mode
-  * @param  dev_num: CAN dev num.
-  * @param  tx_msg: Message to send
-  * @retval status of the transfer. Always BSP_OK
-  */
-bsp_status_t bsp_can_put(bsp_dev_can_t dev_num, CanTxMsgTypeDef* tx_msg)
-{
-	CAN_HandleTypeDef* hcan;
-	bsp_status_t status;
-
-	hcan = &can_handle[dev_num];
-
-	hcan->pTxMsg = tx_msg;
-
-	status = HAL_CAN_Transmit(hcan, 10);
-	switch(status){
-	case BSP_OK:
-	case BSP_TIMEOUT:
-		return BSP_OK;
-	default:
-		return BSP_ERROR;
-	}
-}
-
-/**
   * @brief  Read a message in blocking mode and return the status.
   * @param  dev_num: CAN dev num.
   * @param  rx_msg: Message to receive.
   * @retval status of the transfer.
   */
-bsp_status_t bsp_can_read(bsp_dev_can_t dev_num, CanRxMsgTypeDef* rx_msg)
+bsp_status_t bsp_can_read(bsp_dev_can_t dev_num, can_rx_frame* rx_msg)
 {
 	CAN_HandleTypeDef* hcan;
 	bsp_status_t status;
 
 	hcan = &can_handle[dev_num];
 
-	hcan->pRxMsg = rx_msg;
-
-	status = HAL_CAN_Receive(hcan, CAN_FIFO0, CANx_TIMEOUT_MAX);
-	switch(status) {
-	case BSP_ERROR:
-		can_error(dev_num);
-		break;
-	case BSP_OK:
-	case BSP_TIMEOUT:
-	case BSP_BUSY:
-	default:
-		return status;
+	if(bsp_can_rxne(dev_num) == 0) {
+		return BSP_TIMEOUT;
+	} else {
+		status = HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &(rx_msg->header), rx_msg->data);
+		//status = HAL_CAN_Receive(hcan, CAN_FIFO0, CANx_TIMEOUT_MAX);
+		switch(status) {
+		case BSP_ERROR:
+			can_error(dev_num);
+			break;
+		case BSP_OK:
+		case BSP_TIMEOUT:
+		case BSP_BUSY:
+		default:
+			return status;
+		}
 	}
 	return status;
 }
@@ -496,5 +488,5 @@ bsp_status_t bsp_can_rxne(bsp_dev_can_t dev_num)
 	CAN_HandleTypeDef* hcan;
 	hcan = &can_handle[dev_num];
 
-	return __HAL_CAN_MSG_PENDING(hcan, CAN_FIFO0);
+	return HAL_CAN_GetRxFifoFillLevel(hcan, CAN_RX_FIFO0);
 }

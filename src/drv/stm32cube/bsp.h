@@ -23,8 +23,8 @@ limitations under the License.
 
 /* Macro for fast read, set & clear GPIO pin */
 #define gpio_get_pin(GPIOx, GPIO_Pin) (GPIOx->IDR & GPIO_Pin)
-#define gpio_set_pin(GPIOx, GPIO_Pin) (GPIOx->BSRRH = GPIO_Pin)
-#define gpio_clr_pin(GPIOx, GPIO_Pin) (GPIOx->BSRRL = GPIO_Pin)
+#define gpio_set_pin(GPIOx, GPIO_Pin) (GPIOx->BSRR = GPIO_Pin<<16)
+#define gpio_clr_pin(GPIOx, GPIO_Pin) (GPIOx->BSRR = GPIO_Pin)
 
 #if !defined(bool) || defined(__DOXYGEN__)
 typedef enum {

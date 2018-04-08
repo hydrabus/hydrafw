@@ -90,7 +90,7 @@ void bsp_gpio_set(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
 	GPIO_TypeDef *hal_gpio_port;
 
 	hal_gpio_port = (GPIO_TypeDef *)gpio_port;
-	hal_gpio_port->BSRRL = 1 << gpio_pin;
+	hal_gpio_port->BSRR = 1 << gpio_pin;
 }
 
 
@@ -105,7 +105,7 @@ void bsp_gpio_clr(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
 	GPIO_TypeDef *hal_gpio_port;
 
 	hal_gpio_port = (GPIO_TypeDef *)gpio_port;
-	hal_gpio_port->BSRRH = 1 << gpio_pin;
+	hal_gpio_port->BSRR = 1 << (gpio_pin+16);
 }
 
 /** \brief Read only one gpio_pin for the corresponding gpio_port
