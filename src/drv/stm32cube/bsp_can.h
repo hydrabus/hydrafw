@@ -47,7 +47,6 @@ bsp_status_t bsp_can_set_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mode
 bsp_status_t bsp_can_deinit(bsp_dev_can_t dev_num);
 bsp_status_t bsp_can_write(bsp_dev_can_t dev_num, can_tx_frame* tx_msg);
 bsp_status_t bsp_can_read(bsp_dev_can_t dev_num, can_rx_frame* rx_msg);
-bsp_status_t bsp_can_put(bsp_dev_can_t dev_num, can_tx_frame* tx_msg);
 
 bsp_status_t bsp_can_rxne(bsp_dev_can_t dev_num);
 uint32_t bsp_can_get_timings(bsp_dev_can_t dev_num);

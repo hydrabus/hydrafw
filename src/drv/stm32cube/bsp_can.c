@@ -429,11 +429,19 @@ bsp_status_t bsp_can_write(bsp_dev_can_t dev_num, can_tx_frame* tx_msg)
 	CAN_HandleTypeDef* hcan;
 	bsp_status_t status;
 	uint32_t dummy;
+	uint32_t start_time;
 
 	hcan = &can_handle[dev_num];
 
+	start_time = HAL_GetTick();
+
+	while(HAL_CAN_GetTxMailboxesFreeLevel(hcan) == 0) {
+		if((HAL_GetTick()-start_time) > CANx_TIMEOUT_MAX) {
+			return BSP_TIMEOUT;
+		}
+	}
 	status = HAL_CAN_AddTxMessage(hcan, &(tx_msg->header), tx_msg->data, &dummy);
-	//status = HAL_CAN_Transmit(hcan, CANx_TIMEOUT_MAX);
+
 	switch(status) {
 	case BSP_ERROR:
 		can_error(dev_num);
@@ -457,24 +465,25 @@ bsp_status_t bsp_can_read(bsp_dev_can_t dev_num, can_rx_frame* rx_msg)
 {
 	CAN_HandleTypeDef* hcan;
 	bsp_status_t status;
+	uint32_t start_time;
 
 	hcan = &can_handle[dev_num];
 
-	if(bsp_can_rxne(dev_num) == 0) {
-		return BSP_TIMEOUT;
-	} else {
-		status = HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &(rx_msg->header), rx_msg->data);
-		//status = HAL_CAN_Receive(hcan, CAN_FIFO0, CANx_TIMEOUT_MAX);
-		switch(status) {
-		case BSP_ERROR:
-			can_error(dev_num);
-			break;
-		case BSP_OK:
-		case BSP_TIMEOUT:
-		case BSP_BUSY:
-		default:
-			return status;
+	while(HAL_CAN_GetRxFifoFillLevel(hcan, CAN_RX_FIFO0) == 0) {
+		if((HAL_GetTick()-start_time) > CANx_TIMEOUT_MAX) {
+			return BSP_TIMEOUT;
 		}
+	}
+	status = HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &(rx_msg->header), rx_msg->data);
+	switch(status) {
+	case BSP_ERROR:
+		can_error(dev_num);
+		break;
+	case BSP_OK:
+	case BSP_TIMEOUT:
+	case BSP_BUSY:
+	default:
+		return status;
 	}
 	return status;
 }
