@@ -51,6 +51,10 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* TS1 = 15TQ, TS2 = 5TQ, SJW = 2TQ */
 	proto->config.can.dev_timing = 0x14e0000;
+
+	proto->config.can.filter_id_low = 0;
+	proto->config.can.filter_id_high = 0;
+
 }
 
 static void show_params(t_hydra_console *con)
