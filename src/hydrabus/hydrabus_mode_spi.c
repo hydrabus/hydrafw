@@ -80,7 +80,7 @@ static void init_proto_default(t_hydra_console *con)
 
 static void show_params(t_hydra_console *con)
 {
-	int i, cnt;
+	uint8_t i, cnt;
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "Device: SPI%d\r\nGPIO resistor: %s\r\nMode: %s\r\n"

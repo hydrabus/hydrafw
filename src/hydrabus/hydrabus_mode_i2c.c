@@ -60,7 +60,7 @@ static void init_proto_default(t_hydra_console *con)
 
 static void show_params(t_hydra_console *con)
 {
-	int i, cnt;
+	uint8_t i, cnt;
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "GPIO resistor: %s\r\nFrequency: ",
@@ -72,7 +72,7 @@ static void show_params(t_hydra_console *con)
 
 	cprintf(con, " (");
 	for (i = 0, cnt = 0; i < SPEED_NB; i++) {
-		if (proto->config.i2c.dev_speed == (int)i)
+		if (proto->config.i2c.dev_speed == i)
 			continue;
 		if (cnt++)
 			cprintf(con, ", ");

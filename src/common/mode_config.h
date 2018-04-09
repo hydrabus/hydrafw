@@ -61,39 +61,31 @@ enum {
 };
 
 typedef struct {
-	long dev_num;
-	long dev_speed;
-	long dev_parity;
-	long dev_stop_bit;
+	uint32_t dev_speed;
+	uint8_t dev_parity;
+	uint8_t dev_stop_bit;
 } uart_config_t;
 
 typedef struct {
-	long dev_num;
 	mode_dev_gpio_pull_t dev_gpio_pull;
-	long dev_speed;
-	uint32_t ack_pending : 1;
+	uint32_t dev_speed;
+	uint8_t ack_pending : 1;
 } i2c_config_t;
 
 typedef struct {
-	long dev_num;
 	mode_dev_gpio_pull_t dev_gpio_pull;
-	long dev_speed;
-	long dev_mode;
-	long dev_polarity;
-	long dev_phase;
-	long dev_bit_lsb_msb;
+	uint32_t dev_speed;
+	uint8_t dev_mode;
+	uint8_t dev_polarity;
+	uint8_t dev_phase;
+	uint8_t dev_bit_lsb_msb;
 } spi_config_t;
 
 typedef struct {
-	long dev_num;
 	mode_dev_gpio_mode_t dev_gpio_mode;
 	mode_dev_gpio_pull_t dev_gpio_pull;
-	long dev_speed;
-	long dev_mode;
-	long dev_polarity;
-	long dev_phase;
-	long dev_bit_lsb_msb;
-	uint32_t divider;
+	uint8_t dev_bit_lsb_msb;
+	uint8_t divider;
 	uint8_t tdi_pin;
 	uint8_t tdo_pin;
 	uint8_t tms_pin;
@@ -102,36 +94,32 @@ typedef struct {
 } jtag_config_t;
 
 typedef struct {
-	long dev_num;
-	long dev_speed;
-	long dev_mode;
-	long dev_timing; /* bus_mode */
+	uint32_t dev_speed;
+	uint8_t dev_mode;
+	uint32_t dev_timing;
 	uint32_t can_id;
 	uint32_t filter_id_low;
 	uint32_t filter_id_high;
 } can_config_t;
 
 typedef struct {
-	long dev_num;
 	mode_dev_gpio_mode_t dev_gpio_mode;
 	mode_dev_gpio_pull_t dev_gpio_pull;
-	long dev_bit_lsb_msb;
-	long dev_numbits;
+	uint8_t dev_bit_lsb_msb;
+	uint8_t dev_numbits;
 } flash_config_t;
 
 typedef struct {
-	long dev_num;
 	mode_dev_gpio_mode_t dev_gpio_mode;
 	mode_dev_gpio_pull_t dev_gpio_pull;
-	long dev_bit_lsb_msb;
+	uint8_t dev_bit_lsb_msb;
 } onewire_config_t;
 
 typedef struct {
-	long dev_num;
-	long dev_speed;
+	uint32_t dev_speed;
 	mode_dev_gpio_mode_t dev_gpio_mode;
 	mode_dev_gpio_pull_t dev_gpio_pull;
-	long dev_bit_lsb_msb;
+	uint8_t dev_bit_lsb_msb;
 	uint8_t clk_pin;
 	uint8_t sdi_pin;
 	uint8_t sdo_pin;
@@ -148,12 +136,12 @@ typedef struct {
 } sump_config_t;
 
 typedef struct {
-	long dev_function;
+	uint8_t dev_function;
 } hydranfc_config_t;
 
 #define MODE_CONFIG_PROTO_BUFFER_SIZE (256)
 typedef struct {
-	long dev_num;
+	uint8_t dev_num;
 	union {
 		uart_config_t uart;
 		i2c_config_t i2c;
@@ -167,7 +155,7 @@ typedef struct {
 		hydranfc_config_t hydranfc;
 	} config;
 
-	uint32_t wwr : 1; // write with read
+	uint8_t wwr : 1; // write with read
 	uint8_t buffer_tx[MODE_CONFIG_PROTO_BUFFER_SIZE];
 	uint8_t buffer_rx[MODE_CONFIG_PROTO_BUFFER_SIZE];
 } mode_config_proto_t;
