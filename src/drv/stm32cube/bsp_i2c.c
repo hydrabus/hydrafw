@@ -202,7 +202,7 @@ bsp_status_t bsp_i2c_stop(bsp_dev_i2c_t dev_num)
  * \return bsp_status_t: status of the transfer.
  *
  */
-bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, bool* tx_ack_flag)
+bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uint8_t* tx_ack_flag)
 {
 	(void)dev_num;
 	int i;

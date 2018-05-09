@@ -59,7 +59,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 	uint8_t *tx_data = (uint8_t *)g_sbuf;
 	uint8_t *rx_data = (uint8_t *)g_sbuf+4096;
 	uint8_t data;
-	bool tx_ack_flag;
+	uint8_t tx_ack_flag;
 	bsp_status_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
