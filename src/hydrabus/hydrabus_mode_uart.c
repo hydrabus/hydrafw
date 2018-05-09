@@ -84,7 +84,7 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	return tokens_used;
 }
 
-msg_t bridge_thread (void *arg)
+static THD_FUNCTION(bridge_thread, arg)
 {
 	t_hydra_console *con;
 	con = arg;
@@ -107,7 +107,6 @@ msg_t bridge_thread (void *arg)
 			chThdYield();
 		}
 	}
-	return (msg_t)1;
 }
 
 static void bridge(t_hydra_console *con)
@@ -121,7 +120,7 @@ static void bridge(t_hydra_console *con)
 	cprint(con, "\r\n", 2);
 
 	thread_t *bthread = chThdCreateFromHeap(NULL, CONSOLE_WA_SIZE, "bridge_thread",
-						LOWPRIO, (tfunc_t)bridge_thread, con);
+						LOWPRIO, bridge_thread, con);
 	while(!USER_BUTTON) {
 		bytes_read = chnReadTimeout(con->sdu, tx_data,
 					    UART_BRIDGE_BUFF_SIZE, US2ST(100));

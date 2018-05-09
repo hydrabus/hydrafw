@@ -39,7 +39,7 @@ void bbio_uart_init_proto_default(t_hydra_console *con)
 	proto->config.uart.dev_stop_bit = 1;
 }
 
-msg_t uart_reader_thread (void *arg)
+static THD_FUNCTION(uart_reader_thread, arg)
 {
 	t_hydra_console *con;
 	con = arg;
@@ -58,7 +58,6 @@ msg_t uart_reader_thread (void *arg)
 		}
 	}
 	chThdExit((msg_t)1);
-	return (msg_t)1;
 }
 
 static void bbio_mode_id(t_hydra_console *con)
@@ -94,7 +93,7 @@ void bbio_mode_uart(t_hydra_console *con)
 							      CONSOLE_WA_SIZE,
 							      "uart_reader",
 							      NORMALPRIO,
-							      (tfunc_t)uart_reader_thread,
+							      uart_reader_thread,
 							      con);
 				cprint(con, "\x01", 1);
 				break;

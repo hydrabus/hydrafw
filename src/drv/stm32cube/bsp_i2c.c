@@ -12,10 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "bsp_i2c.h"
-#include "bsp_i2c_conf.h"
 #include "stm32f405xx.h"
 #include "stm32f4xx_hal.h"
+#include "bsp_i2c.h"
+#include "bsp_i2c_conf.h"
 
 #define BSP_I2C_DELAY_HC_50KHZ   (1680) /* 50KHz*2 (Half Clock) in number of cycles @168MHz */
 #define BSP_I2C_DELAY_HC_100KHZ  (840) /* 100KHz*2 (Half Clock) in number of cycles @168MHz */
