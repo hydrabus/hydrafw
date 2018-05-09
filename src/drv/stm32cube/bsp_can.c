@@ -469,6 +469,7 @@ bsp_status_t bsp_can_read(bsp_dev_can_t dev_num, can_rx_frame* rx_msg)
 
 	hcan = &can_handle[dev_num];
 
+	start_time = HAL_GetTick();
 	while(HAL_CAN_GetRxFifoFillLevel(hcan, CAN_RX_FIFO0) == 0) {
 		if((HAL_GetTick()-start_time) > CANx_TIMEOUT_MAX) {
 			return BSP_TIMEOUT;
