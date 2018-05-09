@@ -94,6 +94,9 @@ bool file_open(FIL *file_handle, const char * filename, const char mode)
 	case 'a':
 		flags = FA_WRITE | FA_OPEN_EXISTING;
 		break;
+	default:
+		flags = FA_READ | FA_OPEN_EXISTING;
+		break;
 	}
 
 	if (f_open(file_handle, (TCHAR *)filename, flags) != FR_OK) {
