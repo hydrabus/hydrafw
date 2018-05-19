@@ -55,6 +55,7 @@ void bbio_mode_onewire(t_hydra_console *con)
 				break;
 			case BBIO_ONEWIRE_RESET:
 				onewire_start(con);
+				break;
 			case BBIO_ONEWIRE_READ:
 				rx_data[0] = onewire_read_u8(con);
 				cprint(con, (char *)&rx_data[0], 1);

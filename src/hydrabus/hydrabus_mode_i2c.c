@@ -191,7 +191,7 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
 	int i;
 	uint32_t status;
-	bool tx_ack_flag;
+	uint8_t tx_ack_flag;
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	if(proto->config.i2c.ack_pending) {
@@ -300,7 +300,7 @@ static void scan(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	int i;
-	bool ack, found;
+	uint8_t ack, found;
 
 	(void)p;
 

@@ -91,9 +91,6 @@ const char hydrabus_mode_str_mul_read[] = "READ: ";
 const char hydrabus_mode_str_mul_value_u8[] = "0x%02X ";
 const char hydrabus_mode_str_mul_br[] = "\r\n";
 
-static const char mode_str_delay_us[] = "DELAY %dus\r\n";
-static const char mode_str_delay_ms[] = "DELAY %dms\r\n";
-
 static const char mode_str_write_error[] =  "WRITE error:%d\r\n";
 static const char mode_str_read_error[] = "READ error:%d\r\n";
 static const char mode_str_write_read_error[] = "WRITE/READ error:%d\r\n";
@@ -363,6 +360,7 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 		t++;
 		memcpy(&count, p->buf + p->tokens[t++], sizeof(int));
 		tokens_used += 2;
+		break;
 	case T_ARG_UINT:
 	case T_TILDE:
 		tokens_used += chomp_integers(con, p, t, &num_bytes);

@@ -8,6 +8,7 @@ MAKEFLAGS += --no-builtin-rules
 
 #Set to 1 HYDRAFW_NFC to include HydraNFC extension support
 export HYDRAFW_NFC ?= 1
+export HYDRAFW_DEBUG ?= 0
 
 HYDRAFW_OPTS =
 
@@ -17,8 +18,14 @@ endif
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -Os -ggdb -fomit-frame-pointer -falign-functions=16
+  USE_OPT = -Os -fomit-frame-pointer -falign-functions=16 -std=gnu89
 endif
+
+ifeq ($(HYDRAFW_DEBUG),1)
+  USE_OPT += -ggdb
+  USE_LTO = no
+endif
+
 
 # C specific options here (added to USE_OPT).
 ifeq ($(USE_COPT),)

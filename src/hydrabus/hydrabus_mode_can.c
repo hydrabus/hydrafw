@@ -165,7 +165,7 @@ static void slcan_read_command(t_hydra_console *con, uint8_t *buff){
 	}
 }
 
-msg_t can_reader_thread (void *arg)
+static THD_FUNCTION(can_reader_thread, arg)
 {
 	t_hydra_console *con;
 	con = arg;
@@ -185,7 +185,6 @@ msg_t can_reader_thread (void *arg)
 		}
 	}
 	chThdExit((msg_t)1);
-	return (msg_t)1;
 }
 
 void slcan(t_hydra_console *con) {
@@ -250,7 +249,7 @@ void slcan(t_hydra_console *con) {
 							      CONSOLE_WA_SIZE,
 							      "SLCAN reader",
 							      LOWPRIO,
-							      (tfunc_t)can_reader_thread,
+							      can_reader_thread,
 							      con);
 				cprint(con, "\r", 1);
 			} else {
@@ -474,6 +473,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			while(!USER_BUTTON) {
 				read(con, NULL, 0);
 			}
+			break;
 		case T_SLCAN:
 			if(proto->config.can.dev_mode == BSP_CAN_MODE_RO) {
 				bsp_can_mode_rw(proto->dev_num, proto);
