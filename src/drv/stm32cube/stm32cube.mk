@@ -24,4 +24,4 @@ STM32CUBESRC = ./drv/stm32cube/stm32f4xx_hal_msp.c \
 # Required include directories
 STM32CUBEINC = ./drv/stm32cube \
               ./drv/stm32cube/inc \
-              ./drv/stm32cube/inc/Legacy \
+              ./drv/stm32cube/inc/Legacy
