@@ -210,6 +210,7 @@ static struct cmd_map {
 	{ T_TWOWIRE, cmd_mode_init },
 	{ T_THREEWIRE, cmd_mode_init },
 	{ T_FLASH, cmd_mode_init },
+	{ T_WIEGAND, cmd_mode_init },
 	{ 0, NULL }
 };
 

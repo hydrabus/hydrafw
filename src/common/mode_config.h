@@ -116,6 +116,14 @@ typedef struct {
 } onewire_config_t;
 
 typedef struct {
+	mode_dev_gpio_mode_t dev_gpio_mode;
+	mode_dev_gpio_pull_t dev_gpio_pull;
+	uint8_t dev_bit_lsb_msb;
+	uint32_t dev_pulse_width;
+	uint32_t dev_pulse_gap;
+} wiegand_config_t;
+
+typedef struct {
 	uint32_t dev_speed;
 	mode_dev_gpio_mode_t dev_gpio_mode;
 	mode_dev_gpio_pull_t dev_gpio_pull;
@@ -151,6 +159,7 @@ typedef struct {
 		flash_config_t flash;
 		onewire_config_t onewire;
 		rawwire_config_t rawwire;
+		wiegand_config_t wiegand;
 		sump_config_t sump;
 		hydranfc_config_t hydranfc;
 	} config;

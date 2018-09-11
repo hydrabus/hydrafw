@@ -152,6 +152,7 @@ t_token_dict tl_dict[] = {
 	{ T_TS1, "ts1" },
 	{ T_TS2, "ts2" },
 	{ T_SJW, "sjw" },
+	{ T_WIEGAND, "wiegand" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -1193,11 +1194,6 @@ t_token tokens_mode_threewire[] = {
 		.help = "Read byte (repeat with :<num>)"
 	},
 	{
-		T_HD,
-		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Read byte (repeat with :<num>) and print hexdump"
-	},
-	{
 		T_WRITE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
@@ -1349,6 +1345,82 @@ t_token tokens_gpio[] = {
 		T_OFF,
 		.help = "Clear GPIO pin"
 	},
+	{ }
+};
+
+#define WIEGAND_PARAMETERS \
+	{ T_DEVICE, \
+		.arg_type = T_ARG_UINT, \
+		.help = "Wiegand device (1)" }, \
+	{ T_PULL, \
+		.arg_type = T_ARG_TOKEN, \
+		.subtokens = tokens_gpio_pull, \
+		.help = "GPIO pull (up/down/floating)" },
+t_token tokens_mode_wiegand[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show wiegand parameters"
+	},
+	WIEGAND_PARAMETERS
+	/* wiegand-specific commands */
+	{
+		T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_HD,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>) and print hexdump"
+	},
+	{
+		T_WRITE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_UINT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
+	},
+	/* BP commands */
+	{
+		T_MINUS,
+		.help = "Write one bit (D1)"
+	},
+	{
+		T_UNDERSCORE,
+		.help = "Write one bit (D0)"
+	},
+	{
+		T_AMPERSAND,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 usec (repeat with :<num>)"
+	},
+	{
+		T_PERCENT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit wiegand mode"
+	},
+	{ }
+};
+
+t_token tokens_wiegand[] = {
+	WIEGAND_PARAMETERS
 	{ }
 };
 
@@ -1697,6 +1769,11 @@ t_token tl_tokens[] = {
 		T_FLASH,
 		.subtokens = tokens_flash,
 		.help = "NAND flash mode"
+	},
+	{
+		T_WIEGAND,
+		.subtokens = tokens_wiegand,
+		.help = "Wiegand mode"
 	},
 	{
 		T_DEBUG,

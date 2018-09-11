@@ -144,6 +144,7 @@ enum {
 	T_TS1,
 	T_TS2,
 	T_SJW,
+	T_WIEGAND,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
