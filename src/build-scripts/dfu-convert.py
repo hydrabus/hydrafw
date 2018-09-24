@@ -9,6 +9,7 @@ from optparse import OptionParser
 from intelhex import IntelHex
 
 DEFAULT_DEVICE="0x0483:0xdf11"
+DEFAULT_REVISION="0.0"
 
 def named(tuple,names):
   return dict(list(zip(names.split(),tuple)))
@@ -19,6 +20,9 @@ def cstring(string):
   return string.split(b'\0',1)[0]
 def compute_crc(data):
   return 0xFFFFFFFF & -zlib.crc32(data) -1
+def rev2byte(revision):
+    ma,mi = revision.split('.')
+    return (int(ma,16)<<8 | int(mi,16))
 
 def parse(file,dump_images=False):
   print('File: "%s"' % file)
@@ -56,7 +60,7 @@ def parse(file,dump_images=False):
   if data:
     print("PARSE ERROR")
 
-def build(file,targets,device=DEFAULT_DEVICE):
+def build(file,targets,device=DEFAULT_DEVICE, revision="0.0"):
   data = b''
   for t,target in enumerate(targets):
     tdata = b''
@@ -66,7 +70,8 @@ def build(file,targets,device=DEFAULT_DEVICE):
     data += tdata
   data  = struct.pack('<5sBIB',b'DfuSe',1,len(data)+11,len(targets)) + data
   v,d=[int(x,0) & 0xFFFF for x in device.split(':',1)]
-  data += struct.pack('<4H3sB',0,d,v,0x011a,b'UFD',16)
+  rev = rev2byte(revision)
+  data += struct.pack('<4H3sB',rev,d,v,0x011a,b'UFD',16)
   crc   = compute_crc(data)
   data += struct.pack('<I',crc)
   open(file,'wb').write(data)
@@ -84,6 +89,8 @@ if __name__=="__main__":
     help="build a DFU file from given HEXFILES", metavar="HEXFILES")
   parser.add_option("-D", "--device", action="store", dest="device",
     help="build for DEVICE, defaults to %s" % DEFAULT_DEVICE, metavar="DEVICE")
+  parser.add_option("-r", "--revision", action="store", dest="revision",
+    help="Revision number, defaults to %s" % DEFAULT_REVISION, metavar="REVISION")
   parser.add_option("-d", "--dump", action="store_true", dest="dump_images",
     default=False, help="dump contained images to current directory")
   (options, args) = parser.parse_args()
@@ -119,6 +126,15 @@ if __name__=="__main__":
           print("Address %s invalid." % address)
           sys.exit(1)
         target.append({ 'address': address, 'data': data })
+
+    revision = DEFAULT_REVISION
+    if options.revision:
+        try:
+            rev2byte(options.revision)
+            revision  = options.revision
+        except ValueError:
+            print("Invalid revision value.")
+            sys.exit(1)
     
     outfile = args[0]
     device = DEFAULT_DEVICE
@@ -129,7 +145,7 @@ if __name__=="__main__":
     except:
       print("Invalid device '%s'." % device)
       sys.exit(1)
-    build(outfile,[target],device)
+    build(outfile,[target],device, revision)
   elif len(args)==1:
     infile = args[0]
     if not os.path.isfile(infile):
