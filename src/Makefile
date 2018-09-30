@@ -9,6 +9,7 @@ MAKEFLAGS += --no-builtin-rules
 #Set to 1 HYDRAFW_NFC to include HydraNFC extension support
 export HYDRAFW_NFC ?= 1
 export HYDRAFW_DEBUG ?= 0
+export FW_REVISION := $(shell python build-scripts/hydrafw-revision.py)
 
 HYDRAFW_OPTS =
 
@@ -276,7 +277,7 @@ FORCE:
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	echo Creating ./common/hydrafw_version.hdr
 	-rm -f $(OBJDIR)/common.o
-  python build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
+    python build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
 else
 	@echo Creating ./common/hydrafw_version.hdr
 	@rm -f $(OBJDIR)/common.o
@@ -285,10 +286,10 @@ endif
 
 %.dfu: %.hex $(LDSCRIPT)
 ifeq ($(USE_VERBOSE_COMPILE),yes)
-	python build-scripts/dfu-convert.py -i $< $@
+	python build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
 else
 	@echo Creating $@
-	@python build-scripts/dfu-convert.py -i $< $@
+	@python build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
 endif
 
 # This rule hook is defined in the ChibiOS build system
