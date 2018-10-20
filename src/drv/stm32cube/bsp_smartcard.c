@@ -16,6 +16,7 @@ limitations under the License.
 #include "bsp_smartcard_conf.h"
 #include "stm32f405xx.h"
 #include "stm32f4xx_hal.h"
+#include "bsp_gpio.h"
 
 /*
 Warning in order to use this driver all GPIOs peripherals shall be enabled.
@@ -41,44 +42,25 @@ static volatile uint16_t dummy_read;
 */
 static void smartcard_gpio_hw_init(bsp_dev_smartcard_t dev_num)
 {
+	(void)dev_num;
 	GPIO_InitTypeDef GPIO_InitStructure;
 
-	if(dev_num == BSP_DEV_SMARTCARD1) {
-		/* Enable the SMARTCARD peripheral */
-		__USART1_CLK_ENABLE();
+	/* Enable the SMARTCARD peripheral */
+	__USART1_CLK_ENABLE();
 
-		GPIO_InitStructure.Mode = GPIO_MODE_AF_OD;
-		GPIO_InitStructure.Pull  = GPIO_PULLUP;
-		GPIO_InitStructure.Speed = BSP_SMARTCARD1_GPIO_SPEED;
+	GPIO_InitStructure.Mode = GPIO_MODE_AF_OD;
+	GPIO_InitStructure.Pull  = GPIO_PULLUP;
+	GPIO_InitStructure.Speed = BSP_SMARTCARD1_GPIO_SPEED;
 
-		/* SMARTCARD1 TX pin configuration */
-		GPIO_InitStructure.Alternate = BSP_SMARTCARD1_AF;
-		GPIO_InitStructure.Pin = BSP_SMARTCARD1_TX_PIN;
-		HAL_GPIO_Init(BSP_SMARTCARD1_TX_PORT, &GPIO_InitStructure);
+	/* SMARTCARD1 TX pin configuration */
+	GPIO_InitStructure.Alternate = BSP_SMARTCARD1_AF;
+	GPIO_InitStructure.Pin = BSP_SMARTCARD1_TX_PIN;
+	HAL_GPIO_Init(BSP_SMARTCARD1_TX_PORT, &GPIO_InitStructure);
 
-		GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-		/* SMARTCARD1 RX pin configuration */
-		GPIO_InitStructure.Pin = BSP_SMARTCARD1_CLK_PIN;
-		HAL_GPIO_Init(BSP_SMARTCARD1_CLK_PORT, &GPIO_InitStructure);
-
-	} else {
-		/* Enable the SMARTCARD peripheral */
-		__USART2_CLK_ENABLE();
-
-		GPIO_InitStructure.Mode = GPIO_MODE_AF_OD;
-		GPIO_InitStructure.Pull  = GPIO_PULLUP;
-		GPIO_InitStructure.Speed = BSP_SMARTCARD2_GPIO_SPEED;
-
-		/* SMARTCARD2 TX pin configuration */
-		GPIO_InitStructure.Alternate = BSP_SMARTCARD2_AF;
-		GPIO_InitStructure.Pin = BSP_SMARTCARD2_TX_PIN;
-		HAL_GPIO_Init(BSP_SMARTCARD2_TX_PORT, &GPIO_InitStructure);
-
-		/* SMARTCARD2 RX pin configuration */
-		GPIO_InitStructure.Pin = BSP_SMARTCARD2_RX_PIN;
-		HAL_GPIO_Init(BSP_SMARTCARD2_RX_PORT, &GPIO_InitStructure);
-	}
-
+	GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
+	/* SMARTCARD1 RX pin configuration */
+	GPIO_InitStructure.Pin = BSP_SMARTCARD1_CLK_PIN;
+	HAL_GPIO_Init(BSP_SMARTCARD1_CLK_PORT, &GPIO_InitStructure);
 }
 
 /**
@@ -92,23 +74,14 @@ static void smartcard_gpio_hw_init(bsp_dev_smartcard_t dev_num)
 */
 static void smartcard_gpio_hw_deinit(bsp_dev_smartcard_t dev_num)
 {
-	if(dev_num == BSP_DEV_SMARTCARD1) {
-		/* Reset peripherals */
-		__USART1_FORCE_RESET();
-		__USART1_RELEASE_RESET();
+	(void)dev_num;
+	/* Reset peripherals */
+	__USART1_FORCE_RESET();
+	__USART1_RELEASE_RESET();
 
-		/* Disable peripherals GPIO */
-		HAL_GPIO_DeInit(BSP_SMARTCARD1_TX_PORT, BSP_SMARTCARD1_TX_PIN);
-		HAL_GPIO_DeInit(BSP_SMARTCARD1_CLK_PORT, BSP_SMARTCARD1_CLK_PIN);
-	} else {
-		/* Reset peripherals */
-		__USART2_FORCE_RESET();
-		__USART2_RELEASE_RESET();
-
-		/* Disable peripherals GPIO */
-		HAL_GPIO_DeInit(BSP_SMARTCARD2_TX_PORT, BSP_SMARTCARD2_TX_PIN);
-		HAL_GPIO_DeInit(BSP_SMARTCARD2_RX_PORT, BSP_SMARTCARD2_RX_PIN);
-	}
+	/* Disable peripherals GPIO */
+	HAL_GPIO_DeInit(BSP_SMARTCARD1_TX_PORT, BSP_SMARTCARD1_TX_PIN);
+	HAL_GPIO_DeInit(BSP_SMARTCARD1_CLK_PORT, BSP_SMARTCARD1_CLK_PIN);
 }
 
 /**
@@ -142,11 +115,7 @@ bsp_status_t bsp_smartcard_init(bsp_dev_smartcard_t dev_num, mode_config_proto_t
 
 	__HAL_SMARTCARD_RESET_HANDLE_STATE(hsmartcard);
 
-	if(dev_num == BSP_DEV_SMARTCARD1) {
-		hsmartcard->Instance = BSP_SMARTCARD1;
-	} else { /* SMARTCARD2 */
-		hsmartcard->Instance = BSP_SMARTCARD2;
-	}
+	hsmartcard->Instance = BSP_SMARTCARD1;
 	hsmartcard->Init.BaudRate = mode_conf->config.smartcard.dev_speed;
 
 	switch(mode_conf->config.smartcard.dev_parity) {

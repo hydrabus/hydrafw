@@ -20,8 +20,7 @@ limitations under the License.
 
 typedef enum {
 	BSP_DEV_SMARTCARD1 = 0,
-	BSP_DEV_SMARTCARD2 = 1,
-	BSP_DEV_SMARTCARD_END = 2
+	BSP_DEV_SMARTCARD_END = 1
 } bsp_dev_smartcard_t;
 
 bsp_status_t bsp_smartcard_init(bsp_dev_smartcard_t dev_num, mode_config_proto_t* mode_conf);

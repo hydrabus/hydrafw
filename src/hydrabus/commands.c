@@ -510,11 +510,6 @@ t_token tokens_uart[] = {
 
 #define SMARTCARD_PARAMETERS \
 	{\
-		T_DEVICE,\
-		.arg_type = T_ARG_UINT,\
-		.help = "SMARTCARD device (1/2)"\
-	},\
-	{\
 		T_SPEED,\
 		.arg_type = T_ARG_UINT,\
 		.help = "Bus bitrate"\
@@ -1961,7 +1956,7 @@ t_token tl_tokens[] = {
 		T_SMARTCARD,
 		.subtokens = tokens_smartcard,
 		.help = "SMARTCARD mode",
-		.help_full = "Configuration: smartcard [device (1/2)>\r\nInteraction: <read/write (value:repeat)>"
+		.help_full = "Configuration: smartcard\r\nInteraction: <read/write (value:repeat)>"
 	},
 	{
 		T_DEBUG,
