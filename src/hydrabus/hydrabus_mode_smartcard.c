@@ -105,7 +105,7 @@ static void smartcard_rst_low(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "RST UP\r\n");
+	cprintf(con, "RST DOWN\r\n");
 	bsp_smartcard_set_rst(proto->dev_num, 0);
 }
 
@@ -113,7 +113,7 @@ static void smartcard_cmd_high(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "RST UP\r\n");
+	cprintf(con, "CMD UP\r\n");
 	bsp_smartcard_set_cmd(proto->dev_num, 1);
 }
 
@@ -121,7 +121,7 @@ static void smartcard_cmd_low(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "RST UP\r\n");
+	cprintf(con, "CMD DOWN\r\n");
 	bsp_smartcard_set_cmd(proto->dev_num, 0);
 }
 
