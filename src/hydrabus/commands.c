@@ -154,6 +154,7 @@ t_token_dict tl_dict[] = {
 	{ T_SJW, "sjw" },
 	{ T_WIEGAND, "wiegand" },
 	{ T_LIN, "lin" },
+	{ T_SMARTCARD, "smartcard" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -504,6 +505,104 @@ t_token tokens_mode_uart[] = {
 
 t_token tokens_uart[] = {
 	UART_PARAMETERS
+	{ }
+};
+
+#define SMARTCARD_PARAMETERS \
+	{\
+		T_DEVICE,\
+		.arg_type = T_ARG_UINT,\
+		.help = "SMARTCARD device (1/2)"\
+	},\
+	{\
+		T_SPEED,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Bus bitrate"\
+	},\
+	{\
+		T_PARITY,\
+		.arg_type = T_ARG_TOKEN,\
+		.subtokens = tokens_parity,\
+		.help = "Parity (even/odd)"\
+	},\
+	{\
+		T_POLARITY,\
+		.arg_type = T_ARG_UINT, \
+		.help = "Clock polarity (0/1)"\
+	},\
+	{\
+		T_PHASE,\
+		.arg_type = T_ARG_UINT, \
+		.help = "Clock phase (0/1)"\
+	},\
+	{\
+		T_STOP_BITS,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Stop bits (1/2)"\
+	},
+
+t_token tokens_mode_smartcard[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show SMARTCARD parameters"
+	},
+	{
+		T_TRIGGER,
+		.subtokens = tokens_mode_trigger,
+		.help = "Setup SMARTCARD trigger"
+	},
+	SMARTCARD_PARAMETERS
+	/* SMARTCARD-specific commands */
+	{
+		T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_HD,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>) and print hexdump"
+	},
+	{
+		T_WRITE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_UINT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
+	},
+	/* BP commands */
+	{
+		T_AMPERSAND,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 usec (repeat with :<num>)"
+	},
+	{
+		T_PERCENT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit SMARTCARD mode"
+	},
+	{ }
+};
+
+t_token tokens_smartcard[] = {
+	SMARTCARD_PARAMETERS
 	{ }
 };
 
@@ -1857,6 +1956,12 @@ t_token tl_tokens[] = {
 		.subtokens = tokens_lin,
 		.help = "LIN mode",
 		.help_full = "Configuration: lin [device (1/2)]\r\nInteraction: <read/write (value:repeat)>"
+	},
+	{
+		T_SMARTCARD,
+		.subtokens = tokens_smartcard,
+		.help = "SMARTCARD mode",
+		.help_full = "Configuration: smartcard [device (1/2)>\r\nInteraction: <read/write (value:repeat)>"
 	},
 	{
 		T_DEBUG,

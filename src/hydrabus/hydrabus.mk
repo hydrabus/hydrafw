@@ -8,6 +8,7 @@ HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/hydrabus_mode.c \
             hydrabus/hydrabus_mode_spi.c \
             hydrabus/hydrabus_mode_uart.c \
+            hydrabus/hydrabus_mode_smartcard.c \
             hydrabus/hydrabus_mode_i2c.c \
             hydrabus/hydrabus_sump.c \
             hydrabus/hydrabus_mode_jtag.c \

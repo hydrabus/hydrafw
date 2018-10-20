@@ -68,6 +68,15 @@ typedef struct {
 } uart_config_t;
 
 typedef struct {
+	uint32_t dev_speed;
+	uint32_t dev_guard_time;
+	uint8_t dev_parity;
+	uint8_t dev_stop_bit;
+	uint8_t dev_polarity;
+	uint8_t dev_phase;
+} smartcard_config_t;
+
+typedef struct {
 	mode_dev_gpio_pull_t dev_gpio_pull;
 	uint32_t dev_speed;
 	uint8_t ack_pending : 1;
@@ -153,6 +162,7 @@ typedef struct {
 	uint8_t dev_num;
 	union {
 		uart_config_t uart;
+		smartcard_config_t smartcard;
 		i2c_config_t i2c;
 		spi_config_t spi;
 		jtag_config_t jtag;

@@ -29,7 +29,7 @@ Warning in order to use this driver all GPIOs peripherals shall be enabled.
 
 static UART_HandleTypeDef uart_handle[NB_UART];
 static mode_config_proto_t* uart_mode_conf[NB_UART];
-volatile uint16_t dummy_read;
+static volatile uint16_t dummy_read;
 
 /**
   * @brief  Init low level hardware: GPIO, CLOCK, NVIC...
