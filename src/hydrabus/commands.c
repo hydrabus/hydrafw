@@ -1815,7 +1815,7 @@ t_token tl_tokens[] = {
 		T_UART,
 		.subtokens = tokens_uart,
 		.help = "UART mode",
-		.help_full = "Configuration: uart [device (1/2)> [speed (value in bauds)] [parity (none/even/odd)] [stop-bits (1/2)]\r\nInteraction: <read/write (value:repeat)>"
+		.help_full = "Configuration: uart [device (1/2)] [speed (value in bauds)] [parity (none/even/odd)] [stop-bits (1/2)]\r\nInteraction: <read/write (value:repeat)>"
 	},
 #ifdef HYDRANFC
 	{
@@ -1856,7 +1856,7 @@ t_token tl_tokens[] = {
 		T_LIN,
 		.subtokens = tokens_lin,
 		.help = "LIN mode",
-		.help_full = "Configuration: uart [device (1/2)>\r\nInteraction: <read/write (value:repeat)>"
+		.help_full = "Configuration: lin [device (1/2)]\r\nInteraction: <read/write (value:repeat)>"
 	},
 	{
 		T_DEBUG,
