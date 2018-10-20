@@ -57,10 +57,27 @@ static void smartcard_gpio_hw_init(bsp_dev_smartcard_t dev_num)
 	GPIO_InitStructure.Pin = BSP_SMARTCARD1_TX_PIN;
 	HAL_GPIO_Init(BSP_SMARTCARD1_TX_PORT, &GPIO_InitStructure);
 
+	/* SMARTCARD1 CLK pin configuration */
 	GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-	/* SMARTCARD1 RX pin configuration */
 	GPIO_InitStructure.Pin = BSP_SMARTCARD1_CLK_PIN;
 	HAL_GPIO_Init(BSP_SMARTCARD1_CLK_PORT, &GPIO_InitStructure);
+
+	/*SMARTCARD1 CMD pin configuration*/
+	GPIO_InitStructure.Pin = BSP_SMARTCARD1_CMD_PIN;
+	GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStructure.Pull = GPIO_NOPULL;
+	GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
+	HAL_GPIO_Init(BSP_SMARTCARD1_CMD_PORT, &GPIO_InitStructure);
+
+	/*SMARTCARD1 RST pin configuration*/
+	GPIO_InitStructure.Pin = BSP_SMARTCARD1_RST_PIN;
+	HAL_GPIO_Init(BSP_SMARTCARD1_RST_PORT, &GPIO_InitStructure);
+
+	/*SMARTCARD1 OFF pin configuration*/
+	GPIO_InitStructure.Pin = BSP_SMARTCARD1_OFF_PIN;
+	GPIO_InitStructure.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStructure.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(BSP_SMARTCARD1_OFF_PORT, &GPIO_InitStructure);
 }
 
 /**
@@ -80,8 +97,12 @@ static void smartcard_gpio_hw_deinit(bsp_dev_smartcard_t dev_num)
 	__USART1_RELEASE_RESET();
 
 	/* Disable peripherals GPIO */
-	HAL_GPIO_DeInit(BSP_SMARTCARD1_TX_PORT, BSP_SMARTCARD1_TX_PIN);
+	HAL_GPIO_DeInit(BSP_SMARTCARD1_CMD_PORT, BSP_SMARTCARD1_CMD_PIN);
+	HAL_GPIO_DeInit(BSP_SMARTCARD1_RST_PORT, BSP_SMARTCARD1_RST_PIN);
+	HAL_GPIO_DeInit(BSP_SMARTCARD1_OFF_PORT, BSP_SMARTCARD1_OFF_PIN);
 	HAL_GPIO_DeInit(BSP_SMARTCARD1_CLK_PORT, BSP_SMARTCARD1_CLK_PIN);
+	HAL_GPIO_DeInit(BSP_SMARTCARD1_TX_PORT, BSP_SMARTCARD1_TX_PIN);
+
 }
 
 /**
@@ -288,10 +309,71 @@ bsp_status_t bsp_smartcard_rxne(bsp_dev_smartcard_t dev_num)
 	return __HAL_SMARTCARD_GET_FLAG(hsmartcard, SMARTCARD_FLAG_RXNE);
 }
 
-/** \brief Return final baud rate configured for over8=0 or over8=1.
- *
- * \param dev_num bsp_dev_smartcard_t
- * \return uint32_t final baudrate configured
+
+/** @brief  Get Smartcard RST pin value
+  * @param  dev_num: smartcard device
+  * @retval state: RST pin value
+  *
+  */
+uint8_t bsp_smartcard_get_rst(bsp_dev_smartcard_t dev_num)
+{
+        (void)dev_num;
+	
+	return HAL_GPIO_ReadPin(BSP_SMARTCARD1_RST_PORT, BSP_SMARTCARD1_RST_PIN);
+}
+
+/** @brief  Set Smartcard Reader RST pin
+  * @param  dev_num: Smartcard device
+  * @param  state: desired state
+  *
+  */
+void bsp_smartcard_set_rst(bsp_dev_smartcard_t dev_num, uint8_t state)
+{
+        (void)dev_num;
+	
+	HAL_GPIO_WritePin(BSP_SMARTCARD1_RST_PORT, BSP_SMARTCARD1_RST_PIN, state);
+}
+
+/** @brief  Get Smartcard Reader CMD pin
+  * @param  dev_num: smartcard device
+  * @retval state: CMD pin value 
+  *
+  */
+uint8_t bsp_smartcard_get_cmd(bsp_dev_smartcard_t dev_num)
+{
+        (void)dev_num;
+
+	return HAL_GPIO_ReadPin(BSP_SMARTCARD1_CMD_PORT,BSP_SMARTCARD1_CMD_PIN);
+}
+
+/** @brief  Set Smartcard Reader CMD pin
+  * @param  dev_num: Smartcard device
+  * @param  state: desired state
+  *
+  */
+void bsp_smartcard_set_cmd(bsp_dev_smartcard_t dev_num, uint8_t state)
+{
+        (void)dev_num;
+
+	HAL_GPIO_WritePin(BSP_SMARTCARD1_CMD_PORT,BSP_SMARTCARD1_CMD_PIN, state);
+}
+
+/** @brief  Detects whether the Smartcard is present or not.
+  * @param  dev_num: smartcard device
+  * @retval state: OFF pin value
+  *
+  */
+uint8_t bsp_smartcard_get_off(bsp_dev_smartcard_t dev_num)
+{
+        (void)dev_num;
+
+        return HAL_GPIO_ReadPin(BSP_SMARTCARD1_OFF_PORT,BSP_SMARTCARD1_OFF_PIN);
+}
+
+/** 
+ * @brief Return final baud rate configured for over8=0 or over8=1.
+ * @param dev_num bsp_dev_smartcard_t
+ * @return uint32_t final baudrate configured
  *
  */
 uint32_t bsp_smartcard_get_final_baudrate(bsp_dev_smartcard_t dev_num)
