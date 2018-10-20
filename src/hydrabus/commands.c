@@ -533,7 +533,7 @@ t_token tokens_uart[] = {
 	{\
 		T_STOP_BITS,\
 		.arg_type = T_ARG_UINT,\
-		.help = "Stop bits (1/2)"\
+		.help = "Stop bits (1/2): (1 = 0.5 / 2 = 1.5)"\
 	},
 
 t_token tokens_mode_smartcard[] = {
@@ -573,7 +573,31 @@ t_token tokens_mode_smartcard[] = {
 		T_ARG_STRING,
 		.help = "Write string"
 	},
+	{
+		T_QUERY,
+		.help = "Get OFF port value (card inserted)"
+	},
 	/* BP commands */
+	{
+		T_LEFT_SQ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Toggle RST pin high"
+	},
+	{
+		T_RIGHT_SQ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Toggle RST pin low"
+	},
+	{
+		T_MINUS,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Toggle CMDVCC pin high"
+	},
+	{
+		T_UNDERSCORE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Toggle CMDVCC pin low"
+	},
 	{
 		T_AMPERSAND,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,

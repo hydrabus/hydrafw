@@ -27,12 +27,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
 static const char* str_pins_smartcard[] = {
-	"TX: PA9\r\nRX: PA10\r\n",
-	"TX: PA2\r\nRX: PA3\r\n",
+	"DATA: PA9\r\nCLK: PA8\r\n",
+	//FIXME: Add additional pins
 };
 static const char* str_prompt_smartcard[] = {
 	"smartcard1" PROMPT,
-	"smartcard2" PROMPT,
 };
 
 static const char* str_dev_param_parity[]= {
@@ -82,6 +81,48 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	show_params(con);
 
 	return tokens_used;
+}
+
+static void smartcard_get_card_status(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	uint8_t off_value;
+	off_value = bsp_smartcard_get_off(proto->dev_num);
+
+	cprintf(con, "OFF : %d\r\n", off_value);
+}
+
+static void smartcard_rst_high(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	cprintf(con, "RST UP\r\n");
+	bsp_smartcard_set_rst(proto->dev_num, 1);
+}
+
+static void smartcard_rst_low(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	cprintf(con, "RST UP\r\n");
+	bsp_smartcard_set_rst(proto->dev_num, 0);
+}
+
+static void smartcard_cmd_high(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	cprintf(con, "RST UP\r\n");
+	bsp_smartcard_set_cmd(proto->dev_num, 1);
+}
+
+static void smartcard_cmd_low(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	cprintf(con, "RST UP\r\n");
+	bsp_smartcard_set_cmd(proto->dev_num, 0);
 }
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
@@ -151,9 +192,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_PARITY:
 			/* Token parameter. */
 			switch (p->tokens[++t]) {
-			case T_NONE:
-				proto->config.smartcard.dev_parity = 0;
-				break;
 			case T_EVEN:
 				proto->config.smartcard.dev_parity = 1;
 				break;
@@ -181,6 +219,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, str_bsp_init_err, bsp_status);
 				return t;
 			}
+			break;
+		case T_QUERY:
+			t ++;
+			smartcard_get_card_status(con);
 			break;
 		default:
 			return t - token_pos;
@@ -297,6 +339,7 @@ static const char *get_prompt(t_hydra_console *con)
 	return str_prompt_smartcard[proto->dev_num];
 }
 
+
 const mode_exec_t mode_smartcard_exec = {
 	.init = &init,
 	.exec = &exec,
@@ -306,5 +349,9 @@ const mode_exec_t mode_smartcard_exec = {
 	.write_read = &write_read,
 	.cleanup = &cleanup,
 	.get_prompt = &get_prompt,
+	.dath = &smartcard_cmd_high,
+	.datl = &smartcard_cmd_low,
+	.start = &smartcard_rst_high,
+	.stop = &smartcard_rst_low,
 };
 
