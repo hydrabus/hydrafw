@@ -27,8 +27,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
 static const char* str_pins_smartcard[] = {
-	"DATA: PA9\r\nCLK: PA8\r\n",
-	//FIXME: Add additional pins
+	"SC_CMDVCC: PA.05\r\nSC_RSTIN: PA.06\r\nSC_OFF: PA.07\r\nSC_CLK: PA.08\r\nSC_IO : PA.09\r\nSC_3/5V : 3V or 5V (depends on the card)\r\n\r\nNote:There is no interrupt, therefore ask for the ATR `[ _ r:[0-32] -` by defining the correct value of [0-32]\r\n"
 };
 static const char* str_prompt_smartcard[] = {
 	"smartcard1" PROMPT,
@@ -47,11 +46,11 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
-	proto->config.smartcard.dev_speed = SMARTCARD_DEFAULT_SPEED;
+	proto->config.smartcard.dev_speed = 9600;
 	proto->config.smartcard.dev_parity = 0;
 	proto->config.smartcard.dev_stop_bit = 1;
-	proto->config.smartcard.dev_polarity = 1;
-	proto->config.smartcard.dev_phase = 1;
+	proto->config.smartcard.dev_polarity = 0;
+	proto->config.smartcard.dev_phase = 0;
 }
 
 static void show_params(t_hydra_console *con)
@@ -89,15 +88,21 @@ static void smartcard_get_card_status(t_hydra_console *con)
 
 	uint8_t off_value;
 	off_value = bsp_smartcard_get_off(proto->dev_num);
-
-	cprintf(con, "OFF : %d\r\n", off_value);
+	if (off_value == 0)
+	{ 
+		cprintf(con, "SC_OFF=%d\r\nSmartcard not present\r\n", off_value);
+	} 
+	else 
+	{
+		cprintf(con, "SC_OFF=%d\r\nSmartcard present\r\n", off_value);
+	}
 }
 
 static void smartcard_rst_high(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "RST UP\r\n");
+	cprintf(con, "SC_RST=1\r\n");
 	bsp_smartcard_set_rst(proto->dev_num, 1);
 }
 
@@ -105,7 +110,7 @@ static void smartcard_rst_low(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "RST DOWN\r\n");
+	cprintf(con, "SC_RST=0\r\n");
 	bsp_smartcard_set_rst(proto->dev_num, 0);
 }
 
@@ -113,7 +118,7 @@ static void smartcard_cmd_high(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "CMD UP\r\n");
+	cprintf(con, "/CMDVCC=1\r\nSmartcard power off\r\n");
 	bsp_smartcard_set_cmd(proto->dev_num, 1);
 }
 
@@ -121,7 +126,7 @@ static void smartcard_cmd_low(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "CMD DOWN\r\n");
+	cprintf(con, "/CMDVCC=0\r\nSmartcard power up\r\n");
 	bsp_smartcard_set_cmd(proto->dev_num, 0);
 }
 
@@ -193,10 +198,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			/* Token parameter. */
 			switch (p->tokens[++t]) {
 			case T_EVEN:
-				proto->config.smartcard.dev_parity = 1;
+				proto->config.smartcard.dev_parity = 0;
 				break;
 			case T_ODD:
-				proto->config.smartcard.dev_parity = 2;
+				proto->config.smartcard.dev_parity = 1;
 				break;
 			}
 			bsp_status = bsp_smartcard_init(proto->dev_num, proto);
