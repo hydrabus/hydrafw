@@ -155,6 +155,7 @@ t_token_dict tl_dict[] = {
 	{ T_WIEGAND, "wiegand" },
 	{ T_LIN, "lin" },
 	{ T_SMARTCARD, "smartcard" },
+	{ T_ATR, "atr" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -533,7 +534,7 @@ t_token tokens_uart[] = {
 	{\
 		T_STOP_BITS,\
 		.arg_type = T_ARG_UINT,\
-		.help = "Stop bits (1/2): (1 = 0.5 / 2 = 1.5)"\
+		.help = "Stop bits (0/1)"\
 	},
 
 t_token tokens_mode_smartcard[] = {
@@ -576,6 +577,10 @@ t_token tokens_mode_smartcard[] = {
 	{
 		T_QUERY,
 		.help = "Get OFF port value (card inserted)"
+	},
+	{
+		T_ATR,
+		.help = "Read card ATR"
 	},
 	/* BP commands */
 	{

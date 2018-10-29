@@ -147,6 +147,7 @@ enum {
 	T_WIEGAND,
 	T_LIN,
 	T_SMARTCARD,
+	T_ATR,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */

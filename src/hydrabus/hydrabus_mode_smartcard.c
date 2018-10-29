@@ -27,15 +27,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
 static const char* str_pins_smartcard[] = {
-	"SC_CMDVCC: PA.05\r\nSC_RSTIN: PA.06\r\nSC_OFF: PA.07\r\nSC_CLK: PA.08\r\nSC_IO : PA.09\r\nSC_3/5V : 3V or 5V (depends on the card)\r\n\r\nNote:There is no interrupt, therefore ask for the ATR `[ _ r:[0-32] -` by defining the correct value of [0-32]\r\n"
+	"CMDVCC: PA5\r\nRST: PA6\r\nOFF: PA7\r\nCLK: PA8\r\nIO : PA9\r\n"
 };
 static const char* str_prompt_smartcard[] = {
 	"smartcard1" PROMPT,
-};
-
-static const char* str_dev_param_parity[]= {
-	"even",
-	"odd"
 };
 
 static const char* str_bsp_init_err= { "bsp_smartcard_init() error %d\r\n" };
@@ -46,7 +41,7 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
-	proto->config.smartcard.dev_speed = 9600;
+	proto->config.smartcard.dev_speed = SMARTCARD_DEFAULT_SPEED;
 	proto->config.smartcard.dev_parity = 0;
 	proto->config.smartcard.dev_stop_bit = 1;
 	proto->config.smartcard.dev_polarity = 0;
@@ -59,9 +54,9 @@ static void show_params(t_hydra_console *con)
 
 	cprintf(con, "Device: SMARTCARD%d\r\nSpeed: %d bps\r\n",
 		proto->dev_num + 1, proto->config.smartcard.dev_speed);
-	cprintf(con, "Parity: %s\r\nStop bits: %d\r\n",
-		str_dev_param_parity[proto->config.smartcard.dev_parity],
-		proto->config.smartcard.dev_stop_bit);
+	cprintf(con, "Parity: %s\r\nStop bits: %s\r\n",
+		proto->config.smartcard.dev_parity ? "odd" : "even",
+		proto->config.smartcard.dev_stop_bit ? "1.5" : "0.5");
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -88,14 +83,20 @@ static void smartcard_get_card_status(t_hydra_console *con)
 
 	uint8_t off_value;
 	off_value = bsp_smartcard_get_off(proto->dev_num);
-	if (off_value == 0)
-	{ 
+	if (off_value == 0){
 		cprintf(con, "SC_OFF=%d\r\nSmartcard not present\r\n", off_value);
-	} 
-	else 
-	{
+	}else{
 		cprintf(con, "SC_OFF=%d\r\nSmartcard present\r\n", off_value);
 	}
+}
+
+static void smartcard_get_atr(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+	(void)proto;
+
+	//TODO: Add ATR read value
+	cprintf(con, "ATR Value\r\n");
 }
 
 static void smartcard_rst_high(t_hydra_console *con)
@@ -149,8 +150,8 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			/* Integer parameter. */
 			t += 2;
 			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
-			if (arg_int < 1 || arg_int > 2) {
-				cprintf(con, "SMARTCARD device must be 1 or 2.\r\n");
+			if (arg_int != 1) {
+				cprintf(con, "SMARTCARD device must be 1.\r\n");
 				return t;
 			}
 			proto->dev_num = arg_int - 1;
@@ -210,12 +211,42 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			break;
+		case T_POLARITY:
+			/* Integer parameter. */
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			if (arg_int < 0 || arg_int > 1) {
+				cprintf(con, "Polarity must be 0 or 1.\r\n");
+				return t;
+			}
+			proto->config.smartcard.dev_polarity = arg_int;
+			bsp_status = bsp_smartcard_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
+			break;
+		case T_PHASE:
+			/* Integer parameter. */
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			if (arg_int < 0 || arg_int > 1) {
+				cprintf(con, "Phase must be 0 or 1.\r\n");
+				return t;
+			}
+			proto->config.smartcard.dev_phase = arg_int;
+			bsp_status = bsp_smartcard_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
+			break;
 		case T_STOP_BITS:
 			/* Integer parameter. */
 			t += 2;
 			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
-			if (arg_int < 1 || arg_int > 2) {
-				cprintf(con, "Stop bits must be 1 or 2.\r\n");
+			if (arg_int < 0 || arg_int > 1) {
+				cprintf(con, "Stop bits must be (0 = 0.5) or (1 = 1.5).\r\n");
 				return t;
 			}
 			proto->config.smartcard.dev_stop_bit = arg_int;
@@ -226,8 +257,12 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			}
 			break;
 		case T_QUERY:
-			t ++;
+			t++;
 			smartcard_get_card_status(con);
+			break;
+		case T_ATR:
+			t++;
+			smartcard_get_atr(con);
 			break;
 		default:
 			return t - token_pos;
