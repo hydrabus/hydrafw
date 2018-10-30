@@ -27,7 +27,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
 static const char* str_pins_smartcard[] = {
-	"CMDVCC: PA5\r\nRST: PA6\r\nOFF: PA7\r\nCLK: PA8\r\nIO : PA9\r\n"
+	"CMD: PA5\r\nRST: PA6\r\nOFF: PA7\r\nCLK: PA8\r\nTX : PA9\r\n"
 };
 static const char* str_prompt_smartcard[] = {
 	"smartcard1" PROMPT,
@@ -83,27 +83,30 @@ static void smartcard_get_card_status(t_hydra_console *con)
 
 	uint8_t off_value;
 	off_value = bsp_smartcard_get_off(proto->dev_num);
-	if (off_value == 0){
-		cprintf(con, "SC_OFF=%d\r\nSmartcard not present\r\n", off_value);
-	}else{
-		cprintf(con, "SC_OFF=%d\r\nSmartcard present\r\n", off_value);
-	}
+	cprintf(con, "OFF=%d\r\n", off_value);
 }
 
 static void smartcard_get_atr(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	(void)proto;
+	uint8_t TS;
+	uint8_t T0;
 
 	//TODO: Add ATR read value
-	cprintf(con, "ATR Value\r\n");
+	smartcard_rst_high(con);
+	smartcard_cmd_low(con);
+	TS=read(con, proto->buffer_rx, 1);
+	T0=read(con, proto->buffer_rx, 1);
+
+	cprintf(con, "ATR Value %#x %#x \r\n", TS, T0);
 }
 
 static void smartcard_rst_high(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "SC_RST=1\r\n");
+	cprintf(con, "RST UP\r\n");
 	bsp_smartcard_set_rst(proto->dev_num, 1);
 }
 
@@ -111,7 +114,7 @@ static void smartcard_rst_low(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "SC_RST=0\r\n");
+	cprintf(con, "RST DOWN\r\n");
 	bsp_smartcard_set_rst(proto->dev_num, 0);
 }
 
@@ -119,7 +122,7 @@ static void smartcard_cmd_high(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "/CMDVCC=1\r\nSmartcard power off\r\n");
+	cprintf(con, "CMD UP\r\n");
 	bsp_smartcard_set_cmd(proto->dev_num, 1);
 }
 
@@ -127,7 +130,7 @@ static void smartcard_cmd_low(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "/CMDVCC=0\r\nSmartcard power up\r\n");
+	cprintf(con, "CMD DOWN\r\n");
 	bsp_smartcard_set_cmd(proto->dev_num, 0);
 }
 

@@ -21,5 +21,14 @@
 
 #include "hydrabus_mode.h"
 
+static void smartcard_rst_high(t_hydra_console *con);
+static void smartcard_rst_low(t_hydra_console *con);
+static void smartcard_cmd_high(t_hydra_console *con);
+static void smartcard_cmd_low(t_hydra_console *con);
+
+static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
+static uint32_t write(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
+
+
 #endif /* _HYDRABUS_MODE_SMARTCARD_H_ */
 

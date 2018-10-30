@@ -50,12 +50,12 @@ static void smartcard_gpio_hw_init(bsp_dev_smartcard_t dev_num)
 	__USART1_CLK_ENABLE();
 
 	/* SMARTCARD1 CLK pin configuration */
-	GPIO_InitStructure.Pin = BSP_SMARTCARD1_CK_PIN;
+	GPIO_InitStructure.Pin = BSP_SMARTCARD1_CLK_PIN;
 	GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
 	GPIO_InitStructure.Alternate = BSP_SMARTCARD1_AF;
-	GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
+	GPIO_InitStructure.Speed = BSP_SMARTCARD1_GPIO_SPEED;
 	GPIO_InitStructure.Pull  = GPIO_PULLUP;
-	HAL_GPIO_Init(BSP_SMARTCARD1_CK_PORT, &GPIO_InitStructure);
+	HAL_GPIO_Init(BSP_SMARTCARD1_CLK_PORT, &GPIO_InitStructure);
 
 	/* SMARTCARD1 TX pin configuration */
 	GPIO_InitStructure.Pin = BSP_SMARTCARD1_TX_PIN;
@@ -67,7 +67,7 @@ static void smartcard_gpio_hw_init(bsp_dev_smartcard_t dev_num)
 	GPIO_InitStructure.Pin = BSP_SMARTCARD1_CMD_PIN;
 	GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStructure.Pull = GPIO_NOPULL;
-	GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
+	GPIO_InitStructure.Speed = BSP_SMARTCARD1_GPIO_SPEED;
 	HAL_GPIO_Init(BSP_SMARTCARD1_CMD_PORT, &GPIO_InitStructure);
 
 	/*SMARTCARD1 RST pin configuration*/
@@ -102,9 +102,8 @@ static void smartcard_gpio_hw_deinit(bsp_dev_smartcard_t dev_num)
 	HAL_GPIO_DeInit(BSP_SMARTCARD1_CMD_PORT, BSP_SMARTCARD1_CMD_PIN);
 	HAL_GPIO_DeInit(BSP_SMARTCARD1_RST_PORT, BSP_SMARTCARD1_RST_PIN);
 	HAL_GPIO_DeInit(BSP_SMARTCARD1_OFF_PORT, BSP_SMARTCARD1_OFF_PIN);
-	HAL_GPIO_DeInit(BSP_SMARTCARD1_CK_PORT, BSP_SMARTCARD1_CK_PIN);
+	HAL_GPIO_DeInit(BSP_SMARTCARD1_CLK_PORT, BSP_SMARTCARD1_CLK_PIN);
 	HAL_GPIO_DeInit(BSP_SMARTCARD1_TX_PORT, BSP_SMARTCARD1_TX_PIN);
-	HAL_GPIO_DeInit(BSP_SMARTCARD1_RX_PORT, BSP_SMARTCARD1_RX_PIN);
 
 }
 
@@ -143,11 +142,11 @@ bsp_status_t bsp_smartcard_init(bsp_dev_smartcard_t dev_num, mode_config_proto_t
 
 	/* Defaults */
 	hsmartcard->Init.BaudRate 		= 9600; /* Starting baudrate = 3,5MHz / 372etu */
-	hsmartcard->Init.WordLength 		= UART_WORDLENGTH_8B;//SMARTCARD_WORDLENGTH_9B;
+	hsmartcard->Init.WordLength 		= SMARTCARD_WORDLENGTH_9B;
 	hsmartcard->Init.StopBits 		= SMARTCARD_STOPBITS_1_5;
 	hsmartcard->Init.Parity 		= SMARTCARD_PARITY_EVEN;
 	hsmartcard->Init.Mode 			= SMARTCARD_MODE_TX_RX;
-	hsmartcard->Init.CLKPolarity 		= SMARTCARD_POLARITY_HIGH;
+	hsmartcard->Init.CLKPolarity 		= SMARTCARD_POLARITY_LOW;
 	hsmartcard->Init.CLKPhase 		= SMARTCARD_PHASE_1EDGE;
 	hsmartcard->Init.CLKLastBit 		= SMARTCARD_LASTBIT_ENABLE;
 	hsmartcard->Init.NACKState 		= SMARTCARD_NACK_ENABLE;
