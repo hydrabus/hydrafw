@@ -90,16 +90,42 @@ static void smartcard_get_atr(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	(void)proto;
-	uint8_t TS;
-	uint8_t T0;
+
+	uint8_t atr[32] = {0};
+	uint8_t i;
+	uint8_t atr_size =1;
+	uint8_t r = 1 ;
 
 	//TODO: Add ATR read value
-	smartcard_rst_high(con);
-	smartcard_cmd_low(con);
-	TS=read(con, proto->buffer_rx, 1);
-	T0=read(con, proto->buffer_rx, 1);
+	bsp_smartcard_set_rst(proto->dev_num, 1);
+	bsp_smartcard_set_cmd(proto->dev_num, 0);
 
-	cprintf(con, "ATR Value %#x %#x \r\n", TS, T0);
+	bsp_smartcard_read_u8(proto->dev_num, &atr[0], 1);	//TS
+	bsp_smartcard_read_u8(proto->dev_num, &atr[1], 1);	//T0
+
+	while(atr[atr_size]>>4 != 0){
+		r = atr_size;
+		for(i=0; i<4; i++){
+			if((atr[r]>>(4+i))&1){
+				atr_size++;
+			}
+		}
+        	r++;
+		for(; r<=atr_size;r++){
+		        bsp_smartcard_read_u8(proto->dev_num, &atr[r], 1);
+		}
+	}
+
+	/* Read historical data */
+	for(i=0; i <= (atr[1] & 0x0f);i++){
+	        bsp_smartcard_read_u8(proto->dev_num, &atr[r+i], 1);
+	}
+	r += i;
+
+	print_hex(con, atr, r);
+
+	bsp_smartcard_set_rst(proto->dev_num, 0);
+	bsp_smartcard_set_cmd(proto->dev_num, 1);
 }
 
 static void smartcard_rst_high(t_hydra_console *con)
