@@ -156,6 +156,8 @@ t_token_dict tl_dict[] = {
 	{ T_LIN, "lin" },
 	{ T_SMARTCARD, "smartcard" },
 	{ T_ATR, "atr" },
+	{ T_GUARDTIME, "guardtime" },
+	{ T_PRESCALER, "prescaler" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -535,6 +537,16 @@ t_token tokens_uart[] = {
 		T_STOP_BITS,\
 		.arg_type = T_ARG_UINT,\
 		.help = "Stop bits (0/1)"\
+	},\
+	{\
+		T_GUARDTIME,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Guardtime value"\
+	},\
+	{\
+		T_PRESCALER,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Prescaler value"\
 	},
 
 t_token tokens_mode_smartcard[] = {

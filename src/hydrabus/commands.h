@@ -148,6 +148,8 @@ enum {
 	T_LIN,
 	T_SMARTCARD,
 	T_ATR,
+	T_GUARDTIME,
+	T_PRESCALER,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */

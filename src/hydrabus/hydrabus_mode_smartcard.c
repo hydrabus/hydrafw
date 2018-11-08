@@ -45,6 +45,8 @@ static void init_proto_default(t_hydra_console *con)
 	proto->config.smartcard.dev_parity = 0;
 	proto->config.smartcard.dev_stop_bit = 1;
 	proto->config.smartcard.dev_polarity = 0;
+	proto->config.smartcard.dev_prescaler = 12;
+	proto->config.smartcard.dev_guardtime = 16;
 	proto->config.smartcard.dev_phase = 0;
 }
 
@@ -122,7 +124,12 @@ static void smartcard_get_atr(t_hydra_console *con)
 	}
 	r += i;
 
-	print_hex(con, atr, r);
+	if (atr[0] == 0x3F) {
+		for(i=2;i<r;i++){
+			atr[i] = ((atr[i] >> 1) & 0x55) | ((atr[i] << 1) & 0xaa); //Inverse convention
+		}
+	}
+	print_hex(con, atr, r); //direct convention
 
 	bsp_smartcard_set_rst(proto->dev_num, 0);
 	bsp_smartcard_set_cmd(proto->dev_num, 1);
@@ -224,6 +231,26 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			}
 
 			break;
+                case T_GUARDTIME:
+                        /* Integer parameter. */
+                        t += 2;
+			memcpy(&proto->config.smartcard.dev_guardtime, p->buf + p->tokens[t], sizeof(int));
+                        bsp_status = bsp_smartcard_init(proto->dev_num, proto);
+                        if( bsp_status != BSP_OK) {
+                                cprintf(con, str_bsp_init_err, bsp_status);
+                                return t;
+                        }
+                        break;
+                case T_PRESCALER:
+                        /* Integer parameter. */
+                        t += 2;
+			memcpy(&proto->config.smartcard.dev_prescaler, p->buf + p->tokens[t], sizeof(int));
+                        bsp_status = bsp_smartcard_init(proto->dev_num, proto);
+                        if( bsp_status != BSP_OK) {
+                                cprintf(con, str_bsp_init_err, bsp_status);
+                                return t;
+                        }
+                        break;
 		case T_PARITY:
 			/* Token parameter. */
 			switch (p->tokens[++t]) {

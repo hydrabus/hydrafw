@@ -153,7 +153,6 @@ bsp_status_t bsp_smartcard_init(bsp_dev_smartcard_t dev_num, mode_config_proto_t
 	hsmartcard->Init.Prescaler 		= 12; //FIXME ? Probably need to be adapted depending on the smartcard
 	hsmartcard->Init.GuardTime 		= 16; //FIXME ? Probably need to be adapted depending on the smartcard
 
-
 	hsmartcard->Init.BaudRate = mode_conf->config.smartcard.dev_speed;
 
 	/* Parity */
@@ -168,27 +167,28 @@ bsp_status_t bsp_smartcard_init(bsp_dev_smartcard_t dev_num, mode_config_proto_t
 	}
 
 	/* Stop-bits */
-	if(mode_conf->config.smartcard.dev_stop_bit == 0) {
-		/* 0.5 */
+	if(mode_conf->config.smartcard.dev_stop_bit == 0) 
 		hsmartcard->Init.StopBits   = SMARTCARD_STOPBITS_0_5;
-	} else {
-		/* 1.5 */
+	else 
 		hsmartcard->Init.StopBits   = SMARTCARD_STOPBITS_1_5;
-	}
-
+	
 	/* Phase */
-	if(mode_conf->config.smartcard.dev_phase == 0) {
+	if(mode_conf->config.smartcard.dev_phase == 0) 
 		hsmartcard->Init.CLKPhase = SMARTCARD_PHASE_1EDGE;
-	} else {
+	else 
 		hsmartcard->Init.CLKPhase = SMARTCARD_PHASE_2EDGE;
-	}
 
 	/* Polarity */
-	if(mode_conf->config.smartcard.dev_polarity == 0) {
+	if(mode_conf->config.smartcard.dev_polarity == 0) 
 		hsmartcard->Init.CLKPolarity = SMARTCARD_POLARITY_LOW;
-	} else {
+	else 
 		hsmartcard->Init.CLKPolarity = SMARTCARD_POLARITY_HIGH;
-	}
+
+        /* Guardtime */
+	hsmartcard->Init.GuardTime = mode_conf->config.smartcard.dev_guardtime;
+
+        /* Prescaler */
+	hsmartcard->Init.Prescaler = mode_conf->config.smartcard.dev_prescaler;
 
 	status = HAL_SMARTCARD_Init(hsmartcard);
 

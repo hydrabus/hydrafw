@@ -69,7 +69,8 @@ typedef struct {
 
 typedef struct {
 	uint32_t dev_speed;
-	uint32_t dev_guard_time;
+	uint32_t dev_guardtime;
+	uint32_t dev_prescaler;
 	uint8_t dev_parity;
 	uint8_t dev_stop_bit;
 	uint8_t dev_polarity;
