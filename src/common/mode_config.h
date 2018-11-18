@@ -75,6 +75,7 @@ typedef struct {
 	uint8_t dev_stop_bit;
 	uint8_t dev_polarity;
 	uint8_t dev_phase;
+	uint8_t dev_convention;
 } smartcard_config_t;
 
 typedef struct {
