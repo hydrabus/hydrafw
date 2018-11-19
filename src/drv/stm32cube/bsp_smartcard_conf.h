@@ -38,7 +38,7 @@ limitations under the License.
 #define BSP_SMARTCARD1_CLK_PIN      GPIO_PIN_8  /* PA.08 */
 
 /* SMARTCARD1 TX  */
-#define BSP_SMARTCARD1_TX_PORT     GPIOA
-#define BSP_SMARTCARD1_TX_PIN      GPIO_PIN_9  /* PA.09 */
+#define BSP_SMARTCARD1_TX_PORT     GPIOB
+#define BSP_SMARTCARD1_TX_PIN      GPIO_PIN_6  /* PA.09 */
 
 #endif /* _BSP_SMARTCARD_CONF_H_ */
