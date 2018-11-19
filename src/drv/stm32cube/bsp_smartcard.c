@@ -255,7 +255,7 @@ bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data
 	status = HAL_SMARTCARD_Receive(hsmartcard, rx_data, nb_data, SMARTCARDx_TIMEOUT_MAX);
 
 	if(conv) {
-		*rx_data = ~*rx_data;
+		*rx_data = *rx_data ^ 0xff;
 		*rx_data = ((*rx_data >> 1) & 0x55) | ((*rx_data << 1) & 0xaa);
 	}
 	if(status != BSP_OK) {
