@@ -256,7 +256,9 @@ bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data
 
 	if(conv) {
 		*rx_data = *rx_data ^ 0xff;
-		*rx_data = ((*rx_data >> 1) & 0x55) | ((*rx_data << 1) & 0xaa);
+		*rx_data = (*rx_data & 0xf0) >> 4 | (*rx_data & 0x0f) << 4;
+        *rx_data = (*rx_data & 0xcc) >> 2 | (*rx_data & 0x33) << 2;
+        *rx_data = (*rx_data & 0xaa) >> 1 | (*rx_data & 0x55) << 1;
 	}
 	if(status != BSP_OK) {
 		smartcard_error(dev_num);

@@ -27,7 +27,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
 static const char* str_pins_smartcard[] = {
-	"CMD: PA5\r\nRST: PA6\r\nOFF: PA7\r\nCLK: PA8\r\nTX : PA9\r\n"
+	"CMD: PA5\r\nRST: PA6\r\nOFF: PA7\r\nCLK: PA8\r\nTX : PB6\r\n"
 };
 static const char* str_prompt_smartcard[] = {
 	"smartcard1" PROMPT,
@@ -101,6 +101,9 @@ static void smartcard_get_atr(t_hydra_console *con)
 	uint8_t checksum = 0;
 	uint8_t more_td = 1;
 
+    bsp_smartcard_set_rst(proto->dev_num, 0);                           // Start with RST low.
+	chThdSleepMilliseconds(1);                                          // RST low for at least 400 clocks.
+	bsp_smartcard_read_u8_timeout(proto->dev_num, &atr[0], 1, 1);       // Empty read buffer.
 	bsp_smartcard_set_rst(proto->dev_num, 1);
 	bsp_smartcard_set_cmd(proto->dev_num, 0);
 
@@ -110,9 +113,14 @@ static void smartcard_get_atr(t_hydra_console *con)
 	if(atr[0] == 0x03 || atr[0] == 0x3F){
 		atr[0] = 0x3F;
 		proto->config.smartcard.dev_convention = 1;
-	}else{
-		atr[0] = 0x3B;
+	}else if (atr[0] == 0x3B){
 		proto->config.smartcard.dev_convention = 0;
+	}else{
+	    cprintf(con, "Non standard T0 byte: %02X\r\nReading 8 bytes: \r\n", atr[0]);
+	    proto->config.smartcard.dev_convention = 0;
+	    bsp_smartcard_read_u8(proto->dev_num, &atr[1], 8, proto->config.smartcard.dev_convention);
+		print_hex(con, atr, 9);
+		return;
 	}
 	bsp_smartcard_read_u8(proto->dev_num, &atr[1], 1, proto->config.smartcard.dev_convention);
 
