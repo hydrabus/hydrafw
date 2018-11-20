@@ -31,6 +31,8 @@ static SMARTCARD_HandleTypeDef smartcard_handle[NB_SMARTCARD];
 static mode_config_proto_t* smartcard_mode_conf[NB_SMARTCARD];
 static volatile uint16_t dummy_read;
 
+extern uint8_t reverse_u8(uint8_t value);
+
 /**
   * @brief  Init low level hardware: GPIO, CLOCK, NVIC...
   * @param  dev_num: SMARTCARD dev num
@@ -159,35 +161,33 @@ bsp_status_t bsp_smartcard_init(bsp_dev_smartcard_t dev_num, mode_config_proto_t
 	if(mode_conf->config.smartcard.dev_parity == 0) {
 		/* 9 even */
 		hsmartcard->Init.Parity = SMARTCARD_PARITY_EVEN;
-		hsmartcard->Init.WordLength = SMARTCARD_WORDLENGTH_9B;
 	} else {
 		/* 9/odd */
 		hsmartcard->Init.Parity = SMARTCARD_PARITY_ODD;
-		hsmartcard->Init.WordLength = SMARTCARD_WORDLENGTH_9B;
 	}
 
 	/* Stop-bits */
-	if(mode_conf->config.smartcard.dev_stop_bit == 0) 
+	if(mode_conf->config.smartcard.dev_stop_bit == 0)
 		hsmartcard->Init.StopBits   = SMARTCARD_STOPBITS_0_5;
-	else 
+	else
 		hsmartcard->Init.StopBits   = SMARTCARD_STOPBITS_1_5;
-	
+
 	/* Phase */
-	if(mode_conf->config.smartcard.dev_phase == 0) 
+	if(mode_conf->config.smartcard.dev_phase == 0)
 		hsmartcard->Init.CLKPhase = SMARTCARD_PHASE_1EDGE;
-	else 
+	else
 		hsmartcard->Init.CLKPhase = SMARTCARD_PHASE_2EDGE;
 
 	/* Polarity */
-	if(mode_conf->config.smartcard.dev_polarity == 0) 
+	if(mode_conf->config.smartcard.dev_polarity == 0)
 		hsmartcard->Init.CLKPolarity = SMARTCARD_POLARITY_LOW;
-	else 
+	else
 		hsmartcard->Init.CLKPolarity = SMARTCARD_POLARITY_HIGH;
 
-        /* Guardtime */
+	/* Guardtime */
 	hsmartcard->Init.GuardTime = mode_conf->config.smartcard.dev_guardtime;
 
-        /* Prescaler */
+	/* Prescaler */
 	hsmartcard->Init.Prescaler = mode_conf->config.smartcard.dev_prescaler;
 
 	status = HAL_SMARTCARD_Init(hsmartcard);
@@ -256,9 +256,7 @@ bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data
 
 	if(conv) {
 		*rx_data = *rx_data ^ 0xff;
-		*rx_data = (*rx_data & 0xf0) >> 4 | (*rx_data & 0x0f) << 4;
-        *rx_data = (*rx_data & 0xcc) >> 2 | (*rx_data & 0x33) << 2;
-        *rx_data = (*rx_data & 0xaa) >> 1 | (*rx_data & 0x55) << 1;
+		*rx_data = reverse_u8(*rx_data);
 	}
 	if(status != BSP_OK) {
 		smartcard_error(dev_num);
@@ -275,17 +273,17 @@ bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data
   * @retval Number of bytes read
   */
 bsp_status_t bsp_smartcard_read_u8_timeout(bsp_dev_smartcard_t dev_num, uint8_t* rx_data,
-				      uint8_t nb_data, uint32_t timeout)
+        uint8_t nb_data, uint32_t timeout)
 {
 	SMARTCARD_HandleTypeDef* hsmartcard;
 	hsmartcard = &smartcard_handle[dev_num];
 
 	bsp_status_t status;
 	status = HAL_SMARTCARD_Receive(hsmartcard, rx_data, nb_data, timeout);
-	switch(status){
+	switch(status) {
 	case BSP_OK:
 	case BSP_TIMEOUT:
-	    return (nb_data-(hsmartcard->RxXferCount)-1);
+		return (nb_data-(hsmartcard->RxXferCount)-1);
 	case BSP_ERROR:
 	default:
 		smartcard_error(dev_num);
@@ -335,8 +333,8 @@ bsp_status_t bsp_smartcard_rxne(bsp_dev_smartcard_t dev_num)
   */
 uint8_t bsp_smartcard_get_rst(bsp_dev_smartcard_t dev_num)
 {
-        (void)dev_num;
-	
+	(void)dev_num;
+
 	return HAL_GPIO_ReadPin(BSP_SMARTCARD1_RST_PORT, BSP_SMARTCARD1_RST_PIN);
 }
 
@@ -347,19 +345,19 @@ uint8_t bsp_smartcard_get_rst(bsp_dev_smartcard_t dev_num)
   */
 void bsp_smartcard_set_rst(bsp_dev_smartcard_t dev_num, uint8_t state)
 {
-        (void)dev_num;
-	
+	(void)dev_num;
+
 	HAL_GPIO_WritePin(BSP_SMARTCARD1_RST_PORT, BSP_SMARTCARD1_RST_PIN, state);
 }
 
 /** @brief  Get Smartcard Reader CMD pin
   * @param  dev_num: smartcard device
-  * @retval state: CMD pin value 
+  * @retval state: CMD pin value
   *
   */
 uint8_t bsp_smartcard_get_cmd(bsp_dev_smartcard_t dev_num)
 {
-        (void)dev_num;
+	(void)dev_num;
 
 	return HAL_GPIO_ReadPin(BSP_SMARTCARD1_CMD_PORT,BSP_SMARTCARD1_CMD_PIN);
 }
@@ -371,7 +369,7 @@ uint8_t bsp_smartcard_get_cmd(bsp_dev_smartcard_t dev_num)
   */
 void bsp_smartcard_set_cmd(bsp_dev_smartcard_t dev_num, uint8_t state)
 {
-        (void)dev_num;
+	(void)dev_num;
 
 	HAL_GPIO_WritePin(BSP_SMARTCARD1_CMD_PORT,BSP_SMARTCARD1_CMD_PIN, state);
 }
@@ -383,12 +381,12 @@ void bsp_smartcard_set_cmd(bsp_dev_smartcard_t dev_num, uint8_t state)
   */
 uint8_t bsp_smartcard_get_off(bsp_dev_smartcard_t dev_num)
 {
-        (void)dev_num;
+	(void)dev_num;
 
-        return HAL_GPIO_ReadPin(BSP_SMARTCARD1_OFF_PORT,BSP_SMARTCARD1_OFF_PIN);
+	return HAL_GPIO_ReadPin(BSP_SMARTCARD1_OFF_PORT,BSP_SMARTCARD1_OFF_PIN);
 }
 
-/** 
+/**
  * @brief Return final baud rate configured for over8=0 or over8=1.
  * @param dev_num bsp_dev_smartcard_t
  * @return uint32_t final baudrate configured

@@ -60,6 +60,11 @@ enum {
 	DEV_FIRSTBIT_LSB,
 };
 
+enum {
+	DEV_CONVENTION_NORMAL = 0,
+	DEV_CONVENTION_INVERSE,
+};
+
 typedef struct {
 	uint32_t dev_speed;
 	uint8_t dev_parity;

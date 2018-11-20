@@ -225,6 +225,16 @@ void DelayUs(uint32_t delay_us)
 	osalSysPolledDelayX(US2RTC(STM32_HCLK, delay_us));
 }
 
+/**
+* @brief  Inserts a delay time in mS.
+* @param  delay_us: specifies the delay time in mili second.
+* @retval None
+*/
+void DelayMs(uint32_t delay_ms)
+{
+	osalSysPolledDelayX(MS2RTC(STM32_HCLK, delay_ms));
+}
+
 void cmd_show_memory(t_hydra_console *con)
 {
   size_t n, total, largest;
@@ -608,4 +618,28 @@ uint8_t parse_escaped_string(char * input, uint8_t * output)
 		i++;
 	}
 	return num_bytes;
+}
+
+uint8_t reverse_u8(uint8_t value)
+{
+	value = (value & 0xcc) >> 2 | (value & 0x33) << 2;
+	value = (value & 0xaa) >> 1 | (value & 0x55) << 1;
+	return value >> 4 | value << 4;
+}
+
+uint16_t reverse_u16(uint16_t value)
+{
+	value = (value & 0x5555) << 1 | (value & 0xaaaa) >> 1;
+	value = (value & 0x3333) << 2 | (value & 0xcccc) >> 2;
+	value = (value & 0x0f0f) << 4 | (value & 0xf0f0) >> 4;
+	return value << 8 | value >> 8;
+}
+
+uint32_t reverse_u32(uint32_t value)
+{
+	value = (value & 0x55555555) << 1 | (value & 0xAAAAAAAA) >> 1;
+	value = (value & 0x33333333) << 2 | (value & 0xCCCCCCCC) >> 2;
+	value = (value & 0x0F0F0F0F) << 4 | (value & 0xF0F0F0F0) >> 4;
+	value = (value & 0x00FF00FF) << 8 | (value & 0xFF00FF00) >> 8;
+	return value << 16 | value >> 16;
 }
