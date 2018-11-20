@@ -35,6 +35,19 @@ static const char* str_prompt_smartcard[] = {
 
 static const char* str_bsp_init_err= { "bsp_smartcard_init() error %d\r\n" };
 
+/* Since the hardware cannot apply inverse convention, we manage it here */
+static void apply_convention(t_hydra_console *con, uint8_t * data, uint8_t nb_data)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+	uint8_t i;
+	if(proto->config.smartcard.dev_convention == DEV_CONVENTION_INVERSE) {
+		for(i=0; i<nb_data; i++) {
+			data[i] = data[i] ^ 0xff;
+			data[i] = reverse_u8(data[i]);
+		}
+	}
+}
+
 static void init_proto_default(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -61,6 +74,9 @@ static void show_params(t_hydra_console *con)
 	cprintf(con, "Parity: %s\r\nStop bits: %s\r\n",
 	        proto->config.smartcard.dev_parity ? "odd" : "even",
 	        proto->config.smartcard.dev_stop_bit ? "1.5" : "0.5");
+
+	cprintf(con, "Convention: %s\r\n",
+		proto->config.smartcard.dev_convention?"inverse":"normal");
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -107,7 +123,8 @@ static void smartcard_get_atr(t_hydra_console *con)
 	bsp_smartcard_set_rst(proto->dev_num, 1);
 	bsp_smartcard_set_cmd(proto->dev_num, 0);
 
-	bsp_smartcard_read_u8(proto->dev_num, atr, 1, proto->config.smartcard.dev_convention);
+	bsp_smartcard_read_u8(proto->dev_num, atr, 1);
+	apply_convention(con, atr, 1);
 
 	/* Inverse or Direct convention */
 	switch(atr[0]) {
@@ -122,12 +139,16 @@ static void smartcard_get_atr(t_hydra_console *con)
 	default:
 		cprintf(con, "Non standard TS byte: %02X\r\n", atr[0]);
 		cprintf(con, "Trying to read 8 more bytes");
-		bsp_smartcard_read_u8_timeout(proto->dev_num, &atr[1], 8, MS2ST(100));
-		print_hex(con, atr, 9);
+		/* We don't care about the convention sonce the TS is not
+		 * standard
+		 */
+		atr_size = bsp_smartcard_read_u8_timeout(proto->dev_num, &atr[1], 8, MS2ST(100));
+		print_hex(con, atr, atr_size);
 		return;
 	}
 
-	bsp_smartcard_read_u8(proto->dev_num, atr+1, 1, proto->config.smartcard.dev_convention);
+	bsp_smartcard_read_u8(proto->dev_num, atr+1, 1);
+	apply_convention(con, atr+1, 1);
 
 	while(more_td) {
 		r = atr_size;
@@ -139,24 +160,28 @@ static void smartcard_get_atr(t_hydra_console *con)
 			checksum |= atr[r]&0x1;
 		r++;
 		for(; r<=atr_size; r++) {
-			bsp_smartcard_read_u8(proto->dev_num, atr+r, 1, proto->config.smartcard.dev_convention);
+			bsp_smartcard_read_u8(proto->dev_num, atr+r, 1);
+			apply_convention(con, atr+r, 1);
 		}
 	}
 
 	/* Read last Ti */
 	for(; r<=atr_size; r++) {
-		bsp_smartcard_read_u8(proto->dev_num, atr+r, 1, proto->config.smartcard.dev_convention);
+		bsp_smartcard_read_u8(proto->dev_num, atr+r, 1);
+		apply_convention(con, atr+r, 1);
 	}
 
 	/* Read historical data */
 	for(i=0; i<(atr[1] & 0x0f); i++) {
-		bsp_smartcard_read_u8(proto->dev_num, atr+(r+i), 1, proto->config.smartcard.dev_convention);
+		bsp_smartcard_read_u8(proto->dev_num, atr+(r+i), 1);
+		apply_convention(con, atr+(r+i), 1);
 	}
 	r+=i;
 
 	/* Read checksum if present and print ATR */
 	if(checksum) {
-		bsp_smartcard_read_u8(proto->dev_num, atr+r, 1, proto->config.smartcard.dev_convention);
+		bsp_smartcard_read_u8(proto->dev_num, atr+r, 1);
+		apply_convention(con, atr+r, 1);
 		print_hex(con, atr, r+1);
 	} else {
 		print_hex(con, atr, r);
@@ -365,6 +390,7 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
+	apply_convention(con, tx_data, nb_data);
 	status = bsp_smartcard_write_u8(proto->dev_num, tx_data, nb_data);
 	if(status == BSP_OK) {
 		if(nb_data == 1) {
@@ -388,7 +414,8 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, nb_data, proto->config.smartcard.dev_convention);
+	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, nb_data);
+	apply_convention(con, rx_data, nb_data);
 	if(status == BSP_OK) {
 		if(nb_data == 1) {
 			/* Read 1 data */
@@ -410,7 +437,8 @@ static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, nb_data, proto->config.smartcard.dev_convention);
+	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, nb_data);
+	apply_convention(con, rx_data, nb_data);
 
 	return status;
 }
@@ -421,7 +449,9 @@ static uint32_t write_read(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_d
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
+	apply_convention(con, tx_data, nb_data);
 	status = bsp_smartcard_write_read_u8(proto->dev_num, tx_data, rx_data, nb_data);
+	apply_convention(con, rx_data, nb_data);
 	if(status == BSP_OK) {
 		if(nb_data == 1) {
 			/* Write & Read 1 data */

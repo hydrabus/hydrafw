@@ -152,7 +152,7 @@ bsp_status_t bsp_smartcard_init(bsp_dev_smartcard_t dev_num, mode_config_proto_t
 	hsmartcard->Init.CLKPhase 		= SMARTCARD_PHASE_1EDGE;
 	hsmartcard->Init.CLKLastBit 		= SMARTCARD_LASTBIT_ENABLE;
 	hsmartcard->Init.NACKState 		= SMARTCARD_NACK_ENABLE;
-	hsmartcard->Init.Prescaler 		= 12; //FIXME ? Probably need to be adapted depending on the smartcard
+	hsmartcard->Init.Prescaler 		= SMARTCARD_PRESCALER_SYSCLK_DIV24;
 	hsmartcard->Init.GuardTime 		= 16; //FIXME ? Probably need to be adapted depending on the smartcard
 
 	hsmartcard->Init.BaudRate = mode_conf->config.smartcard.dev_speed;
@@ -246,7 +246,7 @@ bsp_status_t bsp_smartcard_write_u8(bsp_dev_smartcard_t dev_num, uint8_t* tx_dat
   * @param  nb_data: Number of data to receive.
   * @retval status of the transfer.
   */
-bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data, uint8_t nb_data, uint8_t conv)
+bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data, uint8_t nb_data)
 {
 	SMARTCARD_HandleTypeDef* hsmartcard;
 	hsmartcard = &smartcard_handle[dev_num];
@@ -254,10 +254,6 @@ bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data
 	bsp_status_t status;
 	status = HAL_SMARTCARD_Receive(hsmartcard, rx_data, nb_data, SMARTCARDx_TIMEOUT_MAX);
 
-	if(conv) {
-		*rx_data = *rx_data ^ 0xff;
-		*rx_data = reverse_u8(*rx_data);
-	}
 	if(status != BSP_OK) {
 		smartcard_error(dev_num);
 	}
