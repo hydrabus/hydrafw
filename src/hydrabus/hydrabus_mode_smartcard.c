@@ -122,12 +122,13 @@ static void smartcard_get_atr(t_hydra_console *con)
         uint16_t F = 0;
         uint8_t D = 0;
         uint16_t E = 0;
-
+    
+    proto->config.smartcard.dev_convention = DEV_CONVENTION_NORMAL;     // Start with direct convention
 	bsp_smartcard_set_rst(proto->dev_num, 0);                           // Start with RST low.
 	DelayMs(1);                                          // RST low for at least 400 clocks.
 	bsp_smartcard_read_u8_timeout(proto->dev_num, atr, 1, 1);       // Empty read buffer.
-	bsp_smartcard_set_rst(proto->dev_num, 1);
 	bsp_smartcard_set_cmd(proto->dev_num, 0);
+	bsp_smartcard_set_rst(proto->dev_num, 1);
 
 	bsp_smartcard_read_u8(proto->dev_num, atr, 1);
 	apply_convention(con, atr, 1);
@@ -135,7 +136,6 @@ static void smartcard_get_atr(t_hydra_console *con)
 	/* Inverse or Direct convention */
 	switch(atr[0]) {
 	case 0x03:
-	case 0x3f:
 		atr[0] = 0x3F;
 		proto->config.smartcard.dev_convention = DEV_CONVENTION_INVERSE;
 		break;
@@ -144,12 +144,14 @@ static void smartcard_get_atr(t_hydra_console *con)
 		break;
 	default:
 		cprintf(con, "Non standard TS byte: %02X\r\n", atr[0]);
-		cprintf(con, "Trying to read 8 more bytes");
+		cprintf(con, "Trying to read 8 more bytes\r\n");
 		/* We don't care about the convention sonce the TS is not
 		 * standard
 		 */
 		atr_size = bsp_smartcard_read_u8_timeout(proto->dev_num, &atr[1], 8, MS2ST(100));
 		print_hex(con, atr, atr_size);
+		bsp_smartcard_set_rst(proto->dev_num, 0);
+	    bsp_smartcard_set_cmd(proto->dev_num, 1);
 		return;
 	}
 
@@ -168,7 +170,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 		for(; r<=atr_size; r++) {
 			bsp_smartcard_read_u8(proto->dev_num, atr+r, 1);
 			apply_convention(con, atr+r, 1);
-                        if(r == 2 && atr[r] & 0x1) {
+                        if(r == 2 && atr[1] & 0x1) {
                                 F = Fi[atr[r] >> 4];
                                 D = Di[atr[r] & 0x0F];
                                 E = F/D;
