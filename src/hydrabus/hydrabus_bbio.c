@@ -34,6 +34,7 @@
 #include "hydrabus_bbio_rawwire.h"
 #include "hydrabus_bbio_onewire.h"
 #include "hydrabus_bbio_flash.h"
+#include "hydrabus_bbio_smartcard.h"
 
 int cmd_bbio(t_hydra_console *con)
 {
@@ -70,6 +71,9 @@ int cmd_bbio(t_hydra_console *con)
 				break;
 			case BBIO_FLASH:
 				bbio_mode_flash(con);
+				break;
+			case BBIO_SMARTCARD:
+				bbio_mode_smartcard(con);
 				break;
 			case BBIO_RESET_HW:
 				/* Needed for flashrom detection */
