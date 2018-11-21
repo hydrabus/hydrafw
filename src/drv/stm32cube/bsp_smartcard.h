@@ -44,4 +44,6 @@ void bsp_smartcard_set_rst(bsp_dev_smartcard_t dev_num, uint8_t state);
 uint8_t bsp_smartcard_get_cmd(bsp_dev_smartcard_t dev_num);
 void bsp_smartcard_set_cmd(bsp_dev_smartcard_t dev_num, uint8_t state);
 
+float bsp_smartcard_get_clk_frequency(bsp_dev_smartcard_t dev_num);
+
 #endif /* _BSP_SMARTCARD_H_ */

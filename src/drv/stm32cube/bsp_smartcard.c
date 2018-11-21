@@ -32,6 +32,7 @@ static mode_config_proto_t* smartcard_mode_conf[NB_SMARTCARD];
 static volatile uint16_t dummy_read;
 
 extern uint8_t reverse_u8(uint8_t value);
+extern uint32_t HAL_RCC_GetPCLK2Freq(void);
 
 /**
   * @brief  Init low level hardware: GPIO, CLOCK, NVIC...
@@ -414,3 +415,18 @@ uint32_t bsp_smartcard_get_final_baudrate(bsp_dev_smartcard_t dev_num)
 
 	return final_baudrate;
 }
+
+/**
+ * @brief Return CLK current frequency
+ * @param dev_num bsp_dev_smartcard_t
+ * @return float Current CLK frequency
+ *
+ */
+float bsp_smartcard_get_clk_frequency(bsp_dev_smartcard_t dev_num)
+{
+	SMARTCARD_HandleTypeDef* hsmartcard;
+	hsmartcard = &smartcard_handle[dev_num];
+
+	return HAL_RCC_GetPCLK2Freq() / (hsmartcard->Init.Prescaler * 2);
+}
+

@@ -18,6 +18,7 @@
 
 #include "common.h"
 #include "hydrabus_mode_smartcard.h"
+#include "bsp.h"
 #include "bsp_smartcard.h"
 #include <string.h>
 
@@ -77,6 +78,11 @@ static void show_params(t_hydra_console *con)
 
 	cprintf(con, "Convention: %s\r\n",
 		proto->config.smartcard.dev_convention?"inverse":"normal");
+
+	cprintf(con, "Prescaler: %d / ",
+		proto->config.smartcard.dev_prescaler);
+	print_freq(con, bsp_smartcard_get_clk_frequency(proto->dev_num));
+	cprint(con, "\r\n", 2);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -122,8 +128,9 @@ static void smartcard_get_atr(t_hydra_console *con)
         uint16_t F = 0;
         uint8_t D = 0;
         uint16_t E = 0;
-    
-    proto->config.smartcard.dev_convention = DEV_CONVENTION_NORMAL;     // Start with direct convention
+
+	proto->config.smartcard.dev_convention = DEV_CONVENTION_NORMAL;     // Start with direct convention
+
 	bsp_smartcard_set_rst(proto->dev_num, 0);                           // Start with RST low.
 	DelayMs(1);                                          // RST low for at least 400 clocks.
 	bsp_smartcard_read_u8_timeout(proto->dev_num, atr, 1, 1);       // Empty read buffer.
@@ -138,6 +145,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 	case 0x03:
 		atr[0] = 0x3F;
 		proto->config.smartcard.dev_convention = DEV_CONVENTION_INVERSE;
+		cprintf(con, "Auto-setting inverse convention\r\n");
 		break;
 	case 0x3b:
 		proto->config.smartcard.dev_convention = DEV_CONVENTION_NORMAL;
@@ -151,7 +159,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 		atr_size = bsp_smartcard_read_u8_timeout(proto->dev_num, &atr[1], 8, MS2ST(100));
 		print_hex(con, atr, atr_size);
 		bsp_smartcard_set_rst(proto->dev_num, 0);
-	    bsp_smartcard_set_cmd(proto->dev_num, 1);
+		bsp_smartcard_set_cmd(proto->dev_num, 1);
 		return;
 	}
 
@@ -170,12 +178,20 @@ static void smartcard_get_atr(t_hydra_console *con)
 		for(; r<=atr_size; r++) {
 			bsp_smartcard_read_u8(proto->dev_num, atr+r, 1);
 			apply_convention(con, atr+r, 1);
+
                         if(r == 2 && atr[1] & 0x1) {
                                 F = Fi[atr[r] >> 4];
                                 D = Di[atr[r] & 0x0F];
                                 E = F/D;
 
-                                cprintf(con, "Fi=%d, Di=%d, %d cycles/ETU (%d bits/s at 4.00 MHz, %d bits/s for fMax=%d MHz)\r\n", F, D, E, 4000000 / E, FMax[atr[r] >> 4] * 1000000 / E, FMax[atr[r] >> 4]);
+				cprintf(con, "Timing information:\r\n");
+				cprintf(con, "Fi=%d, Di=%d, %d cycles/ETU\r\n", F, D, E);
+				cprintf(con, "%d bits/s at ",
+					bsp_smartcard_get_clk_frequency(proto->dev_num) / E);
+				print_freq(con, bsp_smartcard_get_clk_frequency(proto->dev_num));
+				cprintf(con, ", %d bits/s for fMax=%d MHz)\r\n",
+					FMax[atr[r] >> 4] * 1000000 / E,
+					FMax[atr[r] >> 4]);
                         }
 		}
 	}
