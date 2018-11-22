@@ -66,23 +66,23 @@ static void smartcard_gpio_hw_init(bsp_dev_smartcard_t dev_num)
 	GPIO_InitStructure.Mode = GPIO_MODE_AF_OD;
 	HAL_GPIO_Init(BSP_SMARTCARD1_TX_PORT, &GPIO_InitStructure);
 
-	/*SMARTCARD1 CMD pin configuration*/
-	GPIO_InitStructure.Pin = BSP_SMARTCARD1_CMD_PIN;
+	/*SMARTCARD1 VCC pin configuration*/
+	GPIO_InitStructure.Pin = BSP_SMARTCARD1_VCC_PIN;
 	GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStructure.Pull = GPIO_NOPULL;
 	GPIO_InitStructure.Speed = BSP_SMARTCARD1_GPIO_SPEED;
-	HAL_GPIO_Init(BSP_SMARTCARD1_CMD_PORT, &GPIO_InitStructure);
+	HAL_GPIO_Init(BSP_SMARTCARD1_VCC_PORT, &GPIO_InitStructure);
 
 	/*SMARTCARD1 RST pin configuration*/
 	GPIO_InitStructure.Pin = BSP_SMARTCARD1_RST_PIN;
 	GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
 	HAL_GPIO_Init(BSP_SMARTCARD1_RST_PORT, &GPIO_InitStructure);
 
-	/*SMARTCARD1 OFF pin configuration*/
-	GPIO_InitStructure.Pin = BSP_SMARTCARD1_OFF_PIN;
+	/*SMARTCARD1 CD pin configuration*/
+	GPIO_InitStructure.Pin = BSP_SMARTCARD1_CD_PIN;
 	GPIO_InitStructure.Mode = GPIO_MODE_INPUT;
 	GPIO_InitStructure.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(BSP_SMARTCARD1_OFF_PORT, &GPIO_InitStructure);
+	HAL_GPIO_Init(BSP_SMARTCARD1_CD_PORT, &GPIO_InitStructure);
 }
 
 /**
@@ -102,9 +102,9 @@ static void smartcard_gpio_hw_deinit(bsp_dev_smartcard_t dev_num)
 	__USART1_RELEASE_RESET();
 
 	/* Disable peripherals GPIO */
-	HAL_GPIO_DeInit(BSP_SMARTCARD1_CMD_PORT, BSP_SMARTCARD1_CMD_PIN);
+	HAL_GPIO_DeInit(BSP_SMARTCARD1_VCC_PORT, BSP_SMARTCARD1_VCC_PIN);
 	HAL_GPIO_DeInit(BSP_SMARTCARD1_RST_PORT, BSP_SMARTCARD1_RST_PIN);
-	HAL_GPIO_DeInit(BSP_SMARTCARD1_OFF_PORT, BSP_SMARTCARD1_OFF_PIN);
+	HAL_GPIO_DeInit(BSP_SMARTCARD1_CD_PORT, BSP_SMARTCARD1_CD_PIN);
 	HAL_GPIO_DeInit(BSP_SMARTCARD1_CLK_PORT, BSP_SMARTCARD1_CLK_PIN);
 	HAL_GPIO_DeInit(BSP_SMARTCARD1_TX_PORT, BSP_SMARTCARD1_TX_PIN);
 
@@ -347,40 +347,40 @@ void bsp_smartcard_set_rst(bsp_dev_smartcard_t dev_num, uint8_t state)
 	HAL_GPIO_WritePin(BSP_SMARTCARD1_RST_PORT, BSP_SMARTCARD1_RST_PIN, state);
 }
 
-/** @brief  Get Smartcard Reader CMD pin
+/** @brief  Get Smartcard Reader VCC pin
   * @param  dev_num: smartcard device
-  * @retval state: CMD pin value
+  * @retval state: VCC pin value
   *
   */
-uint8_t bsp_smartcard_get_cmd(bsp_dev_smartcard_t dev_num)
+uint8_t bsp_smartcard_get_vcc(bsp_dev_smartcard_t dev_num)
 {
 	(void)dev_num;
 
-	return HAL_GPIO_ReadPin(BSP_SMARTCARD1_CMD_PORT,BSP_SMARTCARD1_CMD_PIN);
+	return HAL_GPIO_ReadPin(BSP_SMARTCARD1_VCC_PORT,BSP_SMARTCARD1_VCC_PIN);
 }
 
-/** @brief  Set Smartcard Reader CMD pin
+/** @brief  Set Smartcard Reader VCC pin
   * @param  dev_num: Smartcard device
   * @param  state: desired state
   *
   */
-void bsp_smartcard_set_cmd(bsp_dev_smartcard_t dev_num, uint8_t state)
+void bsp_smartcard_set_vcc(bsp_dev_smartcard_t dev_num, uint8_t state)
 {
 	(void)dev_num;
 
-	HAL_GPIO_WritePin(BSP_SMARTCARD1_CMD_PORT,BSP_SMARTCARD1_CMD_PIN, state);
+	HAL_GPIO_WritePin(BSP_SMARTCARD1_VCC_PORT,BSP_SMARTCARD1_VCC_PIN, state);
 }
 
 /** @brief  Detects whether the Smartcard is present or not.
   * @param  dev_num: smartcard device
-  * @retval state: OFF pin value
+  * @retval state: CD pin value
   *
   */
-uint8_t bsp_smartcard_get_off(bsp_dev_smartcard_t dev_num)
+uint8_t bsp_smartcard_get_cd(bsp_dev_smartcard_t dev_num)
 {
 	(void)dev_num;
 
-	return HAL_GPIO_ReadPin(BSP_SMARTCARD1_OFF_PORT,BSP_SMARTCARD1_OFF_PIN);
+	return HAL_GPIO_ReadPin(BSP_SMARTCARD1_CD_PORT,BSP_SMARTCARD1_CD_PIN);
 }
 
 /**

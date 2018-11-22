@@ -28,7 +28,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
 static const char* str_pins_smartcard[] = {
-	"CMD: PA5\r\nRST: PA6\r\nOFF: PA7\r\nCLK: PA8\r\nTX : PB6\r\n"
+	"/VCC: PA5\r\nRST: PA6\r\nCD: PA7\r\nCLK: PA8\r\nTX : PB6\r\n"
 };
 static const char* str_prompt_smartcard[] = {
 	"smartcard1" PROMPT,
@@ -107,9 +107,9 @@ static void smartcard_get_card_status(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	uint8_t off_value;
-	off_value = bsp_smartcard_get_off(proto->dev_num);
-	cprintf(con, "OFF=%d\r\n", off_value);
+	uint8_t cd_value;
+	cd_value = bsp_smartcard_get_cd(proto->dev_num);
+	cprintf(con, "CD=%d\r\n", cd_value);
 }
 
 static void smartcard_get_atr(t_hydra_console *con)
@@ -134,7 +134,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 	bsp_smartcard_set_rst(proto->dev_num, 0);                           // Start with RST low.
 	DelayMs(1);                                          // RST low for at least 400 clocks.
 	bsp_smartcard_read_u8_timeout(proto->dev_num, atr, 1, 1);       // Empty read buffer.
-	bsp_smartcard_set_cmd(proto->dev_num, 0);
+	bsp_smartcard_set_vcc(proto->dev_num, 0);
 	bsp_smartcard_set_rst(proto->dev_num, 1);
 
 	bsp_smartcard_read_u8(proto->dev_num, atr, 1);
@@ -159,7 +159,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 		atr_size = bsp_smartcard_read_u8_timeout(proto->dev_num, &atr[1], 8, MS2ST(100));
 		print_hex(con, atr, atr_size);
 		bsp_smartcard_set_rst(proto->dev_num, 0);
-		bsp_smartcard_set_cmd(proto->dev_num, 1);
+		bsp_smartcard_set_vcc(proto->dev_num, 1);
 		return;
 	}
 
@@ -219,7 +219,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 	}
 
 	bsp_smartcard_set_rst(proto->dev_num, 0);
-	bsp_smartcard_set_cmd(proto->dev_num, 1);
+	bsp_smartcard_set_vcc(proto->dev_num, 1);
 }
 
 static void smartcard_rst_high(t_hydra_console *con)
@@ -238,20 +238,20 @@ static void smartcard_rst_low(t_hydra_console *con)
 	bsp_smartcard_set_rst(proto->dev_num, 0);
 }
 
-static void smartcard_cmd_high(t_hydra_console *con)
+static void smartcard_vcc_high(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "CMD UP\r\n");
-	bsp_smartcard_set_cmd(proto->dev_num, 1);
+	cprintf(con, "/VCC UP\r\n");
+	bsp_smartcard_set_vcc(proto->dev_num, 1);
 }
 
-static void smartcard_cmd_low(t_hydra_console *con)
+static void smartcard_vcc_low(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "CMD DOWN\r\n");
-	bsp_smartcard_set_cmd(proto->dev_num, 0);
+	cprintf(con, "/VCC DOWN\r\n");
+	bsp_smartcard_set_vcc(proto->dev_num, 0);
 }
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
@@ -537,8 +537,8 @@ const mode_exec_t mode_smartcard_exec = {
 	.write_read = &write_read,
 	.cleanup = &cleanup,
 	.get_prompt = &get_prompt,
-	.dath = &smartcard_cmd_high,
-	.datl = &smartcard_cmd_low,
+	.dath = &smartcard_vcc_high,
+	.datl = &smartcard_vcc_low,
 	.start = &smartcard_rst_high,
 	.stop = &smartcard_rst_low,
 };

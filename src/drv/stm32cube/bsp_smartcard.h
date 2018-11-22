@@ -36,13 +36,13 @@ bsp_status_t bsp_smartcard_rxne(bsp_dev_smartcard_t dev_num);
 
 uint32_t bsp_smartcard_get_final_baudrate(bsp_dev_smartcard_t dev_num);
 
-uint8_t bsp_smartcard_get_off(bsp_dev_smartcard_t dev_num);
+uint8_t bsp_smartcard_get_cd(bsp_dev_smartcard_t dev_num);
 
 uint8_t bsp_smartcard_get_rst(bsp_dev_smartcard_t dev_num);
 void bsp_smartcard_set_rst(bsp_dev_smartcard_t dev_num, uint8_t state);
 
-uint8_t bsp_smartcard_get_cmd(bsp_dev_smartcard_t dev_num);
-void bsp_smartcard_set_cmd(bsp_dev_smartcard_t dev_num, uint8_t state);
+uint8_t bsp_smartcard_get_vcc(bsp_dev_smartcard_t dev_num);
+void bsp_smartcard_set_vcc(bsp_dev_smartcard_t dev_num, uint8_t state);
 
 float bsp_smartcard_get_clk_frequency(bsp_dev_smartcard_t dev_num);
 
