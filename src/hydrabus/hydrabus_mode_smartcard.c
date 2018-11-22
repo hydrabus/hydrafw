@@ -187,7 +187,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 				cprintf(con, "Timing information:\r\n");
 				cprintf(con, "Fi=%d, Di=%d, %d cycles/ETU\r\n", F, D, E);
 				cprintf(con, "%d bits/s at ",
-					bsp_smartcard_get_clk_frequency(proto->dev_num) / E);
+					(uint32_t)bsp_smartcard_get_clk_frequency(proto->dev_num) / E);
 				print_freq(con, bsp_smartcard_get_clk_frequency(proto->dev_num));
 				cprintf(con, ", %d bits/s for fMax=%d MHz)\r\n",
 					FMax[atr[r] >> 4] * 1000000 / E,
