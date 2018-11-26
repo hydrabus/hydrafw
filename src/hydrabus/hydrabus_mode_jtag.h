@@ -33,25 +33,6 @@
 #define CMD_OCD_UART_SPEED    0x07
 #define CMD_OCD_JTAG_SPEED    0x08
 
-typedef enum {
-	JTAG_STATE_RESET,
-	JTAG_STATE_IDLE,
-	JTAG_STATE_DR_SCAN,
-	JTAG_STATE_DR_CAPTURE,
-	JTAG_STATE_DR_SHIFT,
-	JTAG_STATE_DR_EXIT_1,
-	JTAG_STATE_DR_PAUSE,
-	JTAG_STATE_DR_EXIT_2,
-	JTAG_STATE_DR_UPDATE,
-	JTAG_STATE_IR_SCAN,
-	JTAG_STATE_IR_CAPTURE,
-	JTAG_STATE_IR_SHIFT,
-	JTAG_STATE_IR_EXIT_1,
-	JTAG_STATE_IR_PAUSE,
-	JTAG_STATE_IR_EXIT_2,
-	JTAG_STATE_IR_UPDATE
-} jtag_state;
-
 typedef struct {
 	uint32_t divider;
 	uint8_t tdi_pin;
@@ -59,7 +40,6 @@ typedef struct {
 	uint8_t tms_pin;
 	uint8_t tck_pin;
 	uint8_t trst_pin;
-	jtag_state state;
 } jtag_config;
 
 enum {

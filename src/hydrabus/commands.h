@@ -144,6 +144,12 @@ enum {
 	T_TS1,
 	T_TS2,
 	T_SJW,
+	T_WIEGAND,
+	T_LIN,
+	T_SMARTCARD,
+	T_ATR,
+	T_GUARDTIME,
+	T_PRESCALER,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */

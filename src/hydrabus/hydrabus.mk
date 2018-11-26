@@ -8,6 +8,7 @@ HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/hydrabus_mode.c \
             hydrabus/hydrabus_mode_spi.c \
             hydrabus/hydrabus_mode_uart.c \
+            hydrabus/hydrabus_mode_smartcard.c \
             hydrabus/hydrabus_mode_i2c.c \
             hydrabus/hydrabus_sump.c \
             hydrabus/hydrabus_mode_jtag.c \
@@ -22,6 +23,7 @@ HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/hydrabus_bbio_pin.c \
             hydrabus/hydrabus_bbio_can.c \
             hydrabus/hydrabus_bbio_uart.c \
+            hydrabus/hydrabus_bbio_smartcard.c \
             hydrabus/hydrabus_bbio_i2c.c \
             hydrabus/hydrabus_bbio_rawwire.c \
             hydrabus/hydrabus_freq.c \
@@ -29,6 +31,8 @@ HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/hydrabus_bbio_flash.c \
             hydrabus/hydrabus_sd.c \
             hydrabus/hydrabus_trigger.c \
+            hydrabus/hydrabus_mode_wiegand.c \
+            hydrabus/hydrabus_mode_lin.c
 
 # Required include directories
 HYDRABUSINC = ./hydrabus

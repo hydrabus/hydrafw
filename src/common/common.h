@@ -69,6 +69,7 @@ uint64_t get_cyclecounter64I(void);
 
 void wait_nbcycles(uint32_t nbcycles);
 void DelayUs(uint32_t delay_us);
+void DelayMs(uint32_t delay_ms);
 
 extern uint8_t buf[512] __attribute__ ((section(".cmm")));
 /* Generic large buffer.*/
@@ -173,5 +174,9 @@ void print_dbg(const char *data, const uint32_t size);
 void printf_dbg(const char *fmt, ...);
 void print_hex(t_hydra_console *con, uint8_t* data, uint8_t size);
 uint8_t parse_escaped_string(char * input, uint8_t * output);
+
+uint8_t reverse_u8(uint8_t value);
+uint16_t reverse_u16(uint16_t value);
+uint32_t reverse_u32(uint32_t value);
 
 #endif /* _COMMON_H_ */

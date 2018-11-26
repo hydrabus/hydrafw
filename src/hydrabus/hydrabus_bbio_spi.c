@@ -34,12 +34,12 @@ void bbio_spi_init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = BSP_DEV_SPI1;
-	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
-	proto->dev_mode = DEV_SPI_MASTER;
-	proto->dev_speed = 0;
-	proto->dev_polarity = 0;
-	proto->dev_phase = 0;
-	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
+	proto->config.spi.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+	proto->config.spi.dev_mode = DEV_MASTER;
+	proto->config.spi.dev_speed = 0;
+	proto->config.spi.dev_polarity = 0;
+	proto->config.spi.dev_phase = 0;
+	proto->config.spi.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
 }
 
 void bbio_spi_sniff(t_hydra_console *con)
@@ -48,7 +48,7 @@ void bbio_spi_sniff(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 	bsp_status_t status;
 
-	proto->dev_mode = DEV_SPI_SLAVE;
+	proto->config.spi.dev_mode = DEV_SLAVE;
 	status = bsp_spi_init(BSP_DEV_SPI1, proto);
 	status = bsp_spi_init(BSP_DEV_SPI2, proto);
 
@@ -56,7 +56,7 @@ void bbio_spi_sniff(t_hydra_console *con)
 		cprint(con, "\x01", 1);
 	} else {
 		cprint(con, "\x00", 1);
-		proto->dev_mode = DEV_SPI_MASTER;
+		proto->config.spi.dev_mode = DEV_MASTER;
 		status = bsp_spi_init(BSP_DEV_SPI1, proto);
 		status = bsp_spi_deinit(BSP_DEV_SPI2);
 		return;
@@ -82,7 +82,7 @@ void bbio_spi_sniff(t_hydra_console *con)
 			cprintf(con, "\\%c%c", rx_data[0], rx_data[1]);
 		}
 	}
-	proto->dev_mode = DEV_SPI_MASTER;
+	proto->config.spi.dev_mode = DEV_MASTER;
 	status = bsp_spi_init(BSP_DEV_SPI1, proto);
 	status = bsp_spi_deinit(BSP_DEV_SPI2);
 }
@@ -269,7 +269,7 @@ void bbio_mode_spi(t_hydra_console *con)
 						i++;
 					}
 				} else if ((bbio_subcommand & BBIO_SPI_SET_SPEED) == BBIO_SPI_SET_SPEED) {
-					proto->dev_speed = bbio_subcommand & 0b111;
+					proto->config.spi.dev_speed = bbio_subcommand & 0b111;
 					status = bsp_spi_init(proto->dev_num, proto);
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);
@@ -277,8 +277,8 @@ void bbio_mode_spi(t_hydra_console *con)
 						cprint(con, "\x00", 1);
 					}
 				} else if ((bbio_subcommand & BBIO_SPI_CONFIG) == BBIO_SPI_CONFIG) {
-					proto->dev_polarity = (bbio_subcommand & 0b100)?1:0;
-					proto->dev_phase = (bbio_subcommand & 0b10)?0:1;
+					proto->config.spi.dev_polarity = (bbio_subcommand & 0b100)?1:0;
+					proto->config.spi.dev_phase = (bbio_subcommand & 0b10)?0:1;
 					proto->dev_num = (bbio_subcommand & 0b1)?BSP_DEV_SPI1:BSP_DEV_SPI2;
 					status = bsp_spi_init(proto->dev_num, proto);
 					if(status == BSP_OK) {

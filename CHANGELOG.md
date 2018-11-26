@@ -1,5 +1,38 @@
 # CHANGELOG of 'hydrafw'
 ----------------------
+#### 30.09.2018 - [HydraFW v0.9 Beta](https://github.com/hydrabus/hydrafw/releases/tag/v0.9-beta)
+
+##### Generic:
+ * Added trigger mode on all supported modes. See commit [a982d6b](https://github.com/hydrabus/hydrafw/commit/a982d6b2bc575f65d741c0e4a767f016577d2431)
+ * Added SUMP mode autodetection. Tools like Sigrok and OLS don't need any prior hydrabus setup. See commit [ca90ec2](https://github.com/hydrabus/hydrafw/commit/ca90ec2a30b7e80f157d30756444a9b279ad2f90)
+ * Added `\xx` escape sequence in freeform strings. See commit [3614185](https://github.com/hydrabus/hydrafw/commit/361418545e2e7ef6db09b1268e1489f50b75bb7a)
+ * Increased the maximum hexdump capacity to 2^32 bytes.
+ * Added AVRdude compatibility. See commit[2f3aecb](https://github.com/hydrabus/hydrafw/commit/2f3aecbca7e619e4b20d13694c992d8c5f2dc64f)
+ * Fixed compiler errors and warnings when compiling with gcc 8.x
+ * Updated ChibiOS to latest [stable_17.6.x](https://github.com/hydrabus/ChibiOS/tree/stable_17.6.x) branch
+ * Updated [FatFs](http://elm-chan.org/fsw/ff/00index_e.html) to official 0.13b
+ * Updated ST drivers to STM32Cube 1.2.1
+ * Reorganized the repository structure
+
+##### HydraBus specific:
+* Console mode
+ * [1-wire mode](https://github.com/hydrabus/hydrafw/wiki/HydraFW-1-wire-guide). See commit [e79c160](https://github.com/hydrabus/hydrafw/commit/e79c1605ca9377ebab34e4dda37d61f917faff32)
+ * [NAND flash mode](https://github.com/hydrabus/hydrafw/wiki/HydraFW-NAND-Flash-guide). See commit [5247a83](https://github.com/hydrabus/hydrafw/commit/5247a8379c008bc5c481aa8afc3f5dc9e2c6a620)
+ * Wiegand mode. See commit [b3f3e1b](https://github.com/hydrabus/hydrafw/commit/b3f3e1ba90d120ff5ec2b987667753ab1dca5947)
+ * LIN mode. See commit [1b83986](https://github.com/hydrabus/hydrafw/commit/1b8398660c11c9a295ef0ea7c3be1aa6f3ec5b03)
+ * CAN
+   * Added timing settings
+   * Fixed several CAN issues
+ * Add TRST manual configuration in JTAG mode
+
+* [Binary Mode](https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-mode-guide)
+ * [Binary 1-wire mode](https://github.com/hydrabus/hydrafw/wiki/HydraFW-binary-1-Wire-mode-guide)
+ * [Binary NAND mode](https://github.com/hydrabus/hydrafw/wiki/HydraFW-binary-NAND-Flash-mode-guide)
+ * Added BBIO *display mode version* commands
+ * Fixed some BBIO command behavior
+ * CAN
+   * Added timing settings
+   * Added SLCAN support
 
 #### 13.10.2016 - [HydraFW v0.8 Beta](https://github.com/bvernoux/hydrafw/releases/tag/v0.8-beta)
 

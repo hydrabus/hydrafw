@@ -38,9 +38,9 @@ void onewire_init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
-	proto->dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN;
-	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
-	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
+	proto->config.onewire.dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN;
+	proto->config.onewire.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+	proto->config.onewire.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
 }
 
 static void show_params(t_hydra_console *con)
@@ -49,12 +49,12 @@ static void show_params(t_hydra_console *con)
 
 	cprintf(con, "Device: onewire%d\r\nGPIO resistor: %s\r\n",
 		proto->dev_num + 1,
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+		proto->config.onewire.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+		proto->config.onewire.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
 		"floating");
 
 	cprintf(con, "Bit order: %s first\r\n",
-		proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
+		proto->config.onewire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB ? "MSB" : "LSB");
 }
 
 bool onewire_pin_init(t_hydra_console *con)
@@ -62,7 +62,7 @@ bool onewire_pin_init(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	bsp_gpio_init(BSP_GPIO_PORTB, ONEWIRE_PIN,
-		      proto->dev_gpio_mode, proto->dev_gpio_pull);
+		      proto->config.onewire.dev_gpio_mode, proto->config.onewire.dev_gpio_pull);
 	return true;
 }
 
@@ -70,14 +70,14 @@ static void onewire_mode_input(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	bsp_gpio_init(BSP_GPIO_PORTB, ONEWIRE_PIN,
-		      MODE_CONFIG_DEV_GPIO_IN, proto->dev_gpio_pull);
+		      MODE_CONFIG_DEV_GPIO_IN, proto->config.onewire.dev_gpio_pull);
 }
 
 static void onewire_mode_output(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	bsp_gpio_init(BSP_GPIO_PORTB, ONEWIRE_PIN,
-		      proto->dev_gpio_mode, proto->dev_gpio_pull);
+		      proto->config.onewire.dev_gpio_mode, proto->config.onewire.dev_gpio_pull);
 }
 
 inline void onewire_high(void)
@@ -158,7 +158,7 @@ void onewire_write_u8(t_hydra_console *con, uint8_t tx_data)
 
 	onewire_mode_output(con);
 
-	if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
+	if(proto->config.onewire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
 		for (i=0; i<8; i++) {
 			onewire_write_bit(con, (tx_data>>i) & 1);
 		}
@@ -177,7 +177,7 @@ uint8_t onewire_read_u8(t_hydra_console *con)
 
 
 	value = 0;
-	if(proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_LSB) {
+	if(proto->config.onewire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
 		for(i=0; i<8; i++) {
 			value |= (onewire_read_bit(con) << i);
 		}
@@ -275,22 +275,22 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_PULL:
 			switch (p->tokens[++t]) {
 			case T_UP:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
+				proto->config.onewire.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 				break;
 			case T_DOWN:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
+				proto->config.onewire.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
 				break;
 			case T_FLOATING:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+				proto->config.onewire.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 				break;
 			}
 			onewire_pin_init(con);
 			break;
 		case T_MSB_FIRST:
-			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
+			proto->config.onewire.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
 			break;
 		case T_LSB_FIRST:
-			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
+			proto->config.onewire.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
 			break;
 		case T_SCAN:
 			onewire_scan(con);

@@ -181,12 +181,12 @@ static bool init_gpio(t_hydra_console *con)
 	 * TRF7970A IO7_MOSI SPI mode / HydraBus PC3 - MOSI
 	 * Used for communication with TRF7970A in SPI mode with NSS.
 	 */
-	mode_con1.proto.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
-	mode_con1.proto.dev_speed = 5; /* 5 250 000 Hz */
-	mode_con1.proto.dev_phase = 1;
-	mode_con1.proto.dev_polarity = 0;
-	mode_con1.proto.dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
-	mode_con1.proto.dev_mode = DEV_SPI_MASTER;
+	mode_con1.proto.config.spi.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+	mode_con1.proto.config.spi.dev_speed = 5; /* 5 250 000 Hz */
+	mode_con1.proto.config.spi.dev_phase = 1;
+	mode_con1.proto.config.spi.dev_polarity = 0;
+	mode_con1.proto.config.spi.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
+	mode_con1.proto.config.spi.dev_mode = DEV_MASTER;
 	bsp_spi_init(BSP_DEV_SPI2, &mode_con1.proto);
 
 	/*
@@ -840,9 +840,9 @@ static void scan(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	if (proto->dev_function == NFC_TYPEA)
+	if (proto->config.hydranfc.dev_function == NFC_TYPEA)
 		hydranfc_scan_mifare(con);
-	else if (proto->dev_function == NFC_VICINITY)
+	else if (proto->config.hydranfc.dev_function == NFC_VICINITY)
 		hydranfc_scan_vicinity(con);
 }
 
@@ -888,11 +888,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 
 		case T_TYPEA:
-			proto->dev_function = NFC_TYPEA;
+			proto->config.hydranfc.dev_function = NFC_TYPEA;
 			break;
 
 		case T_VICINITY:
-			proto->dev_function = NFC_VICINITY;
+			proto->config.hydranfc.dev_function = NFC_VICINITY;
 			break;
 
 		case T_PERIOD:
@@ -966,11 +966,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 
 	switch(action) {
 	case T_SCAN:
-		dev_func = proto->dev_function;
+		dev_func = proto->config.hydranfc.dev_function;
 		if( (dev_func == NFC_TYPEA) || (dev_func == NFC_VICINITY) ) {
 			if (continuous) {
 				cprintf(con, "Scanning %s ",
-					proto->dev_function == NFC_TYPEA ? "MIFARE" : "Vicinity");
+					proto->config.hydranfc.dev_function == NFC_TYPEA ? "MIFARE" : "Vicinity");
 				cprintf(con, "with %dms period. Press user button to stop.\r\n", period);
 				while (!USER_BUTTON) {
 					scan(con);
@@ -1132,7 +1132,7 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 		show_registers(con);
 	} else {
 
-		switch(proto->dev_function) {
+		switch(proto->config.hydranfc.dev_function) {
 		case NFC_TYPEA:
 			cprintf(con, "Protocol: TypeA (ISO14443A => MIFARE...)\r\n");
 			break;
@@ -1163,7 +1163,7 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	if(con != NULL)
 	{
 		proto = &con->mode->proto;
-		proto->dev_function = NFC_TYPEA;
+		proto->config.hydranfc.dev_function = NFC_TYPEA;
 	}
 
 	if(init_gpio(con) ==  FALSE) {

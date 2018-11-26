@@ -29,8 +29,6 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
 
-static can_config config[2];
-
 static const char* str_pins_can[] = {
 	"TX: PB9\r\nRX: PB8\r\n",
 	"TX: PB6\r\nRX: PB5\r\n",
@@ -48,11 +46,15 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
-	proto->dev_speed = 500000;
-	proto->dev_mode = BSP_CAN_MODE_RO;
+	proto->config.can.dev_speed = 500000;
+	proto->config.can.dev_mode = BSP_CAN_MODE_RO;
 
 	/* TS1 = 15TQ, TS2 = 5TQ, SJW = 2TQ */
-	proto->bus_mode = 0x14e0000;
+	proto->config.can.dev_timing = 0x14e0000;
+
+	proto->config.can.filter_id_low = 0;
+	proto->config.can.filter_id_high = 0;
+
 }
 
 static void show_params(t_hydra_console *con)
@@ -62,92 +64,92 @@ static void show_params(t_hydra_console *con)
 
 	timings = bsp_can_get_timings(proto->dev_num);
 	cprintf(con, "Device: CAN%d\r\nSpeed: %d bps\r\n",
-		proto->dev_num + 1, proto->dev_speed);
-	cprintf(con, "ID: 0x%0X\r\n", config[proto->dev_num].can_id);
+		proto->dev_num + 1, proto->config.can.dev_speed);
+	cprintf(con, "ID: 0x%0X\r\n", proto->config.can.can_id);
 	cprintf(con, "TS1: %dTQ\r\n", 1+((timings&0xf0000)>>16));
 	cprintf(con, "TS2: %dTQ\r\n", 1+((timings&0x700000)>>20));
 	cprintf(con, "SJW: %dTQ\r\n", 1+((timings&0x3000000)>>24));
 }
 
-static void can_slcan_out(t_hydra_console *con, CanRxMsgTypeDef *msg)
+static void can_slcan_out(t_hydra_console *con, can_rx_frame *msg)
 {
 	char slcanmsg[27] = {0};
 	char outcode;
 	uint8_t i;
 	uint8_t offset = 0;
 
-	if (msg->RTR == CAN_RTR_DATA) {
+	if (msg->header.RTR == CAN_RTR_DATA) {
 		outcode = 't';
 	} else {
 		outcode = 'r';
 	}
-	if (msg->IDE == CAN_ID_EXT) {
+	if (msg->header.IDE == CAN_ID_EXT) {
 		/*Extended frames have a capital letter */
 		outcode -= 32;
 		offset = snprintf(slcanmsg, 27, "%c%08X%d",
-			outcode, (unsigned int)msg->ExtId, (int)msg->DLC);
+			outcode, (unsigned int)msg->header.ExtId, (int)msg->header.DLC);
 	} else {
 		offset = snprintf(slcanmsg, 27, "%c%03X%d",
-			outcode, (unsigned int)msg->StdId, (int)msg->DLC);
+			outcode, (unsigned int)msg->header.StdId, (int)msg->header.DLC);
 	}
 
-	for (i=0; i<msg->DLC; i++) {
-		snprintf(slcanmsg+offset, 3, "%02X", (unsigned int)msg->Data[i]);
+	for (i=0; i<msg->header.DLC; i++) {
+		snprintf(slcanmsg+offset, 3, "%02X", (unsigned int)msg->data[i]);
 		offset += 2;
 	}
 	cprintf(con, "%s\r", slcanmsg);
 }
 
-static bsp_status_t can_slcan_in(uint8_t *slcanmsg, CanTxMsgTypeDef *msg)
+static bsp_status_t can_slcan_in(uint8_t *slcanmsg, can_tx_frame *msg)
 {
 	uint8_t result = 0;
 	switch(slcanmsg[0]) {
 	case 't':
-		msg->RTR = CAN_RTR_DATA;
-		msg->IDE = CAN_ID_STD;
+		msg->header.RTR = CAN_RTR_DATA;
+		msg->header.IDE = CAN_ID_STD;
 		break;
 	case 'r':
-		msg->RTR = CAN_RTR_REMOTE;
-		msg->IDE = CAN_ID_STD;
+		msg->header.RTR = CAN_RTR_REMOTE;
+		msg->header.IDE = CAN_ID_STD;
 	        break;
 	case 'T':
-		msg->RTR = CAN_RTR_DATA;
-		msg->IDE = CAN_ID_EXT;
+		msg->header.RTR = CAN_RTR_DATA;
+		msg->header.IDE = CAN_ID_EXT;
 		break;
 	case 'R':
-		msg->RTR = CAN_RTR_REMOTE;
-		msg->IDE = CAN_ID_EXT;
+		msg->header.RTR = CAN_RTR_REMOTE;
+		msg->header.IDE = CAN_ID_EXT;
 		break;
 	default:
 		return BSP_ERROR;
 	}
 
-	if (msg->IDE == CAN_ID_STD) {
+	if (msg->header.IDE == CAN_ID_STD) {
 		result = sscanf((char *)slcanmsg, "%*[tr]%3X%1d%02X%02X%02X%02X%02X%02X%02X%02X",
-		       (unsigned int *) &msg->StdId,
-		       (unsigned int *) &msg->DLC,
-		       (unsigned int *) &msg->Data[0],
-		       (unsigned int *) &msg->Data[1],
-		       (unsigned int *) &msg->Data[2],
-		       (unsigned int *) &msg->Data[3],
-		       (unsigned int *) &msg->Data[4],
-		       (unsigned int *) &msg->Data[5],
-		       (unsigned int *) &msg->Data[6],
-		       (unsigned int *) &msg->Data[7]);
+		       (unsigned int *) &msg->header.StdId,
+		       (unsigned int *) &msg->header.DLC,
+		       (unsigned int *) &msg->data[0],
+		       (unsigned int *) &msg->data[1],
+		       (unsigned int *) &msg->data[2],
+		       (unsigned int *) &msg->data[3],
+		       (unsigned int *) &msg->data[4],
+		       (unsigned int *) &msg->data[5],
+		       (unsigned int *) &msg->data[6],
+		       (unsigned int *) &msg->data[7]);
 	} else {
 		result = sscanf((char *)slcanmsg, "%*[TR]%8X%1d%02X%02X%02X%02X%02X%02X%02X%02X",
-		       (unsigned int *) &msg->ExtId,
-		       (unsigned int *) &msg->DLC,
-		       (unsigned int *) &msg->Data[0],
-		       (unsigned int *) &msg->Data[1],
-		       (unsigned int *) &msg->Data[2],
-		       (unsigned int *) &msg->Data[3],
-		       (unsigned int *) &msg->Data[4],
-		       (unsigned int *) &msg->Data[5],
-		       (unsigned int *) &msg->Data[6],
-		       (unsigned int *) &msg->Data[7]);
+		       (unsigned int *) &msg->header.ExtId,
+		       (unsigned int *) &msg->header.DLC,
+		       (unsigned int *) &msg->data[0],
+		       (unsigned int *) &msg->data[1],
+		       (unsigned int *) &msg->data[2],
+		       (unsigned int *) &msg->data[3],
+		       (unsigned int *) &msg->data[4],
+		       (unsigned int *) &msg->data[5],
+		       (unsigned int *) &msg->data[6],
+		       (unsigned int *) &msg->data[7]);
 	}
-	if(result >= (msg->DLC+2)) {
+	if(result >= (msg->header.DLC+2)) {
 		return BSP_OK;
 	} else {
 		return BSP_ERROR;
@@ -163,13 +165,13 @@ static void slcan_read_command(t_hydra_console *con, uint8_t *buff){
 	}
 }
 
-msg_t can_reader_thread (void *arg)
+static THD_FUNCTION(can_reader_thread, arg)
 {
 	t_hydra_console *con;
 	con = arg;
 	chRegSetThreadName("CAN reader");
 	chThdSleepMilliseconds(10);
-	CanRxMsgTypeDef rx_msg;
+	can_rx_frame rx_msg;
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	while (!chThdShouldTerminateX()) {
@@ -183,12 +185,11 @@ msg_t can_reader_thread (void *arg)
 		}
 	}
 	chThdExit((msg_t)1);
-	return (msg_t)1;
 }
 
 void slcan(t_hydra_console *con) {
 	uint8_t buff[SLCAN_BUFF_LEN];
-	CanTxMsgTypeDef tx_msg;
+	can_tx_frame tx_msg;
 	mode_config_proto_t* proto = &con->mode->proto;
 	thread_t *rthread = NULL;
 
@@ -199,38 +200,38 @@ void slcan(t_hydra_console *con) {
 			/*CAN speed*/
 			switch(buff[1]) {
 			case '0':
-				proto->dev_speed = 10000;
+				proto->config.can.dev_speed = 10000;
 				break;
 			case '1':
-				proto->dev_speed = 20000;
+				proto->config.can.dev_speed = 20000;
 				break;
 			case '2':
-				proto->dev_speed = 50000;
+				proto->config.can.dev_speed = 50000;
 				break;
 			case '3':
-				proto->dev_speed = 100000;
+				proto->config.can.dev_speed = 100000;
 				break;
 			case '4':
-				proto->dev_speed = 125000;
+				proto->config.can.dev_speed = 125000;
 				break;
 			case '5':
-				proto->dev_speed = 250000;
+				proto->config.can.dev_speed = 250000;
 				break;
 			case '6':
-				proto->dev_speed = 500000;
+				proto->config.can.dev_speed = 500000;
 				break;
 			case '7':
-				proto->dev_speed = 800000;
+				proto->config.can.dev_speed = 800000;
 				break;
 			case '8':
-				proto->dev_speed = 1000000;
+				proto->config.can.dev_speed = 1000000;
 				break;
 			case '9':
-				proto->dev_speed = 2000000;
+				proto->config.can.dev_speed = 2000000;
 				break;
 			}
 
-			if(bsp_can_set_speed(proto->dev_num, proto->dev_speed) == BSP_OK) {
+			if(bsp_can_set_speed(proto->dev_num, proto->config.can.dev_speed) == BSP_OK) {
 				cprint(con, "\r", 1);
 			}else {
 				cprint(con, "\x07", 1);
@@ -248,7 +249,7 @@ void slcan(t_hydra_console *con) {
 							      CONSOLE_WA_SIZE,
 							      "SLCAN reader",
 							      LOWPRIO,
-							      (tfunc_t)can_reader_thread,
+							      can_reader_thread,
 							      con);
 				cprint(con, "\r", 1);
 			} else {
@@ -271,7 +272,7 @@ void slcan(t_hydra_console *con) {
 			/*Transmit*/
 			if(can_slcan_in(buff, &tx_msg) == BSP_OK) {
 				chSysLock();
-				if(bsp_can_put(proto->dev_num, &tx_msg) == BSP_OK) {
+				if(bsp_can_write(proto->dev_num, &tx_msg) == BSP_OK) {
 					cprint(con, "\r", 1);
 				}else {
 					cprint(con, "\x07", 1);
@@ -333,10 +334,10 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	}
 
 	/* By default, get all packets */
-	if (config[proto->dev_num].filter_id_low != 0 || config[proto->dev_num].filter_id_high != 0) {
+	if (proto->config.can.filter_id_low != 0 || proto->config.can.filter_id_high != 0) {
 		bsp_status = bsp_can_set_filter(proto->dev_num, proto,
-						config[proto->dev_num].filter_id_low,
-						config[proto->dev_num].filter_id_high);
+						proto->config.can.filter_id_low,
+						proto->config.can.filter_id_high);
 	} else {
 		bsp_status = bsp_can_init_filter(proto->dev_num, proto);
 	}
@@ -382,12 +383,12 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			t += 2;
 			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
 			bsp_status = bsp_can_set_speed(proto->dev_num, arg_int);
-			proto->dev_speed = bsp_can_get_speed(proto->dev_num);
+			proto->config.can.dev_speed = bsp_can_get_speed(proto->dev_num);
 			if( bsp_status != BSP_OK) {
 				cprintf(con, str_bsp_init_err, bsp_status);
 				return t;
 			}
-			cprintf(con, "Speed: %d bps\r\n", proto->dev_speed);
+			cprintf(con, "Speed: %d bps\r\n", proto->config.can.dev_speed);
 			break;
 		case T_TS1:
 			/* Integer parameter. */
@@ -438,22 +439,25 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			case T_OFF:
 				bsp_status = bsp_can_init_filter(proto->dev_num,
 								 proto);
+				if(bsp_status != BSP_OK) {
+					cprintf(con, "Reset filter error %02X", bsp_status);
+				}
 				break;
 			case T_LOW:
 				memcpy(&arg_int, p->buf + p->tokens[t+3], sizeof(int));
-				config[proto->dev_num].filter_id_low = arg_int;
+				proto->config.can.filter_id_low = arg_int;
 				bsp_status = bsp_can_set_filter(proto->dev_num,
 								proto,
-								config[proto->dev_num].filter_id_low,
-								config[proto->dev_num].filter_id_high);
+								proto->config.can.filter_id_low,
+								proto->config.can.filter_id_high);
 				break;
 			case T_HIGH:
 				memcpy(&arg_int, p->buf + p->tokens[t+3], sizeof(int));
-				config[proto->dev_num].filter_id_high = arg_int;
+				proto->config.can.filter_id_high = arg_int;
 				bsp_status = bsp_can_set_filter(proto->dev_num,
 								proto,
-								config[proto->dev_num].filter_id_low,
-								config[proto->dev_num].filter_id_high);
+								proto->config.can.filter_id_low,
+								proto->config.can.filter_id_high);
 				break;
 			}
 			t+=3;
@@ -462,15 +466,16 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			/* Integer parameter. */
 			t += 2;
 			memcpy(&arg_int, p->buf + p->tokens[t+3], sizeof(int));
-			config[proto->dev_num].can_id = arg_int;
-			cprintf(con, "ID set to %d\r\n", config[proto->dev_num].can_id);
+			proto->config.can.can_id = arg_int;
+			cprintf(con, "ID set to %d\r\n", proto->config.can.can_id);
 			break;
 		case T_CONTINUOUS:
 			while(!USER_BUTTON) {
 				read(con, NULL, 0);
 			}
+			break;
 		case T_SLCAN:
-			if(proto->dev_mode == BSP_CAN_MODE_RO) {
+			if(proto->config.can.dev_mode == BSP_CAN_MODE_RO) {
 				bsp_can_mode_rw(proto->dev_num, proto);
 			}
 			slcan(con);
@@ -483,7 +488,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	return t - token_pos;
 }
 
-static uint32_t can_send_msg(t_hydra_console *con, CanTxMsgTypeDef *tx_msg)
+static uint32_t can_send_msg(t_hydra_console *con, can_tx_frame *tx_msg)
 {
 	uint32_t status;
 	uint8_t nb_data;
@@ -492,16 +497,16 @@ static uint32_t can_send_msg(t_hydra_console *con, CanTxMsgTypeDef *tx_msg)
 	status = bsp_can_write(proto->dev_num, tx_msg);
 
 	if(status == BSP_OK) {
-		if (tx_msg->IDE == CAN_ID_STD) {
-			cprintf(con, "SID: %02X ", tx_msg->StdId);
+		if (tx_msg->header.IDE == CAN_ID_STD) {
+			cprintf(con, "SID: %02X ", tx_msg->header.StdId);
 		} else {
-			cprintf(con, "EID: %08X ", tx_msg->ExtId);
+			cprintf(con, "EID: %08X ", tx_msg->header.ExtId);
 		}
-		cprintf(con, "DLC: %02X ", tx_msg->DLC);
-		cprintf(con, "RTR: %02X ", tx_msg->RTR);
+		cprintf(con, "DLC: %02X ", tx_msg->header.DLC);
+		cprintf(con, "RTR: %02X ", tx_msg->header.RTR);
 		cprintf(con, "DATA: ");
-		for (nb_data = 0; nb_data < tx_msg->DLC; nb_data++) {
-			cprintf(con, "%02X", tx_msg->Data[nb_data]);
+		for (nb_data = 0; nb_data < tx_msg->header.DLC; nb_data++) {
+			cprintf(con, "%02X", tx_msg->data[nb_data]);
 		}
 		cprintf(con, "\r\n");
 	} else {
@@ -517,9 +522,9 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t i = 0;
-	CanTxMsgTypeDef tx_msg;
+	can_tx_frame tx_msg;
 
-	if(proto->dev_mode == BSP_CAN_MODE_RO) {
+	if(proto->config.can.dev_mode == BSP_CAN_MODE_RO) {
 		cprintf(con, "Switching to normal bus operation\r\n");
 		status = bsp_can_mode_rw(proto->dev_num, proto);
 		if(status != BSP_OK){
@@ -532,28 +537,28 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 	if(can_slcan_in(tx_data, &tx_msg) != BSP_OK) {
 
 		/* Is ID an extended one ? */
-		if (config[proto->dev_num].can_id < 0b11111111111) {
-			tx_msg.StdId = config[proto->dev_num].can_id;
-			tx_msg.IDE = CAN_ID_STD;
+		if (proto->config.can.can_id < 0b11111111111) {
+			tx_msg.header.StdId = proto->config.can.can_id;
+			tx_msg.header.IDE = CAN_ID_STD;
 		} else {
-			tx_msg.ExtId = config[proto->dev_num].can_id;
-			tx_msg.IDE = CAN_ID_EXT;
+			tx_msg.header.ExtId = proto->config.can.can_id;
+			tx_msg.header.IDE = CAN_ID_EXT;
 		}
 
-		tx_msg.RTR = CAN_RTR_DATA;
-		tx_msg.DLC = 0;
+		tx_msg.header.RTR = CAN_RTR_DATA;
+		tx_msg.header.DLC = 0;
 		while(nb_data > i) {
-			tx_msg.Data[tx_msg.DLC] = tx_data[i];
-			tx_msg.DLC++;
+			tx_msg.data[tx_msg.header.DLC] = tx_data[i];
+			tx_msg.header.DLC++;
 
-			if(tx_msg.DLC == 8) {
+			if(tx_msg.header.DLC == 8) {
 				status = can_send_msg(con, &tx_msg);
-				tx_msg.DLC = 0;
+				tx_msg.header.DLC = 0;
 			}
 			i++;
 		}
 		/*Send leftover bytes*/
-		if(tx_msg.DLC> 0) {
+		if(tx_msg.header.DLC> 0) {
 			status = can_send_msg(con, &tx_msg);
 		}
 	} else {
@@ -567,25 +572,30 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 {
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
-	CanRxMsgTypeDef rx_msg;
+	can_rx_frame rx_msg;
 
 	status = bsp_can_read(proto->dev_num, &rx_msg);
-	if(status == BSP_OK) {
-		if (rx_msg.IDE == CAN_ID_STD) {
-			cprintf(con, "SID: 0x%02X ", rx_msg.StdId);
+	switch(status) {
+	case BSP_OK:
+		if (rx_msg.header.IDE == CAN_ID_STD) {
+			cprintf(con, "SID: 0x%02X ", rx_msg.header.StdId);
 		} else {
-			cprintf(con, "EID: 0x%02X ", rx_msg.ExtId);
+			cprintf(con, "EID: 0x%02X ", rx_msg.header.ExtId);
 		}
-		cprintf(con, "DLC: 0x%02X ", rx_msg.DLC);
-		cprintf(con, "RTR: 0x%02X ", rx_msg.RTR);
+		cprintf(con, "DLC: 0x%02X ", rx_msg.header.DLC);
+		cprintf(con, "RTR: 0x%02X ", rx_msg.header.RTR);
 		cprintf(con, "DATA: ");
-		for (nb_data = 0; nb_data < rx_msg.DLC; nb_data++) {
-			cprintf(con, "%02X", rx_msg.Data[nb_data]);
-			rx_data[nb_data] = rx_msg.Data[nb_data];
+		for (nb_data = 0; nb_data < rx_msg.header.DLC; nb_data++) {
+			cprintf(con, "%02X", rx_msg.data[nb_data]);
+			rx_data[nb_data] = rx_msg.data[nb_data];
 		}
 		cprintf(con, "\r\n");
-	} else {
+		break;
+	case BSP_TIMEOUT:
+		break;
+	default:
 		cprintf(con, "Error getting data : %02X\r\n", status);
+		break;
 	}
 	return status;
 }
@@ -611,8 +621,8 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 	case T_FILTER:
 		tokens_used++;
 		cprintf(con, "Low : 0x%02X\r\nHigh: 0x%02X\r\n",
-			config[proto->dev_num].filter_id_low,
-			config[proto->dev_num].filter_id_high);
+			proto->config.can.filter_id_low,
+			proto->config.can.filter_id_high);
 		break;
 	default:
 		show_params(con);

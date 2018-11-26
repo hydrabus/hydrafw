@@ -70,31 +70,31 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
-	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
-	proto->dev_mode = DEV_SPI_MASTER;
-	proto->dev_speed = 0;
-	proto->dev_polarity = 0;
-	proto->dev_phase = 0;
-	proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
+	proto->config.spi.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+	proto->config.spi.dev_mode = DEV_MASTER;
+	proto->config.spi.dev_speed = 0;
+	proto->config.spi.dev_polarity = 0;
+	proto->config.spi.dev_phase = 0;
+	proto->config.spi.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
 }
 
 static void show_params(t_hydra_console *con)
 {
-	int i, cnt;
+	uint8_t i, cnt;
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "Device: SPI%d\r\nGPIO resistor: %s\r\nMode: %s\r\n"
 		"Frequency: ",
 		proto->dev_num + 1,
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
-		proto->dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+		proto->config.spi.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+		proto->config.spi.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
 		"floating",
-		proto->dev_mode == DEV_SPI_MASTER ? "master" : "slave");
+		proto->config.spi.dev_mode == DEV_MASTER ? "master" : "slave");
 
-	print_freq(con, speeds[proto->dev_num][proto->dev_speed]);
+	print_freq(con, speeds[proto->dev_num][proto->config.spi.dev_speed]);
 	cprintf(con, " (");
 	for (i = 0, cnt = 0; i < SPEED_NB; i++) {
-		if (proto->dev_speed == i)
+		if (proto->config.spi.dev_speed == i)
 			continue;
 		if (cnt++)
 			cprintf(con, ", ");
@@ -102,9 +102,9 @@ static void show_params(t_hydra_console *con)
 	}
 	cprintf(con, ")\r\n");
 	cprintf(con, "Polarity: %d\r\nPhase: %d\r\nBit order: %s first\r\n",
-		proto->dev_polarity,
-		proto->dev_phase,
-		proto->dev_bit_lsb_msb == DEV_SPI_FIRSTBIT_MSB ? "MSB" : "LSB");
+		proto->config.spi.dev_polarity,
+		proto->config.spi.dev_phase,
+		proto->config.spi.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB ? "MSB" : "LSB");
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -157,13 +157,13 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_PULL:
 			switch (p->tokens[++t]) {
 			case T_UP:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
+				proto->config.spi.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 				break;
 			case T_DOWN:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
+				proto->config.spi.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLDOWN;
 				break;
 			case T_FLOATING:
-				proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+				proto->config.spi.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 				break;
 			}
 			bsp_status = bsp_spi_init(proto->dev_num, proto);
@@ -174,9 +174,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_MODE:
 			if (p->tokens[++t] == T_MASTER)
-				proto->dev_mode = DEV_SPI_MASTER;
+				proto->config.spi.dev_mode = DEV_MASTER;
 			else
-				proto->dev_mode = DEV_SPI_SLAVE;
+				proto->config.spi.dev_mode = DEV_SLAVE;
 
 			bsp_status = bsp_spi_init(proto->dev_num, proto);
 			if( bsp_status != BSP_OK) {
@@ -189,7 +189,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			memcpy(&arg_float, p->buf + p->tokens[t], sizeof(float));
 			for (i = 0; i < SPEED_NB; i++) {
 				if (arg_float == speeds[proto->dev_num][i]) {
-					proto->dev_speed = i;
+					proto->config.spi.dev_speed = i;
 					break;
 				}
 			}
@@ -210,7 +210,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Polarity device must be 0 or 1.\r\n");
 				return t;
 			}
-			proto->dev_polarity = arg_int;
+			proto->config.spi.dev_polarity = arg_int;
 			bsp_status = bsp_spi_init(proto->dev_num, proto);
 			if( bsp_status != BSP_OK) {
 				cprintf(con, str_bsp_init_err, bsp_status);
@@ -224,11 +224,11 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Phase device must be 0 or 1.\r\n");
 				return t;
 			}
-			proto->dev_phase = arg_int;
+			proto->config.spi.dev_phase = arg_int;
 			bsp_spi_init(proto->dev_num, proto);
 			break;
 		case T_MSB_FIRST:
-			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_MSB;
+			proto->config.spi.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
 			bsp_status = bsp_spi_init(proto->dev_num, proto);
 			if( bsp_status != BSP_OK) {
 				cprintf(con, str_bsp_init_err, bsp_status);
@@ -236,7 +236,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			}
 			break;
 		case T_LSB_FIRST:
-			proto->dev_bit_lsb_msb = DEV_SPI_FIRSTBIT_LSB;
+			proto->config.spi.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
 			bsp_status = bsp_spi_init(proto->dev_num, proto);
 			if( bsp_status != BSP_OK) {
 				cprintf(con, str_bsp_init_err, bsp_status);

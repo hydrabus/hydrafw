@@ -36,9 +36,9 @@ void bbio_i2c_init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = I2C_DEV_NUM;
-	proto->dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
-	proto->dev_speed = 1;
-	proto->ack_pending = 0;
+	proto->config.i2c.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
+	proto->config.i2c.dev_speed = 1;
+	proto->config.i2c.ack_pending = 0;
 }
 
 void bbio_i2c_sniff(t_hydra_console *con)
@@ -59,7 +59,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 	uint8_t *tx_data = (uint8_t *)g_sbuf;
 	uint8_t *rx_data = (uint8_t *)g_sbuf+4096;
 	uint8_t data;
-	bool tx_ack_flag;
+	uint8_t tx_ack_flag;
 	bsp_status_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -175,7 +175,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 						}
 					}
 				} else if ((bbio_subcommand & BBIO_I2C_SET_SPEED) == BBIO_I2C_SET_SPEED) {
-					proto->dev_speed = bbio_subcommand & 0b11;
+					proto->config.i2c.dev_speed = bbio_subcommand & 0b11;
 					status = bsp_i2c_init(proto->dev_num, proto);
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);
@@ -183,7 +183,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 						cprint(con, "\x00", 1);
 					}
 				} else if ((bbio_subcommand & BBIO_I2C_CONFIG_PERIPH) == BBIO_I2C_CONFIG_PERIPH) {
-					proto->dev_gpio_pull = (bbio_subcommand & 0b100)?1:0;
+					proto->config.i2c.dev_gpio_pull = (bbio_subcommand & 0b100)?1:0;
 					status = bsp_i2c_init(proto->dev_num, proto);
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);

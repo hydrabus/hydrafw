@@ -8,6 +8,8 @@ MAKEFLAGS += --no-builtin-rules
 
 #Set to 1 HYDRAFW_NFC to include HydraNFC extension support
 export HYDRAFW_NFC ?= 1
+export HYDRAFW_DEBUG ?= 0
+export FW_REVISION := $(shell python build-scripts/hydrafw-revision.py)
 
 HYDRAFW_OPTS =
 
@@ -17,8 +19,14 @@ endif
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -Os -ggdb -fomit-frame-pointer -falign-functions=16
+  USE_OPT = -Os -fomit-frame-pointer -falign-functions=16 -std=gnu89
 endif
+
+ifeq ($(HYDRAFW_DEBUG),1)
+  USE_OPT += -ggdb
+  USE_LTO = no
+endif
+
 
 # C specific options here (added to USE_OPT).
 ifeq ($(USE_COPT),)
@@ -269,7 +277,7 @@ FORCE:
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	echo Creating ./common/hydrafw_version.hdr
 	-rm -f $(OBJDIR)/common.o
-  python build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
+    python build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
 else
 	@echo Creating ./common/hydrafw_version.hdr
 	@rm -f $(OBJDIR)/common.o
@@ -278,10 +286,10 @@ endif
 
 %.dfu: %.hex $(LDSCRIPT)
 ifeq ($(USE_VERBOSE_COMPILE),yes)
-	python build-scripts/dfu-convert.py -i $< $@
+	python build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
 else
 	@echo Creating $@
-	@python build-scripts/dfu-convert.py -i $< $@
+	@python build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
 endif
 
 # This rule hook is defined in the ChibiOS build system

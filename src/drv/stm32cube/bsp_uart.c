@@ -29,7 +29,7 @@ Warning in order to use this driver all GPIOs peripherals shall be enabled.
 
 static UART_HandleTypeDef uart_handle[NB_UART];
 static mode_config_proto_t* uart_mode_conf[NB_UART];
-volatile uint16_t dummy_read;
+static volatile uint16_t dummy_read;
 
 /**
   * @brief  Init low level hardware: GPIO, CLOCK, NVIC...
@@ -147,7 +147,7 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 	} else { /* UART2 */
 		huart->Instance = BSP_UART2;
 	}
-	huart->Init.BaudRate = mode_conf->dev_speed;
+	huart->Init.BaudRate = mode_conf->config.uart.dev_speed;
 
 	if(huart->Init.BaudRate < 4800)
 		huart->Init.OverSampling = UART_OVERSAMPLING_16;
@@ -158,7 +158,7 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 	if(huart->Init.BaudRate < 81)
 		return BSP_ERROR;
 
-	switch(mode_conf->dev_parity) {
+	switch(mode_conf->config.uart.dev_parity) {
 	case 1: /* 8/even */
 		huart->Init.Parity = UART_PARITY_EVEN;
 		huart->Init.WordLength = UART_WORDLENGTH_9B;
@@ -176,7 +176,7 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 		break;
 	}
 
-	if(mode_conf->dev_stop_bit == 1)
+	if(mode_conf->config.uart.dev_stop_bit == 1)
 		huart->Init.StopBits   = UART_STOPBITS_1;
 	else
 		huart->Init.StopBits   = UART_STOPBITS_2;
@@ -184,11 +184,33 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 	huart->Init.HwFlowCtl  = UART_HWCONTROL_NONE;
 	huart->Init.Mode       = UART_MODE_TX_RX;
 
-	status = HAL_UART_Init(huart);
+	if(mode_conf->config.uart.bus_mode == BSP_UART_MODE_UART) {
+		status = HAL_UART_Init(huart);
+	} else {
+		status = HAL_LIN_Init(huart, UART_LINBREAKDETECTLENGTH_11B);
+	}
 
 	/* Dummy read to flush old character */
 	dummy_read = huart->Instance->DR;
 
+	return status;
+}
+
+/**
+  * @brief  Sends a LIN break.
+  * @param  dev_num: UART dev num.
+  * @retval status of the transfer.
+  */
+bsp_status_t bsp_lin_break(bsp_dev_uart_t dev_num)
+{
+	UART_HandleTypeDef* huart;
+	huart = &uart_handle[dev_num];
+
+	bsp_status_t status;
+	status = HAL_LIN_SendBreak(huart);
+	if(status != BSP_OK) {
+		uart_error(dev_num);
+	}
 	return status;
 }
 

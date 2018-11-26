@@ -21,24 +21,18 @@
 
 #define THREEWIRE_MAX_FREQ 1000000
 
-typedef struct {
-	uint8_t clk_pin;
-	uint8_t sdi_pin;
-	uint8_t sdo_pin;
-} threewire_config;
-
 void threewire_init_proto_default(t_hydra_console *con);
 bool threewire_pin_init(t_hydra_console *con);
 void threewire_tim_init(t_hydra_console *con);
 void threewire_tim_set_prescaler(t_hydra_console *con);
 uint8_t threewire_read_u8(t_hydra_console *con);
 void threewire_write_u8(t_hydra_console *con, uint8_t tx_data);
-inline void threewire_clock(void);
-inline void threewire_clk_low(void);
-inline void threewire_clk_high(void);
-inline void threewire_sdo_low(void);
-inline void threewire_sdo_high(void);
-void threewire_send_bit(uint8_t bit);
-uint8_t threewire_read_bit(void);
-uint8_t threewire_read_bit_clock(void);
+inline void threewire_clock(t_hydra_console *con);
+inline void threewire_clk_low(t_hydra_console *con);
+inline void threewire_clk_high(t_hydra_console *con);
+inline void threewire_sdo_low(t_hydra_console *con);
+inline void threewire_sdo_high(t_hydra_console *con);
+void threewire_send_bit(t_hydra_console *con, uint8_t bit);
+uint8_t threewire_read_bit(t_hydra_console *con);
+uint8_t threewire_read_bit_clock(t_hydra_console *con);
 void threewire_cleanup(t_hydra_console *con);

@@ -35,11 +35,11 @@ static void bbio_can_init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
-	proto->dev_speed = 500000;
-	proto->dev_mode = BSP_CAN_MODE_RW;
+	proto->config.can.dev_speed = 500000;
+	proto->config.can.dev_mode = BSP_CAN_MODE_RW;
 
 	/* TS1 = 15TQ, TS2 = 5TQ, SJW = 2TQ */
-	proto->bus_mode = 0x14e0000;
+	proto->config.can.dev_timing = 0x14e0000;
 }
 
 static void print_raw_uint32(t_hydra_console *con, uint32_t num)
@@ -62,13 +62,13 @@ void bbio_mode_can(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	uint8_t rx_buff[10], i, to_tx;
-	CanTxMsgTypeDef tx_msg;
-	CanRxMsgTypeDef rx_msg;
+	can_tx_frame tx_msg;
+	can_rx_frame rx_msg;
 	uint32_t can_id=0;
 	uint32_t filter_low=0, filter_high=0;
 
 	proto->dev_num = 0;
-	proto->dev_speed = 500000;
+	proto->config.can.dev_speed = 500000;
 
 	bbio_can_init_proto_default(con);
 	bsp_can_init(proto->dev_num, proto);
@@ -113,15 +113,17 @@ void bbio_mode_can(t_hydra_console *con)
 				status = bsp_can_read(proto->dev_num, &rx_msg);
 				if(status == BSP_OK) {
 					cprint(con, "\x01", 1);
-					if(rx_msg.IDE == CAN_ID_STD) {
-						print_raw_uint32(con, (uint32_t)rx_msg.StdId);
+					if(rx_msg.header.IDE == CAN_ID_STD) {
+						print_raw_uint32(con,
+								 (uint32_t)rx_msg.header.StdId);
 					}else{
-						print_raw_uint32(con, (uint32_t)rx_msg.ExtId);
+						print_raw_uint32(con,
+								 (uint32_t)rx_msg.header.ExtId);
 					}
-					cprintf(con, "%c", rx_msg.DLC);
-					for(i=0; i<rx_msg.DLC; i++){
+					cprintf(con, "%c", rx_msg.header.DLC);
+					for(i=0; i<rx_msg.header.DLC; i++){
 						cprintf(con, "%c",
-							rx_msg.Data[i]);
+							rx_msg.data[i]);
 					}
 
 				}else{
@@ -135,16 +137,19 @@ void bbio_mode_can(t_hydra_console *con)
 				chnRead(con->sdu, rx_buff, 3);
 				if(rx_buff[0] == 0 && rx_buff[0] > 16) {
 					cprint(con, "\x00", 1);
+					break;
 				}
 				if(rx_buff[1] == 0 && rx_buff[1] > 8) {
 					cprint(con, "\x00", 1);
+					break;
 				}
 				if(rx_buff[2] == 0 && rx_buff[2] > 4) {
 					cprint(con, "\x00", 1);
+					break;
 				}
-				proto->bus_mode = rx_buff[0]<<16;
-				proto->bus_mode += rx_buff[1]<<20;
-				proto->bus_mode += rx_buff[2]<<24;
+				proto->config.can.dev_timing = rx_buff[0]<<16;
+				proto->config.can.dev_timing += rx_buff[1]<<20;
+				proto->config.can.dev_timing += rx_buff[2]<<24;
 
 				status = bsp_can_set_timings(proto->dev_num, proto);
 				if(status == BSP_OK) {
@@ -157,23 +162,23 @@ void bbio_mode_can(t_hydra_console *con)
 				if ((bbio_subcommand & BBIO_CAN_WRITE) == BBIO_CAN_WRITE) {
 
 					if (can_id < 0b11111111111) {
-						tx_msg.StdId = can_id;
-						tx_msg.IDE = CAN_ID_STD;
+						tx_msg.header.StdId = can_id;
+						tx_msg.header.IDE = CAN_ID_STD;
 					} else {
-						tx_msg.ExtId = can_id;
-						tx_msg.IDE = CAN_ID_EXT;
+						tx_msg.header.ExtId = can_id;
+						tx_msg.header.IDE = CAN_ID_EXT;
 					}
 
 					to_tx = (bbio_subcommand & 0b111)+1;
 
-					tx_msg.RTR = CAN_RTR_DATA;
-					tx_msg.DLC = to_tx;
+					tx_msg.header.RTR = CAN_RTR_DATA;
+					tx_msg.header.DLC = to_tx;
 
 					chnRead(con->sdu, rx_buff,
 							       to_tx);
 
 					for(i=0; i<to_tx; i++) {
-						tx_msg.Data[i] = rx_buff[i];
+						tx_msg.data[i] = rx_buff[i];
 					}
 
 					status = bsp_can_write(proto->dev_num, &tx_msg);
@@ -206,32 +211,32 @@ void bbio_mode_can(t_hydra_console *con)
 				} else if((bbio_subcommand & BBIO_CAN_SET_SPEED) == BBIO_CAN_SET_SPEED) {
 					switch(bbio_subcommand & 0b111){
 					case 0:
-						proto->dev_speed = 2000000;
+						proto->config.can.dev_speed = 2000000;
 						break;
 					case 1:
-						proto->dev_speed = 1000000;
+						proto->config.can.dev_speed = 1000000;
 						break;
 					case 2:
-						proto->dev_speed = 500000;
+						proto->config.can.dev_speed = 500000;
 						break;
 					case 3:
-						proto->dev_speed = 250000;
+						proto->config.can.dev_speed = 250000;
 						break;
 					case 4:
-						proto->dev_speed = 125000;
+						proto->config.can.dev_speed = 125000;
 						break;
 					case 5:
-						proto->dev_speed = 100000;
+						proto->config.can.dev_speed = 100000;
 						break;
 					case 6:
-						proto->dev_speed = 50000;
+						proto->config.can.dev_speed = 50000;
 						break;
 					case 7:
-						proto->dev_speed = 40000;
+						proto->config.can.dev_speed = 40000;
 						break;
 					}
 					status = bsp_can_set_speed(proto->dev_num,
-								   proto->dev_speed);
+								   proto->config.can.dev_speed);
 
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);

@@ -48,6 +48,9 @@ extern const mode_exec_t mode_twowire_exec;
 extern const mode_exec_t mode_threewire_exec;
 extern const mode_exec_t mode_can_exec;
 extern const mode_exec_t mode_flash_exec;
+extern const mode_exec_t mode_wiegand_exec;
+extern const mode_exec_t mode_lin_exec;
+extern const mode_exec_t mode_smartcard_exec;
 extern t_token tokens_mode_spi[];
 extern t_token tokens_mode_i2c[];
 extern t_token tokens_mode_uart[];
@@ -60,6 +63,9 @@ extern t_token tokens_mode_twowire[];
 extern t_token tokens_mode_threewire[];
 extern t_token tokens_mode_can[];
 extern t_token tokens_mode_flash[];
+extern t_token tokens_mode_wiegand[];
+extern t_token tokens_mode_lin[];
+extern t_token tokens_mode_smartcard[];
 
 static struct {
 	int token;
@@ -78,6 +84,9 @@ static struct {
 	{ T_THREEWIRE, tokens_mode_threewire, &mode_threewire_exec },
 	{ T_CAN, tokens_mode_can, &mode_can_exec },
 	{ T_FLASH, tokens_mode_flash, &mode_flash_exec },
+	{ T_WIEGAND, tokens_mode_wiegand, &mode_wiegand_exec },
+	{ T_LIN, tokens_mode_lin, &mode_lin_exec },
+	{ T_SMARTCARD, tokens_mode_smartcard, &mode_smartcard_exec },
 };
 
 const char hydrabus_mode_str_cs_enabled[] =  "/CS ENABLED\r\n";
@@ -90,9 +99,6 @@ const char hydrabus_mode_str_mul_write[] = "WRITE: ";
 const char hydrabus_mode_str_mul_read[] = "READ: ";
 const char hydrabus_mode_str_mul_value_u8[] = "0x%02X ";
 const char hydrabus_mode_str_mul_br[] = "\r\n";
-
-static const char mode_str_delay_us[] = "DELAY %dus\r\n";
-static const char mode_str_delay_ms[] = "DELAY %dms\r\n";
 
 static const char mode_str_write_error[] =  "WRITE error:%d\r\n";
 static const char mode_str_read_error[] = "READ error:%d\r\n";
@@ -363,6 +369,7 @@ static int hydrabus_mode_write(t_hydra_console *con, t_tokenline_parsed *p,
 		t++;
 		memcpy(&count, p->buf + p->tokens[t++], sizeof(int));
 		tokens_used += 2;
+		break;
 	case T_ARG_UINT:
 	case T_TILDE:
 		tokens_used += chomp_integers(con, p, t, &num_bytes);

@@ -97,7 +97,7 @@ def bbio_spi_conf():
 	print ""
 
 	print "Configure SPI2 polarity 0 phase 1:",
-	ser.write('\x83')
+	ser.write('\x80')
 	status=ser.read(1) # Read Status
 	cmd_check_status(status)
 

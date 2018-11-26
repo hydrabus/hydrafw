@@ -152,6 +152,12 @@ t_token_dict tl_dict[] = {
 	{ T_TS1, "ts1" },
 	{ T_TS2, "ts2" },
 	{ T_SJW, "sjw" },
+	{ T_WIEGAND, "wiegand" },
+	{ T_LIN, "lin" },
+	{ T_SMARTCARD, "smartcard" },
+	{ T_ATR, "atr" },
+	{ T_GUARDTIME, "guardtime" },
+	{ T_PRESCALER, "prescaler" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -502,6 +508,213 @@ t_token tokens_mode_uart[] = {
 
 t_token tokens_uart[] = {
 	UART_PARAMETERS
+	{ }
+};
+
+#define SMARTCARD_PARAMETERS \
+	{\
+		T_SPEED,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Bus bitrate"\
+	},\
+	{\
+		T_PARITY,\
+		.arg_type = T_ARG_TOKEN,\
+		.subtokens = tokens_parity,\
+		.help = "Parity (even/odd)"\
+	},\
+	{\
+		T_POLARITY,\
+		.arg_type = T_ARG_UINT, \
+		.help = "Clock polarity (0/1)"\
+	},\
+	{\
+		T_PHASE,\
+		.arg_type = T_ARG_UINT, \
+		.help = "Clock phase (0/1)"\
+	},\
+	{\
+		T_STOP_BITS,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Stop bits (0/1)"\
+	},\
+	{\
+		T_GUARDTIME,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Guardtime value"\
+	},\
+	{\
+		T_PRESCALER,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Prescaler value"\
+	},
+
+t_token tokens_mode_smartcard[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show SMARTCARD parameters"
+	},
+	{
+		T_TRIGGER,
+		.subtokens = tokens_mode_trigger,
+		.help = "Setup SMARTCARD trigger"
+	},
+	SMARTCARD_PARAMETERS
+	/* SMARTCARD-specific commands */
+	{
+		T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_HD,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>) and print hexdump"
+	},
+	{
+		T_WRITE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_UINT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
+	},
+	{
+		T_QUERY,
+		.help = "Get OFF port value (card inserted)"
+	},
+	{
+		T_ATR,
+		.help = "Read card ATR"
+	},
+	/* BP commands */
+	{
+		T_LEFT_SQ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Toggle RST pin high"
+	},
+	{
+		T_RIGHT_SQ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Toggle RST pin low"
+	},
+	{
+		T_MINUS,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Toggle CMDVCC pin high"
+	},
+	{
+		T_UNDERSCORE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Toggle CMDVCC pin low"
+	},
+	{
+		T_AMPERSAND,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 usec (repeat with :<num>)"
+	},
+	{
+		T_PERCENT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit SMARTCARD mode"
+	},
+	{ }
+};
+
+t_token tokens_smartcard[] = {
+	SMARTCARD_PARAMETERS
+	{ }
+};
+
+#define LIN_PARAMETERS \
+	{\
+		T_DEVICE,\
+		.arg_type = T_ARG_UINT,\
+		.help = "LIN device (1/2)"\
+	},\
+
+t_token tokens_mode_lin[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show LIN parameters"
+	},
+	{
+		T_TRIGGER,
+		.subtokens = tokens_mode_trigger,
+		.help = "Setup LIN trigger"
+	},
+	LIN_PARAMETERS
+	/* LIN-specific commands */
+	{
+		T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_HD,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>) and print hexdump"
+	},
+	{
+		T_WRITE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_UINT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
+	},
+	/* BP commands */
+	{
+		T_LEFT_SQ,
+		.help = "Send a LIN break"
+	},
+	{
+		T_AMPERSAND,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 usec (repeat with :<num>)"
+	},
+	{
+		T_PERCENT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit LIN mode"
+	},
+	{ }
+};
+
+t_token tokens_lin[] = {
+	LIN_PARAMETERS
 	{ }
 };
 
@@ -1193,11 +1406,6 @@ t_token tokens_mode_threewire[] = {
 		.help = "Read byte (repeat with :<num>)"
 	},
 	{
-		T_HD,
-		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
-		.help = "Read byte (repeat with :<num>) and print hexdump"
-	},
-	{
 		T_WRITE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
@@ -1349,6 +1557,82 @@ t_token tokens_gpio[] = {
 		T_OFF,
 		.help = "Clear GPIO pin"
 	},
+	{ }
+};
+
+#define WIEGAND_PARAMETERS \
+	{ T_DEVICE, \
+		.arg_type = T_ARG_UINT, \
+		.help = "Wiegand device (1)" }, \
+	{ T_PULL, \
+		.arg_type = T_ARG_TOKEN, \
+		.subtokens = tokens_gpio_pull, \
+		.help = "GPIO pull (up/down/floating)" },
+t_token tokens_mode_wiegand[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show wiegand parameters"
+	},
+	WIEGAND_PARAMETERS
+	/* wiegand-specific commands */
+	{
+		T_READ,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_HD,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>) and print hexdump"
+	},
+	{
+		T_WRITE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_UINT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write byte (repeat with :<num>)"
+	},
+	{
+		T_ARG_STRING,
+		.help = "Write string"
+	},
+	/* BP commands */
+	{
+		T_MINUS,
+		.help = "Write one bit (D1)"
+	},
+	{
+		T_UNDERSCORE,
+		.help = "Write one bit (D0)"
+	},
+	{
+		T_AMPERSAND,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 usec (repeat with :<num>)"
+	},
+	{
+		T_PERCENT,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Delay 1 msec (repeat with :<num>)"
+	},
+	{
+		T_TILDE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_EXIT,
+		.help = "Exit wiegand mode"
+	},
+	{ }
+};
+
+t_token tokens_wiegand[] = {
+	WIEGAND_PARAMETERS
 	{ }
 };
 
@@ -1666,7 +1950,7 @@ t_token tl_tokens[] = {
 		T_UART,
 		.subtokens = tokens_uart,
 		.help = "UART mode",
-		.help_full = "Configuration: uart [device (1/2)> [speed (value in bauds)] [parity (none/even/odd)] [stop-bits (1/2)]\r\nInteraction: <read/write (value:repeat)>"
+		.help_full = "Configuration: uart [device (1/2)] [speed (value in bauds)] [parity (none/even/odd)] [stop-bits (1/2)]\r\nInteraction: <read/write (value:repeat)>"
 	},
 #ifdef HYDRANFC
 	{
@@ -1697,6 +1981,23 @@ t_token tl_tokens[] = {
 		T_FLASH,
 		.subtokens = tokens_flash,
 		.help = "NAND flash mode"
+	},
+	{
+		T_WIEGAND,
+		.subtokens = tokens_wiegand,
+		.help = "Wiegand mode"
+	},
+	{
+		T_LIN,
+		.subtokens = tokens_lin,
+		.help = "LIN mode",
+		.help_full = "Configuration: lin [device (1/2)]\r\nInteraction: <read/write (value:repeat)>"
+	},
+	{
+		T_SMARTCARD,
+		.subtokens = tokens_smartcard,
+		.help = "SMARTCARD mode",
+		.help_full = "Configuration: smartcard\r\nInteraction: <read/write (value:repeat)>"
 	},
 	{
 		T_DEBUG,
