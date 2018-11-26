@@ -158,6 +158,7 @@ t_token_dict tl_dict[] = {
 	{ T_ATR, "atr" },
 	{ T_GUARDTIME, "guardtime" },
 	{ T_PRESCALER, "prescaler" },
+	{ T_CONVENTION, "convention" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -547,6 +548,12 @@ t_token tokens_uart[] = {
 		T_PRESCALER,\
 		.arg_type = T_ARG_UINT,\
 		.help = "Prescaler value"\
+	},\
+	{\
+		T_CONVENTION,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Communication convention",\
+		.help_full = "Set communication convention (0=normal, 1=inverse)"\
 	},
 
 t_token tokens_mode_smartcard[] = {

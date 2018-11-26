@@ -399,6 +399,21 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			break;
+		case T_CONVENTION:
+			/* Integer parameter. */
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			if (arg_int < 0 || arg_int > 1) {
+				cprintf(con, "Convention value must be (0 = normal) or (1 = inverse).\r\n");
+				return t;
+			}
+			proto->config.smartcard.dev_convention = arg_int;
+			bsp_status = bsp_smartcard_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
+			break;
 		case T_QUERY:
 			t++;
 			smartcard_get_card_status(con);

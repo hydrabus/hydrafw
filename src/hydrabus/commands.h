@@ -150,6 +150,7 @@ enum {
 	T_ATR,
 	T_GUARDTIME,
 	T_PRESCALER,
+	T_CONVENTION,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
