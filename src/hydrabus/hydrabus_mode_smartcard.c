@@ -178,8 +178,9 @@ static void smartcard_get_atr(t_hydra_console *con)
 		for(; r<=atr_size; r++) {
 			bsp_smartcard_read_u8(proto->dev_num, atr+r, 1);
 			apply_convention(con, atr+r, 1);
-
-                        if(r == 2 && atr[1] & 0x1) {
+                        
+                        // Test if TA1 is present from T0,
+                        if(r == 2 && (atr[1] >> 4) & 0x1) {
                                 F = Fi[atr[r] >> 4];
                                 D = Di[atr[r] & 0x0F];
                                 E = F/D;
