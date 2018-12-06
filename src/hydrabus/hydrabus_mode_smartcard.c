@@ -129,8 +129,10 @@ static void smartcard_get_atr(t_hydra_console *con)
         uint8_t D = 0;
         uint16_t E = 0;
 
-	proto->config.smartcard.dev_convention = DEV_CONVENTION_NORMAL;     // Start with direct convention
-
+	/* Defaults */
+	init_proto_default(con);
+	bsp_smartcard_init(proto->dev_num, proto);
+	
 	bsp_smartcard_set_rst(proto->dev_num, 0);                           // Start with RST low.
 	DelayMs(1);                                          // RST low for at least 400 clocks.
 	bsp_smartcard_read_u8_timeout(proto->dev_num, atr, 1, 1);       // Empty read buffer.
@@ -138,13 +140,14 @@ static void smartcard_get_atr(t_hydra_console *con)
 	bsp_smartcard_set_rst(proto->dev_num, 1);
 
 	bsp_smartcard_read_u8(proto->dev_num, atr, 1);
-	apply_convention(con, atr, 1);
 
 	/* Inverse or Direct convention */
 	switch(atr[0]) {
 	case 0x03:
 		atr[0] = 0x3F;
 		proto->config.smartcard.dev_convention = DEV_CONVENTION_INVERSE;
+		proto->config.smartcard.dev_parity = 1;
+		bsp_smartcard_init(proto->dev_num, proto);
 		cprintf(con, "Auto-setting inverse convention\r\n");
 		break;
 	case 0x3b:
@@ -158,8 +161,6 @@ static void smartcard_get_atr(t_hydra_console *con)
 		 */
 		atr_size = bsp_smartcard_read_u8_timeout(proto->dev_num, &atr[1], 8, MS2ST(100));
 		print_hex(con, atr, atr_size);
-		bsp_smartcard_set_rst(proto->dev_num, 0);
-		bsp_smartcard_set_vcc(proto->dev_num, 1);
 		return;
 	}
 
@@ -218,9 +219,6 @@ static void smartcard_get_atr(t_hydra_console *con)
 	} else {
 		print_hex(con, atr, r);
 	}
-
-	bsp_smartcard_set_rst(proto->dev_num, 0);
-	bsp_smartcard_set_vcc(proto->dev_num, 1);
 }
 
 static void smartcard_rst_high(t_hydra_console *con)
