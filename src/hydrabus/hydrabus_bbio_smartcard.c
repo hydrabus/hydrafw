@@ -28,6 +28,8 @@
 #include "hydrabus_bbio_smartcard.h"
 #include "bsp_smartcard.h"
 
+#define SMARTCARD_DEFAULT_SPEED (9600)
+
 void bbio_smartcard_init_proto_default(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -57,6 +59,8 @@ void bbio_mode_smartcard(t_hydra_console *con)
 	uint8_t *tx_data = (uint8_t *)g_sbuf;
 	uint8_t *rx_data = (uint8_t *)g_sbuf+4096;
 	uint8_t data;
+	uint32_t dev_speed=0;
+	uint32_t final_baudrate;
 	bsp_status_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -148,51 +152,32 @@ void bbio_mode_smartcard(t_hydra_console *con)
 					i++;
 				}
 				break;
-			default:
-				if ((bbio_subcommand & BBIO_SMARTCARD_SET_SPEED) == BBIO_SMARTCARD_SET_SPEED) {
-					switch(bbio_subcommand & 0b1111) {
-					case 0:
-						proto->config.smartcard.dev_speed = 640;
-						break;
-					case 1:
-						proto->config.smartcard.dev_speed = 1200;
-						break;
-					case 2:
-						proto->config.smartcard.dev_speed = 2400;
-						break;
-					case 3:
-						proto->config.smartcard.dev_speed = 4800;
-						break;
-					case 4:
-						proto->config.smartcard.dev_speed = 9600;
-						break;
-					case 5:
-						proto->config.smartcard.dev_speed = 19200;
-						break;
-					case 6:
-						proto->config.smartcard.dev_speed = 31250;
-						break;
-					case 7:
-						proto->config.smartcard.dev_speed = 38400;
-						break;
-					case 8:
-						proto->config.smartcard.dev_speed = 57600;
-						break;
-					case 10:
-						proto->config.smartcard.dev_speed = 115200;
-						break;
-					default:
-						cprint(con, "\x00", 1);
-						continue;
-					}
+			case BBIO_SMARTCARD_SET_SPEED:
+				chnRead(con->sdu, rx_data, 4);
+				dev_speed =  rx_data[0] << 24;
+				dev_speed += rx_data[1] << 16;
+				dev_speed += rx_data[2] << 8;
+				dev_speed += rx_data[3];
 
-					status = bsp_smartcard_init(proto->dev_num, proto);
-					if(status == BSP_OK) {
-						cprint(con, "\x01", 1);
-					} else {
-						cprint(con, "\x00", 1);
-					}
-				} else if ((bbio_subcommand & BBIO_SMARTCARD_CONFIG) == BBIO_SMARTCARD_CONFIG) {
+				proto->config.smartcard.dev_speed = dev_speed;
+				status = bsp_smartcard_init(proto->dev_num, proto);
+
+				if(status != BSP_OK) {
+					cprint(con, "\x00", 1);
+					break;
+				}
+				final_baudrate = bsp_smartcard_get_final_baudrate(proto->dev_num);
+				if(final_baudrate < 1) {
+					cprintf(con, "\x00", 1);
+					proto->config.smartcard.dev_speed = SMARTCARD_DEFAULT_SPEED;
+					bsp_smartcard_init(proto->dev_num, proto);
+				}
+				else{
+					cprint(con, "\x01", 1);
+				}
+				break;
+			default:
+				if ((bbio_subcommand & BBIO_SMARTCARD_CONFIG) == BBIO_SMARTCARD_CONFIG) {
 					proto->config.smartcard.dev_polarity =
 						(bbio_subcommand & 0b1)?1:0;
 					proto->config.smartcard.dev_stop_bit =
