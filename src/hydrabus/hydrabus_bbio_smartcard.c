@@ -164,6 +164,8 @@ void bbio_mode_smartcard(t_hydra_console *con)
 
 				if(status != BSP_OK) {
 					cprint(con, "\x00", 1);
+					proto->config.smartcard.dev_speed = SMARTCARD_DEFAULT_SPEED;
+					bsp_smartcard_init(proto->dev_num, proto);
 					break;
 				}
 				final_baudrate = bsp_smartcard_get_final_baudrate(proto->dev_num);
