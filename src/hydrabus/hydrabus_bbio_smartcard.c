@@ -186,8 +186,6 @@ void bbio_mode_smartcard(t_hydra_console *con)
 						(bbio_subcommand & 0b10)?1:0;
 					proto->config.smartcard.dev_parity =
 						(bbio_subcommand & 0b100)?1:0;
-					proto->config.smartcard.dev_convention =
-						(bbio_subcommand & 0b1000)?DEV_CONVENTION_INVERSE:DEV_CONVENTION_NORMAL;
 
 					status = bsp_smartcard_init(proto->dev_num, proto);
 					if(status == BSP_OK) {
