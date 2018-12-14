@@ -68,7 +68,7 @@ def hydrabus_setup():
         error("Cannot set SPI mode, try again or reset hydrabus.")
         
     # Configure SPI port (default polarity and clock phase, SPI1 device)
-    hydrabus.write(b'\x80')
+    hydrabus.write(b'\x81')
     if b'\x01' not in hydrabus.read(1):
         error("Cannot set SPI device settings, try again or reset hydrabus.")
                 
