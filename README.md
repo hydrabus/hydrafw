@@ -7,7 +7,7 @@ You can Buy HydraBus/HydraNFC Online: http://hydrabus.com/buy-online
 
 ![HydraBus+HydraNFC board](HydraBus_HydraNFC_board.jpg)
 
-![HydraFW default pin assignment](http://hydrabus.com/HydraBus_1_0_HydraFW_Default_PinAssignment_A4.jpg)
+![HydraFW default pin assignment](HydraFW_Default_PinAssignment.png)
 
 * Getting Started with HydraBus: https://github.com/hydrabus/hydrafw/wiki/Getting-Started-with-HydraBus
 * HydraFW Wiki: https://github.com/hydrabus/hydrafw/wiki
