@@ -87,7 +87,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 				break;
 			case BBIO_I2C_READ_BYTE:
 				status = bsp_i2c_master_read_u8(proto->dev_num, &data);
-				cprintf(con, "%c", data & 0xff);
+				cprint(con, (char *)&data, 1);
 				break;
 			case BBIO_I2C_ACK_BIT:
 				bsp_i2c_read_ack(proto->dev_num, TRUE);
@@ -109,7 +109,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 					break;
 				}
 				chnRead(con->sdu, tx_data, to_tx);
-				
+
 				/* Send I2C Start */
 				bsp_i2c_start(proto->dev_num);
 
@@ -147,12 +147,8 @@ void bbio_mode_i2c(t_hydra_console *con)
 				/* Send I2C Stop */
 				bsp_i2c_stop(proto->dev_num);
 
-				i=0;
 				cprint(con, "\x01", 1);
-				while(i < to_rx) {
-					cprintf(con, "%c", rx_data[i]);
-					i++;
-				}
+				cprint(con, (char *)rx_data, to_rx);
 				break;
 			default:
 				if ((bbio_subcommand & BBIO_I2C_BULK_WRITE) == BBIO_I2C_BULK_WRITE) {
@@ -168,10 +164,10 @@ void bbio_mode_i2c(t_hydra_console *con)
 						bsp_i2c_master_write_u8(proto->dev_num, tx_data[i], &tx_ack_flag);
 						if(tx_ack_flag == TRUE)
 						{
-							cprintf(con, "\x00", 1); //  ACK (0x00)
+							cprint(con, "\x00", 1); //  ACK (0x00)
 						}else
 						{
-							cprintf(con, "\x01", 1); // NACK (0x01)
+							cprint(con, "\x01", 1); // NACK (0x01)
 						}
 					}
 				} else if ((bbio_subcommand & BBIO_I2C_SET_SPEED) == BBIO_I2C_SET_SPEED) {
