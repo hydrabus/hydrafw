@@ -23,6 +23,7 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "bsp.h"
 #include "hydrabus_bbio.h"
 #include "hydrabus_bbio_onewire.h"
 #include "hydrabus_mode_onewire.h"
@@ -35,9 +36,11 @@ static void bbio_mode_id(t_hydra_console *con)
 
 void bbio_mode_onewire(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t bbio_subcommand, i;
 	uint8_t rx_data[16], tx_data[16];
 	uint8_t data;
+	bsp_status_t status;
 
 	onewire_init_proto_default(con);
 	onewire_pin_init(con);
@@ -71,6 +74,14 @@ void bbio_mode_onewire(t_hydra_console *con)
 						onewire_write_u8(con, tx_data[i]);
 					}
 					cprint(con, "\x01", 1);
+				} else if ((bbio_subcommand & BBIO_ONEWIRE_CONFIG_PERIPH) == BBIO_ONEWIRE_CONFIG_PERIPH) {
+					proto->config.onewire.dev_gpio_pull = (bbio_subcommand & 0b100)?1:0;
+					status = onewire_pin_init(con);
+					if(status == BSP_OK) {
+						cprint(con, "\x01", 1);
+					} else {
+						cprint(con, "\x00", 1);
+					}
 				}
 			}
 		}
