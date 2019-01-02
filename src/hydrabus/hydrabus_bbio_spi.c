@@ -173,12 +173,8 @@ void bbio_mode_spi(t_hydra_console *con)
 				if(bbio_subcommand == BBIO_SPI_WRITE_READ) {
 					bsp_spi_unselect(proto->dev_num);
 				}
-				i=0;
 				cprint(con, "\x01", 1);
-				while(i < to_rx) {
-					cprintf(con, "%c", rx_data[i]);
-					i++;
-				}
+				cprint(con, (char *)rx_data, to_rx);
 				break;
 			case BBIO_SPI_AVR:
 				cprint(con, "\x01", 1);
