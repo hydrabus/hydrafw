@@ -145,12 +145,8 @@ void bbio_mode_smartcard(t_hydra_console *con)
 					}
 					i+=255;
 				}
-				i=0;
 				cprint(con, "\x01", 1);
-				while(i < to_rx) {
-					cprintf(con, "%c", rx_data[i]);
-					i++;
-				}
+				cprint(con, (char *)rx_data, to_rx);
 				break;
 			case BBIO_SMARTCARD_SET_SPEED:
 				chnRead(con->sdu, rx_data, 4);
