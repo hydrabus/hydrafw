@@ -31,5 +31,6 @@ bsp_status_t bsp_freq_deinit(bsp_dev_freq_t dev_num);
 
 bsp_status_t bsp_freq_sample(bsp_dev_freq_t dev_num);
 uint32_t bsp_freq_getchannel(bsp_dev_freq_t dev_num, uint8_t channel);
+uint8_t bsp_freq_get_values(bsp_dev_freq_t dev_num, uint32_t *freq, uint32_t *duty);
 
 #endif /* _BSP_FREQ_H_ */

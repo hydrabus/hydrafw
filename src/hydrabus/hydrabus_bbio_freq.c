@@ -1,8 +1,8 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2014-2015 Benjamin VERNOUX
- * Copyright (C) 2016 Nicolas OBERLI
+ * Copyright (C) 2014-2019 Benjamin VERNOUX
+ * Copyright (C) 2019 Nicolas OBERLI
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,17 @@
  */
 
 #include "common.h"
-#include "tokenline.h"
-#include "hydrabus.h"
-#include "bsp.h"
+
+#include "hydrabus_bbio.h"
 #include "bsp_freq.h"
 
-#include <string.h>
-
-int cmd_freq(t_hydra_console *con, t_tokenline_parsed *p)
+void bbio_freq(t_hydra_console *con)
 {
 	uint32_t frequency, duty;
-	mode_config_proto_t* proto = &con->mode->proto;
-	(void) p;
 
-	bsp_freq_get_values(proto->dev_num, &frequency, &duty);
-	cprintf(con, "Frequency : %dHz\r\n", frequency);
-	cprintf(con, "Duty : %d%%\r\n", duty);
-	cprintf(con, "\r\n");
-
-	bsp_freq_deinit(proto->dev_num);
-
-	return TRUE;
+	if(bsp_freq_get_values(BSP_DEV_FREQ1, &frequency, &duty) == TRUE) {
+		cprint(con, (char *)&frequency, 4);
+		cprint(con, (char *)&duty, 4);
+	}
+	bsp_freq_deinit(BSP_DEV_FREQ1);
 }
-

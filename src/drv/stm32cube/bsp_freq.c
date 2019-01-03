@@ -197,3 +197,43 @@ uint32_t bsp_freq_getchannel(bsp_dev_freq_t dev_num, uint8_t channel)
 	}
 
 }
+
+uint8_t bsp_freq_get_values(bsp_dev_freq_t dev_num, uint32_t *freq, uint32_t *duty)
+{
+	uint32_t period = 0;
+	float v = 0;
+	uint16_t scale = 1;
+	bsp_status_t status;
+	bool sampled = FALSE;
+	while (sampled == FALSE) {
+		if(bsp_freq_init(dev_num, scale) != BSP_OK) {
+			return FALSE;
+		}
+		status = bsp_freq_sample(dev_num);
+		if(status == BSP_TIMEOUT) {
+			return FALSE;
+		}
+
+		period = bsp_freq_getchannel(dev_num, 1);
+		period +=2;
+
+		*duty = bsp_freq_getchannel(dev_num, 2);
+		*duty+=2;
+
+		if(*duty > period) {
+			scale *=2;
+		} else {
+			sampled = TRUE;
+		}
+	}
+
+	v = 1/(scale*period/BSP_FREQ_BASE_FREQ);
+	*freq = (uint32_t)v;
+	if(period > 0)
+	{
+		*duty = (uint32_t)(*duty*100)/period;
+	}else{
+		*duty=0;
+	}
+	return TRUE;
+}

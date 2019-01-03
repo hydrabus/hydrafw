@@ -36,6 +36,7 @@
 #include "hydrabus_bbio_flash.h"
 #include "hydrabus_bbio_smartcard.h"
 #include "hydrabus_bbio_adc.h"
+#include "hydrabus_bbio_freq.h"
 
 int cmd_bbio(t_hydra_console *con)
 {
@@ -85,6 +86,9 @@ int cmd_bbio(t_hydra_console *con)
 				continue;
 			case BBIO_VOLT_CONT:
 				bbio_adc_continuous(con);
+				continue;
+			case BBIO_FREQ:
+				bbio_freq(con);
 				continue;
 			case BBIO_RESET:
 				break;

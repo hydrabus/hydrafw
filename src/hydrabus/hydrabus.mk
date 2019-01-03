@@ -30,6 +30,7 @@ HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/hydrabus_bbio_onewire.c \
             hydrabus/hydrabus_bbio_flash.c \
             hydrabus/hydrabus_bbio_adc.c \
+            hydrabus/hydrabus_bbio_freq.c \
             hydrabus/hydrabus_sd.c \
             hydrabus/hydrabus_trigger.c \
             hydrabus/hydrabus_mode_wiegand.c \
