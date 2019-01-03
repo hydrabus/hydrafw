@@ -67,7 +67,9 @@ static void bbio_mode_id(t_hydra_console *con)
 
 void bbio_mode_uart(t_hydra_console *con)
 {
+	uint32_t baud_rate;
 	uint8_t bbio_subcommand, i;
+	uint8_t rx_data[4];
 	uint8_t tx_data;
 	uint8_t data;
 	bsp_status_t status;
@@ -107,8 +109,16 @@ void bbio_mode_uart(t_hydra_console *con)
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_UART_BAUD_RATE:
-				/* Not implemented */
-				cprint(con, "\x00", 1);
+				chnRead(con->sdu, rx_data, 4);
+				baud_rate =(rx_data[0]<<24) + (rx_data[1]<<16);
+				baud_rate +=(rx_data[2]<<8) + rx_data[3];
+				proto->config.uart.dev_speed = baud_rate;
+				status = bsp_uart_init(proto->dev_num, proto);
+				if(status == BSP_OK) {
+					cprint(con, "\x01", 1);
+				} else {
+					cprint(con, "\x00", 1);
+				}
 				break;
 			default:
 				if ((bbio_subcommand & BBIO_UART_BULK_TRANSFER) == BBIO_UART_BULK_TRANSFER) {
@@ -118,12 +128,9 @@ void bbio_mode_uart(t_hydra_console *con)
 
 					i=0;
 					while(i < data) {
-						chnRead(con->sdu,
-								       &tx_data,
-								       1);
+						chnRead(con->sdu, &tx_data, 1);
 						bsp_uart_write_u8(proto->dev_num,
-								  &tx_data,
-								  1);
+								  &tx_data, 1);
 						cprint(con, "\x01", 1);
 						i++;
 					}
