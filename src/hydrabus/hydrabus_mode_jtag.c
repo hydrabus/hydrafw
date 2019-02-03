@@ -56,7 +56,6 @@ static void init_proto_default(t_hydra_console *con)
 	config.tdo_pin = 9;
 	config.tms_pin = 10;
 	config.tck_pin = 11;
-
 }
 
 static void show_params(t_hydra_console *con)
@@ -98,6 +97,12 @@ static bool jtag_pin_init(t_hydra_console *con)
 		      proto->config.jtag.dev_gpio_mode, proto->config.jtag.dev_gpio_pull);
 	bsp_gpio_init(BSP_GPIO_PORTB, config.trst_pin,
 		      proto->config.jtag.dev_gpio_mode, proto->config.jtag.dev_gpio_pull);
+
+	bsp_gpio_clr(BSP_GPIO_PORTB, config.tck_pin);
+	bsp_gpio_clr(BSP_GPIO_PORTB, config.tms_pin);
+	bsp_gpio_clr(BSP_GPIO_PORTB, config.tdi_pin);
+	bsp_gpio_set(BSP_GPIO_PORTB, config.trst_pin);
+
 	return true;
 }
 
@@ -105,7 +110,7 @@ static void tim_init(void)
 {
 	htim.Instance = TIM4;
 
-	htim.Init.Period = 42 - 1;
+	htim.Init.Period = 21 - 1;
 	htim.Init.Prescaler = (config.divider) - 1;
 	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -176,7 +181,6 @@ static inline void jtag_trst_low(void)
 static inline void jtag_clock(void)
 {
 	jtag_clk_high();
-	wait_delay(10);
 	jtag_clk_low();
 }
 
@@ -187,7 +191,7 @@ static void jtag_send_bit(uint8_t tdi)
 	} else {
 		jtag_tms_low();
 	}
-	if (tdi) {
+	if (tdi & 1) {
 		jtag_tdi_high();
 	} else {
 		jtag_tdi_low();
@@ -203,8 +207,9 @@ static uint8_t jtag_read_bit(void)
 static uint8_t jtag_read_bit_clock(void)
 {
 	uint8_t bit;
-	jtag_clock();
-	bit = bsp_gpio_pin_read(BSP_GPIO_PORTB, config.tdo_pin);
+	jtag_clk_high();
+	bit = jtag_read_bit();
+	jtag_clk_low();
 	return bit;
 }
 
@@ -332,6 +337,8 @@ static uint8_t jtag_scan_bypass(void)
 	uint16_t i;
 	uint8_t num_devices = 0;
 
+#define MAX_CHAIN_LEN 32
+
 	//Reset state
 	jtag_reset_state();
 
@@ -360,12 +367,12 @@ static uint8_t jtag_scan_bypass(void)
 	}
 
 	jtag_tdi_high();
-	while( !jtag_read_bit_clock() && !USER_BUTTON ) {
+	while( !jtag_read_bit_clock() && !USER_BUTTON && num_devices < MAX_CHAIN_LEN ) {
 		num_devices++;
 	}
 	jtag_tdi_low();
 
-	return num_devices;
+	return (num_devices == MAX_CHAIN_LEN) ? 0 : num_devices;
 }
 
 static bool jtag_scan_idcode(t_hydra_console *con)
@@ -506,9 +513,8 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 static uint8_t ocd_shift_u8(uint8_t tdi, uint8_t tms, uint8_t num_bits)
 {
 	uint8_t tdo = 0;
-	uint8_t i = 0;
 
-	for(i = 0; i < num_bits; i++) {
+	while(num_bits>0) {
 		if(tms & 1) {
 			jtag_tms_high();
 		} else {
@@ -519,11 +525,10 @@ static uint8_t ocd_shift_u8(uint8_t tdi, uint8_t tms, uint8_t num_bits)
 		} else {
 			jtag_tdi_low();
 		}
-		jtag_clk_low();
-		jtag_clk_high();
-		tdo |= (jtag_read_bit() << i);
-		tdi = tdi >> 1;
-		tms = tms >> 1;
+		tdo = (jtag_read_bit_clock()<<7) | (tdo>>1);
+		tdi>>=1;
+		tms>>=1;
+		num_bits--;
 	}
 	return tdo;
 }
@@ -532,11 +537,15 @@ void openOCD(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	uint8_t ocd_command;
-	uint8_t ocd_parameters[2] = {0};
+	uint16_t num_sequences, i, bits;
 
-	uint16_t num_sequences, i;
-	uint16_t offset, bits;
+	uint8_t ocd_command, values;
+	uint8_t ocd_parameters[2] = {0};
+	static uint8_t *buffer = (uint8_t *)g_sbuf;
+
+	init_proto_default(con);
+	jtag_pin_init(con);
+	tim_init();
 
 	while (!USER_BUTTON) {
 		if(chnReadTimeout(con->sdu, &ocd_command, 1, 1)) {
@@ -618,17 +627,15 @@ void openOCD(t_hydra_console *con)
 						ocd_parameters[1]);
 
 					chnRead(con->sdu, g_sbuf,((num_sequences+7)/8)*2);
-					for(i = 0; i < num_sequences; i+=8) {
-						offset = i/8;
-						if((num_sequences-8*offset) < 8) {
-							bits = num_sequences % 8;
-						} else {
-							bits=8;
-						}
-						cprintf(con, "%c",
-							ocd_shift_u8(g_sbuf[2*offset],
-								     g_sbuf[(2*offset)+1],
-								     bits ));
+					i=0;
+					while(num_sequences>0) {
+						bits = (num_sequences > 8) ? 8 : num_sequences;
+						values = ocd_shift_u8(buffer[i],
+							     buffer[i+1],
+							     bits);
+						cprint(con, (char *)&values, 1);
+						i+=2;
+						num_sequences -= bits;
 					}
 				} else {
 					cprint(con, "\x00", 1);
@@ -654,11 +661,6 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 
 	jtag_pin_init(con);
 	tim_init();
-
-	jtag_clk_low();
-	jtag_tms_low();
-	jtag_tdi_low();
-	jtag_trst_high();
 
 	show_params(con);
 
@@ -722,6 +724,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			config.tck_pin = arg_int;
+			jtag_pin_init(con);
 			t+=3;
 			break;
 		case T_TMS:
@@ -732,6 +735,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			config.tms_pin = arg_int;
+			jtag_pin_init(con);
 			t+=3;
 			break;
 		case T_TDI:
@@ -742,6 +746,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			config.tdi_pin = arg_int;
+			jtag_pin_init(con);
 			t+=3;
 			break;
 		case T_TDO:
@@ -752,6 +757,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			config.tdo_pin = arg_int;
+			jtag_pin_init(con);
 			t+=3;
 			break;
 		case T_TRST:
@@ -762,6 +768,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			config.trst_pin = arg_int;
+			jtag_pin_init(con);
 			t+=3;
 			break;
 		case T_BYPASS:

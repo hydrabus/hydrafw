@@ -19,7 +19,7 @@
 
 #include "hydrabus_mode.h"
 
-#define JTAG_MAX_FREQ 1000000
+#define JTAG_MAX_FREQ 2000000
 
 #define TMS     0b10
 
