@@ -33,15 +33,6 @@
 #define CMD_OCD_UART_SPEED    0x07
 #define CMD_OCD_JTAG_SPEED    0x08
 
-typedef struct {
-	uint32_t divider;
-	uint8_t tdi_pin;
-	uint8_t tdo_pin;
-	uint8_t tms_pin;
-	uint8_t tck_pin;
-	uint8_t trst_pin;
-} jtag_config;
-
 enum {
 	OCD_MODE_HIZ=0,
 	OCD_MODE_JTAG=1,
@@ -56,4 +47,4 @@ enum {
 	FEATURE_PULLUP=0x10
 };
 
-void openOCD(t_hydra_console *con);
+void jtag_enter_openocd(t_hydra_console *con);

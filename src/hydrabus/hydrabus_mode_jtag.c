@@ -33,15 +33,17 @@ static void dath(t_hydra_console *con);
 static void datl(t_hydra_console *con);
 static void clk(t_hydra_console *con);
 
-static jtag_config config;
 static TIM_HandleTypeDef htim;
 
 static const char* str_prompt_jtag[] = {
 	"jtag1" PROMPT,
 };
 
+#define MAX_CHAIN_LEN 32
+
 static void init_proto_default(t_hydra_console *con)
 {
+
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	/* Defaults */
@@ -50,12 +52,12 @@ static void init_proto_default(t_hydra_console *con)
 	proto->config.jtag.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 	proto->config.jtag.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
 
-	config.divider = 1;
-	config.trst_pin = 7;
-	config.tdi_pin = 8;
-	config.tdo_pin = 9;
-	config.tms_pin = 10;
-	config.tck_pin = 11;
+	proto->config.jtag.divider = 1;
+	proto->config.jtag.trst_pin = 7;
+	proto->config.jtag.tdi_pin = 8;
+	proto->config.jtag.tdo_pin = 9;
+	proto->config.jtag.tms_pin = 10;
+	proto->config.jtag.tck_pin = 11;
 }
 
 static void show_params(t_hydra_console *con)
@@ -69,49 +71,123 @@ static void show_params(t_hydra_console *con)
 		"floating");
 
 	cprintf(con, "Frequency: %dHz\r\nBit order: %s first\r\n",
-		(JTAG_MAX_FREQ/(int)config.divider), proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB ? "MSB" : "LSB");
+		(JTAG_MAX_FREQ/(int)proto->config.jtag.divider), proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB ? "MSB" : "LSB");
+}
+
+static bool jtag_pin_valid(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	if(proto->config.jtag.tck_pin != 12) {
+		if(proto->config.jtag.tck_pin == proto->config.jtag.tms_pin) return false;
+		if(proto->config.jtag.tck_pin == proto->config.jtag.tdi_pin) return false;
+		if(proto->config.jtag.tck_pin == proto->config.jtag.tdo_pin) return false;
+		if(proto->config.jtag.tck_pin == proto->config.jtag.trst_pin) return false;
+	}
+	if(proto->config.jtag.tms_pin != 12) {
+		if(proto->config.jtag.tms_pin == proto->config.jtag.tdi_pin) return false;
+		if(proto->config.jtag.tms_pin == proto->config.jtag.tdo_pin) return false;
+		if(proto->config.jtag.tms_pin == proto->config.jtag.trst_pin) return false;
+	}
+	if(proto->config.jtag.tdi_pin != 12) {
+		if(proto->config.jtag.tdi_pin == proto->config.jtag.tdo_pin) return false;
+		if(proto->config.jtag.tdi_pin == proto->config.jtag.trst_pin) return false;
+	}
+	if(proto->config.jtag.tdo_pin != 12) {
+		if(proto->config.jtag.tdo_pin == proto->config.jtag.trst_pin) return false;
+	}
+
+	return true;
+}
+
+static void jtag_print_pins(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	cprint(con, "TMS:", 4);
+	if ( proto->config.jtag.tms_pin != 12 ) {
+		cprintf(con, "PB%d  ", proto->config.jtag.tms_pin);
+	} else {
+		cprint(con, "Unused  ", 8);
+	}
+	cprint(con, "TCK:", 4);
+	if ( proto->config.jtag.tck_pin != 12 ) {
+		cprintf(con, "PB%d  ", proto->config.jtag.tck_pin);
+	} else {
+		cprint(con, "Unused  ", 8);
+	}
+	cprint(con, "TDI:", 4);
+	if ( proto->config.jtag.tdi_pin != 12 ) {
+		cprintf(con, "PB%d  ", proto->config.jtag.tdi_pin);
+	} else {
+		cprint(con, "Unused  ", 8);
+	}
+	cprint(con, "TDO:", 4);
+	if ( proto->config.jtag.tdo_pin != 12 ) {
+		cprintf(con, "PB%d  ", proto->config.jtag.tdo_pin);
+	} else {
+		cprint(con, "Unused  ", 8);
+	}
+	cprint(con, "TRST:", 5);
+	if ( proto->config.jtag.trst_pin != 12 ) {
+		cprintf(con, "PB%d  ", proto->config.jtag.trst_pin);
+	} else {
+		cprint(con, "Unused  ", 8);
+	}
+	cprint(con, "\r\n", 2);
 }
 
 static bool jtag_pin_init(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	if(config.tck_pin == config.tms_pin) return false;
-	if(config.tck_pin == config.tdi_pin) return false;
-	if(config.tck_pin == config.tdo_pin) return false;
-	if(config.tck_pin == config.trst_pin) return false;
-	if(config.tms_pin == config.tdi_pin) return false;
-	if(config.tms_pin == config.tdo_pin) return false;
-	if(config.tms_pin == config.trst_pin) return false;
-	if(config.tdi_pin == config.tdo_pin) return false;
-	if(config.tdi_pin == config.trst_pin) return false;
-	if(config.tdo_pin == config.trst_pin) return false;
+	if(!jtag_pin_valid(con)) {
+		cprintf(con, "Invalid pin configuration. Resetting to defaults\r\n");
+		init_proto_default(con);
+	}
 
-	bsp_gpio_init(BSP_GPIO_PORTB, config.tdi_pin,
+	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.jtag.tdi_pin,
 		      proto->config.jtag.dev_gpio_mode, proto->config.jtag.dev_gpio_pull);
-	bsp_gpio_init(BSP_GPIO_PORTB, config.tdo_pin,
+	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.jtag.tdo_pin,
 		      MODE_CONFIG_DEV_GPIO_IN, proto->config.jtag.dev_gpio_pull);
-	bsp_gpio_init(BSP_GPIO_PORTB, config.tms_pin,
+	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.jtag.tms_pin,
 		      proto->config.jtag.dev_gpio_mode, proto->config.jtag.dev_gpio_pull);
-	bsp_gpio_init(BSP_GPIO_PORTB, config.tck_pin,
+	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.jtag.tck_pin,
 		      proto->config.jtag.dev_gpio_mode, proto->config.jtag.dev_gpio_pull);
-	bsp_gpio_init(BSP_GPIO_PORTB, config.trst_pin,
+	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.jtag.trst_pin,
 		      proto->config.jtag.dev_gpio_mode, proto->config.jtag.dev_gpio_pull);
 
-	bsp_gpio_clr(BSP_GPIO_PORTB, config.tck_pin);
-	bsp_gpio_clr(BSP_GPIO_PORTB, config.tms_pin);
-	bsp_gpio_clr(BSP_GPIO_PORTB, config.tdi_pin);
-	bsp_gpio_set(BSP_GPIO_PORTB, config.trst_pin);
+	bsp_gpio_clr(BSP_GPIO_PORTB, proto->config.jtag.tck_pin);
+	bsp_gpio_clr(BSP_GPIO_PORTB, proto->config.jtag.tms_pin);
+	bsp_gpio_clr(BSP_GPIO_PORTB, proto->config.jtag.tdi_pin);
+	bsp_gpio_set(BSP_GPIO_PORTB, proto->config.jtag.trst_pin);
 
 	return true;
 }
 
-static void tim_init(void)
+static void jtag_pin_deinit(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.jtag.tdi_pin,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.jtag.tdo_pin,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.jtag.tms_pin,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.jtag.tck_pin,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.jtag.trst_pin,
+		      MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
+}
+
+static void tim_init(t_hydra_console *con)
 {
 	htim.Instance = TIM4;
+	mode_config_proto_t* proto = &con->mode->proto;
 
 	htim.Init.Period = 21 - 1;
-	htim.Init.Prescaler = (config.divider) - 1;
+	htim.Init.Prescaler = (proto->config.jtag.divider) - 1;
 	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
 
@@ -122,158 +198,178 @@ static void tim_init(void)
 	HAL_TIM_Base_Start(&htim);
 }
 
-static void tim_set_prescaler(void)
+static void tim_set_prescaler(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
+
 	HAL_TIM_Base_Stop(&htim);
 	HAL_TIM_Base_DeInit(&htim);
-	htim.Init.Prescaler = (config.divider) - 1;
+	htim.Init.Prescaler = (proto->config.jtag.divider) - 1;
 	HAL_TIM_Base_Init(&htim);
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 	HAL_TIM_Base_Start(&htim);
 }
 
-static inline void jtag_tms_high(void)
+static inline void jtag_tms_high(t_hydra_console *con)
 {
-	bsp_gpio_set(BSP_GPIO_PORTB, config.tms_pin);
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	bsp_gpio_set(BSP_GPIO_PORTB, proto->config.jtag.tms_pin);
 }
 
-static inline void jtag_tms_low(void)
+static inline void jtag_tms_low(t_hydra_console *con)
 {
-	bsp_gpio_clr(BSP_GPIO_PORTB, config.tms_pin);
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	bsp_gpio_clr(BSP_GPIO_PORTB, proto->config.jtag.tms_pin);
 }
 
-static inline void jtag_clk_high(void)
+static inline void jtag_clk_high(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
+
 	while (!(TIM4->SR & TIM_SR_UIF)) {
 	}
-	bsp_gpio_set(BSP_GPIO_PORTB, config.tck_pin);
+	bsp_gpio_set(BSP_GPIO_PORTB, proto->config.jtag.tck_pin);
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
 
-static inline void jtag_clk_low(void)
+static inline void jtag_clk_low(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
+
 	while (!(TIM4->SR & TIM_SR_UIF)) {
 	}
-	bsp_gpio_clr(BSP_GPIO_PORTB, config.tck_pin);
+	bsp_gpio_clr(BSP_GPIO_PORTB, proto->config.jtag.tck_pin);
 	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
 }
 
-static inline void jtag_tdi_high(void)
+static inline void jtag_tdi_high(t_hydra_console *con)
 {
-	bsp_gpio_set(BSP_GPIO_PORTB, config.tdi_pin);
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	bsp_gpio_set(BSP_GPIO_PORTB, proto->config.jtag.tdi_pin);
 }
 
-static inline void jtag_tdi_low(void)
+static inline void jtag_tdi_low(t_hydra_console *con)
 {
-	bsp_gpio_clr(BSP_GPIO_PORTB, config.tdi_pin);
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	bsp_gpio_clr(BSP_GPIO_PORTB, proto->config.jtag.tdi_pin);
 }
 
-static inline void jtag_trst_high(void)
+static inline void jtag_trst_high(t_hydra_console *con)
 {
-	bsp_gpio_set(BSP_GPIO_PORTB, config.trst_pin);
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	bsp_gpio_set(BSP_GPIO_PORTB, proto->config.jtag.trst_pin);
 }
 
-static inline void jtag_trst_low(void)
+static inline void jtag_trst_low(t_hydra_console *con)
 {
-	bsp_gpio_clr(BSP_GPIO_PORTB, config.trst_pin);
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	bsp_gpio_clr(BSP_GPIO_PORTB, proto->config.jtag.trst_pin);
 }
 
-static inline void jtag_clock(void)
+static inline void jtag_clock(t_hydra_console *con)
 {
-	jtag_clk_high();
-	jtag_clk_low();
+	jtag_clk_high(con);
+	jtag_clk_low(con);
 }
 
-static void jtag_send_bit(uint8_t tdi)
+static void jtag_send_bit(t_hydra_console *con, uint8_t tdi)
 {
 	if (tdi & TMS) {
-		jtag_tms_high();
+		jtag_tms_high(con);
 	} else {
-		jtag_tms_low();
+		jtag_tms_low(con);
 	}
 	if (tdi & 1) {
-		jtag_tdi_high();
+		jtag_tdi_high(con);
 	} else {
-		jtag_tdi_low();
+		jtag_tdi_low(con);
 	}
-	jtag_clock();
+	jtag_clock(con);
 }
 
-static uint8_t jtag_read_bit(void)
+static uint8_t jtag_read_bit(t_hydra_console *con)
 {
-	return bsp_gpio_pin_read(BSP_GPIO_PORTB, config.tdo_pin);
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	return bsp_gpio_pin_read(BSP_GPIO_PORTB, proto->config.jtag.tdo_pin);
 }
 
-static uint8_t jtag_read_bit_clock(void)
+static uint8_t jtag_read_bit_clock(t_hydra_console *con)
 {
 	uint8_t bit;
-	jtag_clk_high();
-	bit = jtag_read_bit();
-	jtag_clk_low();
+	jtag_clk_high(con);
+	bit = jtag_read_bit(con);
+	jtag_clk_low(con);
 	return bit;
 }
 
-static inline void jtag_reset_state(void)
+static inline void jtag_reset_state(t_hydra_console *con)
 {
 	int i=5;
 	while(i>0) {
-		jtag_send_bit(0 | TMS);
+		jtag_send_bit(con, 0 | TMS);
 		i--;
 	}
-	jtag_tms_low();
+	jtag_tms_low(con);
 }
 
 static void clkh(t_hydra_console *con)
 {
-	jtag_clk_high();
+	jtag_clk_high(con);
 	cprintf(con, "CLK HIGH\r\n");
 }
 
 static void clkl(t_hydra_console *con)
 {
-	jtag_clk_low();
+	jtag_clk_low(con);
 	cprintf(con, "CLK LOW\r\n");
 }
 
 static void clk(t_hydra_console *con)
 {
-	jtag_clock();
+	jtag_clock(con);
 	cprintf(con, "CLOCK PULSE\r\n");
 }
 
 static void dath(t_hydra_console *con)
 {
-	jtag_tdi_high();
+	jtag_tdi_high(con);
 	cprintf(con, "TDI HIGH\r\n");
 }
 
 static void datl(t_hydra_console *con)
 {
-	jtag_tdi_low();
+	jtag_tdi_low(con);
 	cprintf(con, "TDI LOW\r\n");
 }
 
 static void dats(t_hydra_console *con)
 {
-	uint8_t rx_data = jtag_read_bit_clock();
+	uint8_t rx_data = jtag_read_bit_clock(con);
 	cprintf(con, hydrabus_mode_str_read_one_u8, rx_data);
 }
 
 static void start(t_hydra_console *con)
 {
-	jtag_tms_high();
+	jtag_tms_high(con);
 	cprintf(con, "TMS HIGH\r\n");
 }
 
 static void stop(t_hydra_console *con)
 {
-	jtag_tms_low();
+	jtag_tms_low(con);
 	cprintf(con, "TMS LOW\r\n");
 }
 
 static void bitr(t_hydra_console *con)
 {
-	uint8_t rx_data = jtag_read_bit();
+	uint8_t rx_data = jtag_read_bit(con);
 	cprintf(con, hydrabus_mode_str_read_one_u8, rx_data);
 }
 
@@ -284,11 +380,11 @@ static void jtag_write_u8(t_hydra_console *con, uint8_t tx_data)
 
 	if(proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
 		for (i=0; i<8; i++) {
-			jtag_send_bit((tx_data>>i) & 1);
+			jtag_send_bit(con, (tx_data>>i) & 1);
 		}
 	} else {
 		for (i=0; i<8; i++) {
-			jtag_send_bit((tx_data>>(7-i)) & 1);
+			jtag_send_bit(con, (tx_data>>(7-i)) & 1);
 		}
 	}
 }
@@ -302,11 +398,11 @@ static uint8_t jtag_read_u8(t_hydra_console *con)
 	value = 0;
 	if(proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
 		for(i=0; i<8; i++) {
-			value |= (jtag_read_bit_clock() << i);
+			value |= (jtag_read_bit_clock(con) << i);
 		}
 	} else {
 		for(i=0; i<8; i++) {
-			value |= (jtag_read_bit_clock() << (7-i));
+			value |= (jtag_read_bit_clock(con) << (7-i));
 		}
 	}
 	return value;
@@ -321,90 +417,110 @@ static uint32_t jtag_read_u32(t_hydra_console *con)
 	value = 0;
 	if(proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
 		for(i=0; i<32; i++) {
-			value |= (jtag_read_bit_clock() << i);
+			value |= (jtag_read_bit_clock(con) << i);
 		}
 	} else {
 		for(i=0; i<32; i++) {
-			value |= (jtag_read_bit_clock() << (31-i));
+			value |= (jtag_read_bit_clock(con) << (31-i));
 		}
 	}
 
 	return value;
 }
 
-static uint8_t jtag_scan_bypass(void)
+static uint8_t jtag_scan_bypass(t_hydra_console *con)
 {
 	uint16_t i;
 	uint8_t num_devices = 0;
 
-#define MAX_CHAIN_LEN 32
-
 	//Reset state
-	jtag_reset_state();
+	jtag_reset_state(con);
 
 	//Shift-IR
-	jtag_send_bit(0);
-	jtag_send_bit(0 | TMS);
-	jtag_send_bit(0 | TMS);
-	jtag_send_bit(0);
-	jtag_send_bit(0);
+	jtag_send_bit(con, 0);
+	jtag_send_bit(con, 0 | TMS);
+	jtag_send_bit(con, 0 | TMS);
+	jtag_send_bit(con, 0);
+	jtag_send_bit(con, 0);
 
 	/* Fill IR with 1 (BYPASS) */
 	for(i = 0; i < 999; i++) {
-		jtag_send_bit(1);
+		jtag_send_bit(con, 1);
 	}
-	jtag_send_bit(1 | TMS);
+	jtag_send_bit(con, 1 | TMS);
 
 	//Switch to Shift-DR
-	jtag_send_bit(0 | TMS);
-	jtag_send_bit(0 | TMS);
-	jtag_send_bit(0);
-	jtag_send_bit(0);
+	jtag_send_bit(con, 0 | TMS);
+	jtag_send_bit(con, 0 | TMS);
+	jtag_send_bit(con, 0);
+	jtag_send_bit(con, 0);
 
 	/* Send 0 to fill DR */
 	for(i = 0; i < 1000; i++) {
-		jtag_send_bit(0);
+		jtag_send_bit(con, 0);
 	}
 
-	jtag_tdi_high();
-	while( !jtag_read_bit_clock() && !USER_BUTTON && num_devices < MAX_CHAIN_LEN ) {
+	jtag_tdi_high(con);
+	while( !jtag_read_bit_clock(con) && !USER_BUTTON && num_devices < MAX_CHAIN_LEN ) {
 		num_devices++;
 	}
-	jtag_tdi_low();
+	jtag_tdi_low(con);
 
 	return (num_devices == MAX_CHAIN_LEN) ? 0 : num_devices;
 }
 
-static bool jtag_scan_idcode(t_hydra_console *con)
+static uint8_t jtag_scan_idcode(t_hydra_console *con)
 {
 	uint32_t idcode;
-	bool retval = false;
+	uint8_t num_devices = 0;
 
-	jtag_reset_state();
+	jtag_reset_state(con);
 
 	/* Go into Shift-DR state */
-	jtag_clock();
-	jtag_tms_high();
-	jtag_clock();
-	jtag_tms_low();
-	jtag_clock();
-	jtag_clock();
+	jtag_send_bit(con, 0);
+	jtag_send_bit(con, 0 | TMS);
+	jtag_send_bit(con, 0);
+	jtag_send_bit(con, 0);
+
+	idcode = jtag_read_u32(con);
+	/* IDCODE bit0 must be 1 */
+	while( (idcode != 0xffffffff && idcode & 0x1) && !USER_BUTTON && num_devices < MAX_CHAIN_LEN ) {
+		num_devices++;
+		idcode = jtag_read_u32(con);
+	}
+	return num_devices;
+}
+
+static void jtag_print_idcodes(t_hydra_console *con)
+{
+	uint32_t idcode;
+
+	jtag_reset_state(con);
+
+	/* Go into Shift-DR state */
+	jtag_send_bit(con, 0);
+	jtag_send_bit(con, 0 | TMS);
+	jtag_send_bit(con, 0);
+	jtag_send_bit(con, 0);
 
 	idcode = jtag_read_u32(con);
 	/* IDCODE bit0 must be 1 */
 	while((idcode != 0xffffffff && idcode & 0x1) && !USER_BUTTON) {
 		cprintf(con, "Device found. IDCODE : %08X\r\n", idcode);
 		idcode = jtag_read_u32(con);
-		retval = true;
 	}
-	return retval;
 }
 
 static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	uint8_t tck, tms, tdi, tdo, trst, i;
+	uint8_t tck, tms, tdi, tdo, trst;
+	uint8_t valid_tck, valid_tms, valid_tdi, valid_tdo, valid_trst = 12;
+	uint8_t i;
+
+	/* Set a dummy pin to prevent pin mismatch */
+	proto->config.jtag.trst_pin = 12;
 
 	for (tms = 0; tms < num_pins; tms++) {
 		for (tck = 0; tck < num_pins; tck++) {
@@ -423,14 +539,17 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 							      proto->config.jtag.dev_gpio_pull);
 						bsp_gpio_set(BSP_GPIO_PORTB, i);
 					}
-					config.tms_pin = tms;
-					config.tck_pin = tck;
-					config.tdi_pin = tdi;
-					config.tdo_pin = tdo;
+					proto->config.jtag.tms_pin = tms;
+					proto->config.jtag.tck_pin = tck;
+					proto->config.jtag.tdi_pin = tdi;
+					proto->config.jtag.tdo_pin = tdo;
 					jtag_pin_init(con);
-					if  (jtag_scan_bypass()) {
-						cprintf(con, "TMS: PB%d TCK: PB%d TDI: PB%d TDO: PB%d\r\n",
-							tms, tck, tdi, tdo);
+					if  (jtag_scan_bypass(con)) {
+						jtag_print_pins(con);
+						valid_tms = tms;
+						valid_tck = tck;
+						valid_tdi = tdi;
+						valid_tdo = tdo;
 						for (trst = 0; trst < num_pins; trst++) {
 							if (trst == tck) continue;
 							if (trst == tms) continue;
@@ -442,11 +561,12 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 									      proto->config.jtag.dev_gpio_pull);
 								bsp_gpio_set(BSP_GPIO_PORTB, i);
 							}
-							config.trst_pin = trst;
+							proto->config.jtag.trst_pin = trst;
 							jtag_pin_init(con);
-							jtag_trst_low();
-							if (!jtag_scan_bypass()) {
+							jtag_trst_low(con);
+							if (!jtag_scan_bypass(con)) {
 								cprintf(con, "TRST: PB%d\r\n", trst);
+								valid_trst = trst;
 							}
 						}
 					}
@@ -454,6 +574,12 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 			}
 		}
 	}
+
+	proto->config.jtag.tms_pin = valid_tms;
+	proto->config.jtag.tck_pin = valid_tck;
+	proto->config.jtag.tdi_pin = valid_tdi;
+	proto->config.jtag.tdo_pin = valid_tdo;
+	proto->config.jtag.trst_pin = valid_trst;
 
 	jtag_pin_init(con);
 }
@@ -463,7 +589,11 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	uint8_t tck, tms, tdo, trst;
+	uint8_t valid_tck, valid_tms, valid_tdo, valid_trst= 12;
 	uint8_t i;
+
+	/* Set dummy pins to prevent pin mismatch */
+	proto->config.jtag.tdi_pin = 12;
 
 	for (tms = 0; tms < num_pins; tms++) {
 		for (tck = 0; tck < num_pins; tck++) {
@@ -478,15 +608,17 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 						      proto->config.jtag.dev_gpio_pull);
 					bsp_gpio_set(BSP_GPIO_PORTB, i);
 				}
-				config.tms_pin = tms;
-				config.tck_pin = tck;
-				config.tdo_pin = tdo;
-				bsp_gpio_init(BSP_GPIO_PORTB, config.tdo_pin,
+				proto->config.jtag.tms_pin = tms;
+				proto->config.jtag.tck_pin = tck;
+				proto->config.jtag.tdo_pin = tdo;
+				bsp_gpio_init(BSP_GPIO_PORTB, proto->config.jtag.tdo_pin,
 					      MODE_CONFIG_DEV_GPIO_IN,
 					      MODE_CONFIG_DEV_GPIO_NOPULL);
 				if  (jtag_scan_idcode(con)) {
-					cprintf(con, "TMS: PB%d TCK: PB%d TDO: PB%d\r\n\r\n",
-						tms, tck, tdo);
+					jtag_print_pins(con);
+					valid_tms = tms;
+					valid_tck = tck;
+					valid_tdo = tdo;
 					for (trst = 0; trst < num_pins; trst++) {
 						if (trst == tck) continue;
 						if (trst == tms) continue;
@@ -497,35 +629,42 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 								      proto->config.jtag.dev_gpio_pull);
 							bsp_gpio_set(BSP_GPIO_PORTB, i);
 						}
-						config.trst_pin = trst;
+						proto->config.jtag.trst_pin = trst;
 						jtag_pin_init(con);
-						jtag_trst_low();
+						jtag_trst_low(con);
 						if (!jtag_scan_idcode(con)) {
 							cprintf(con, "TRST: PB%d\r\n", trst);
+							valid_trst = trst;
 						}
 					}
 				}
 			}
 		}
 	}
+	proto->config.jtag.tms_pin = valid_tms;
+	proto->config.jtag.tck_pin = valid_tck;
+	proto->config.jtag.tdo_pin = valid_tdo;
+	proto->config.jtag.trst_pin = valid_trst;
+
+	jtag_pin_init(con);
 }
 
-static uint8_t ocd_shift_u8(uint8_t tdi, uint8_t tms, uint8_t num_bits)
+static uint8_t ocd_shift_u8(t_hydra_console *con, uint8_t tdi, uint8_t tms, uint8_t num_bits)
 {
 	uint8_t tdo = 0;
 
 	while(num_bits>0) {
 		if(tms & 1) {
-			jtag_tms_high();
+			jtag_tms_high(con);
 		} else {
-			jtag_tms_low();
+			jtag_tms_low(con);
 		}
 		if(tdi & 1) {
-			jtag_tdi_high();
+			jtag_tdi_high(con);
 		} else {
-			jtag_tdi_low();
+			jtag_tdi_low(con);
 		}
-		tdo = (jtag_read_bit_clock()<<7) | (tdo>>1);
+		tdo = (jtag_read_bit_clock(con)<<7) | (tdo>>1);
 		tdi>>=1;
 		tms>>=1;
 		num_bits--;
@@ -543,17 +682,14 @@ void openOCD(t_hydra_console *con)
 	uint8_t ocd_parameters[2] = {0};
 	static uint8_t *buffer = (uint8_t *)g_sbuf;
 
-	init_proto_default(con);
-	jtag_pin_init(con);
-	tim_init();
-
 	while (!USER_BUTTON) {
 		if(chnReadTimeout(con->sdu, &ocd_command, 1, 1)) {
 			switch(ocd_command) {
 			case CMD_OCD_UNKNOWN:
+				cprint(con, "BBIO1", 5);
 				break;
 			case CMD_OCD_ENTER_OOCD:
-				cprintf(con, "OCD1");
+				cprint(con, "OCD1", 4);
 				break;
 			case CMD_OCD_READ_ADCS:
 				/* Not implemented */
@@ -630,7 +766,7 @@ void openOCD(t_hydra_console *con)
 					i=0;
 					while(num_sequences>0) {
 						bits = (num_sequences > 8) ? 8 : num_sequences;
-						values = ocd_shift_u8(buffer[i],
+						values = ocd_shift_u8(con, buffer[i],
 							     buffer[i+1],
 							     bits);
 						cprint(con, (char *)&values, 1);
@@ -649,6 +785,14 @@ void openOCD(t_hydra_console *con)
 	}
 }
 
+void jtag_enter_openocd(t_hydra_console *con)
+{
+	init_proto_default(con);
+	jtag_pin_init(con);
+	tim_init(con);
+	openOCD(con);
+}
+
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	int tokens_used;
@@ -660,7 +804,7 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	tokens_used = 1 + exec(con, p, 1);
 
 	jtag_pin_init(con);
-	tim_init();
+	tim_init(con);
 
 	show_params(con);
 
@@ -723,7 +867,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Pin must be between 0 and 11 (PB0-11).\r\n");
 				return t;
 			}
-			config.tck_pin = arg_int;
+			proto->config.jtag.tck_pin = arg_int;
 			jtag_pin_init(con);
 			t+=3;
 			break;
@@ -734,7 +878,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Pin must be between 0 and 11 (PB0-11).\r\n");
 				return t;
 			}
-			config.tms_pin = arg_int;
+			proto->config.jtag.tms_pin = arg_int;
 			jtag_pin_init(con);
 			t+=3;
 			break;
@@ -745,7 +889,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Pin must be between 0 and 11 (PB0-11).\r\n");
 				return t;
 			}
-			config.tdi_pin = arg_int;
+			proto->config.jtag.tdi_pin = arg_int;
 			jtag_pin_init(con);
 			t+=3;
 			break;
@@ -756,7 +900,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Pin must be between 0 and 11 (PB0-11).\r\n");
 				return t;
 			}
-			config.tdo_pin = arg_int;
+			proto->config.jtag.tdo_pin = arg_int;
 			jtag_pin_init(con);
 			t+=3;
 			break;
@@ -767,15 +911,15 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Pin must be between 0 and 11 (PB0-11).\r\n");
 				return t;
 			}
-			config.trst_pin = arg_int;
+			proto->config.jtag.trst_pin = arg_int;
 			jtag_pin_init(con);
 			t+=3;
 			break;
 		case T_BYPASS:
-			cprintf(con, "Number of devices found : %d\r\n", jtag_scan_bypass());
+			cprintf(con, "Number of devices found : %d\r\n", jtag_scan_bypass(con));
 			break;
 		case T_IDCODE:
-			jtag_scan_idcode(con);
+			jtag_print_idcodes(con);
 			break;
 		case T_OOCD:
 			openOCD(con);
@@ -786,8 +930,8 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			if(arg_float > JTAG_MAX_FREQ) {
 				cprintf(con, "Frequency too high\r\n");
 			} else {
-				config.divider = JTAG_MAX_FREQ/(int)arg_float;
-				tim_set_prescaler();
+				proto->config.jtag.divider = JTAG_MAX_FREQ/(int)arg_float;
+				tim_set_prescaler(con);
 			}
 			break;
 		default:
@@ -843,7 +987,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 
 static void cleanup(t_hydra_console *con)
 {
-	(void)con;
+	jtag_pin_deinit(con);
 }
 
 static int show(t_hydra_console *con, t_tokenline_parsed *p)
@@ -853,8 +997,7 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 	tokens_used = 0;
 	if (p->tokens[1] == T_PINS) {
 		tokens_used++;
-		cprintf(con, "TMS: PB%d\r\nTCK: PB%d\r\nTDI: PB%d\r\nTDO: PB%d\r\nTRST: PB%d\r\n",
-			config.tms_pin, config.tck_pin, config.tdi_pin, config.tdo_pin, config.trst_pin);
+		jtag_print_pins(con);
 	} else {
 		show_params(con);
 	}
@@ -864,6 +1007,7 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 static const char *get_prompt(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
+
 	return str_prompt_jtag[proto->dev_num];
 }
 
