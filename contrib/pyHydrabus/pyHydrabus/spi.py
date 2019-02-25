@@ -65,6 +65,31 @@ class SPI(Protocol):
         else:
             self._logger.error("Error setting CS.")
 
+    def bulk_write(self, data=b""):
+        """
+        Bulk write on SPI bus
+        https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-SPI-mode-guide#bulk-spi-transfer-0b0001xxxx
+
+        :param data: Data to be sent
+        :type data: bytes
+
+        :return: Bytes read during the transfer
+        :rtype: bytes
+        """
+        CMD = 0b00010000
+        assert len(data) > 0, "Send at least one byte"
+        assert len(data) <= 16, "Too many bytes to write"
+        CMD = CMD | (len(data) - 1)
+
+        self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))
+        if self._hydrabus.read(1) != b"\x01":
+            self._logger.warn("Unknown error.")
+            return None
+
+        self._hydrabus.write(data)
+
+        return self._hydrabus.read(len(data))
+
     def write_read(self, data=b"", read_len=0, drive_cs=0):
         """
         Write-then-read operation
@@ -74,7 +99,7 @@ class SPI(Protocol):
         :type data: bytes
         :param read_len: Number of bytes to read
         :type read_len: int
-        :param drive_cs: Whether to enable chip select before writing/reading (0=no, 1=yes)
+        :param drive_cs: Whether to enable chip select before writing/reading (0=yes, 1=no)
         :type drive_cs: int
         :return: Read data
         :rtype: bytes
@@ -107,7 +132,7 @@ class SPI(Protocol):
 
         :param data: data to be sent
         :type data: bytes
-        :param drive_cs: Whether to enable chip select before writing/reading (0=no, 1=yes)
+        :param drive_cs: Whether to enable chip select before writing/reading (0=yes, 1=no)
         :type drive_cs: int
         """
         self.write_read(data, read_len=0, drive_cs=drive_cs)
@@ -118,12 +143,24 @@ class SPI(Protocol):
 
         :param read_len: Number of bytes to be read
         :type read_len: int
-        :param drive_cs: Whether to enable chip select before writing/reading (0=no, 1=yes)
+        :param drive_cs: Whether to enable chip select before writing/reading (0=yes, 1=no)
         :type drive_cs: int
         :return: Read data
         :rtype: bytes
         """
-        return self.write_read(b"", read_len=read_len, drive_cs=drive_cs)
+        result = b''
+        if drive_cs == 0:
+            self.cs = 0
+        while read_len>0:
+            if read_len>=16:
+                to_read=16
+            else:
+                to_read = read_len
+            result += self.bulk_write(b"\xff"*to_read)
+            read_len -= to_read
+        if drive_cs == 0:
+            self.cs = 1
+        return result
 
     def set_speed(self, speed):
         """
