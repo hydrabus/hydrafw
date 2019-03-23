@@ -37,6 +37,7 @@ void bbio_uart_init_proto_default(t_hydra_console *con)
 	proto->config.uart.dev_speed = 9600;
 	proto->config.uart.dev_parity = 0;
 	proto->config.uart.dev_stop_bit = 1;
+	proto->config.uart.bus_mode = BSP_UART_MODE_UART;
 }
 
 static THD_FUNCTION(uart_reader_thread, arg)
