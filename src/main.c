@@ -89,6 +89,7 @@ THD_FUNCTION(console, arg)
 		case 0:
 			if (++i == 20) {
 				cmd_bbio(con);
+				i=0;
 			}
 			break;
 		/* SUMP identification is 5*\x00 \x02 */
