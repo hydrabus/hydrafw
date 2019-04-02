@@ -175,7 +175,9 @@ void bbio_mode_smartcard(t_hydra_console *con)
 				}
 				break;
 			default:
-				if ((bbio_subcommand & BBIO_SMARTCARD_CONFIG) == BBIO_SMARTCARD_CONFIG) {
+				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
+					cprintf(con, "%c", bbio_aux(con, bbio_subcommand));
+				} else if ((bbio_subcommand & BBIO_SMARTCARD_CONFIG) == BBIO_SMARTCARD_CONFIG) {
 					proto->config.smartcard.dev_polarity =
 						(bbio_subcommand & 0b1)?1:0;
 					proto->config.smartcard.dev_stop_bit =
@@ -190,7 +192,6 @@ void bbio_mode_smartcard(t_hydra_console *con)
 						cprint(con, "\x00", 1);
 					}
 				}
-
 			}
 		}
 	}

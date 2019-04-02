@@ -64,7 +64,9 @@ void bbio_mode_onewire(t_hydra_console *con)
 				cprint(con, (char *)&rx_data[0], 1);
 				break;
 			default:
-				if ((bbio_subcommand & BBIO_ONEWIRE_BULK_TRANSFER) == BBIO_ONEWIRE_BULK_TRANSFER) {
+				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
+					cprintf(con, "%c", bbio_aux(con, bbio_subcommand));
+				} else if ((bbio_subcommand & BBIO_ONEWIRE_BULK_TRANSFER) == BBIO_ONEWIRE_BULK_TRANSFER) {
 					// data contains the number of bytes to
 					// write
 					data = (bbio_subcommand & 0b1111) + 1;

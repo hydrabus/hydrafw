@@ -17,3 +17,13 @@ def split(seq, length):
     Split a list in chunks of specific length
     """
     return [seq[i:i+length] for i in range(0, len(seq), length)]
+
+def set_bit(byte, bit, position):
+    v = ord(byte)
+    if bit == 1:
+        v = v | (1 << position)
+    elif bit == 0:
+        v = v & (~(1 << position)) & 0xff
+    else:
+        raise ValueError("Bit must be 0 or 1")
+    return v.to_bytes(1, byteorder="big")

@@ -37,10 +37,15 @@
 #include "hydrabus_bbio_smartcard.h"
 #include "hydrabus_bbio_adc.h"
 #include "hydrabus_bbio_freq.h"
+#include "hydrabus_bbio_aux.h"
 
 int cmd_bbio(t_hydra_console *con)
 {
 	uint8_t bbio_mode;
+
+	// Init auxiliary pins
+	bbio_aux_init_proto_default(con);
+
 	cprint(con, "BBIO1", 5);
 
 	while (!palReadPad(GPIOA, 0)) {

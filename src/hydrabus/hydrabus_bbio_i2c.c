@@ -151,7 +151,9 @@ void bbio_mode_i2c(t_hydra_console *con)
 				cprint(con, (char *)rx_data, to_rx);
 				break;
 			default:
-				if ((bbio_subcommand & BBIO_I2C_BULK_WRITE) == BBIO_I2C_BULK_WRITE) {
+				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
+					cprintf(con, "%c", bbio_aux(con, bbio_subcommand));
+				} else if ((bbio_subcommand & BBIO_I2C_BULK_WRITE) == BBIO_I2C_BULK_WRITE) {
 					// data contains the number of bytes to
 					// write
 					data = (bbio_subcommand & 0b1111) + 1;
@@ -187,7 +189,6 @@ void bbio_mode_i2c(t_hydra_console *con)
 						cprint(con, "\x00", 1);
 					}
 				}
-
 			}
 		}
 	}

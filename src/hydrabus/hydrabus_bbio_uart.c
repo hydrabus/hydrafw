@@ -122,7 +122,9 @@ void bbio_mode_uart(t_hydra_console *con)
 				}
 				break;
 			default:
-				if ((bbio_subcommand & BBIO_UART_BULK_TRANSFER) == BBIO_UART_BULK_TRANSFER) {
+				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
+					cprintf(con, "%c", bbio_aux(con, bbio_subcommand));
+				} else if ((bbio_subcommand & BBIO_UART_BULK_TRANSFER) == BBIO_UART_BULK_TRANSFER) {
 					// data contains the number of bytes to
 					// write
 					data = (bbio_subcommand & 0b1111) + 1;
@@ -204,7 +206,6 @@ void bbio_mode_uart(t_hydra_console *con)
 				} else if ((bbio_subcommand & BBIO_UART_CONFIG_PERIPH) == BBIO_UART_CONFIG_PERIPH) {
 					cprint(con, "\x01", 1);
 				}
-
 			}
 		}
 	}

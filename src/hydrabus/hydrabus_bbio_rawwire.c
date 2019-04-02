@@ -127,7 +127,9 @@ void bbio_mode_rawwire(t_hydra_console *con)
 				cprint(con, "\x01", 1);
 				break;
 			default:
-				if ((bbio_subcommand & BBIO_RAWWIRE_BULK_TRANSFER) == BBIO_RAWWIRE_BULK_TRANSFER) {
+				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
+					cprintf(con, "%c", bbio_aux(con, bbio_subcommand));
+				} else if ((bbio_subcommand & BBIO_RAWWIRE_BULK_TRANSFER) == BBIO_RAWWIRE_BULK_TRANSFER) {
 					// data contains the number of bytes to
 					// write
 					data = (bbio_subcommand & 0b1111) + 1;
@@ -201,7 +203,6 @@ void bbio_mode_rawwire(t_hydra_console *con)
 				} else if ((bbio_subcommand & BBIO_RAWWIRE_CONFIG_PERIPH) == BBIO_RAWWIRE_CONFIG_PERIPH) {
 					cprint(con, "\x01", 1);
 				}
-
 			}
 		}
 	}

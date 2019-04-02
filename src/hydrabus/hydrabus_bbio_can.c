@@ -159,7 +159,9 @@ void bbio_mode_can(t_hydra_console *con)
 				}
 				break;
 			default:
-				if ((bbio_subcommand & BBIO_CAN_WRITE) == BBIO_CAN_WRITE) {
+				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
+					cprintf(con, "%c", bbio_aux(con, bbio_subcommand));
+				} else if ((bbio_subcommand & BBIO_CAN_WRITE) == BBIO_CAN_WRITE) {
 
 					if (can_id < 0b11111111111) {
 						tx_msg.header.StdId = can_id;
@@ -244,7 +246,6 @@ void bbio_mode_can(t_hydra_console *con)
 						cprint(con, "\x00", 1);
 					}
 				}
-
 			}
 		}
 	}

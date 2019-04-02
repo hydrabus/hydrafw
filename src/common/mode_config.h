@@ -182,6 +182,7 @@ typedef struct {
 		hydranfc_config_t hydranfc;
 	} config;
 
+	uint8_t aux_config;
 	uint8_t wwr : 1; // write with read
 	uint8_t buffer_tx[MODE_CONFIG_PROTO_BUFFER_SIZE];
 	uint8_t buffer_rx[MODE_CONFIG_PROTO_BUFFER_SIZE];

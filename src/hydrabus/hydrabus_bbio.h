@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include "hydrabus_bbio_aux.h"
+
 /*
  * Basic BBIO modes
  */
@@ -87,9 +89,9 @@
 #define BBIO_CAN_FILTER_ON	0b00000101
 #define BBIO_CAN_FILTER		0b00000110
 #define BBIO_CAN_WRITE		0b00001000
+#define BBIO_CAN_SET_TIMINGS	0b00010000
 #define BBIO_CAN_SET_SPEED	0b01100000
 #define BBIO_CAN_SLCAN		0b10100000
-#define BBIO_CAN_SET_TIMINGS	0b11000000
 
 /*
  * PIN control-specific commands
@@ -167,5 +169,14 @@
 #define BBIO_SMARTCARD_GUARDTIME	0b00000111
 #define BBIO_SMARTCARD_SET_SPEED	0b01100000
 #define BBIO_SMARTCARD_CONFIG		0b10000000
+
+/*
+ * Auxilary pins commands
+ */
+#define BBIO_AUX_MASK		0b11000000
+#define BBIO_AUX_READ		0b11000000
+#define BBIO_AUX_WRITE		0b11010000
+#define BBIO_AUX_MODE_READ	0b11100000
+#define BBIO_AUX_MODE_SET	0b11110000
 
 int cmd_bbio(t_hydra_console *con);

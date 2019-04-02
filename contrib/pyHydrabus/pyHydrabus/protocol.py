@@ -14,6 +14,7 @@
 
 import logging
 from .hydrabus import Hydrabus
+from .aux import AUXPin
 
 
 class Protocol:
@@ -39,6 +40,11 @@ class Protocol:
 
         self._enter()
         self._hydrabus.flush_input()
+
+        self.AUX = []
+        for i in range(4):
+            self.AUX.append(AUXPin(i, self._hydrabus))
+
 
     def _enter(self):
         self._hydrabus.write(self._mode_byte)
