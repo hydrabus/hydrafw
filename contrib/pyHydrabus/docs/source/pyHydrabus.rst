@@ -76,6 +76,14 @@ pyHydrabus.uart module
     :undoc-members:
     :show-inheritance:
 
+pyHydrabus.aux module
+----------------------
+
+.. automodule:: pyHydrabus.aux
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
