@@ -14,7 +14,7 @@
 
 import logging
 from .hydrabus import Hydrabus
-from .aux import AUXPin
+from .auxpin import AUXPin
 
 
 class Protocol:

@@ -79,7 +79,7 @@ pyHydrabus.uart module
 pyHydrabus.aux module
 ----------------------
 
-.. automodule:: pyHydrabus.aux
+.. automodule:: pyHydrabus.auxpin
     :members:
     :undoc-members:
     :show-inheritance:
