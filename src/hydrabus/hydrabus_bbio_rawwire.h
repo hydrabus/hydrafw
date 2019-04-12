@@ -28,8 +28,8 @@ typedef struct mode_rawwire_exec_t {
 	uint8_t (*read_u8)(t_hydra_console *con);
 	uint8_t (*read_bit_clock)(t_hydra_console *con);
 	uint8_t (*read_bit)(t_hydra_console *con);
-	void (*write_u8)(t_hydra_console *con, uint8_t tx_data);
-	void (*write_bit)(t_hydra_console *con, uint8_t bit);
+	uint8_t (*write_u8)(t_hydra_console *con, uint8_t tx_data);
+	uint8_t (*write_bit)(t_hydra_console *con, uint8_t bit);
 	void (*clock)(t_hydra_console *con);
 	void (*clock_high)(t_hydra_console *con);
 	void (*clock_low)(t_hydra_console *con);

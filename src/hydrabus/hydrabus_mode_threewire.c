@@ -142,14 +142,14 @@ inline void threewire_clock(t_hydra_console *con)
 	threewire_clk_low(con);
 }
 
-void threewire_send_bit(t_hydra_console *con, uint8_t bit)
+uint8_t threewire_send_bit(t_hydra_console *con, uint8_t bit)
 {
 	if (bit) {
 		threewire_sdo_high(con);
 	} else {
 		threewire_sdo_low(con);
 	}
-	threewire_clock(con);
+	return threewire_read_bit_clock(con);
 }
 
 uint8_t threewire_read_bit(t_hydra_console *con)
@@ -162,8 +162,9 @@ uint8_t threewire_read_bit_clock(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t bit;
-	threewire_clock(con);
+	threewire_clk_high(con);
 	bit = bsp_gpio_pin_read(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin);
+	threewire_clk_low(con);
 	return bit;
 }
 
@@ -239,6 +240,26 @@ uint8_t threewire_read_u8(t_hydra_console *con)
 	} else {
 		for(i=0; i<8; i++) {
 			value |= (threewire_read_bit_clock(con) << (7-i));
+		}
+	}
+	return value;
+}
+
+uint8_t threewire_write_read_u8(t_hydra_console *con, uint8_t tx_data)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+	uint8_t value=0;
+	uint8_t bit, i;
+
+	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
+		for (i=0; i<8; i++) {
+			bit = threewire_send_bit(con, (tx_data>>i) & 1);
+			value |= (bit << i);
+		}
+	} else {
+		for (i=0; i<8; i++) {
+			bit = threewire_send_bit(con, (tx_data>>(7-i)) & 1);
+			value |= (bit << (7-i));
 		}
 	}
 	return value;
@@ -357,6 +378,25 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return BSP_OK;
 }
 
+static uint32_t write_read(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data)
+{
+	int i;
+
+	for(i=0; i<nb_data; i++) {
+		rx_data[i] = threewire_write_read_u8(con, tx_data[i]);
+	}
+	if (nb_data == 1) {
+		/* Write & Read 1 data */
+		cprintf(con, hydrabus_mode_str_write_read_u8, tx_data[0], rx_data[0]);
+	} else if (nb_data > 1) {
+		/* Write & Read n data */
+		for(i = 0; i < nb_data; i++) {
+			cprintf(con, hydrabus_mode_str_write_read_u8, tx_data[i], rx_data[i]);
+		}
+	}
+	return BSP_OK;
+}
+
 static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 {
 	uint8_t i;
@@ -403,6 +443,7 @@ const mode_exec_t mode_threewire_exec = {
 	.write = &write,
 	.read = &read,
 	.dump = &dump,
+	.write_read = &write_read,
 	.cleanup = &threewire_cleanup,
 	.get_prompt = &get_prompt,
 	.clkl = &clkl,

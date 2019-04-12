@@ -54,7 +54,7 @@ const mode_rawwire_exec_t bbio_threewire = {
 	.read_u8 = &threewire_read_u8,
 	.read_bit_clock = &threewire_read_bit_clock,
 	.read_bit = &threewire_read_bit,
-	.write_u8 = &threewire_write_u8,
+	.write_u8 = &threewire_write_read_u8,
 	.write_bit = &threewire_send_bit,
 	.clock = &threewire_clock,
 	.clock_high = &threewire_clk_high,
@@ -135,10 +135,11 @@ void bbio_mode_rawwire(t_hydra_console *con)
 					data = (bbio_subcommand & 0b1111) + 1;
 
 					chnRead(con->sdu, tx_data, data);
-					for(i=0; i<data; i++) {
-						curmode.write_u8(con, tx_data[i]);
-					}
 					cprint(con, "\x01", 1);
+					for(i=0; i<data; i++) {
+						rx_data[i] = curmode.write_u8(con, tx_data[i]);
+					}
+					cprint(con, (char *)rx_data, data);
 				} else if ((bbio_subcommand & BBIO_RAWWIRE_BULK_BIT) == BBIO_RAWWIRE_BULK_BIT) {
 					// data contains the number of bits to
 					// write
@@ -184,16 +185,20 @@ void bbio_mode_rawwire(t_hydra_console *con)
 				} else if ((bbio_subcommand & BBIO_RAWWIRE_CONFIG) == BBIO_RAWWIRE_CONFIG) {
 					curmode.cleanup(con);
 					if(bbio_subcommand & 0b10){
-						proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
-					} else {
 						proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
+					} else {
+						proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
 					}
 					if(bbio_subcommand & 0b100){
 						curmode = bbio_threewire;
 					} else {
 						curmode = bbio_twowire;
 					}
-					curmode.init(con);
+					if(bbio_subcommand & 0b1000){
+						proto->config.rawwire.dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
+					} else {
+						proto->config.rawwire.dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN;
+					}
 					curmode.pin_init(con);
 					curmode.tim_init(con);
 					curmode.clock_low(con);
@@ -201,6 +206,16 @@ void bbio_mode_rawwire(t_hydra_console *con)
 
 					cprint(con, "\x01", 1);
 				} else if ((bbio_subcommand & BBIO_RAWWIRE_CONFIG_PERIPH) == BBIO_RAWWIRE_CONFIG_PERIPH) {
+					if(bbio_subcommand & 0b100){
+						proto->config.rawwire.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
+					} else {
+						proto->config.rawwire.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+					}
+					curmode.pin_init(con);
+					curmode.tim_init(con);
+					curmode.clock_low(con);
+					curmode.data_low(con);
+
 					cprint(con, "\x01", 1);
 				}
 			}

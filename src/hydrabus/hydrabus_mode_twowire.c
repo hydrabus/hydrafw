@@ -68,7 +68,7 @@ bool twowire_pin_init(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.rawwire.clk_pin,
-		      proto->config.rawwire.dev_gpio_mode, proto->config.rawwire.dev_gpio_pull);
+		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
 	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin,
 		      proto->config.rawwire.dev_gpio_mode, proto->config.rawwire.dev_gpio_pull);
 	return true;
@@ -153,19 +153,23 @@ inline void twowire_clock(t_hydra_console *con)
 	twowire_clk_low(con);
 }
 
-void twowire_send_bit(t_hydra_console *con, uint8_t bit)
+uint8_t twowire_send_bit(t_hydra_console *con, uint8_t bit)
 {
+	twowire_sda_mode_output(con);
+
 	if (bit) {
 		twowire_sda_high(con);
 	} else {
 		twowire_sda_low(con);
 	}
 	twowire_clock(con);
+	return 1;
 }
 
 uint8_t twowire_read_bit(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
+	twowire_sda_mode_input(con);
 	return bsp_gpio_pin_read(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin);
 }
 
@@ -173,8 +177,11 @@ uint8_t twowire_read_bit_clock(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t bit;
-	twowire_clock(con);
+	twowire_sda_mode_input(con);
+
+	twowire_clk_high(con);
 	bit = bsp_gpio_pin_read(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin);
+	twowire_clk_low(con);
 	return bit;
 }
 
@@ -220,12 +227,10 @@ static void bitr(t_hydra_console *con)
 	cprintf(con, hydrabus_mode_str_read_one_u8, rx_data);
 }
 
-void twowire_write_u8(t_hydra_console *con, uint8_t tx_data)
+uint8_t twowire_write_u8(t_hydra_console *con, uint8_t tx_data)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t i;
-
-	twowire_sda_mode_output(con);
 
 	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
 		for (i=0; i<8; i++) {
@@ -236,6 +241,7 @@ void twowire_write_u8(t_hydra_console *con, uint8_t tx_data)
 			twowire_send_bit(con, (tx_data>>(7-i)) & 1);
 		}
 	}
+	return 1;
 }
 
 uint8_t twowire_read_u8(t_hydra_console *con)
@@ -243,8 +249,6 @@ uint8_t twowire_read_u8(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t value;
 	uint8_t i;
-
-	twowire_sda_mode_input(con);
 
 	value = 0;
 	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {

@@ -124,6 +124,8 @@ class RawWire(Protocol):
         if self._hydrabus.read(1) != b"\x01":
             self._logger.warn("Unknown error.")
 
+        return self._hydrabus.read(len(data))
+
     def set_speed(self, speed):
         """
         Sets the clock max speed.
@@ -158,9 +160,14 @@ class RawWire(Protocol):
 
         :param data: data to be sent
         :type data: bytes
+
+        :return: Read bytes
+        :rtype: bytes
         """
+        result = b''
         for chunk in split(data, 16):
-            self.bulk_write(chunk)
+            result += self.bulk_write(chunk)
+        return result
 
     def read(self, length=0):
         """
@@ -171,11 +178,11 @@ class RawWire(Protocol):
         :return: Read data
         :rtype: bytes
         """
-        result = []
-        for _ in range(length - 1):
-            result.append(self.read_byte())
+        result = b''
+        for _ in range(length):
+            result += self.read_byte()
 
-        return b"".join(result)
+        return result
 
     @property
     def clk(self):
