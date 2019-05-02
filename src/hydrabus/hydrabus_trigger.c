@@ -21,7 +21,8 @@
 #include "tokenline.h"
 #include "hydrabus.h"
 #include "bsp.h"
-#include "bsp_gpio.h"
+#include "bsp_trigger.h"
+#include "bsp_trigger_conf.h"
 #include "hydrabus_mode.h"
 #include "hydrabus_trigger.h"
 
@@ -59,9 +60,7 @@ static int trigger_run(t_hydra_console *con)
 {
 	uint32_t i=0;
 	uint8_t rx_data;
-	bsp_gpio_init(TRIGGER_PORT, TRIGGER_PIN, MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL,
-		      MODE_CONFIG_DEV_GPIO_NOPULL);
-	bsp_gpio_clr(TRIGGER_PORT, TRIGGER_PIN);
+	bsp_trigger_init();
 	while(!USER_BUTTON) {
 		if(con->mode->exec->read) {
 			con->mode->exec->dump(con,&rx_data,1);
@@ -72,7 +71,7 @@ static int trigger_run(t_hydra_console *con)
 			i=0;
 		}
 		if(i==trigger_length) {
-			bsp_gpio_set(TRIGGER_PORT, TRIGGER_PIN);
+			bsp_trigger_on();
 			return 1;
 		}
 	}

@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2017 Nicolas OBERLI
+ * Copyright (C) 2019 Nicolas OBERLI
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,4 +16,5 @@
  * limitations under the License.
  */
 
-int cmd_trigger(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
+#define	TRIGGER_PORT	BSP_GPIO_PORTB
+#define	TRIGGER_PIN	3
