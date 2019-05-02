@@ -30,5 +30,6 @@ bsp_status_t bsp_adc_init(bsp_dev_adc_t dev_num);
 bsp_status_t bsp_adc_deinit(bsp_dev_adc_t dev_num);
 
 bsp_status_t bsp_adc_read_u16(bsp_dev_adc_t dev_num, uint16_t* rx_data, uint8_t nb_data);
+bsp_status_t bsp_adc_trigger(uint32_t low, uint32_t high);
 
 #endif /* _BSP_ADC_H_ */

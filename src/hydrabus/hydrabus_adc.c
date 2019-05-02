@@ -42,7 +42,7 @@ void print_adc_val(t_hydra_console *con, uint32_t val_raw_adc)
 	val = ((val_raw_adc * 33 * PRINT_ADC_VAL_DIGITS)) / 4095;
 	val_int_part = (val / (PRINT_ADC_VAL_DIGITS * 10));
 	val_dec_part = val - (val_int_part * PRINT_ADC_VAL_DIGITS * 10);
-	cprintf(con, "%d.%04d\t", val_int_part, val_dec_part);
+	cprintf(con, "%d.%04d\t(%08x)", val_int_part, val_dec_part, val_raw_adc);
 }
 
 static int adc_read(t_hydra_console *con, int num_sources)
@@ -72,6 +72,8 @@ int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	bsp_dev_adc_t *sources = con->mode->proto.buffer_rx;
 	int num_sources, count, continuous, period, t, i;
+	uint32_t low=0, high=0xffff;
+	bsp_status_t status;
 
 	if (p->tokens[1] == 0)
 		return FALSE;
@@ -102,6 +104,30 @@ int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p)
 		case T_PERIOD:
 			t += 1;
 			memcpy(&period, p->buf + p->tokens[t++], sizeof(int));
+			break;
+		case T_TRIGGER:
+			while (p->tokens[t]) {
+				switch(p->tokens[t++]) {
+				case T_LOW:
+					t += 1;
+					memcpy(&low, p->buf + p->tokens[t++], sizeof(uint32_t));
+					break;
+				case T_HIGH:
+					t += 1;
+					memcpy(&high, p->buf + p->tokens[t++], sizeof(uint32_t));
+					break;
+				case T_START:
+					cprintf(con, "Low : %d\r\n", low);
+					cprintf(con, "High : %d\r\n", high);
+					status = bsp_adc_trigger(low, high);
+					if(status == BSP_OK) {
+						cprintf(con, "Trigger OK\r\n");
+					} else {
+						cprintf(con, "Trigger timeout\r\n");
+					}
+					return TRUE;
+				}
+			}
 			break;
 		case T_CONTINUOUS:
 			continuous = TRUE;

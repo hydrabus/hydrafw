@@ -263,6 +263,24 @@ t_token tokens_mode_can_filter[] = {
 	{ }
 };
 
+t_token tokens_mode_adc_trigger[] = {
+	{
+		T_LOW,
+		.arg_type = T_ARG_UINT,
+		.help = "ADC trigger lower bound"
+	},
+	{
+		T_HIGH,
+		.arg_type = T_ARG_UINT,
+		.help = "ADC trigger higher bound"
+	},
+	{
+		T_START,
+		.help = "Stat trigger"
+	},
+	{ }
+};
+
 t_token tokens_mode_trigger[] = {
 	{
 		T_SHOW,
@@ -1669,6 +1687,11 @@ t_token tokens_adc[] = {
 		T_SAMPLES,
 		.arg_type = T_ARG_UINT,
 		.help = "Number of samples"
+	},
+	{
+		T_TRIGGER,
+		.subtokens = tokens_mode_adc_trigger,
+		.help = "Set trigger bounds"
 	},
 	{
 		T_CONTINUOUS,

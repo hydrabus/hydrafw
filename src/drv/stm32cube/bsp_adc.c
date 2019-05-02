@@ -14,6 +14,7 @@ limitations under the License.
 */
 #include "bsp_adc.h"
 #include "bsp_adc_conf.h"
+#include "bsp_trigger.h"
 #include "stm32f405xx.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_rcc.h"
@@ -85,11 +86,11 @@ bsp_status_t bsp_adc_init(bsp_dev_adc_t dev_num)
 	hadc->Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV4;
 	hadc->Init.Resolution = ADC_RESOLUTION12b;
 	hadc->Init.ScanConvMode = DISABLE;
-	hadc->Init.ContinuousConvMode = DISABLE;
+	hadc->Init.ContinuousConvMode = ENABLE;
 	hadc->Init.DiscontinuousConvMode = DISABLE;
 	hadc->Init.NbrOfDiscConversion = 0;
 	hadc->Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-	hadc->Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
+	hadc->Init.ExternalTrigConv = ADC_SOFTWARE_START;
 	hadc->Init.DataAlign = ADC_DATAALIGN_RIGHT;
 	hadc->Init.NbrOfConversion = 1;
 	hadc->Init.DMAContinuousRequests = DISABLE;
@@ -187,3 +188,50 @@ bsp_status_t bsp_adc_read_u16(bsp_dev_adc_t dev_num, uint16_t* rx_data, uint8_t 
 	return status;
 }
 
+/** \brief raises the trigger pin whenever the ADC value goes below low
+ * threshold or above high threshold
+ *
+ * \param low uint32_t: Low threshold
+ * \param high uint32_t: High threshold
+ * \return bsp_status_t: Status of the trigger (BSP_OK or BSP_TIMEOUT)
+ *
+ */
+bsp_status_t bsp_adc_trigger(uint32_t low, uint32_t high)
+{
+	ADC_HandleTypeDef* hadc;
+	hadc = &adc_handle[BSP_DEV_ADC1];
+	ADC_ChannelConfTypeDef* hadc_chan;
+	hadc_chan = &adc_chan_conf[BSP_DEV_ADC1];
+	ADC_AnalogWDGConfTypeDef wdg;
+	bsp_status_t status;
+
+	bsp_adc_init(BSP_DEV_ADC1);
+
+	hadc_chan->SamplingTime = ADC_SAMPLETIME_15CYCLES;
+	if(HAL_ADC_ConfigChannel(hadc, hadc_chan) != HAL_OK) {
+		return BSP_ERROR;
+	}
+
+
+	wdg.WatchdogMode = ADC_ANALOGWATCHDOG_ALL_REG;
+	wdg.HighThreshold = high;
+	wdg.LowThreshold = low;
+	wdg.Channel = ADC_CHANNEL_1;
+	wdg.ITMode = DISABLE;
+	wdg.WatchdogNumber = 0;
+
+	if(HAL_ADC_AnalogWDGConfig(hadc, &wdg) != HAL_OK) {
+		return BSP_ERROR;
+	}
+	bsp_trigger_init();
+	HAL_ADC_Start(hadc);
+	HAL_ADC_PollForEvent(hadc, ADC_AWD_EVENT, 100000);
+	if (hadc->State & HAL_ADC_STATE_AWD1) {
+		bsp_trigger_on();
+		status = BSP_OK;
+	} else  {
+		status = BSP_TIMEOUT;
+	}
+	bsp_adc_deinit(BSP_DEV_ADC1);
+	return status;
+}
