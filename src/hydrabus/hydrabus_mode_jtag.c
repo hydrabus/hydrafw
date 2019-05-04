@@ -378,14 +378,11 @@ static void jtag_write_u8(t_hydra_console *con, uint8_t tx_data)
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t i;
 
-	if(proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
-		for (i=0; i<8; i++) {
-			jtag_send_bit(con, (tx_data>>i) & 1);
-		}
-	} else {
-		for (i=0; i<8; i++) {
-			jtag_send_bit(con, (tx_data>>(7-i)) & 1);
-		}
+	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB) {
+		tx_data = reverse_u8(tx_data);
+	}
+	for (i=0; i<8; i++) {
+		jtag_send_bit(con, (tx_data>>i) & 1);
 	}
 }
 
@@ -396,14 +393,11 @@ static uint8_t jtag_read_u8(t_hydra_console *con)
 	uint8_t i;
 
 	value = 0;
-	if(proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
-		for(i=0; i<8; i++) {
-			value |= (jtag_read_bit_clock(con) << i);
-		}
-	} else {
-		for(i=0; i<8; i++) {
-			value |= (jtag_read_bit_clock(con) << (7-i));
-		}
+	for(i=0; i<8; i++) {
+		value |= (jtag_read_bit_clock(con) << i);
+	}
+	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB) {
+		value = reverse_u8(value);
 	}
 	return value;
 }
@@ -415,14 +409,11 @@ static uint32_t jtag_read_u32(t_hydra_console *con)
 	uint8_t i;
 
 	value = 0;
-	if(proto->config.jtag.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
-		for(i=0; i<32; i++) {
-			value |= (jtag_read_bit_clock(con) << i);
-		}
-	} else {
-		for(i=0; i<32; i++) {
-			value |= (jtag_read_bit_clock(con) << (31-i));
-		}
+	for(i=0; i<32; i++) {
+		value |= (jtag_read_bit_clock(con) << i);
+	}
+	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB) {
+		value = reverse_u32(value);
 	}
 
 	return value;

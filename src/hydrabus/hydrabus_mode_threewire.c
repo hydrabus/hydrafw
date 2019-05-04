@@ -215,14 +215,12 @@ void threewire_write_u8(t_hydra_console *con, uint8_t tx_data)
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t i;
 
-	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
-		for (i=0; i<8; i++) {
-			threewire_send_bit(con, (tx_data>>i) & 1);
-		}
-	} else {
-		for (i=0; i<8; i++) {
-			threewire_send_bit(con, (tx_data>>(7-i)) & 1);
-		}
+	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB) {
+		tx_data = reverse_u8(tx_data);
+	}
+
+	for (i=0; i<8; i++) {
+		threewire_send_bit(con, (tx_data>>i) & 1);
 	}
 }
 
@@ -233,15 +231,14 @@ uint8_t threewire_read_u8(t_hydra_console *con)
 	uint8_t i;
 
 	value = 0;
-	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
-		for(i=0; i<8; i++) {
-			value |= (threewire_read_bit_clock(con) << i);
-		}
-	} else {
-		for(i=0; i<8; i++) {
-			value |= (threewire_read_bit_clock(con) << (7-i));
-		}
+	for(i=0; i<8; i++) {
+		value |= (threewire_read_bit_clock(con) << i);
 	}
+
+	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB) {
+		value = reverse_u8(value);
+	}
+
 	return value;
 }
 
@@ -251,16 +248,15 @@ uint8_t threewire_write_read_u8(t_hydra_console *con, uint8_t tx_data)
 	uint8_t value=0;
 	uint8_t bit, i;
 
-	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
-		for (i=0; i<8; i++) {
-			bit = threewire_send_bit(con, (tx_data>>i) & 1);
-			value |= (bit << i);
-		}
-	} else {
-		for (i=0; i<8; i++) {
-			bit = threewire_send_bit(con, (tx_data>>(7-i)) & 1);
-			value |= (bit << (7-i));
-		}
+	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB) {
+		tx_data = reverse_u8(tx_data);
+	}
+	for (i=0; i<8; i++) {
+		bit = threewire_send_bit(con, (tx_data>>i) & 1);
+		value |= (bit << i);
+	}
+	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB) {
+		value = reverse_u8(value);
 	}
 	return value;
 }

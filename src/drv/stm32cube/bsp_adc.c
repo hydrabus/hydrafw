@@ -224,10 +224,11 @@ bsp_status_t bsp_adc_trigger(uint32_t low, uint32_t high)
 		return BSP_ERROR;
 	}
 	bsp_trigger_init();
+	bsp_trigger_on();
 	HAL_ADC_Start(hadc);
 	HAL_ADC_PollForEvent(hadc, ADC_AWD_EVENT, 100000);
 	if (hadc->State & HAL_ADC_STATE_AWD1) {
-		bsp_trigger_on();
+		bsp_trigger_off();
 		status = BSP_OK;
 	} else  {
 		status = BSP_TIMEOUT;

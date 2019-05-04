@@ -158,14 +158,11 @@ void onewire_write_u8(t_hydra_console *con, uint8_t tx_data)
 
 	onewire_mode_output(con);
 
-	if(proto->config.onewire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
-		for (i=0; i<8; i++) {
-			onewire_write_bit(con, (tx_data>>i) & 1);
-		}
-	} else {
-		for (i=0; i<8; i++) {
-			onewire_write_bit(con, (tx_data>>(7-i)) & 1);
-		}
+	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB) {
+		tx_data = reverse_u8(tx_data);
+	}
+	for (i=0; i<8; i++) {
+		onewire_write_bit(con, (tx_data>>i) & 1);
 	}
 }
 
@@ -177,14 +174,11 @@ uint8_t onewire_read_u8(t_hydra_console *con)
 
 
 	value = 0;
-	if(proto->config.onewire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
-		for(i=0; i<8; i++) {
-			value |= (onewire_read_bit(con) << i);
-		}
-	} else {
-		for(i=0; i<8; i++) {
-			value |= (onewire_read_bit(con) << (7-i));
-		}
+	for(i=0; i<8; i++) {
+		value |= (onewire_read_bit(con) << i);
+	}
+	if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB) {
+		value = reverse_u8(value);
 	}
 	return value;
 }

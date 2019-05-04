@@ -146,14 +146,11 @@ void bbio_mode_rawwire(t_hydra_console *con)
 					data = (bbio_subcommand & 0b1111) + 1;
 
 					chnRead(con->sdu, &tx_data[0], 1);
-					if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_LSB) {
-						for (i=0; i<data; i++) {
-							curmode.write_bit(con, (tx_data[0]>>i) & 1);
-						}
-					} else {
-						for (i=0; i<data; i++) {
-							curmode.write_bit(con, (tx_data[0]>>(7-i)) & 1);
-						}
+					if(proto->config.rawwire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB) {
+						tx_data[0] = reverse_u8(tx_data[0]);
+					}
+					for (i=0; i<data; i++) {
+						curmode.write_bit(con, (tx_data[0]>>i) & 1);
 					}
 					cprint(con, "\x01", 1);
 
