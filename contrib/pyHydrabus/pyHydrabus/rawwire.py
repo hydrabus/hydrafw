@@ -250,3 +250,24 @@ class RawWire(Protocol):
             return True
         else:
             self._logger.error("Incorrect value. Must be 2 or 3")
+
+    @property
+    def gpio_mode(self):
+        """
+        Raw-Wire GPIO mode (1=Push-Pull, 2=Open Drain)
+        """
+        return (self._config & 0b1000) >> 3
+
+    @gpio_mode.setter
+    def gpio_mode(self, value):
+        if value == 0:
+            self._config = self._config & ~(1 << 3)
+            self._configure_port()
+            return True
+        elif value == 1:
+            self._config = self._config | (1 << 3)
+            self._configure_port()
+            return True
+        else:
+            self._logger.error("Incorrect value. Must be 1 or 2")
+
