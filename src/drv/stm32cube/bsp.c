@@ -121,7 +121,7 @@ void bsp_enter_usb_dfu(void)
 	__GPIOA_CLK_ENABLE();
 	bsp_gpio_init(BSP_GPIO_PORTA, 0, MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
 
-	if(USER_BUTTON) {
+	if(bsp_gpio_pin_read(BSP_GPIO_PORTA, 0)) {
 		reboot_usb_dfu();
 	}
 }

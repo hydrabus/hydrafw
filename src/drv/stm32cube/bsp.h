@@ -17,10 +17,6 @@ limitations under the License.
 
 #include <stdint.h>
 
-/* UBTN PA0 Configured as Input */
-#undef USER_BUTTON
-#define USER_BUTTON (palReadPad(GPIOA, 0))
-
 /* Macro for fast read, set & clear GPIO pin */
 #define gpio_get_pin(GPIOx, GPIO_Pin) (GPIOx->IDR & GPIO_Pin)
 #define gpio_set_pin(GPIOx, GPIO_Pin) (GPIOx->BSRR = GPIO_Pin<<16)

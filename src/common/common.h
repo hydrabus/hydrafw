@@ -34,12 +34,6 @@
 #undef NS2RTT
 #define NS2RTT(nsec) ( (US2ST(nsec)/1000) )
 
-/* UBTN PA0 Configured as Input */
-#undef USER_BUTTON
-#define USER_BUTTON (palReadPad(GPIOA, 0))
-#undef ABORT_BUTTON
-#define ABORT_BUTTON() ((palReadPad(GPIOA, 0)))
-
 /* ULED PA4 Configured as Output for Test */
 #undef ULED_ON
 #define ULED_ON  (palSetPad(GPIOA, 4))
@@ -178,5 +172,7 @@ uint8_t parse_escaped_string(char * input, uint8_t * output);
 uint8_t reverse_u8(uint8_t value);
 uint16_t reverse_u16(uint16_t value);
 uint32_t reverse_u32(uint32_t value);
+
+uint8_t hydrabus_ubtn(void);
 
 #endif /* _COMMON_H_ */

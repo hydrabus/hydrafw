@@ -159,7 +159,7 @@ static bsp_status_t can_slcan_in(uint8_t *slcanmsg, can_tx_frame *msg)
 static void slcan_read_command(t_hydra_console *con, uint8_t *buff){
 	uint8_t i=0;
 	uint8_t input = 0;
-	while(!USER_BUTTON && input!='\r' && i<SLCAN_BUFF_LEN){
+	while(!hydrabus_ubtn() && input!='\r' && i<SLCAN_BUFF_LEN){
 		chnRead(con->sdu, &input, 1);
 		buff[i++] = input;
 	}
@@ -193,7 +193,7 @@ void slcan(t_hydra_console *con) {
 	mode_config_proto_t* proto = &con->mode->proto;
 	thread_t *rthread = NULL;
 
-	while (!USER_BUTTON) {
+	while (!hydrabus_ubtn()) {
 		slcan_read_command(con, buff);
 		switch (buff[0]) {
 		case 'S':
@@ -470,7 +470,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			cprintf(con, "ID set to %d\r\n", proto->config.can.can_id);
 			break;
 		case T_CONTINUOUS:
-			while(!USER_BUTTON) {
+			while(!hydrabus_ubtn()) {
 				read(con, NULL, 0);
 			}
 			break;

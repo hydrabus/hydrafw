@@ -145,7 +145,7 @@ int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p)
 		cprintf(con, "%s\t", adc_channel_names[sources[i]]);
 	cprintf(con, "\r\n");
 
-	while (!USER_BUTTON) {
+	while (!hydrabus_ubtn()) {
 		if (!adc_read(con, num_sources))
 			break;
 		if (!continuous && --count == 0)

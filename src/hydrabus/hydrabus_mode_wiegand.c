@@ -158,14 +158,14 @@ uint8_t wiegand_read(t_hydra_console *con, uint8_t *rx_data)
 
 	//Wait for first bit
 	start_time = HAL_GetTick();
-	while(tmp == 0 && !palReadPad(GPIOA, 0)) {
+	while(tmp == 0 && !hydrabus_ubtn()) {
 		if((HAL_GetTick()-start_time) > WIEGAND_TIMEOUT_MAX) {
 			return 0;
 		}
 		tmp = wiegand_sense_pins();
 	}
 
-	while(i < 255 && !palReadPad(GPIOA, 0)) {
+	while(i < 255 && !hydrabus_ubtn()) {
 		tmp = wiegand_sense_pins();
 		if(tmp == 0) {
 			if((HAL_GetTick()-start_time) > WIEGAND_TIMEOUT_FRAME) {

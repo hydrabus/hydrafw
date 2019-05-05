@@ -452,7 +452,7 @@ static uint8_t jtag_scan_bypass(t_hydra_console *con)
 	}
 
 	jtag_tdi_high(con);
-	while( !jtag_read_bit_clock(con) && !USER_BUTTON && num_devices < MAX_CHAIN_LEN ) {
+	while( !jtag_read_bit_clock(con) && !hydrabus_ubtn() && num_devices < MAX_CHAIN_LEN ) {
 		num_devices++;
 	}
 	jtag_tdi_low(con);
@@ -475,7 +475,7 @@ static uint8_t jtag_scan_idcode(t_hydra_console *con)
 
 	idcode = jtag_read_u32(con);
 	/* IDCODE bit0 must be 1 */
-	while( (idcode != 0xffffffff && idcode & 0x1) && !USER_BUTTON && num_devices < MAX_CHAIN_LEN ) {
+	while( (idcode != 0xffffffff && idcode & 0x1) && !hydrabus_ubtn() && num_devices < MAX_CHAIN_LEN ) {
 		num_devices++;
 		idcode = jtag_read_u32(con);
 	}
@@ -496,7 +496,7 @@ static void jtag_print_idcodes(t_hydra_console *con)
 
 	idcode = jtag_read_u32(con);
 	/* IDCODE bit0 must be 1 */
-	while((idcode != 0xffffffff && idcode & 0x1) && !USER_BUTTON) {
+	while((idcode != 0xffffffff && idcode & 0x1) && !hydrabus_ubtn()) {
 		cprintf(con, "Device found. IDCODE : %08X\r\n", idcode);
 		idcode = jtag_read_u32(con);
 	}
@@ -527,7 +527,7 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 					proto->config.jtag.tck_pin = tck;
 					proto->config.jtag.tdi_pin = tdi;
 					proto->config.jtag.tdo_pin = tdo;
-					if (USER_BUTTON) return;
+					if (hydrabus_ubtn()) return;
 					for(i = 0; i < num_pins; i++) {
 						bsp_gpio_init(BSP_GPIO_PORTB, i,
 							      MODE_CONFIG_DEV_GPIO_IN,
@@ -590,7 +590,7 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 				proto->config.jtag.tms_pin = tms;
 				proto->config.jtag.tck_pin = tck;
 				proto->config.jtag.tdo_pin = tdo;
-				if (USER_BUTTON) return;
+				if (hydrabus_ubtn()) return;
 				for(i = 0; i < num_pins; i++) {
 					bsp_gpio_init(BSP_GPIO_PORTB, i,
 						      MODE_CONFIG_DEV_GPIO_IN,
@@ -661,7 +661,7 @@ void openOCD(t_hydra_console *con)
 	uint8_t ocd_parameters[2] = {0};
 	static uint8_t *buffer = (uint8_t *)g_sbuf;
 
-	while (!USER_BUTTON) {
+	while (!hydrabus_ubtn()) {
 		if(chnReadTimeout(con->sdu, &ocd_command, 1, 1)) {
 			switch(ocd_command) {
 			case CMD_OCD_UNKNOWN:

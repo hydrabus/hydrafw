@@ -404,7 +404,7 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 
 	while (1) {
 		/* Exit if User Button is pressed */
-		if (USER_BUTTON) {
+		if (hydrabus_ubtn()) {
 			break;
 		}
 
@@ -532,7 +532,7 @@ int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p)
 		chnRead(chp, (uint8_t *)g_sbuf, sizeof(g_sbuf) - 1);
 
 		/* Exit if User Button is pressed */
-		if (USER_BUTTON) {
+		if (hydrabus_ubtn()) {
 			break;
 		}
 		//get_char(con);
@@ -642,4 +642,9 @@ uint32_t reverse_u32(uint32_t value)
 	value = (value & 0x0F0F0F0F) << 4 | (value & 0xF0F0F0F0) >> 4;
 	value = (value & 0x00FF00FF) << 8 | (value & 0xFF00FF00) >> 8;
 	return value << 16 | value >> 16;
+}
+
+uint8_t hydrabus_ubtn(void)
+{
+	return bsp_gpio_pin_read(BSP_GPIO_PORTA, 0);
 }

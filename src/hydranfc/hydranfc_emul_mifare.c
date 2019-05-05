@@ -356,7 +356,7 @@ void hydranfc_emul_mifare(t_hydra_console *con, uint32_t mifare_uid)
 	/*  Emulation is managed by IRQ => hydranfc_emul_mifare_irq */
 	cprintf(con, "NFC Emulation Mifare UID 0x%02X 0x%02X 0x%02X 0x%02X started\r\nPress user button(UBTN) to stop.\r\n", byte0, byte1, byte2, byte3);
 	while(1) {
-		if(USER_BUTTON)
+		if(hydrabus_ubtn())
 			break;
 		chThdSleepMilliseconds(10);
 	}

@@ -972,7 +972,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Scanning %s ",
 					proto->config.hydranfc.dev_function == NFC_TYPEA ? "MIFARE" : "Vicinity");
 				cprintf(con, "with %dms period. Press user button to stop.\r\n", period);
-				while (!USER_BUTTON) {
+				while (!hydrabus_ubtn()) {
 					scan(con);
 					chThdSleepMilliseconds(period);
 				}
@@ -1058,7 +1058,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		Trf797x_DM0_DM1_Config();
 		Trf797x_DM0_Enter();
 
-		while (!USER_BUTTON) {
+		while (!hydrabus_ubtn()) {
 			chThdSleepMilliseconds(100);
 		}
 		Trf797x_DM0_Exit();
@@ -1083,7 +1083,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		Trf797x_DM0_DM1_Config();
 		Trf797x_DM1_Enter();
 
-		while (!USER_BUTTON) {
+		while (!hydrabus_ubtn()) {
 			chThdSleepMilliseconds(100);
 		}
 		Trf797x_DM1_Exit();

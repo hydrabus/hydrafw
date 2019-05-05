@@ -461,7 +461,7 @@ static int hydrabus_mode_hexdump(t_hydra_console *con, t_tokenline_parsed *p,
 		count = 1;
 	}
 
-	while((bytes_read < count) && !palReadPad(GPIOA, 0)){
+	while((bytes_read < count) && !hydrabus_ubtn()){
 		mode_status = !HYDRABUS_MODE_STATUS_OK;
 		if((count-bytes_read) >= HEXDUMP_CHUNK_SIZE) {
 			to_rx = HEXDUMP_CHUNK_SIZE;

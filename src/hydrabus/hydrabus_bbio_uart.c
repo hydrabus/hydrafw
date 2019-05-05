@@ -50,7 +50,7 @@ static THD_FUNCTION(uart_reader_thread, arg)
 	chRegSetThreadName("UART reader");
 	chThdSleepMilliseconds(10);
 
-	while (!USER_BUTTON) {
+	while (!hydrabus_ubtn()) {
 		if(bsp_uart_rxne(proto->dev_num)) {
 			bsp_uart_read_u8(proto->dev_num, &rx_data, 1);
 			cprint(con, (char *)&rx_data, 1);
@@ -82,7 +82,7 @@ void bbio_mode_uart(t_hydra_console *con)
 
 	bbio_mode_id(con);
 
-	while (!USER_BUTTON) {
+	while (!hydrabus_ubtn()) {
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:

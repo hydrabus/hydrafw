@@ -211,7 +211,7 @@ int main(void)
 		nb_console = local_nb_console;
 
 		/* HydraBus ULED blink. */
-		if (USER_BUTTON)
+		if (hydrabus_ubtn())
 			sleep_ms = BLINK_FAST;
 		else
 			sleep_ms = BLINK_SLOW;
@@ -219,7 +219,7 @@ int main(void)
 
 		chThdSleepMilliseconds(sleep_ms);
 
-		if (USER_BUTTON) {
+		if (hydrabus_ubtn()) {
 			sleep_ms = BLINK_FAST;
 			/*
 			{

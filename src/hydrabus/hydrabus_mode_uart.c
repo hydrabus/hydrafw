@@ -95,7 +95,7 @@ static THD_FUNCTION(bridge_thread, arg)
 	uint8_t bytes_read;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	while (!USER_BUTTON) {
+	while (!hydrabus_ubtn()) {
 		if(bsp_uart_rxne(proto->dev_num)) {
 			bytes_read = bsp_uart_read_u8_timeout(proto->dev_num,
 							      rx_data,
@@ -122,7 +122,7 @@ static void bridge(t_hydra_console *con)
 
 	thread_t *bthread = chThdCreateFromHeap(NULL, CONSOLE_WA_SIZE, "bridge_thread",
 						LOWPRIO, bridge_thread, con);
-	while(!USER_BUTTON) {
+	while(!hydrabus_ubtn()) {
 		bytes_read = chnReadTimeout(con->sdu, tx_data,
 					    UART_BRIDGE_BUFF_SIZE, US2ST(100));
 		if(bytes_read > 0) {

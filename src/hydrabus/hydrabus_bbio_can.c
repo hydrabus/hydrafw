@@ -76,7 +76,7 @@ void bbio_mode_can(t_hydra_console *con)
 
 	bbio_mode_id(con);
 
-	while(!USER_BUTTON) {
+	while(!hydrabus_ubtn()) {
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:

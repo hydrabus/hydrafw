@@ -332,7 +332,7 @@ __attribute__ ((always_inline)) static inline uint32_t WaitGetDMABuffer(void)
 			return( SWAP32(val_u32) ); /* Swap 32bits Data for Little Endian */
 		}
 
-		if (K4_BUTTON || USER_BUTTON)
+		if (K4_BUTTON || hydrabus_ubtn())
 			break; // ABORT
 	}
 	return 0;
@@ -406,7 +406,7 @@ bool sniff_wait_data_change_or_exit(void)
 			old_data_bit = (uint32_t)(u32_data&1);
 		}
 
-		if ( (K4_BUTTON) || (USER_BUTTON) ) {
+		if ( (K4_BUTTON) || (hydrabus_ubtn()) ) {
 			sniff_log();
 			return TRUE;
 		}
@@ -428,7 +428,7 @@ bool sniff_wait_data_change_or_exit_nolog(void)
 			old_data_bit = (uint32_t)(u32_data&1);
 		}
 
-		if ( (K4_BUTTON) || (USER_BUTTON) ) {
+		if ( (K4_BUTTON) || (hydrabus_ubtn()) ) {
 			chSysUnlock();
 			terminate_sniff_nfc();
 			D4_OFF;
@@ -853,7 +853,7 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 			old_data_counter = 0;
 			nb_data = 0;
 			while (1) {
-				if ( (K4_BUTTON) || (USER_BUTTON) ) {
+				if ( (K4_BUTTON) || (hydrabus_ubtn()) ) {
 					if(end_of_frame == true)
 						total_frame_cycles = get_cyclecounter() - start_frame_cycles;
 					break;
@@ -1152,7 +1152,7 @@ void hydranfc_sniff_14443A_bin(t_hydra_console *con, bool start_of_frame, bool e
 			old_data_counter = 0;
 			nb_data = 0;
 			while (1) {
-				if ( (K4_BUTTON) || (USER_BUTTON) ) {
+				if ( (K4_BUTTON) || (hydrabus_ubtn()) ) {
 					if(end_of_frame == true)
 						end_of_frame_cycles = get_cyclecounter();
 					break;
@@ -1389,7 +1389,7 @@ void hydranfc_sniff_14443AB_bin_raw(t_hydra_console *con, bool start_of_frame, b
 			old_u32_data = f_data;
 			old_data_counter = 0;
 			while (1) {
-				if ( (K4_BUTTON) || (USER_BUTTON) ) {
+				if ( (K4_BUTTON) || (hydrabus_ubtn()) ) {
 					if(end_of_frame == true)
 						sniff_write_bin_timestamp(get_cyclecounter());
 					break;

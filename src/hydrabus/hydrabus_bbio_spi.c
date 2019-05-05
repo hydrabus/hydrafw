@@ -62,7 +62,7 @@ void bbio_spi_sniff(t_hydra_console *con)
 		return;
 	}
 	cs_state = 1;
-	while(!USER_BUTTON || chnReadTimeout(con->sdu, &data, 1,1)) {
+	while(!hydrabus_ubtn() || chnReadTimeout(con->sdu, &data, 1,1)) {
 		if (cs_state == 0 && bsp_spi_get_cs(BSP_DEV_SPI1)) {
 			cprint(con, "]", 1);
 			cs_state = 1;
@@ -107,7 +107,7 @@ void bbio_mode_spi(t_hydra_console *con)
 
 	bbio_mode_id(con);
 
-	while (!USER_BUTTON) {
+	while (!hydrabus_ubtn()) {
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:

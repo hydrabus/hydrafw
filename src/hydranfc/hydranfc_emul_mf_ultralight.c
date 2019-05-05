@@ -559,7 +559,7 @@ static void hydranfc_emul_mf_ultralight_run(t_hydra_console *con)
 	cprintf(con, "SAK2: %02X\r\n", mf_ultralight_sak[1]);
 	cprintf(con, "Press user button(UBTN) to stop.\r\n");
 	while(1) {
-		if(USER_BUTTON)
+		if(hydrabus_ubtn())
 			break;
 		chThdSleepMilliseconds(10);
 	}

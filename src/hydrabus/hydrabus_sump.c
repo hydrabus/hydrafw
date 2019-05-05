@@ -179,7 +179,7 @@ void sump(t_hydra_console *con)
 	uint8_t sump_parameters[4] = {0};
 	uint32_t index=0;
 
-	while (!palReadPad(GPIOA, 0)) {
+	while (!hydrabus_ubtn()) {
 		if(chnReadTimeout(con->sdu, &sump_command, 1, 1)) {
 			switch(sump_command) {
 			case SUMP_RESET:

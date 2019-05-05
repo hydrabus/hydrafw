@@ -259,7 +259,7 @@ void hydranfc_emul_iso14443a(t_hydra_console *con)
 	/*  Emulation is managed by IRQ => hydranfc_emul_14443a_irq */
 	cprintf(con, "NFC Tag Emulation UID SDD started\r\nPress user button(UBTN) to stop.\r\n");
 	while(1) {
-		if(USER_BUTTON)
+		if(hydrabus_ubtn())
 			break;
 		chThdSleepMilliseconds(10);
 	}

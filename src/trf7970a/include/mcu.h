@@ -57,12 +57,6 @@ limitations under the License.
 #define TRF_ENABLE
 
 /* IRQ PA1 */
-#undef USER_BUTTON
-#define USER_BUTTON (palReadPad(GPIOA, 0))
-#undef ABORT_BUTTON
-#define ABORT_BUTTON() ((palReadPad(GPIOA, 0)))
-
-/* IRQ PA1 */
 #define IRQ_PORT (palReadPort(GPIOA))
 #define IRQ_PIN (BIT1)
 

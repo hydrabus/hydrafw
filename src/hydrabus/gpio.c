@@ -48,7 +48,7 @@ static void read_continuous(t_hydra_console *con, uint16_t *gpio, int period)
 	}
 	cprint(con, "\r\n", 2);
 
-	while (!USER_BUTTON) {
+	while (!hydrabus_ubtn()) {
 		for (port = 0; port < 3; port++) {
 			for (pin = 0; pin < 16; pin++) {
 				if (!(gpio[port] & (1 << pin)))
