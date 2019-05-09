@@ -1335,6 +1335,15 @@ t_token tokens_mode_twowire[] = {
 		.help = "Bus frequency"
 	},
 	{
+		T_IDCODE,
+		.help = "Read SWD IDCODE."
+	},
+	{
+		T_BRUTE,
+		.arg_type = T_ARG_UINT,
+		.help = "Perform a SWD enumeration on pins"
+	},
+	{
 		T_ARG_UINT,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"

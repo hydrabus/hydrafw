@@ -68,7 +68,7 @@ bool twowire_pin_init(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.rawwire.clk_pin,
-		      MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL, MODE_CONFIG_DEV_GPIO_NOPULL);
+		      proto->config.rawwire.dev_gpio_mode, proto->config.rawwire.dev_gpio_pull);
 	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin,
 		      proto->config.rawwire.dev_gpio_mode, proto->config.rawwire.dev_gpio_pull);
 	return true;
@@ -278,10 +278,102 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	return tokens_used;
 }
 
+static uint32_t twowire_swd_idcode(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	uint32_t idcode=0;
+	uint8_t i, status = 0;
+
+	proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
+
+	//JTAG-to-SWD, then read DPIDR
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0x7b);
+	twowire_write_u8(con, 0x9e);
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0xff);
+	twowire_write_u8(con, 0x0f);
+	twowire_write_u8(con, 0x00);
+	twowire_write_u8(con, 0xa5);
+	for(i=0; i<3; i++) {
+		status |= twowire_read_bit_clock(con);
+		status <<=1;
+	}
+	for(i=0; i<32; i+=8) {
+		idcode |= (twowire_read_u8(con)<<i);
+	}
+	if(status == 1) {
+		return idcode;
+	} else {
+		return 0;
+	}
+}
+
+static void twowire_brute_swd(t_hydra_console *con, uint32_t num_pins)
+
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	uint32_t idcode;
+	uint8_t clk, sdi, i;
+	uint8_t valid_clk = proto->config.rawwire.clk_pin;
+	uint8_t valid_sdi = proto->config.rawwire.sdi_pin;
+
+	proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
+
+	/* Set dummy pins to prevent pin mismatch */
+	proto->config.rawwire.clk_pin = 12;
+	proto->config.rawwire.sdi_pin = 12;
+
+	for(clk=0; clk<num_pins; clk++) {
+		for(sdi=0; sdi<num_pins; sdi++) {
+			if (clk == sdi) continue;
+			proto->config.rawwire.clk_pin = clk;
+			proto->config.rawwire.sdi_pin = sdi;
+			if (palReadPad(GPIOA, 0)) return;
+			for(i = 0; i < num_pins; i++) {
+				bsp_gpio_init(BSP_GPIO_PORTB, i,
+					      MODE_CONFIG_DEV_GPIO_IN,
+					      MODE_CONFIG_DEV_GPIO_NOPULL);
+			}
+
+			twowire_pin_init(con);
+			//0xff:6 0x7b 0x9e 0xff:6 0x0f 0x00 0xa5 ! ! ! hd:4 !
+			idcode = twowire_swd_idcode(con);
+			if(idcode != 0 && idcode != 0xffffffff) {
+				cprintf(con, "Device found. IDCODE : %08X\r\n", idcode);
+				cprintf(con, "CLK: PB%d\r\nIO: PB%d\r\n",
+					proto->config.rawwire.clk_pin, proto->config.rawwire.sdi_pin);
+				valid_sdi = sdi;
+				valid_clk = clk;
+			}
+		}
+	}
+	proto->config.rawwire.clk_pin = valid_clk;
+	proto->config.rawwire.sdi_pin = valid_sdi;
+	for(i = 0; i < num_pins; i++) {
+		bsp_gpio_init(BSP_GPIO_PORTB, i,
+			      MODE_CONFIG_DEV_GPIO_IN,
+			      MODE_CONFIG_DEV_GPIO_NOPULL);
+	}
+	twowire_pin_init(con);
+}
+
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	float arg_float;
+	uint32_t arg_int;
 	int t;
 
 	for (t = token_pos; p->tokens[t]; t++) {
@@ -318,6 +410,20 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				proto->config.rawwire.dev_speed = (int)arg_float;
 				twowire_tim_set_prescaler(con);
 			}
+			break;
+		case T_BRUTE:
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(uint32_t));
+			cprintf(con, "Bruteforce on %d pins.\r\n", arg_int);
+			if (arg_int < 1 || arg_int > 12) {
+				cprintf(con, "Cannot use more than 12 pins (PB0-11).\r\n");
+				return t;
+			}
+			twowire_brute_swd(con, arg_int);
+			break;
+		case T_IDCODE:
+			arg_int = twowire_swd_idcode(con);
+			cprintf(con, "IDCODE : %08X\r\n", arg_int);
 			break;
 		default:
 			return t - token_pos;
@@ -396,7 +502,7 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 	tokens_used = 0;
 	if (p->tokens[1] == T_PINS) {
 		tokens_used++;
-		cprintf(con, "CLK: PB%d\r\nIO: PB%d\r\n",
+		cprintf(con, "CLK: PB%d\tIO: PB%d\r\n",
 			proto->config.rawwire.clk_pin, proto->config.rawwire.sdi_pin);
 	} else {
 		show_params(con);
