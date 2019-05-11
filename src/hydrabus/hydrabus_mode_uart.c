@@ -100,7 +100,7 @@ static THD_FUNCTION(bridge_thread, arg)
 			bytes_read = bsp_uart_read_u8_timeout(proto->dev_num,
 							      rx_data,
 							      UART_BRIDGE_BUFF_SIZE,
-							      US2ST(100));
+							      TIME_US2I(100));
 			if(bytes_read > 0) {
 				cprint(con, (char *)rx_data, bytes_read);
 			}
@@ -124,7 +124,7 @@ static void bridge(t_hydra_console *con)
 						LOWPRIO, bridge_thread, con);
 	while(!hydrabus_ubtn()) {
 		bytes_read = chnReadTimeout(con->sdu, tx_data,
-					    UART_BRIDGE_BUFF_SIZE, US2ST(100));
+					    UART_BRIDGE_BUFF_SIZE, TIME_US2I(100));
 		if(bytes_read > 0) {
 			bsp_uart_write_u8(proto->dev_num, tx_data, bytes_read);
 		}

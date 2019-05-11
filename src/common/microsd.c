@@ -337,7 +337,7 @@ static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offse
 	startblk = (SDCD1.capacity / MMCSD_BLOCK_SIZE) / 2;
 
 	start = chVTGetSystemTime();
-	end = start + MS2ST(seconds * 1000);
+	end = start + TIME_MS2I(seconds * 1000);
 	n = 0;
 	do {
 		if (blkRead(&SDCD1, startblk, g_sbuf + offset, sectors)) {

@@ -29,7 +29,6 @@ bsp_status_t bsp_smartcard_deinit(bsp_dev_smartcard_t dev_num);
 bsp_status_t bsp_smartcard_write_u8(bsp_dev_smartcard_t dev_num, uint8_t* tx_data, uint8_t nb_data);
 bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data, uint8_t nb_data);
 
-/* For timeout parameter unit see chibios chvt.h macro S2ST()/MS2ST()/US2ST() */
 bsp_status_t bsp_smartcard_read_u8_timeout(bsp_dev_smartcard_t dev_num, uint8_t* rx_data, uint8_t nb_data, uint32_t timeout);
 bsp_status_t bsp_smartcard_write_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* tx_data, uint8_t* rx_data, uint8_t nb_data);
 bsp_status_t bsp_smartcard_rxne(bsp_dev_smartcard_t dev_num);
