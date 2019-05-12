@@ -31,7 +31,6 @@
 #include "hydrabus_sd.h"
 #include <string.h>
 
-static void extcb1(EXTDriver *extp, expchannel_t channel);
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
@@ -44,35 +43,6 @@ volatile int irq_end_rx;
 unsigned char nfc_tx_rawdata_buf[NFC_TX_RAWDATA_BUF_SIZE+1];
 
 void (*trf7970a_irq_fn)(void) = NULL;
-
-/* Configure TRF7970A IRQ on GPIO A1 Rising Edge */
-static const EXTConfig extcfg = {
-	{
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOA, extcb1}, /* EXTI1 */
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL},
-		{EXT_CH_MODE_DISABLED, NULL}
-	}
-};
 
 static struct {
 	int reg;
@@ -117,10 +87,9 @@ enum {
 } nfc_function_t;
 
 /* Triggered when the Ext IRQ is pressed or released. */
-static void extcb1(EXTDriver *extp, expchannel_t channel)
+static void extcb1(void * arg)
 {
-	(void)extp;
-	(void)channel;
+	(void) arg;
 
 	if(trf7970a_irq_fn != NULL)
 		trf7970a_irq_fn();
@@ -145,7 +114,10 @@ extern t_mode_config mode_con1;
 
 static bool init_gpio(t_hydra_console *con)
 {
-	/* TRF7970A IRQ output / HydraBus PA1 input (Ext IRQ Rising Edge configured by extStart(&EXTD1, &extcfg)) */
+	/* TRF7970A IRQ output / HydraBus PA1 input */
+	palClearPad(GPIOA, 1);
+	palSetPadMode(GPIOA, 1, PAL_MODE_INPUT | PAL_STM32_OSPEED_MID1);
+	palSetPadCallback(GPIOA, 1, &extcb1, NULL);
 
 	/* Configure NFC/TRF7970A in SPI mode with Chip Select */
 	/* TRF7970A IO0 input / HydraBus PA3 output (To set to "0" for SPI) */
@@ -240,9 +212,11 @@ static bool init_gpio(t_hydra_console *con)
 	palSetPadMode(GPIOB, 4, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
 	palSetPadMode(GPIOB, 5, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_MID1);
 
-	/* Activates the EXT driver 1. */
-	if(con != NULL)
-		extStart(&EXTD1, &extcfg);
+	/* Activates the PAL driver callback */
+	if(con != NULL) {
+		palEnablePadEvent(GPIOA, 1, PAL_EVENT_MODE_RISING_EDGE);
+		palSetPadCallback(GPIOA, 1, extcb1, NULL);
+	}
 
 	return TRUE;
 }
@@ -868,9 +842,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	}
 
 	/* Stop & Start External IRQ */
-	extStop(&EXTD1);
 	trf7970a_irq_fn = NULL;
-	extStart(&EXTD1, &extcfg);
 
 	sniff_trace_uart1 = FALSE;
 	sniff_raw = FALSE;
@@ -1237,7 +1209,7 @@ void hydranfc_cleanup(t_hydra_console *con)
 	}
 
 	bsp_spi_deinit(BSP_DEV_SPI2);
-	extStop(&EXTD1);
+	palDisablePadEvent(GPIOA, 1);
 
 	/* deinit GPIO config (reinit using hydrabus_init() */
 	deinit_gpio();
@@ -1249,5 +1221,3 @@ const mode_exec_t mode_nfc_exec = {
 	.cleanup = &hydranfc_cleanup,
 	.get_prompt = &get_prompt,
 };
-
-
