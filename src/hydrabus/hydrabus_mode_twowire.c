@@ -306,13 +306,13 @@ static uint32_t twowire_swd_idcode(t_hydra_console *con)
 	twowire_write_u8(con, 0x00);
 	twowire_write_u8(con, 0xa5);
 	for(i=0; i<3; i++) {
-		status |= twowire_read_bit_clock(con);
 		status <<=1;
+		status |= twowire_read_bit_clock(con);
 	}
 	for(i=0; i<32; i+=8) {
 		idcode |= (twowire_read_u8(con)<<i);
 	}
-	if(status == 1) {
+	if(status == 0b100) {
 		return idcode;
 	} else {
 		return 0;
@@ -351,8 +351,8 @@ static void twowire_brute_swd(t_hydra_console *con, uint32_t num_pins)
 			//0xff:6 0x7b 0x9e 0xff:6 0x0f 0x00 0xa5 ! ! ! hd:4 !
 			idcode = twowire_swd_idcode(con);
 			if(idcode != 0 && idcode != 0xffffffff) {
-				cprintf(con, "Device found. IDCODE : %08X\r\n", idcode);
-				cprintf(con, "CLK: PB%d\r\nIO: PB%d\r\n",
+				cprintf(con, "Device found. IDCODE : 0x%08X\r\n", idcode);
+				cprintf(con, "CLK: PB%d\tIO: PB%d\r\n",
 					proto->config.rawwire.clk_pin, proto->config.rawwire.sdi_pin);
 				valid_sdi = sdi;
 				valid_clk = clk;
@@ -423,7 +423,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_IDCODE:
 			arg_int = twowire_swd_idcode(con);
-			cprintf(con, "IDCODE : %08X\r\n", arg_int);
+			if(arg_int != 0 && arg_int != 0xffffffff) {
+				cprintf(con, "IDCODE : 0x%08X\r\n", arg_int);
+			}
 			break;
 		default:
 			return t - token_pos;
