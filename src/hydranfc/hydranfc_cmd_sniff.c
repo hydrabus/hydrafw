@@ -103,6 +103,7 @@ static uint32_t old_u32_data, u32_data, old_data_bit;
 * The slave select line is internally selected.
 */
 static const SPIConfig spi1cfg = {
+	FALSE, /*circular */
 	NULL, /* spicb, */
 	/* HW dependent part.*/
 	GPIOA, /* Port */
