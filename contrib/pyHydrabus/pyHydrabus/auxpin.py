@@ -12,7 +12,7 @@ class AUXPin():
     :example:
 
     >>> import pyHydrabus
-    >>> i=pyHydrabus.I2C('/dev/hydrabus')
+    >>> i=pyHydrabus.RawWire('/dev/hydrabus')
     >>> # Set AUX pin 0 (PC4) to output
     >>> i.AUX[0].direction = 0
     >>> # Set AUX pin to logical 1
