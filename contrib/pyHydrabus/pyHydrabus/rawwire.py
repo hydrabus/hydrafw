@@ -23,7 +23,14 @@ class RawWire(Protocol):
 
     :example:
 
-    TODO
+    >>> import pyHydrabus
+    >>> i=pyHydrabus.I2C('/dev/hydrabus')
+    >>> # Set SDA to high
+    >>> sm.sda = 1
+    >>> # Send two clock ticks
+    >>> sm.clocks(2)
+    >>> # Read two bytes
+    >>> data = sm.read(2)
 
     """
 
@@ -254,7 +261,7 @@ class RawWire(Protocol):
     @property
     def gpio_mode(self):
         """
-        Raw-Wire GPIO mode (1=Push-Pull, 2=Open Drain)
+        Raw-Wire GPIO mode (0=Push-Pull, 1=Open Drain)
         """
         return (self._config & 0b1000) >> 3
 
@@ -269,5 +276,5 @@ class RawWire(Protocol):
             self._configure_port()
             return True
         else:
-            self._logger.error("Incorrect value. Must be 1 or 2")
+            self._logger.error("Incorrect value. Must be 0 or 1")
 
