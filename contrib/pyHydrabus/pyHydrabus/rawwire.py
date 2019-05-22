@@ -24,13 +24,13 @@ class RawWire(Protocol):
     :example:
 
     >>> import pyHydrabus
-    >>> i=pyHydrabus.I2C('/dev/hydrabus')
+    >>> r=pyHydrabus.RawWire('/dev/hydrabus')
     >>> # Set SDA to high
-    >>> sm.sda = 1
+    >>> r.sda = 1
     >>> # Send two clock ticks
-    >>> sm.clocks(2)
+    >>> r.clocks(2)
     >>> # Read two bytes
-    >>> data = sm.read(2)
+    >>> data = r.read(2)
 
     """
 
