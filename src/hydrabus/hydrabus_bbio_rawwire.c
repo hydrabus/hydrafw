@@ -181,15 +181,16 @@ void bbio_mode_rawwire(t_hydra_console *con)
 					curmode.tim_update(con);
 				} else if ((bbio_subcommand & BBIO_RAWWIRE_CONFIG) == BBIO_RAWWIRE_CONFIG) {
 					curmode.cleanup(con);
-					if(bbio_subcommand & 0b10){
-						proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
-					} else {
-						proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
-					}
 					if(bbio_subcommand & 0b100){
 						curmode = bbio_threewire;
 					} else {
 						curmode = bbio_twowire;
+					}
+					curmode.init(con);
+					if(bbio_subcommand & 0b10){
+						proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
+					} else {
+						proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
 					}
 					if(bbio_subcommand & 0b1000){
 						proto->config.rawwire.dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;

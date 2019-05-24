@@ -34,7 +34,7 @@ class RawWire(Protocol):
 
     """
 
-    __RAWWIRE_DEFAULT_CONFIG = 0b100
+    __RAWWIRE_DEFAULT_CONFIG = 0b000
 
     def __init__(self, port=""):
         self._config = self.__RAWWIRE_DEFAULT_CONFIG
