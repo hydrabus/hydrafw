@@ -1,4 +1,4 @@
-Script to communicate with Hydrabus to 93c46 3-wire EEPROM.
+Script to communicate with Hydrabus to 3-wire EEPROMs (93C06, 93C46, 93C86, ...).
 
 The script uses the pyHydrabus library.
 This script requires Python 3.2+
