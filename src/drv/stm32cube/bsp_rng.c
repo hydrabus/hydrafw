@@ -13,8 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "bsp_rng.h"
+#include "common.h"
 #include "stm32f405xx.h"
+#include "bsp_rng.h"
 
 RNG_HandleTypeDef hrng;
 
@@ -66,7 +67,7 @@ uint32_t bsp_rng_read()
 {
 	hrng.Instance = RNG;
 
-	while (!(__HAL_RNG_GET_FLAG(&hrng, RNG_FLAG_DRDY)) || USER_BUTTON) {
+	while (!(__HAL_RNG_GET_FLAG(&hrng, RNG_FLAG_DRDY)) || hydrabus_ubtn()) {
 	}
 
 	return hrng.Instance->DR;
