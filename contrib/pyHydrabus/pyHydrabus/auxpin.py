@@ -14,7 +14,7 @@ class AUXPin():
     >>> import pyHydrabus
     >>> i=pyHydrabus.RawWire('/dev/hydrabus')
     >>> # Set AUX pin 0 (PC4) to output
-    >>> i.AUX[0].direction = 0
+    >>> i.AUX[0].direction = pyHydrabus.OUTPUT
     >>> # Set AUX pin to logical 1
     >>> i.AUX[0].value = 1
     >>> # Read Auxiliary pin 2 (PC5) value
@@ -79,6 +79,12 @@ class AUXPin():
             return
         else:
             self._logger.error("Error setting auxiliary pins value.")
+
+    def toggle(self):
+        """
+        Toggle pin state
+        """
+        self.value = not self.value
 
     @property
     def direction(self):

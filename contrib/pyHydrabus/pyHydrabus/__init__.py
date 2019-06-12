@@ -24,5 +24,8 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+INPUT = 1
+OUTPUT = 0
+
 name = "pyHydrabus"
 __version__ = 0.1
