@@ -21,11 +21,8 @@ from .uart import *
 from .utils import *
 
 import logging
-
-fmt = "%(name)s %(levelname)s %(message)s"
-logging.basicConfig(level=logging.DEBUG, format=fmt)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.addHandler(logging.NullHandler())
 
 name = "pyHydrabus"
 __version__ = 0.1
