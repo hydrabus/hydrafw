@@ -113,18 +113,26 @@ class SPI(Protocol):
         self._hydrabus.write(read_len.to_bytes(2, byteorder="big"))
 
         self._hydrabus.timeout = 0
-        if self._hydrabus.read(1) == b"\x00":
+        ret = self._hydrabus.read(1)
+        self._hydrabus.timeout = None
+        if ret == b"\x00":
             self._logger.error("Cannot execute command. Too many bytes requested ?")
             return None
-        self._hydrabus.timeout = None
+        elif ret == b"\x01" and len(data) == 0:
+            return self._hydrabus.read(read_len)
+        elif ret == b'':
+            #No response, we can send data
+            self._hydrabus.write(data)
 
-        self._hydrabus.write(data)
+            ret = self._hydrabus.read(1)
+            if ret != b"\x01":
+                self._logger.error("Transmit error")
+                return None
 
-        if self._hydrabus.read(1) != b"\x01":
-            self._logger.error("Unknown error.")
-            return None
+            return self._hydrabus.read(read_len)
+        else:
+                self._logger.error(f"Unknown error")
 
-        return self._hydrabus.read(read_len)
 
     def write(self, data=b"", drive_cs=0):
         """
