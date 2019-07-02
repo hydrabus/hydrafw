@@ -35,6 +35,7 @@ class UART(Protocol):
     def __init__(self, port=""):
         self._config = 0b0000
         self._echo = 0
+        self._baud = 9600
         super().__init__(name=b"ART1", fname="UART", mode_byte=b"\x03", port=port)
 
     def bulk_write(self, data=b""):
@@ -57,8 +58,9 @@ class UART(Protocol):
 
         self._hydrabus.write(data)
 
-        if self._hydrabus.read(1) != b"\x01":
-            self._logger.warn("Unknown error.")
+        for _ in range(len(data)):
+            if self._hydrabus.read(1) != b"\x01":
+                self._logger.warn("Transfer error.")
 
     def write(self, data=b""):
         """
@@ -80,8 +82,9 @@ class UART(Protocol):
     @echo.setter
     def echo(self, value):
         value = value & 1
+        self._echo = value
         CMD = 0b00000010
-        CMD = CMD | value
+        CMD = CMD | (not value)
 
         self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))
         if self._hydrabus.read(1) == b"\x01":
@@ -114,6 +117,7 @@ class UART(Protocol):
     @baud.setter
     def baud(self, value):
         CMD = 0b00000111
+        self._baud=value
 
         self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))
         self._hydrabus.write(value.to_bytes(4, byteorder="big"))
@@ -124,3 +128,11 @@ class UART(Protocol):
         else:
             self._logger.error("Error setting pin.")
             return False
+
+    def bridge(self):
+        """
+        Bind the Hydrabus USB and UART
+        Note that in order to leave bridge mode, you need to press the UBTN
+        """
+        CMD = 0b00001111
+        self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))
