@@ -22,7 +22,6 @@
 #include <string.h>
 
 #define UART_DEFAULT_SPEED (9600)
-#define UART_BRIDGE_BUFF_SIZE 32
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
@@ -91,18 +90,17 @@ static THD_FUNCTION(bridge_thread, arg)
 	con = arg;
 	chRegSetThreadName("UART reader");
 	chThdSleepMilliseconds(10);
-	uint8_t rx_data[UART_BRIDGE_BUFF_SIZE];
 	uint8_t bytes_read;
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	while (!hydrabus_ubtn()) {
 		if(bsp_uart_rxne(proto->dev_num)) {
 			bytes_read = bsp_uart_read_u8_timeout(proto->dev_num,
-							      rx_data,
+							      proto->buffer_rx,
 							      UART_BRIDGE_BUFF_SIZE,
 							      TIME_US2I(100));
 			if(bytes_read > 0) {
-				cprint(con, (char *)rx_data, bytes_read);
+				cprint(con, (char *)proto->buffer_rx, bytes_read);
 			}
 		} else {
 			chThdYield();
@@ -112,7 +110,6 @@ static THD_FUNCTION(bridge_thread, arg)
 
 static void bridge(t_hydra_console *con)
 {
-	uint8_t tx_data[UART_BRIDGE_BUFF_SIZE];
 	uint8_t bytes_read;
 	//uint8_t bytes_read;
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -123,10 +120,10 @@ static void bridge(t_hydra_console *con)
 	thread_t *bthread = chThdCreateFromHeap(NULL, CONSOLE_WA_SIZE, "bridge_thread",
 						LOWPRIO, bridge_thread, con);
 	while(!hydrabus_ubtn()) {
-		bytes_read = chnReadTimeout(con->sdu, tx_data,
+		bytes_read = chnReadTimeout(con->sdu, proto->buffer_tx,
 					    UART_BRIDGE_BUFF_SIZE, TIME_US2I(100));
 		if(bytes_read > 0) {
-			bsp_uart_write_u8(proto->dev_num, tx_data, bytes_read);
+			bsp_uart_write_u8(proto->dev_num, proto->buffer_tx, bytes_read);
 		}
 	}
 	chThdTerminate(bthread);

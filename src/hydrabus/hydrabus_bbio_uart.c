@@ -33,7 +33,7 @@ void bbio_uart_init_proto_default(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	/* Defaults */
-	proto->dev_num = 1;
+	proto->dev_num = 0;
 	proto->config.uart.dev_speed = 9600;
 	proto->config.uart.dev_parity = 0;
 	proto->config.uart.dev_stop_bit = 1;
@@ -44,21 +44,24 @@ static THD_FUNCTION(uart_reader_thread, arg)
 {
 	t_hydra_console *con;
 	con = arg;
-	mode_config_proto_t* proto = &con->mode->proto;
-	uint8_t rx_data;
-
 	chRegSetThreadName("UART reader");
 	chThdSleepMilliseconds(10);
+	uint8_t bytes_read;
+	mode_config_proto_t* proto = &con->mode->proto;
 
 	while (!hydrabus_ubtn()) {
 		if(bsp_uart_rxne(proto->dev_num)) {
-			bsp_uart_read_u8(proto->dev_num, &rx_data, 1);
-			cprint(con, (char *)&rx_data, 1);
+			bytes_read = bsp_uart_read_u8_timeout(proto->dev_num,
+							      proto->buffer_rx,
+							      UART_BRIDGE_BUFF_SIZE,
+							      TIME_US2I(100));
+			if(bytes_read > 0) {
+				cprint(con, (char *)proto->buffer_rx, bytes_read);
+			}
 		} else {
 			chThdYield();
 		}
 	}
-	chThdExit((msg_t)1);
 }
 
 static void bbio_mode_id(t_hydra_console *con)
@@ -92,12 +95,15 @@ void bbio_mode_uart(t_hydra_console *con)
 				bbio_mode_id(con);
 				break;
 			case BBIO_UART_START_ECHO:
-				rthread = chThdCreateFromHeap(NULL,
-							      CONSOLE_WA_SIZE,
-							      "uart_reader",
-							      NORMALPRIO,
-							      uart_reader_thread,
-							      con);
+				if(rthread == NULL)
+				{
+					rthread = chThdCreateFromHeap(NULL,
+								      CONSOLE_WA_SIZE,
+								      "uart_reader",
+								      NORMALPRIO,
+								      uart_reader_thread,
+								      con);
+				}
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_UART_STOP_ECHO:
@@ -120,6 +126,31 @@ void bbio_mode_uart(t_hydra_console *con)
 				} else {
 					cprint(con, "\x00", 1);
 				}
+				break;
+			case BBIO_UART_BRIDGE:
+				if(rthread == NULL)
+				{
+					rthread = chThdCreateFromHeap(NULL,
+								      CONSOLE_WA_SIZE,
+								      "uart_reader",
+								      NORMALPRIO,
+								      uart_reader_thread,
+								      con);
+				}
+				while(!hydrabus_ubtn()) {
+					data = chnReadTimeout(con->sdu, proto->buffer_tx,
+								    UART_BRIDGE_BUFF_SIZE, TIME_US2I(100));
+					if(data > 0) {
+						bsp_uart_write_u8(proto->dev_num, proto->buffer_tx, data);
+					}
+				}
+				if(rthread != NULL)
+				{
+					chThdTerminate(rthread);
+					chThdWait(rthread);
+					rthread = NULL;
+				}
+				cprint(con, "\x01", 1);
 				break;
 			default:
 				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
@@ -208,5 +239,11 @@ void bbio_mode_uart(t_hydra_console *con)
 				}
 			}
 		}
+	}
+	if(rthread != NULL)
+	{
+		chThdTerminate(rthread);
+		chThdWait(rthread);
+		rthread = NULL;
 	}
 }

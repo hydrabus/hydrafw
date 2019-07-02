@@ -27,6 +27,8 @@ typedef enum {
 #define BSP_UART_MODE_UART	0
 #define BSP_UART_MODE_LIN	1
 
+#define UART_BRIDGE_BUFF_SIZE 32
+
 bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_conf);
 bsp_status_t bsp_uart_deinit(bsp_dev_uart_t dev_num);
 
