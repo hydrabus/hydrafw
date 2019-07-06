@@ -50,16 +50,22 @@ static THD_FUNCTION(uart_reader_thread, arg)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	while (!hydrabus_ubtn()) {
-		if(bsp_uart_rxne(proto->dev_num)) {
-			bytes_read = bsp_uart_read_u8_timeout(proto->dev_num,
-							      proto->buffer_rx,
-							      UART_BRIDGE_BUFF_SIZE,
-							      TIME_US2I(100));
-			if(bytes_read > 0) {
-				cprint(con, (char *)proto->buffer_rx, bytes_read);
+		if(!chThdShouldTerminateX())
+		{
+			if(bsp_uart_rxne(proto->dev_num)) {
+				bytes_read = bsp_uart_read_u8_timeout(proto->dev_num,
+											proto->buffer_rx,
+											UART_BRIDGE_BUFF_SIZE,
+											TIME_US2I(100));
+				if(bytes_read > 0) {
+					cprint(con, (char *)proto->buffer_rx, bytes_read);
+				}
+			} else {
+				chThdYield();
 			}
-		} else {
-			chThdYield();
+		} else
+		{
+			chThdExit((msg_t)1);
 		}
 	}
 }
