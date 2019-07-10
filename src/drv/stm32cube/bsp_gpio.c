@@ -108,6 +108,38 @@ void bsp_gpio_clr(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
 	hal_gpio_port->BSRR = 1 << (gpio_pin+16);
 }
 
+/** \brief Set gpio_pin(s) as input for the corresponding gpio_port
+ *
+ * \param gpio_port bsp_gpio_port_t GPIO port to configure
+ * \param uint16_t gpio_pin GPIO pin(s) corresponding to port to configure
+ *
+ */
+void bsp_gpio_mode_in(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
+{
+	GPIO_TypeDef *hal_gpio_port;
+
+	hal_gpio_port = (GPIO_TypeDef *)gpio_port;
+	hal_gpio_port->MODER &=  ~(0b11 << (gpio_pin<<1));
+}
+
+/** \brief Set gpio_pin(s) as output for the corresponding gpio_port
+ *
+ * \param gpio_port bsp_gpio_port_t GPIO port to configure
+ * \param uint16_t gpio_pin GPIO pin(s) corresponding to port to configure
+ *
+ */
+void bsp_gpio_mode_out(bsp_gpio_port_t gpio_port, uint16_t gpio_pin)
+{
+	GPIO_TypeDef *hal_gpio_port;
+	uint32_t reg;
+
+	hal_gpio_port = (GPIO_TypeDef *)gpio_port;
+	reg = hal_gpio_port->MODER;
+	reg &=  ~(0b11 << (gpio_pin<<1));
+	reg |=  (0b01 << (gpio_pin<<1));
+	hal_gpio_port->MODER = reg;
+}
+
 /** \brief Read only one gpio_pin for the corresponding gpio_port
  *
  * \param gpio_port bsp_gpio_port_t GPIO port to configure

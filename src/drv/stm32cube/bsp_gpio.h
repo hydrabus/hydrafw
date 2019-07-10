@@ -36,11 +36,11 @@ bsp_status_t bsp_gpio_init(bsp_gpio_port_t gpio_port, uint16_t gpio_pin,
 			   uint32_t mode, uint32_t pull);
 
 void bsp_gpio_set(bsp_gpio_port_t gpio_port, uint16_t gpio_pin);
-
 void bsp_gpio_clr(bsp_gpio_port_t gpio_port, uint16_t gpio_pin);
+void bsp_gpio_mode_in(bsp_gpio_port_t gpio_port, uint16_t gpio_pin);
+void bsp_gpio_mode_out(bsp_gpio_port_t gpio_port, uint16_t gpio_pin);
 
 bsp_gpio_pinstate bsp_gpio_pin_read(bsp_gpio_port_t gpio_port, uint16_t gpio_pin);
-
 uint16_t bsp_gpio_port_read(bsp_gpio_port_t gpio_port);
 
 #endif /* _BSP_GPIO_H_ */

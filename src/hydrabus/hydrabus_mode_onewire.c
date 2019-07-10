@@ -66,18 +66,16 @@ bool onewire_pin_init(t_hydra_console *con)
 	return true;
 }
 
-static void onewire_mode_input(t_hydra_console *con)
+static inline void onewire_mode_input(t_hydra_console *con)
 {
-	mode_config_proto_t* proto = &con->mode->proto;
-	bsp_gpio_init(BSP_GPIO_PORTB, ONEWIRE_PIN,
-		      MODE_CONFIG_DEV_GPIO_IN, proto->config.onewire.dev_gpio_pull);
+	(void) con;
+	bsp_gpio_mode_in(BSP_GPIO_PORTB, ONEWIRE_PIN);
 }
 
-static void onewire_mode_output(t_hydra_console *con)
+static inline void onewire_mode_output(t_hydra_console *con)
 {
-	mode_config_proto_t* proto = &con->mode->proto;
-	bsp_gpio_init(BSP_GPIO_PORTB, ONEWIRE_PIN,
-		      proto->config.onewire.dev_gpio_mode, proto->config.onewire.dev_gpio_pull);
+	(void) con;
+	bsp_gpio_mode_out(BSP_GPIO_PORTB, ONEWIRE_PIN);
 }
 
 inline void onewire_high(void)

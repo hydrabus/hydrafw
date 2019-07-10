@@ -106,15 +106,13 @@ void twowire_tim_set_prescaler(t_hydra_console *con)
 static void twowire_sda_mode_input(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin,
-		      MODE_CONFIG_DEV_GPIO_IN, proto->config.rawwire.dev_gpio_pull);
+	bsp_gpio_mode_in(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin);
 }
 
 static void twowire_sda_mode_output(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	bsp_gpio_init(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin,
-		      proto->config.rawwire.dev_gpio_mode, proto->config.rawwire.dev_gpio_pull);
+	bsp_gpio_mode_out(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin);
 }
 
 inline void twowire_sda_high(t_hydra_console *con)
