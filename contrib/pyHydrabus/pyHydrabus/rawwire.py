@@ -1,11 +1,11 @@
 # Copyright 2019 Nicolas OBERLI
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -171,7 +171,7 @@ class RawWire(Protocol):
         :return: Read bytes
         :rtype: bytes
         """
-        result = b''
+        result = b""
         for chunk in split(data, 16):
             result += self.bulk_write(chunk)
         return result
@@ -185,7 +185,7 @@ class RawWire(Protocol):
         :return: Read data
         :rtype: bytes
         """
-        result = b''
+        result = b""
         for _ in range(length):
             result += self.read_byte()
 
@@ -277,4 +277,3 @@ class RawWire(Protocol):
             return True
         else:
             self._logger.error("Incorrect value. Must be 0 or 1")
-

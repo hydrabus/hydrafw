@@ -1,11 +1,11 @@
 # Copyright 2019 Nicolas OBERLI
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,6 +14,7 @@
 
 import logging
 from .hydrabus import Hydrabus
+
 
 class Utils:
     """
@@ -39,7 +40,7 @@ class Utils:
         """
         self._hydrabus.write(b"\x14")
         v = self._hydrabus.read(2)
-        return int.from_bytes(v, byteorder='big')
+        return int.from_bytes(v, byteorder="big")
 
     def continuous_adc(self):
         """
@@ -61,10 +62,13 @@ class Utils:
         :return: (frequency, duty cycle)
         :rtype: tuple
         """
-        self._hydrabus.write(b'\x16')
+        self._hydrabus.write(b"\x16")
         freq = self._hydrabus.read(4)
         duty = self._hydrabus.read(4)
-        return (int.from_bytes(freq, byteorder='little'),int.from_bytes(duty, byteorder='little'))
+        return (
+            int.from_bytes(freq, byteorder="little"),
+            int.from_bytes(duty, byteorder="little"),
+        )
 
     def close(self):
         """
@@ -72,4 +76,3 @@ class Utils:
         """
         self._hydrabus.exit_bbio()
         self._hydrabus.close()
-

@@ -1,11 +1,11 @@
 # Copyright 2019 Nicolas OBERLI
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -120,8 +120,8 @@ class SPI(Protocol):
             return None
         elif ret == b"\x01" and len(data) == 0:
             return self._hydrabus.read(read_len)
-        elif ret == b'':
-            #No response, we can send data
+        elif ret == b"":
+            # No response, we can send data
             self._hydrabus.write(data)
 
             ret = self._hydrabus.read(1)
@@ -131,8 +131,7 @@ class SPI(Protocol):
 
             return self._hydrabus.read(read_len)
         else:
-                self._logger.error(f"Unknown error")
-
+            self._logger.error(f"Unknown error")
 
     def write(self, data=b"", drive_cs=0):
         """
@@ -156,15 +155,15 @@ class SPI(Protocol):
         :return: Read data
         :rtype: bytes
         """
-        result = b''
+        result = b""
         if drive_cs == 0:
             self.cs = 0
-        while read_len>0:
-            if read_len>=16:
-                to_read=16
+        while read_len > 0:
+            if read_len >= 16:
+                to_read = 16
             else:
                 to_read = read_len
-            result += self.bulk_write(b"\xff"*to_read)
+            result += self.bulk_write(b"\xff" * to_read)
             read_len -= to_read
         if drive_cs == 0:
             self.cs = 1

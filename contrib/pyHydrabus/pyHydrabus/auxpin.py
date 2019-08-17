@@ -2,7 +2,8 @@ import logging
 
 from .common import set_bit
 
-class AUXPin():
+
+class AUXPin:
     """
     Auxilary pin base class
 
@@ -133,7 +134,7 @@ class AUXPin():
         """
         CMD = 0b11110000
         PARAM = self._get_config()
-        PARAM = set_bit(PARAM, value, 4+self.number)
+        PARAM = set_bit(PARAM, value, 4 + self.number)
 
         self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))
         self._hydrabus.write(PARAM)
@@ -141,4 +142,3 @@ class AUXPin():
             return
         else:
             self._logger.error("Error setting auxiliary pins value.")
-
