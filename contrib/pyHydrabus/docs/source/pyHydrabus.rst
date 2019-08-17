@@ -71,7 +71,15 @@ pyHydrabus.Utils module
 pyHydrabus.uart module
 ----------------------
 
-.. automodule:: pyHydrabus.uart
+.. automodule:: pyHydrabus.UART
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pyHydrabus.swd module
+----------------------
+
+.. automodule:: pyHydrabus.SWD
     :members:
     :undoc-members:
     :show-inheritance:
