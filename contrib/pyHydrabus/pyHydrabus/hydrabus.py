@@ -39,7 +39,7 @@ class Hydrabus:
             self.enter_bbio()
         except serial.SerialException as e:
             self._logger.error(f"Cannot connect : {e.strerror}")
-            raise Exception(f"Cannot open {self.port}")
+            raise type(e)(f"Cannot open {self.port}")
 
     def write(self, data=b""):
         """
@@ -48,13 +48,15 @@ class Hydrabus:
         :param data: Bytes to write
         :type data: bytes
         """
-        assert self.connected == True, "Not connected."
+        if not self.connected:
+            raise serial.SerialException("Not connected.")
         try:
             self._logger.debug(f"==>[{str(len(data)).zfill(4)}] {data.hex()}")
             self._serialport.write(data)
             self._serialport.flush()
         except serial.SerialException as e:
             self._logger.error(f"Cannot send : {e.strerror}")
+            raise type(e)(f"Cannot send : {e.strerror}")
 
     def read(self, length=1):
         """
@@ -65,7 +67,8 @@ class Hydrabus:
         :return: Read data
         :rtype: bytes
         """
-        assert self.connected == True, "Not connected."
+        if not self.connected:
+            raise serial.SerialException("Not connected.")
         try:
             data = self._serialport.read(length)
             self._logger.debug(f"<==[{str(length).zfill(4)}] {data.hex()}")
@@ -73,6 +76,7 @@ class Hydrabus:
             return data
         except serial.SerialException as e:
             self._logger.error(f"Cannot read : {e.strerror}")
+            raise type(e)(f"Cannot read : {e.strerror}")
 
     def flush_input(self):
         """
@@ -83,8 +87,10 @@ class Hydrabus:
     def exit_bbio(self):
         """
         Reset Hydrabus to CLI mode
+        :return: Bool
         """
-        assert self.connected == True, "Not connected."
+        if not self.connected:
+            raise serial.SerialException("Not connected.")
         if self.reset() == True:
             self.write(b"\x00")
             self.write(b"\x0F\n")
@@ -96,8 +102,10 @@ class Hydrabus:
         """
         Enter BBIO mode. 
         This should be done prior all further operations
+        :return: Bool
         """
-        assert self.connected == True, "Not connected."
+        if not self.connected:
+            raise serial.SerialException("Not connected.")
         self.timeout = 0.01
         for _ in range(20):
             self.write(b"\x00")
@@ -112,8 +120,10 @@ class Hydrabus:
     def reset(self):
         """
         Force reset to BBIO main mode
+        :return: Boolean
         """
-        assert self.connected == True, "Not connected."
+        if not self.connected:
+            raise serial.SerialException("Not connected.")
         self.timeout = 0.1
         while self.read(5) != b"BBIO1":
             self.flush_input()
@@ -128,7 +138,8 @@ class Hydrabus:
         :return: Current mode
         :rtype: str
         """
-        assert self.connected == True, "Not connected."
+        if not self.connected:
+            raise serial.SerialException("Not connected.")
         self.write(b"\x01")
         return self.read(4).decode("ascii")
 
@@ -142,13 +153,24 @@ class Hydrabus:
     def timeout(self):
         """
         Serial port read timeout
+        :return: timeout
+        :rtype: int
         """
         return self._serialport.timeout
 
     @timeout.setter
     def timeout(self, value):
+        """
+        Set serial port read timeout
+        :param value: timeout
+        :type value: int
+        """
         self._serialport.timeout = value
 
     @property
     def connected(self):
+        """
+        Check if serial port is opened
+        :return: Bool
+        """
         return self._serialport.is_open
