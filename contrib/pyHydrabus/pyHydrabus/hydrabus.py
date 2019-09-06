@@ -120,7 +120,7 @@ class Hydrabus:
     def reset(self):
         """
         Force reset to BBIO main mode
-        :return: Boolean
+        :return: Bool
         """
         if not self.connected:
             raise serial.SerialException("Not connected.")
