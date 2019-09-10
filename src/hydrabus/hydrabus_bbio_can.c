@@ -135,15 +135,15 @@ void bbio_mode_can(t_hydra_console *con)
 				break;
 			case BBIO_CAN_SET_TIMINGS:
 				chnRead(con->sdu, rx_buff, 3);
-				if(rx_buff[0] > 0 && rx_buff[0] > 16) {
+				if(rx_buff[0] > 0 && rx_buff[0] <= 16) {
 					cprint(con, "\x00", 1);
 					break;
 				}
-				if(rx_buff[1] > 0 && rx_buff[1] > 8) {
+				if(rx_buff[1] > 0 && rx_buff[1] <= 8) {
 					cprint(con, "\x00", 1);
 					break;
 				}
-				if(rx_buff[2] > 0 && rx_buff[2] > 4) {
+				if(rx_buff[2] > 0 && rx_buff[2] <= 4) {
 					cprint(con, "\x00", 1);
 					break;
 				}
