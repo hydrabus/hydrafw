@@ -316,7 +316,8 @@ static void scan(t_hydra_console *con, t_tokenline_parsed *p)
 		bsp_i2c_master_write_u8(I2C_DEV_NUM, i << 1, &ack);
 		bsp_i2c_stop(I2C_DEV_NUM);
 		if (ack) {
-			cprintf(con, "Device found at address 0x%02x\r\n", i);
+			cprintf(con, "Device found at address 0x%02x (0x%02x W / 0x%02x R)\r\n",
+				i, (i << 1), (i << 1)+1);
 			found = TRUE;
 		}
 	}
