@@ -78,8 +78,10 @@ class OneWire(Protocol):
         :type data: bytes
         """
         CMD = 0b00010000
-        assert len(data) > 0, "Send at least one byte"
-        assert len(data) <= 16, "Too many bytes to write"
+        if not len(data) > 0:
+            raise ValueError("Send at least one byte")
+        if not len(data) <= 16:
+            raise ValueError("Too many bytes to write")
         CMD = CMD | (len(data) - 1)
 
         self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))
