@@ -159,9 +159,14 @@ static bsp_status_t can_slcan_in(uint8_t *slcanmsg, can_tx_frame *msg)
 static void slcan_read_command(t_hydra_console *con, uint8_t *buff){
 	uint8_t i=0;
 	uint8_t input = 0;
+	uint8_t bytes_read = 0;
 	while(!hydrabus_ubtn() && input!='\r' && i<SLCAN_BUFF_LEN){
-		chnRead(con->sdu, &input, 1);
-		buff[i++] = input;
+		bytes_read = chnReadTimeout(con->sdu, &input,
+					    1, TIME_US2I(1));
+		if (bytes_read != 0) {
+			buff[i++] = input;
+		}
+		chThdYield();
 	}
 }
 
@@ -176,15 +181,11 @@ static THD_FUNCTION(can_reader_thread, arg)
 
 	while (!chThdShouldTerminateX()) {
 		if(bsp_can_rxne(proto->dev_num)) {
-			chSysLock();
 			bsp_can_read(proto->dev_num, &rx_msg);
 			can_slcan_out(con, &rx_msg);
-			chSysUnlock();
-		} else {
-			chThdYield();
 		}
+		chThdYield();
 	}
-	chThdExit((msg_t)1);
 }
 
 void slcan(t_hydra_console *con) {
@@ -271,13 +272,11 @@ void slcan(t_hydra_console *con) {
 		case 'R':
 			/*Transmit*/
 			if(can_slcan_in(buff, &tx_msg) == BSP_OK) {
-				chSysLock();
 				if(bsp_can_write(proto->dev_num, &tx_msg) == BSP_OK) {
 					cprint(con, "\r", 1);
 				}else {
 					cprint(con, "\x07", 1);
 				}
-				chSysUnlock();
 			} else {
 				cprint(con, "\x07", 1);
 			}
