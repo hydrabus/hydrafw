@@ -28,14 +28,23 @@ class SPI(Protocol):
 
     __SPI_DEFAULT_CONFIG = 0b010
 
-    SPI_SPEED_320K = 0b000
-    SPI_SPEED_650K = 0b001
-    SPI_SPEED_1M = 0b010
-    SPI_SPEED_2M = 0b011
-    SPI_SPEED_5M = 0b100
-    SPI_SPEED_10M = 0b101
-    SPI_SPEED_21M = 0b110
-    SPI_SPEED_42M = 0b111
+    SPI1_SPEED_320K = 0b000
+    SPI1_SPEED_650K = 0b001
+    SPI1_SPEED_1M = 0b010
+    SPI1_SPEED_2M = 0b011
+    SPI1_SPEED_5M = 0b100
+    SPI1_SPEED_10M = 0b101
+    SPI1_SPEED_21M = 0b110
+    SPI1_SPEED_42M = 0b111
+
+    SPI2_SPEED_160K = 0b000
+    SPI2_SPEED_320K = 0b001
+    SPI2_SPEED_650M = 0b010
+    SPI2_SPEED_1M = 0b011
+    SPI2_SPEED_2M = 0b100
+    SPI2_SPEED_5M = 0b101
+    SPI2_SPEED_10M = 0b110
+    SPI2_SPEED_21M = 0b111
 
     def __init__(self, port=""):
         self._config = self.__SPI_DEFAULT_CONFIG
@@ -77,8 +86,10 @@ class SPI(Protocol):
         :rtype: bytes
         """
         CMD = 0b00010000
-        assert len(data) > 0, "Send at least one byte"
-        assert len(data) <= 16, "Too many bytes to write"
+        if not len(data) > 0:
+            raise ValueError("Send at least one byte")
+        if not len(data) <= 16:
+            raise ValueError("Too many bytes to write")
         CMD = CMD | (len(data) - 1)
 
         self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))
@@ -175,7 +186,8 @@ class SPI(Protocol):
 
         :param speed: Select any of the defined speeds (SPI_SPEED_*)
         """
-        assert speed <= 0b111, "Incorrect speed"
+        if not speed <= 0b111:
+            raise ValueError("Incorrect speed")
         CMD = 0b01100000
         CMD = CMD | speed
         self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))

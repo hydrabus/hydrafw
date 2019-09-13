@@ -166,8 +166,10 @@ class I2C(Protocol):
         :rtype: list
         """
         CMD = 0b00010000
-        assert len(data) > 0, "Send at least one byte"
-        assert len(data) <= 16, "Too many bytes to write"
+        if not len(data) > 0:
+            raise ValueError("Send at least one byte")
+        if not len(data) <= 16:
+            raise ValueError("Too many bytes to write")
         CMD = CMD | (len(data) - 1)
 
         self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))
@@ -202,7 +204,8 @@ class I2C(Protocol):
 
         :param speed: Select any of the defined speeds (I2C_SPEED_*)
         """
-        assert speed <= 0b11, "Incorrect speed"
+        if not speed <= 0b11:
+            raise ValueError("Incorrect speed")
         CMD = 0b01100000
         CMD = CMD | speed
         self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))

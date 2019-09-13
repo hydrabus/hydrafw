@@ -83,8 +83,10 @@ class RawWire(Protocol):
         :param num: Number of clock ticks to send
         :type num: int
         """
-        assert num > 0, "Send at least one clock tick"
-        assert num <= 16, "Too many ticks to send"
+        if not num > 0:
+            raise ValueError("Send at least one clock tick")
+        if not num <= 16:
+            raise ValueError("Too many ticks to send")
 
         CMD = 0b00100000
         CMD = CMD | (num - 1)
@@ -104,7 +106,8 @@ class RawWire(Protocol):
         :param num: Number of clock ticks to send
         :type num: int
         """
-        assert num > 0, "Must be a positive integer"
+        if not num > 0:
+            raise ValueError("Must be a positive integer")
 
         while num > 16:
             self.bulk_ticks(16)
@@ -121,8 +124,10 @@ class RawWire(Protocol):
         :type data: bytes
         """
         CMD = 0b00010000
-        assert len(data) > 0, "Send at least one byte"
-        assert len(data) <= 16, "Too many bytes to write"
+        if not len(data) > 0:
+            raise ValueError("Send at least one byte")
+        if not len(data) <= 16:
+            raise ValueError("Too many bytes to write")
         CMD = CMD | (len(data) - 1)
 
         self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))
@@ -140,7 +145,8 @@ class RawWire(Protocol):
         :param speed: speed in Hz. Possible values : TODO
         """
         speeds = {5000: 0b00, 50000: 0b01, 100_000: 0b10, 1_000_000: 0b11}
-        assert speed in speeds.keys(), f"Incorrect value. use {speeds.keys()}"
+        if speed not in speeds.keys():
+            raise ValueError(f"Incorrect value. use {speeds.keys()}")
         CMD = 0b01100000
         CMD = CMD | speeds[speed]
         self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))
