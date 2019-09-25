@@ -99,6 +99,7 @@ const char hydrabus_mode_str_mul_write[] = "WRITE: ";
 const char hydrabus_mode_str_mul_read[] = "READ: ";
 const char hydrabus_mode_str_mul_value_u8[] = "0x%02X ";
 const char hydrabus_mode_str_mul_br[] = "\r\n";
+const char hydrabus_mode_str_mdelay[] = "DELAY: %lu ms\r\n";
 
 static const char mode_str_write_error[] =  "WRITE error:%d\r\n";
 static const char mode_str_read_error[] = "READ error:%d\r\n";
@@ -221,11 +222,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			MAYBE_CALL(con->mode->exec->bitr);
 			break;
 		case T_AMPERSAND:
-		case T_PERCENT:
-			if (p->tokens[t] == T_PERCENT)
-				factor = 1000;
-			else
-				factor = 1;
+			factor = 1;
 			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
 				t += 2;
 				memcpy(&usec, p->buf + p->tokens[t], sizeof(int));
@@ -234,8 +231,19 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			}
 			usec *= factor;
 			DelayUs(usec);
+			break;            
+		case T_PERCENT:
+			factor = 1000;
+			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
+				t += 2;
+				memcpy(&usec, p->buf + p->tokens[t], sizeof(int));
+			} else {
+				usec = 1;
+			}
+			cprintf(con, hydrabus_mode_str_mdelay, usec);
+			usec *= factor;
+			DelayUs(usec);
 			break;
-
 		case T_READ:
 			t += hydrabus_mode_read(con, p, t);
 			break;
