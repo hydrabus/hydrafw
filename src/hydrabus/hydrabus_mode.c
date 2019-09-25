@@ -222,14 +222,12 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 			MAYBE_CALL(con->mode->exec->bitr);
 			break;
 		case T_AMPERSAND:
-			factor = 1;
 			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
 				t += 2;
 				memcpy(&usec, p->buf + p->tokens[t], sizeof(int));
 			} else {
 				usec = 1;
 			}
-			usec *= factor;
 			DelayUs(usec);
 			break;            
 		case T_PERCENT:
