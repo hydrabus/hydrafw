@@ -131,12 +131,16 @@ class Hydrabus:
         Force reset to BBIO main mode
         :return: Bool
         """
+        timeout = time.time() + 10
         if not self.connected:
             raise serial.SerialException("Not connected.")
         self.timeout = 0.1
         while self.read(5) != b"BBIO1":
             self.flush_input()
             self.write(b"\x00")
+            if time.time() > timeout:
+                self._logger.error(f"Unable to reset hydrabus")
+                return False
         self.timeout = None
         return True
 
