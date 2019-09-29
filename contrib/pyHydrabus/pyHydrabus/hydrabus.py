@@ -84,6 +84,15 @@ class Hydrabus:
         """
         self._serialport.reset_input_buffer()
 
+    @property
+    def in_waiting(self):
+        """
+        Return the number of bytes in the receive buffer.
+        :return: Number of bytes
+        :rtype: int
+        """
+        return self._serialport.in_waiting
+
     def exit_bbio(self):
         """
         Reset Hydrabus to CLI mode
