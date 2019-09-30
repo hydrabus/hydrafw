@@ -119,7 +119,6 @@ class UART(Protocol):
     @baud.setter
     def baud(self, value):
         CMD = 0b00000111
-        self._baud = value
 
         self._hydrabus.write(CMD.to_bytes(1, byteorder="big"))
         self._hydrabus.write(value.to_bytes(4, byteorder="big"))

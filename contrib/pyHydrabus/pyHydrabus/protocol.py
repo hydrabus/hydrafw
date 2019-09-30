@@ -74,6 +74,15 @@ class Protocol:
         self._hydrabus.close()
 
     @property
+    def hydrabus(self):
+        """
+        Return _hydrabus instance to access Hydrabus class functions and serial methods
+        from any protocol classes instances
+        :return: _hydrabus class instance
+        """
+        return self._hydrabus
+
+    @property
     def timeout(self):
         return self._hydrabus.timeout
 

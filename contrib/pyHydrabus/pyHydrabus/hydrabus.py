@@ -84,6 +84,15 @@ class Hydrabus:
         """
         self._serialport.reset_input_buffer()
 
+    @property
+    def in_waiting(self):
+        """
+        Return the number of bytes in the receive buffer.
+        :return: Number of bytes
+        :rtype: int
+        """
+        return self._serialport.in_waiting
+
     def exit_bbio(self):
         """
         Reset Hydrabus to CLI mode
@@ -122,12 +131,16 @@ class Hydrabus:
         Force reset to BBIO main mode
         :return: Bool
         """
+        timeout = time.time() + 10
         if not self.connected:
             raise serial.SerialException("Not connected.")
         self.timeout = 0.1
         while self.read(5) != b"BBIO1":
             self.flush_input()
             self.write(b"\x00")
+            if time.time() > timeout:
+                self._logger.error(f"Unable to reset hydrabus")
+                return False
         self.timeout = None
         return True
 
