@@ -250,7 +250,7 @@ class SPI(Protocol):
     @property
     def device(self):
         """
-        SPI device to use (0=spi1, 1=spi2)
+        SPI device to use (1=spi1, 0=spi2)
         """
         if self._config & 0b1:
             return 1
