@@ -71,7 +71,7 @@ void hydranfc_scan_iso14443A(t_hydranfc_scan_iso14443A *data);
 void hydranfc_scan_mifare(t_hydra_console *con);
 void hydranfc_scan_vicinity(t_hydra_console *con);
 
-void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_of_frame, bool sniff_trace_uart1);
+void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_of_frame, bool sniff_trace_uart1, bool sniff_pcap_output);
 void hydranfc_sniff_14443A_bin(t_hydra_console *con, bool start_of_frame, bool end_of_frame, bool parity);
 void hydranfc_sniff_14443AB_bin_raw(t_hydra_console *con, bool start_of_frame, bool end_of_frame);
 

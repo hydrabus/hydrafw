@@ -289,7 +289,7 @@ THD_FUNCTION(key_sniff, arg)
 			}
 
 			D2_ON;
-			hydranfc_sniff_14443A(NULL, TRUE, FALSE, FALSE);
+			hydranfc_sniff_14443A(NULL, TRUE, FALSE, FALSE, FALSE);
 			D2_OFF;
 		}
 
@@ -834,6 +834,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	bool sniff_bin;
 	bool sniff_frame_time;
 	bool sniff_parity;
+	bool sniff_pcap_output;
 
 	if(p->tokens[token_pos] == T_SD)
 	{
@@ -849,6 +850,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	sniff_bin = FALSE;
 	sniff_frame_time = FALSE;
 	sniff_parity = FALSE;
+	sniff_pcap_output = FALSE;
 	action = 0;
 	period = 1000;
 	continuous = FALSE;
@@ -933,6 +935,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_DIRECT_MODE_1:
 			action = p->tokens[t];
 			break;
+		case T_PCAP:
+			sniff_pcap_output = TRUE;
+			break;
 		}
 	}
 
@@ -1000,10 +1005,13 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				{
 					if(sniff_frame_time)
 						cprintf(con, "frame-time disabled for trace-uart1 in ASCII\r\n");
-					hydranfc_sniff_14443A(con, FALSE, FALSE, TRUE);
+					hydranfc_sniff_14443A(con, FALSE, FALSE, TRUE, FALSE);
 				}else
 				{
-					hydranfc_sniff_14443A(con, sniff_frame_time, sniff_frame_time, FALSE);
+					if(sniff_pcap_output)
+						hydranfc_sniff_14443A(con, sniff_frame_time, sniff_frame_time, FALSE, TRUE);
+					else
+						hydranfc_sniff_14443A(con, sniff_frame_time, sniff_frame_time, FALSE, FALSE);
 				}
 			}
 		}
