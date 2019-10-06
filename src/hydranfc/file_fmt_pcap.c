@@ -18,7 +18,6 @@
  */
 
 #include "file_fmt_pcap.h"
-#include "file_fmt.h"
 
 #include <stdarg.h>
 #include <stdio.h> /* sprintf */
