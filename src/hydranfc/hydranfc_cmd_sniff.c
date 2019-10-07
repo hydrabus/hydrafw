@@ -599,9 +599,11 @@ void sniff_write_eof_protocol(uint32_t timestamp_nb_cycles)
 	uint8_t data_buf[1];
 	uint8_t data;
 
-	data_buf[0] = RSSI_LEVELS;
-	Trf797xReadSingle(data_buf, 1);
-	data = data_buf[0];
+//	removed as it's too slow for sniffing
+//	data_buf[0] = RSSI_LEVELS;
+//	Trf797xReadSingle(data_buf, 1);
+//	data = data_buf[0];
+	data = 0x7F;
 
 	i = g_sbuf_idx;
 	g_sbuf[i+0] = '\r';
@@ -638,9 +640,11 @@ void sniff_write_timestamp(uint32_t timestamp_nb_cycles)
 	uint8_t data_buf[1];
 	uint8_t data;
 
-	data_buf[0] = RSSI_LEVELS;
-	Trf797xReadSingle(data_buf, 1);
-	data = data_buf[0];
+//	removed as it's too slow for sniffing
+//	data_buf[0] = RSSI_LEVELS;
+//	Trf797xReadSingle(data_buf, 1);
+//	data = data_buf[0];
+	data = 0x7F;
 
 	i = g_sbuf_idx;
 	g_sbuf[i+0] = '\r';
@@ -795,8 +799,8 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 			old_data_bit = 0;
 			f_data = 0;
 
-			uint32_t unkown = 0;
-			uint8_t pow = 0;
+			uint32_t unknown = 0;
+			uint8_t pow = 0x7F;
 			uint8_t data_buf[1];
 			uint32_t nb_cycles_start = 0;
 			uint32_t nb_cycles_end = 0;
@@ -999,7 +1003,7 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 					if (!sniff_pcap_output)
 						sniff_write_8b_ASCII_HEX(ds_data, FALSE);
 					else {
-						unkown = 1;
+						unknown = 1;
 						sniff_write_pcap_data(tmp_u8_data);
 					}
 					break;
@@ -1022,12 +1026,12 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 
 			nb_cycles_end = get_cyclecounter();
 
-			if (sniff_pcap_output) {
-				// TODO RSSI can be useful for ASCII logs as well
-				data_buf[0] = RSSI_LEVELS;
-				Trf797xReadSingle(data_buf, 1);
-				pow = data_buf[0];
-			}
+			//	removed as it's too slow for sniffing
+//			if (sniff_pcap_output) {
+//				data_buf[0] = RSSI_LEVELS;
+//				Trf797xReadSingle(data_buf, 1);
+//				pow = data_buf[0];
+//			}
 
 			if (!sniff_pcap_output)
 				if(end_of_frame == true)
@@ -1071,7 +1075,7 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 			if (sniff_pcap_output) {
 				sniff_write_pcap_packet_header(nb_cycles_start);
 
-				if (unkown == 1)
+				if (unknown == 1)
 					sniff_write_data_header(pow, 3, 1,
 							nb_cycles_end, 0);
 				else
