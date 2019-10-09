@@ -592,88 +592,6 @@ void sniff_write_unknown_protocol(uint8_t data)
 }
 
 __attribute__ ((always_inline)) static inline
-void sniff_write_eof_protocol(uint32_t timestamp_nb_cycles)
-{
-	uint32_t i, nb_cycles;
-	uint8_t val;
-	uint8_t data_buf[1];
-	uint8_t data;
-
-//	removed as it's too slow for sniffing
-//	data_buf[0] = RSSI_LEVELS;
-//	Trf797xReadSingle(data_buf, 1);
-//	data = data_buf[0];
-	data = 0x7F;
-
-	i = g_sbuf_idx;
-	g_sbuf[i+0] = '\r';
-	g_sbuf[i+1] = '\n';
-
-	nb_cycles = timestamp_nb_cycles;
-	val = ((nb_cycles & 0xFF000000) >> 24);
-	g_sbuf[i+2] = htoa[(val & 0xF0) >> 4];
-	g_sbuf[i+3] = htoa[(val & 0x0F)];
-	val = ((nb_cycles & 0x00FF0000) >> 16);
-	g_sbuf[i+4] = htoa[(val & 0xF0) >> 4];
-	g_sbuf[i+5] = htoa[(val & 0x0F)];
-	val = ((nb_cycles & 0x0000FF00) >> 8);
-	g_sbuf[i+6] = htoa[(val & 0xF0) >> 4];
-	g_sbuf[i+7] = htoa[(val & 0x0F)];
-	val = (nb_cycles & 0x000000FF);
-	g_sbuf[i+8] = htoa[(val & 0xF0) >> 4];
-	g_sbuf[i+9] = htoa[(val & 0x0F)];
-	g_sbuf[i+10] = '\t';
-
-	g_sbuf[i+11] = 'R';
-	g_sbuf[i+12] = htoa[(data & 0xF0) >> 4];
-	g_sbuf[i+13] = htoa[(data & 0x0F)];
-	g_sbuf[i+14] = '\t';
-
-	g_sbuf_idx +=15;
-}
-
-__attribute__ ((always_inline)) static inline
-void sniff_write_timestamp(uint32_t timestamp_nb_cycles)
-{
-	uint32_t i, nb_cycles;
-	uint8_t val;
-	uint8_t data_buf[1];
-	uint8_t data;
-
-//	removed as it's too slow for sniffing
-//	data_buf[0] = RSSI_LEVELS;
-//	Trf797xReadSingle(data_buf, 1);
-//	data = data_buf[0];
-	data = 0x7F;
-
-	i = g_sbuf_idx;
-	g_sbuf[i+0] = '\r';
-	g_sbuf[i+1] = '\n';
-
-	nb_cycles = timestamp_nb_cycles;
-	val = ((nb_cycles & 0xFF000000) >> 24);
-	g_sbuf[i+2] = htoa[(val & 0xF0) >> 4];
-	g_sbuf[i+3] = htoa[(val & 0x0F)];
-	val = ((nb_cycles & 0x00FF0000) >> 16);
-	g_sbuf[i+4] = htoa[(val & 0xF0) >> 4];
-	g_sbuf[i+5] = htoa[(val & 0x0F)];
-	val = ((nb_cycles & 0x0000FF00) >> 8);
-	g_sbuf[i+6] = htoa[(val & 0xF0) >> 4];
-	g_sbuf[i+7] = htoa[(val & 0x0F)];
-	val = (nb_cycles & 0x000000FF);
-	g_sbuf[i+8] = htoa[(val & 0xF0) >> 4];
-	g_sbuf[i+9] = htoa[(val & 0x0F)];
-	g_sbuf[i+10] = '\t';
-
-	g_sbuf[i+11] = 'R';
-	g_sbuf[i+12] = htoa[(data & 0xF0) >> 4];
-	g_sbuf[i+13] = htoa[(data & 0x0F)];
-	g_sbuf[i+14] = '\t';
-
-	g_sbuf_idx +=15;
-}
-
-__attribute__ ((always_inline)) static inline
 void sniff_write_frameduration(uint32_t timestamp_nb_cycles)
 {
 	uint32_t i, nb_cycles;
@@ -714,17 +632,6 @@ void sniff_write_8b_ASCII_HEX(uint8_t data, bool add_space)
 		g_sbuf_idx +=2;
 	}
 }
-
-//__attribute__ ((always_inline)) static inline
-//void sniff_write_Parity_ASCII(uint8_t data)
-//{
-//	uint32_t i;
-//
-//	i = g_sbuf_idx;
-//	g_sbuf[i+0] = htoa[(data & 0x0F)];
-//	g_sbuf[i+1] = ' ';
-//	g_sbuf_idx +=2;
-//}
 
 __attribute__ ((always_inline)) static inline
 void sniff_write_bin_timestamp(uint32_t timestamp_nb_cycles)
@@ -801,7 +708,6 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 
 			uint32_t unknown = 0;
 			uint8_t pow = 0x7F;
-			uint8_t data_buf[1];
 			uint32_t nb_cycles_start = 0;
 			uint32_t nb_cycles_end = 0;
 
@@ -1025,13 +931,6 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 			}
 
 			nb_cycles_end = get_cyclecounter();
-
-			//	removed as it's too slow for sniffing
-//			if (sniff_pcap_output) {
-//				data_buf[0] = RSSI_LEVELS;
-//				Trf797xReadSingle(data_buf, 1);
-//				pow = data_buf[0];
-//			}
 
 			if (!sniff_pcap_output)
 				if(end_of_frame == true)
