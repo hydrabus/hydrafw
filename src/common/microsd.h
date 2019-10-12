@@ -41,7 +41,7 @@ bool file_open(FIL *file_handle, const char * filename, const char mode);
 uint32_t file_read(FIL *file_handle, uint8_t *data, int len);
 bool file_readline(FIL *file_handle, uint8_t *data, int len);
 bool file_append(FIL *file_handle, uint8_t *data, int len);
-bool file_create_write(uint8_t* data, uint32_t len, const char * prefix, char * filename);
+bool file_create_write(FIL *file_handle, uint8_t* data, uint32_t len, const char * prefix, char * filename);
 bool file_close(FIL *file_handle);
 bool file_sync(FIL * file_handle);
 

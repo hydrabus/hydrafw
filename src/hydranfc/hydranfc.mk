@@ -5,6 +5,7 @@ HYDRANFCSRC = hydranfc/hydranfc.c \
               hydranfc/hydranfc_cmd_sniff_iso14443.c \
               hydranfc_emul_14443a_sdd.c \
               hydranfc_emul_mifare.c \
+              file_fmt_pcap.c \
               hydranfc_emul_mf_ultralight.c
 
 # Required include directories

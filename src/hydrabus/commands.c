@@ -99,6 +99,7 @@ t_token_dict tl_dict[] = {
 	{ T_SNIFF, "sniff" },
 	{ T_TRACE_UART1, "trace-uart1" },
 	{ T_FRAME_TIME, "frame-time" },
+	{ T_PCAP, "pcap" },
 	{ T_BIN, "bin" },
 	{ T_DIRECT_MODE_0, "dm0" },
 	{ T_DIRECT_MODE_1, "dm1" },
@@ -351,6 +352,10 @@ t_token tokens_mode_nfc_sniff[] = {
 	{
 		T_FRAME_TIME,
 		.help = "Add start/end frame timestamp(in CPU cycles)"
+	},
+	{
+		T_PCAP,
+		.help = "Save output file in Wireshark PCAP format"
 	},
 	{ }
 };
