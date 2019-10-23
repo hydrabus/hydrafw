@@ -160,6 +160,7 @@ t_token_dict tl_dict[] = {
 	{ T_GUARDTIME, "guardtime" },
 	{ T_PRESCALER, "prescaler" },
 	{ T_CONVENTION, "convention" },
+	{ T_DELAY, "delay" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -274,6 +275,11 @@ t_token tokens_mode_adc_trigger[] = {
 		T_HIGH,
 		.arg_type = T_ARG_UINT,
 		.help = "ADC trigger higher bound"
+	},
+	{
+		T_DELAY,
+		.arg_type = T_ARG_UINT,
+		.help = "ADC trigger delay (uS)"
 	},
 	{
 		T_START,

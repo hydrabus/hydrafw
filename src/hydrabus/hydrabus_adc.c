@@ -72,7 +72,7 @@ int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	bsp_dev_adc_t *sources = con->mode->proto.buffer_rx;
 	int num_sources, count, continuous, period, t, i;
-	uint32_t low=0, high=0xffff;
+	uint32_t low=0, high=0xffff, delay=0;
 	bsp_status_t status;
 
 	if (p->tokens[1] == 0)
@@ -116,10 +116,15 @@ int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p)
 					t += 1;
 					memcpy(&high, p->buf + p->tokens[t++], sizeof(uint32_t));
 					break;
+				case T_DELAY:
+					t += 1;
+					memcpy(&delay, p->buf + p->tokens[t++], sizeof(uint32_t));
+					break;
 				case T_START:
 					cprintf(con, "Low : %d\r\n", low);
 					cprintf(con, "High : %d\r\n", high);
-					status = bsp_adc_trigger(low, high);
+					cprintf(con, "Delay : %d\r\n", delay);
+					status = bsp_adc_trigger(low, high, delay);
 					if(status == BSP_OK) {
 						cprintf(con, "Trigger OK\r\n");
 					} else {
