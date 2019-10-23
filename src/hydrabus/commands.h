@@ -151,6 +151,7 @@ enum {
 	T_GUARDTIME,
 	T_PRESCALER,
 	T_CONVENTION,
+	T_DELAY,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
