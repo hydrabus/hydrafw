@@ -100,10 +100,10 @@ class EEPROM93xx(RawWire):
         :param address: Address to write
         :type data: int
         :param data: data to write
-        :type word_size: bytes    
+        :type word_size: size of data in bytes    
         """
         
-        if len(data)*8 % self.word_size != 0:
+        if len(data) % self.word_size != 0:
             print("Data length must be multiple of %d bits" % self.word_size * 8)
             exit(2)
         
