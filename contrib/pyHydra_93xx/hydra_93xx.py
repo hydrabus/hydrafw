@@ -15,7 +15,7 @@ class EEPROM93xx(RawWire):
         """
         Handler constructor
         :param address_size: Address size in bits
-        :type data: int
+        :type address_size: int
         :param word_size: Word size in bits
         :type word_size: int
         """
@@ -68,9 +68,9 @@ class EEPROM93xx(RawWire):
         Read: opcode 10
             
         :param address: Address to read
-        :type data: int
+        :type address: int
         :param num: number of words to read
-        :type word_size: int
+        :type num: int
         """
         data_format = "{:0" + str(self.address_size) + "b}"
         addr_bin = data_format.format(address)       
@@ -98,12 +98,12 @@ class EEPROM93xx(RawWire):
         Read: opcode 01
         
         :param address: Address to write
-        :type data: int
+        :type address: int
         :param data: data to write
-        :type word_size: bytes    
+        :type data: bytes    
         """
         
-        if len(data)*8 % self.word_size != 0:
+        if len(data) % self.word_size != 0:
             print("Data length must be multiple of %d bits" % self.word_size * 8)
             exit(2)
         
