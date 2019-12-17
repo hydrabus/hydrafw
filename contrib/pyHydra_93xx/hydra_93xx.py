@@ -70,7 +70,7 @@ class EEPROM93xx(RawWire):
         :param address: Address to read
         :type data: int
         :param num: number of words to read
-        :type word_size: int
+        :type num: int
         """
         data_format = "{:0" + str(self.address_size) + "b}"
         addr_bin = data_format.format(address)       
@@ -98,9 +98,9 @@ class EEPROM93xx(RawWire):
         Read: opcode 01
         
         :param address: Address to write
-        :type data: int
+        :type address: int
         :param data: data to write
-        :type word_size: size of data in bytes    
+        :type data: bytes
         """
         
         if len(data) % self.word_size != 0:
