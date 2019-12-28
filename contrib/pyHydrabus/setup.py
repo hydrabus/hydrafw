@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from sphinx.setup_command import BuildDoc
+cmdclass = {'build_sphinx': BuildDoc}
+
 
 import setuptools
 
@@ -19,8 +22,12 @@ import pyHydrabus
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+name = 'pyHydrabus'
+version = str(pyHydrabus.__version__)
+release = str(version)
+
 setuptools.setup(
-    name="pyHydrabus",
+    name=name,
     version=pyHydrabus.__version__,
     author="Baldanos",
     author_email="balda@balda.ch",
@@ -35,4 +42,11 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
+    cmdclass=cmdclass,
+    command_options={
+        'build_sphinx': {
+        'project': ('setup.py', name),
+        'version': ('setup.py', version),
+        'release': ('setup.py', release),
+        'source_dir': ('setup.py', 'docs/source')}},
 )
