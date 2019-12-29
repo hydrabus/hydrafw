@@ -22,7 +22,6 @@
 #include "bsp.h"
 #include "bsp_gpio.h"
 #include "hydrabus_mode_wiegand.h"
-#include "stm32f4xx_hal.h" // TODO remove this include as all shall be done in HAL bsp_xxx.h
 #include <string.h>
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);

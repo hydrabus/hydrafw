@@ -17,7 +17,6 @@
 * limitations under the License.
 */
 #include "common.h"
-#include "stm32f4xx_hal.h" // TODO remove this include as all shall be done in HAL bsp_xxx.h
 #include "tokenline.h"
 #include "hydrabus.h"
 #include "bsp.h"
@@ -33,8 +32,6 @@ static void dath(t_hydra_console *con);
 static void datl(t_hydra_console *con);
 static void clk(t_hydra_console *con);
 
-static TIM_HandleTypeDef htim;
-
 static const char* str_prompt_jtag[] = {
 	"jtag1" PROMPT,
 };
@@ -43,7 +40,6 @@ static const char* str_prompt_jtag[] = {
 
 static void init_proto_default(t_hydra_console *con)
 {
-
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	/* Defaults */
@@ -183,31 +179,16 @@ static void jtag_pin_deinit(t_hydra_console *con)
 
 static void tim_init(t_hydra_console *con)
 {
-	htim.Instance = TIM4;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	htim.Init.Period = 21 - 1;
-	htim.Init.Prescaler = (proto->config.jtag.divider) - 1;
-	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
-
-	HAL_TIM_Base_MspInit(&htim);
-	__TIM4_CLK_ENABLE();
-	HAL_TIM_Base_Init(&htim);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-	HAL_TIM_Base_Start(&htim);
+	bsp_tim_init(21, proto->config.jtag.divider, TIM_CLOCKDIVISION_DIV1, TIM_COUNTERMODE_UP);
 }
 
 static void tim_set_prescaler(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	HAL_TIM_Base_Stop(&htim);
-	HAL_TIM_Base_DeInit(&htim);
-	htim.Init.Prescaler = (proto->config.jtag.divider) - 1;
-	HAL_TIM_Base_Init(&htim);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-	HAL_TIM_Base_Start(&htim);
+	bsp_tim_set_prescaler(proto->config.jtag.divider);
 }
 
 static inline void jtag_tms_high(t_hydra_console *con)
@@ -228,20 +209,18 @@ static inline void jtag_clk_high(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	while (!(TIM4->SR & TIM_SR_UIF)) {
-	}
+	bsp_tim_wait_irq();
 	bsp_gpio_set(BSP_GPIO_PORTB, proto->config.jtag.tck_pin);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+	bsp_tim_clr_irq();
 }
 
 static inline void jtag_clk_low(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	while (!(TIM4->SR & TIM_SR_UIF)) {
-	}
+	bsp_tim_wait_irq();
 	bsp_gpio_clr(BSP_GPIO_PORTB, proto->config.jtag.tck_pin);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+	bsp_tim_clr_irq();
 }
 
 static inline void jtag_tdi_high(t_hydra_console *con)

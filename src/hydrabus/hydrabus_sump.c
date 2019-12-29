@@ -19,8 +19,8 @@
 
 #include "common.h"
 #include "tokenline.h"
+#include "bsp.h"
 #include "hydrabus_sump.h"
-#include "stm32f4xx_hal.h" // TODO remove this include as all shall be done in HAL bsp_xxx.h
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -29,7 +29,6 @@
 
 static uint16_t *buffer = (uint16_t *)g_sbuf;
 static uint16_t INDEX = 0;
-static TIM_HandleTypeDef htim;
 
 static void portc_init(void)
 {
@@ -54,26 +53,15 @@ static void portc_init(void)
 static void tim_init(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	htim.Instance = TIM4;
 
-	htim.Init.Period = 21 - 1;
-	htim.Init.Prescaler = 2*(proto->config.sump.divider) - 1;
-	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
-
-	HAL_TIM_Base_MspInit(&htim);
-	__TIM4_CLK_ENABLE();
-	HAL_TIM_Base_Init(&htim);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+	bsp_tim_init(21, 2*(proto->config.sump.divider), TIM_CLOCKDIVISION_DIV1, TIM_COUNTERMODE_UP);
 }
 
 static void tim_set_prescaler(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	HAL_TIM_Base_DeInit(&htim);
-	htim.Init.Prescaler = 2*(proto->config.sump.divider) - 1;
-	HAL_TIM_Base_Init(&htim);
+	bsp_tim_set_prescaler(2*(proto->config.sump.divider));
 }
 
 static void sump_init(t_hydra_console *con)
@@ -92,7 +80,7 @@ static void get_samples(t_hydra_console *con)
 	/* Lock Kernel for logic analyzer */
 	chSysLock();
 
-	HAL_TIM_Base_Start(&htim);
+	bsp_tim_start();
 
 	if(config_state == SUMP_STATE_ARMED)
 	{
@@ -104,12 +92,9 @@ static void get_samples(t_hydra_console *con)
 
 		while(1)
 		{
-			while( !(TIM4->SR & TIM_SR_UIF)) {
-				//Wait for timer...
-			}
-
+			bsp_tim_wait_irq();
 			*(buffer+INDEX) = GPIOC->IDR;
-			TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+			bsp_tim_clr_irq();
 			if ( !((*(buffer+INDEX) ^ config_trigger_value) & config_trigger_mask) ) {
 				config_state = SUMP_STATE_TRIGGED;
 				break;
@@ -125,12 +110,9 @@ static void get_samples(t_hydra_console *con)
 
 		while(config_delay_count > 0)
 		{
-			while( !(TIM4->SR & TIM_SR_UIF)) {
-				//Wait for timer...
-			}
-
+			bsp_tim_wait_irq();
 			*(buffer+INDEX) = GPIOC->IDR;
-			TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+			bsp_tim_clr_irq();
 			config_delay_count--;
 			INDEX++;
 			INDEX &= STATES_LEN-1;
@@ -139,7 +121,7 @@ static void get_samples(t_hydra_console *con)
 
 	chSysUnlock();
 	proto->config.sump.state = SUMP_STATE_IDLE;
-	HAL_TIM_Base_Stop(&htim);
+	bsp_tim_stop();
 }
 
 static void sump_deinit(void)
@@ -148,9 +130,7 @@ static void sump_deinit(void)
 	hal_gpio_port =(GPIO_TypeDef*)GPIOC;
 	uint8_t gpio_pin;
 
-	HAL_TIM_Base_Stop(&htim);
-	HAL_TIM_Base_DeInit(&htim);
-	__TIM4_CLK_DISABLE();
+	bsp_tim_deinit();
 	for(gpio_pin=0; gpio_pin<15; gpio_pin++) {
 		HAL_GPIO_DeInit(hal_gpio_port, 1 << gpio_pin);
 	}

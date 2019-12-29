@@ -22,13 +22,10 @@
 #include "bsp.h"
 #include "bsp_gpio.h"
 #include "hydrabus_mode_threewire.h"
-#include "stm32f4xx_hal.h" // TODO remove this include as all shall be done in HAL bsp_xxx.h
 #include <string.h>
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
-
-static TIM_HandleTypeDef htim;
 
 static const char* str_prompt_threewire[] = {
 	"threewire1" PROMPT,
@@ -80,30 +77,15 @@ bool threewire_pin_init(t_hydra_console *con)
 void threewire_tim_init(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	htim.Instance = TIM4;
 
-	htim.Init.Period = 42 - 1;
-	htim.Init.Prescaler = (THREEWIRE_MAX_FREQ/proto->config.rawwire.dev_speed) - 1;
-	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
-
-	HAL_TIM_Base_MspInit(&htim);
-	__TIM4_CLK_ENABLE();
-	HAL_TIM_Base_Init(&htim);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-	HAL_TIM_Base_Start(&htim);
+	bsp_tim_init(42, (THREEWIRE_MAX_FREQ/proto->config.rawwire.dev_speed), TIM_CLOCKDIVISION_DIV1, TIM_COUNTERMODE_UP);
 }
 
 void threewire_tim_set_prescaler(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	HAL_TIM_Base_Stop(&htim);
-	HAL_TIM_Base_DeInit(&htim);
-	htim.Init.Prescaler = (THREEWIRE_MAX_FREQ/proto->config.rawwire.dev_speed) - 1;
-	HAL_TIM_Base_Init(&htim);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
-	HAL_TIM_Base_Start(&htim);
+	bsp_tim_set_prescaler((THREEWIRE_MAX_FREQ/proto->config.rawwire.dev_speed));
 }
 
 inline void threewire_sdo_high(t_hydra_console *con)
@@ -121,19 +103,17 @@ inline void threewire_sdo_low(t_hydra_console *con)
 inline void threewire_clk_high(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	while (!(TIM4->SR & TIM_SR_UIF)) {
-	}
+	bsp_tim_wait_irq();
 	bsp_gpio_set(BSP_GPIO_PORTB, proto->config.rawwire.clk_pin);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+	bsp_tim_clr_irq();
 }
 
 inline void threewire_clk_low(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
-	while (!(TIM4->SR & TIM_SR_UIF)) {
-	}
+	bsp_tim_wait_irq();
 	bsp_gpio_clr(BSP_GPIO_PORTB, proto->config.rawwire.clk_pin);
-	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+	bsp_tim_clr_irq();
 }
 
 inline void threewire_clock(t_hydra_console *con)
@@ -408,7 +388,7 @@ static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 void threewire_cleanup(t_hydra_console *con)
 {
 	(void)con;
-	HAL_TIM_Base_Stop(&htim);
+	bsp_tim_stop();
 }
 
 static int show(t_hydra_console *con, t_tokenline_parsed *p)

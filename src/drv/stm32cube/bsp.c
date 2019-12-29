@@ -17,10 +17,10 @@ limitations under the License.
 #include "osal.h"
 
 #include "bsp.h"
-#include "stm32f405xx.h"
-#include "stm32f4xx_hal.h"
-
 #include "bsp_gpio.h"
+
+/* BSP_TIM */
+static TIM_HandleTypeDef bsp_htim;
 
 /* Internal Cycle Counter */
 #if !defined(IOREG32) || defined(__DOXYGEN__)
@@ -45,6 +45,9 @@ typedef struct {
 #define get_cyclecounter() ( DWTBase->CYCCNT )
 #endif
 
+/* Returns the number of system ticks since the system boot
+ For tick frequency see common/chconf.h/CH_CFG_ST_FREQUENCY
+*/
 uint32_t HAL_GetTick(void)
 {
 	return osalOsGetSystemTimeX();
@@ -126,3 +129,78 @@ void bsp_enter_usb_dfu(void)
 	}
 }
 
+/** \brief Init & Start TIMER device.
+ *
+ * \param tim_period uint32_t: Specifies the period value to be loaded into the active, Auto-Reload Register at the next update event. This parameter can be a number between Min_Data = 0x0000 and Max_Data = 0xFFFF.
+ * \param prescaler uint32_t: Specifies the prescaler value used to divide the TIM clock. This parameter can be a number between Min_Data = 0x0000 and Max_Data = 0xFFFF
+ * \param clock_division uint32_t: Specifies the clock division. This parameter can be a value of @ref BSP_TIM_ClockDivision
+ * \param counter_mode uint32_t: Specifies the counter mode. This parameter can be a value of @ref BSP_TIM_Counter_Mode
+ * \return void
+ *
+ */
+void bsp_tim_init(uint32_t tim_period, uint32_t prescaler, uint32_t clock_division, uint32_t counter_mode)
+{
+	bsp_htim.Instance = TIM4;
+
+	bsp_htim.Init.Period = tim_period - 1;
+	bsp_htim.Init.Prescaler = prescaler - 1;
+	bsp_htim.Init.ClockDivision = clock_division;
+	bsp_htim.Init.CounterMode = counter_mode;
+
+	HAL_TIM_Base_MspInit(&bsp_htim);
+	__TIM4_CLK_ENABLE();
+	HAL_TIM_Base_Init(&bsp_htim);
+	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+	HAL_TIM_Base_Start(&bsp_htim);
+}
+
+/** \brief Stop, DeInit and Disable TIMER device.
+ *
+ * \return void
+ *
+ */
+void bsp_tim_deinit(void)
+{
+	bsp_htim.Instance = TIM4;
+
+	HAL_TIM_Base_Stop(&bsp_htim);
+	HAL_TIM_Base_DeInit(&bsp_htim);
+	__TIM4_CLK_DISABLE();
+}
+
+/** \brief Set Prescaler of TIMER device.
+ *
+ * \param tim_period uint32_t: Specifies the period value to be loaded into the active, Auto-Reload Register at the next update event. This parameter can be a number between Min_Data = 0x0000 and Max_Data = 0xFFFF.
+ * \param prescaler uint32_t: Specifies the prescaler value used to divide the TIM clock. This parameter can be a number between Min_Data = 0x0000 and Max_Data = 0xFFFF
+ * \param clock_division uint32_t: Specifies the clock division. This parameter can be a value of @ref BSP_TIM_ClockDivision
+ * \param counter_mode uint32_t: Specifies the counter mode. This parameter can be a value of @ref BSP_TIM_Counter_Mode
+ * \return void
+ *
+ */
+void bsp_tim_set_prescaler(uint32_t prescaler)
+{
+	bsp_htim.Instance = TIM4;
+
+	HAL_TIM_Base_Stop(&bsp_htim);
+	HAL_TIM_Base_DeInit(&bsp_htim);
+	bsp_htim.Init.Prescaler = prescaler - 1;
+	HAL_TIM_Base_Init(&bsp_htim);
+	TIM4->SR &= ~TIM_SR_UIF;  //clear overflow flag
+	HAL_TIM_Base_Start(&bsp_htim);
+}
+
+/* Start the TIM Base generation. */
+void bsp_tim_start(void)
+{
+  bsp_htim.Instance = TIM4;
+  HAL_TIM_Base_Start(&bsp_htim);
+}
+
+/* Stop the TIM Base generation. */
+void bsp_tim_stop(void)
+{
+  bsp_htim.Instance = TIM4;
+  HAL_TIM_Base_Stop(&bsp_htim);
+}
+
+/* See bsp.h for other bsp_tim_xxx funtions defined as macro */
