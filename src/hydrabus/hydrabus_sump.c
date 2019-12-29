@@ -20,7 +20,7 @@
 #include "common.h"
 #include "tokenline.h"
 #include "hydrabus_sump.h"
-#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal.h" // TODO remove this include as all shall be done in HAL bsp_xxx.h
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>

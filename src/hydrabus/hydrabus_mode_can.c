@@ -21,7 +21,6 @@
 #include "bsp_gpio.h"
 #include "bsp_can.h"
 #include "hydrabus_mode_can.h"
-#include "stm32f4xx_hal.h"
 #include <string.h>
 #include <stdio.h>
 

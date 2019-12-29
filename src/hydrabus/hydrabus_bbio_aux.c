@@ -19,7 +19,6 @@
 
 #include "common.h"
 #include "tokenline.h"
-#include "stm32f4xx_hal.h"
 
 #include "hydrabus_bbio.h"
 #include "hydrabus_bbio_aux.h"
