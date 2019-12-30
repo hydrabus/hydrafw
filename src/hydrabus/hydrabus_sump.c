@@ -20,6 +20,7 @@
 #include "common.h"
 #include "tokenline.h"
 #include "bsp.h"
+#include "bsp_tim.h"
 #include "hydrabus_sump.h"
 #include <stdlib.h>
 #include <string.h>

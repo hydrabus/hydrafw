@@ -21,6 +21,7 @@
 #include "hydrabus.h"
 #include "bsp.h"
 #include "bsp_gpio.h"
+#include "bsp_tim.h"
 #include "hydrabus_mode_jtag.h"
 #include <string.h>
 

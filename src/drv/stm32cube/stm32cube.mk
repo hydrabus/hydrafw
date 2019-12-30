@@ -22,7 +22,8 @@ STM32CUBESRC = ./drv/stm32cube/stm32f4xx_hal_msp.c \
               ./drv/stm32cube/bsp_rng.c \
               ./drv/stm32cube/bsp_can.c \
               ./drv/stm32cube/bsp_freq.c \
-              ./drv/stm32cube/bsp_trigger.c
+              ./drv/stm32cube/bsp_trigger.c \
+              ./drv/stm32cube/bsp_tim.c
 
 # Required include directories
 STM32CUBEINC = ./drv/stm32cube \
