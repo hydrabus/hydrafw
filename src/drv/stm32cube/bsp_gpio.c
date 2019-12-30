@@ -13,8 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "bsp_gpio.h"
-#include "stm32f405xx.h"
-#include "stm32f4xx_hal.h"
 
 /** \brief Init GPIO
  *

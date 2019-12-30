@@ -17,9 +17,6 @@ limitations under the License.
 
 #include "bsp_pwm.h"
 #include "bsp_pwm_conf.h"
-#include "stm32f405xx.h"
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_rcc.h"
 
 #define NB_PWM (BSP_DEV_PWM_END)
 

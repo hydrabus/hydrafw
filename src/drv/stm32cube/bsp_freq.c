@@ -16,9 +16,6 @@ limitations under the License.
 #include "common.h"
 #include "bsp_freq.h"
 #include "bsp_freq_conf.h"
-#include "stm32f405xx.h"
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_rcc.h"
 
 #define NB_FREQ (BSP_DEV_freq_END)
 

@@ -14,8 +14,6 @@ limitations under the License.
 */
 #include "bsp_spi.h"
 #include "bsp_spi_conf.h"
-#include "stm32f405xx.h"
-#include "stm32f4xx_hal.h"
 
 /*
 Warning in order to use this driver all GPIOs peripherals shall be enabled.

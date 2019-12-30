@@ -14,8 +14,6 @@ limitations under the License.
 */
 #include "bsp_smartcard.h"
 #include "bsp_smartcard_conf.h"
-#include "stm32f405xx.h"
-#include "stm32f4xx_hal.h"
 #include "bsp_gpio.h"
 
 /*

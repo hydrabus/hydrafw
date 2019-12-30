@@ -18,7 +18,6 @@ limitations under the License.
 
 #include "bsp.h"
 #include "mode_config.h"
-#include "stm32f4xx_hal.h"
 
 #define BSP_CAN_MODE_RO	0
 #define BSP_CAN_MODE_RW	1
