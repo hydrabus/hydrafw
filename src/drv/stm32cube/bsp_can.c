@@ -14,7 +14,7 @@ limitations under the License.
 */
 #include "bsp_can.h"
 #include "bsp_can_conf.h"
-#include "stm32f405xx.h"
+#include "stm32.h"
 
 /*
 Warning in order to use this driver all GPIOs peripherals shall be enabled.

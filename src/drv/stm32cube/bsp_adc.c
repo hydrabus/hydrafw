@@ -16,9 +16,7 @@ limitations under the License.
 #include "bsp_adc.h"
 #include "bsp_adc_conf.h"
 #include "bsp_trigger.h"
-#include "stm32f405xx.h"
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_rcc.h"
+#include "stm32.h"
 
 #define ADCx_TIMEOUT_MAX (10) // About 1msec (see common/chconf.h/CH_CFG_ST_FREQUENCY) can be aborted by UBTN too
 #define NB_ADC (BSP_DEV_ADC_END)

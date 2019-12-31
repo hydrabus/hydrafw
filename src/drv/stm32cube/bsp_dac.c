@@ -14,9 +14,7 @@ limitations under the License.
 */
 #include "bsp_dac.h"
 #include "bsp_dac_conf.h"
-#include "stm32f405xx.h"
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_rcc.h"
+#include "stm32.h"
 
 #define NB_DAC (BSP_DEV_DAC_END)
 static DAC_HandleTypeDef dac_handle[NB_DAC];

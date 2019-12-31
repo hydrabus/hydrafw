@@ -17,7 +17,7 @@ limitations under the License.
 #define _BSP_RNG_H_
 
 #include "bsp.h"
-#include "stm32f4xx_hal.h"
+#include "stm32.h"
 
 bsp_status_t bsp_rng_init(void);
 bsp_status_t bsp_rng_deinit(void);
