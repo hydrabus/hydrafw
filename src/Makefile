@@ -27,7 +27,6 @@ ifeq ($(HYDRAFW_DEBUG),1)
   USE_LTO = no
 endif
 
-
 # C specific options here (added to USE_OPT).
 ifeq ($(USE_COPT),)
   USE_COPT = 
@@ -127,7 +126,7 @@ include hydrabus/hydrabus.mk
 include drv/stm32cube/stm32cube.mk
 
 ifeq ($(HYDRAFW_NFC),1)
-include trf7970a/trf7970a.mk
+include hydranfc/trf7970a/trf7970a.mk
 include hydranfc/hydranfc.mk
 endif
 
