@@ -21,10 +21,7 @@ limitations under the License.
  do { \
   } while (!(TIM4->SR & TIM_SR_UIF))
 
-#define bsp_tim_clr_irq() \
- do { \
-  TIM4->SR &= ~TIM_SR_UIF; \
-  } while (0)
+#define bsp_tim_clr_irq() ( TIM4->SR &= ~TIM_SR_UIF )
 
 /** @defgroup BSP_TIM_ClockDivision clock_division
   * @{
