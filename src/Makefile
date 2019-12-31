@@ -6,7 +6,10 @@
 .SUFFIXES:            # Delete the default suffixes
 MAKEFLAGS += --no-builtin-rules
 
-#Set to 1 HYDRAFW_NFC to include HydraNFC extension support
+# Set CPU target (default STM32F4XX)
+export STM32F4XX ?= 1
+
+# Set to 1 HYDRAFW_NFC to include HydraNFC extension support
 export HYDRAFW_NFC ?= 1
 export HYDRAFW_DEBUG ?= 0
 export FW_REVISION := $(shell python build-scripts/hydrafw-revision.py)
@@ -109,15 +112,26 @@ PROJECT = hydrafw
 CHIBIOS = chibios
 
 # Startup files.
+ifeq ($(STM32F4XX),1)
 include $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_stm32f4xx.mk
+endif
+
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
+
+ifeq ($(STM32F4XX),1)
 include $(CHIBIOS)/os/hal/ports/STM32/STM32F4xx/platform.mk
+endif
+
 include ./board/board.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
+
+ifeq ($(STM32F4XX),1)
 include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
+endif
+
 # Other files (optional).
 include $(CHIBIOS)/os/hal/lib/streams/streams.mk
 include $(CHIBIOS)/os/various/fatfs_bindings/fatfs.mk
@@ -125,13 +139,19 @@ include common/common.mk
 include hydrabus/hydrabus.mk
 include drv/stm32cube/stm32cube.mk
 
+ifeq ($(STM32F4XX),1)
+include drv/stm32cube/stm32f4xx_hal.mk
+endif
+
 ifeq ($(HYDRAFW_NFC),1)
 include hydranfc/trf7970a/trf7970a.mk
 include hydranfc/hydranfc.mk
 endif
 
 # Define linker script file here
+ifeq ($(STM32F4XX),1)
 LDSCRIPT= $(STARTUPLD)/STM32F405xG.ld
+endif
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -150,6 +170,10 @@ CSRC = $(STARTUPSRC) \
        $(STM32CUBESRC) \
        tokenline/tokenline.c \
        main.c
+
+ifeq ($(STM32F4XX),1)
+CSRC += $(STM32F4XX_HAL_SRC)
+endif
 
 ifeq ($(HYDRAFW_NFC),1)
 CSRC += $(TRFSRC) \
@@ -194,6 +218,10 @@ INCDIR = $(CHIBIOS)/os/license \
          $(STM32CUBEINC) \
          tokenline
 
+ifeq ($(STM32F4XX),1)
+INCDIR += $(STM32F4XX_HAL_INC)
+endif
+
 ifeq ($(HYDRAFW_NFC),1)
 INCDIR += $(TRFINC) \
           $(HYDRANFCINC)
@@ -207,7 +235,9 @@ endif
 # Compiler settings
 #
 
+ifeq ($(STM32F4XX),1)
 MCU  = cortex-m4
+endif
 
 #TRGT = arm-elf-
 TRGT = arm-none-eabi-

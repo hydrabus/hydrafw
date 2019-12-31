@@ -16,8 +16,7 @@ limitations under the License.
 #define _BSP_H_
 
 #include <stdint.h>
-#include "stm32f405xx.h"
-#include "stm32f4xx_hal.h"
+#include "stm32.h"
 
 /* Macro for fast read, set & clear GPIO pin */
 #define gpio_get_pin(GPIOx, GPIO_Pin) (GPIOx->IDR & GPIO_Pin)
