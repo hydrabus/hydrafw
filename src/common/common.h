@@ -61,7 +61,6 @@ void scs_dwt_cycle_counter_enabled(void);
 uint64_t get_cyclecounter64(void);
 uint64_t get_cyclecounter64I(void);
 
-void wait_nbcycles(uint32_t nbcycles);
 void DelayUs(uint32_t delay_us);
 void DelayMs(uint32_t delay_ms);
 

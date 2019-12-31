@@ -197,24 +197,6 @@ void scs_dwt_cycle_counter_enabled(void)
 	DWT_CTRL  |= DWT_CTRL_CYCCNTENA;
 }
 
-void wait_nbcycles(uint32_t nbcycles)
-{
-	if (nbcycles < 10) {
-		return;
-	} else
-		nbcycles-=10; /* Remove 10 cycles because of code overhead */
-
-	/* Disable IRQ globally */
-	__asm__("cpsid i");
-
-	clear_cyclecounter();
-
-	while ( get_cyclecounter() < nbcycles );
-
-	/* Enable IRQ globally */
-	__asm__("cpsie i");
-}
-
 /**
 * @brief  Inserts a delay time in uS.
 * @param  delay_us: specifies the delay time in micro second.

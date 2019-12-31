@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2015 Benjamin VERNOUX
+ * Copyright (C) 2015-2019 Benjamin VERNOUX
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include "tokenline.h"
 #include "hydranfc.h"
 #include "trf797x.h"
+#include "bsp.h"
 #include "bsp_spi.h"
 #include <string.h>
 
@@ -194,7 +195,7 @@ void hydranfc_emul_mifare_states(void)
 				/* Reply with ATQA 0x04 0x00 */
 				data_buf[0] = ISO14443A_ATQA_BYTE0;
 				data_buf[1] = ISO14443A_ATQA_BYTE1;
-				wait_nbcycles(3791);
+				wait_delay(3791);
 				if(emul_mifare_tx_rawdata(data_buf, 2, 0) == 2)
 					hydranfc_emul_14443a_state = EMUL_RX_MIFARE_ANTICOL;
 			} else {
@@ -219,7 +220,7 @@ void hydranfc_emul_mifare_states(void)
 				data_buf[2] = byte2;
 				data_buf[3] = byte3;
 				data_buf[4] = byte4;
-				wait_nbcycles(2378);
+				wait_delay(2378);
 				if(emul_mifare_tx_rawdata(data_buf, 5, 0) == 5)
 					hydranfc_emul_14443a_state = EMUL_RX_MIFARE_SEL_UID;
 			} else
@@ -245,7 +246,7 @@ void hydranfc_emul_mifare_states(void)
 
 				/* Reply with SAK + CRC */
 				data_buf[0] = ISO14443A_SAK;
-				wait_nbcycles(322);
+				wait_delay(322);
 				if(emul_mifare_tx_rawdata(data_buf, 1, 1) == 1) {
 					hydranfc_emul_14443a_state = EMUL_RX_MIFARE_MIFARE_CMD;
 				} else

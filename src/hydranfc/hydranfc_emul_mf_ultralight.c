@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2016-2017 Benjamin VERNOUX
+ * Copyright (C) 2016-2019 Benjamin VERNOUX
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include "tokenline.h"
 #include "hydranfc.h"
 #include "trf797x.h"
+#include "bsp.h"
 #include "bsp_spi.h"
 #include "ff.h"
 #include "microsd.h"
@@ -257,7 +258,7 @@ void hydranfc_emul_mf_ultralight_states(void)
 					/* Reply with ATQA */
 					data_buf[0] = mf_ultralight_atqa[0];
 					data_buf[1] = mf_ultralight_atqa[1];
-					wait_nbcycles(3791);
+					wait_delay(3791);
 					if(emul_mf_ultralight_tx_rawdata(data_buf, 2, 0) == 2)
 						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_ANTICOL_L1;
 				} else {
@@ -282,7 +283,7 @@ void hydranfc_emul_mf_ultralight_states(void)
 					data_buf[2] = mf_ultralight_uid[1];
 					data_buf[3] = mf_ultralight_uid[2];
 					data_buf[4] = mf_ultralight_uid_bcc[0]; // BCC1
-					wait_nbcycles(2378);
+					wait_delay(2378);
 					if(emul_mf_ultralight_tx_rawdata(data_buf, 5, 0) == 5)
 						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_SEL1_UID;
 				} else
@@ -309,7 +310,7 @@ void hydranfc_emul_mf_ultralight_states(void)
 				{
 					/* Reply with SAK L1 + CRC */
 					data_buf[0] = mf_ultralight_sak[0];
-					wait_nbcycles(324);
+					wait_delay(324);
 					if(emul_mf_ultralight_tx_rawdata(data_buf, 1, 1) == 1) {
 						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_ANTICOL_L2;
 					} else
@@ -334,7 +335,7 @@ void hydranfc_emul_mf_ultralight_states(void)
 					data_buf[2] = mf_ultralight_uid[5];
 					data_buf[3] = mf_ultralight_uid[6];
 					data_buf[4] = mf_ultralight_uid_bcc[1]; // BCC2
-					wait_nbcycles(2378);
+					wait_delay(2378);
 					if(emul_mf_ultralight_tx_rawdata(data_buf, 5, 0) == 5)
 						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_SEL2_UID;
 				} else
@@ -361,7 +362,7 @@ void hydranfc_emul_mf_ultralight_states(void)
 				{
 					/* Reply with SAK L2 + CRC */
 					data_buf[0] =  mf_ultralight_sak[1];
-					wait_nbcycles(324);
+					wait_delay(324);
 					if(emul_mf_ultralight_tx_rawdata(data_buf, 1, 1) == 1) {
 						emul_mf_ultralight_14443a_state = EMUL_RX_MF_ULTRALIGHT_END_ANTICOL;
 					} else
@@ -393,7 +394,7 @@ void hydranfc_emul_mf_ultralight_states(void)
 
 					case EMUL_MF_ULTRALIGHT_READ:
 						/* Reply with 16bytes DATA + automatic CRC added by TRF7970A */
-						wait_nbcycles(324); // TBD
+						wait_delay(324); // TBD
 						/* TODO implement roll-back buffer */
 						page_num = data_buf[1] & 0xF;
 						if(page_num > 12)
