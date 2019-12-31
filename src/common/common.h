@@ -55,12 +55,6 @@
 #define BIT6    (1<<6)
 #define BIT7    (1<<7)
 
-void scs_dwt_cycle_counter_enabled(void);
-#define clear_cyclecounter() ( DWTBase->CYCCNT = 0 )
-#define get_cyclecounter() ( DWTBase->CYCCNT )
-uint64_t get_cyclecounter64(void);
-uint64_t get_cyclecounter64I(void);
-
 void DelayUs(uint32_t delay_us);
 void DelayMs(uint32_t delay_ms);
 
@@ -77,31 +71,6 @@ extern uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));
 extern SerialUSBDriver SDU1;
 /* USB2: Virtual serial port over USB.*/
 extern SerialUSBDriver SDU2;
-
-/* Internal Cycle Counter */
-typedef volatile uint32_t IOREG32;
-typedef struct {
-	IOREG32 DHCSR;
-	IOREG32 DCRSR;
-	IOREG32 DCRDR;
-	IOREG32 DEMCR;
-} CMx_SCS;
-#define SCSBase			((CMx_SCS *)0xE000EDF0U)
-#define SCS_DEMCR		(SCSBase->DEMCR)
-#define SCS_DEMCR_TRCENA	(0x1U << 24)
-typedef struct {
-	IOREG32 CTRL;
-	IOREG32 CYCCNT;
-	IOREG32 CPICNT;
-	IOREG32 EXCCNT;
-	IOREG32 SLEEPCNT;
-	IOREG32 LSUCNT;
-	IOREG32 FOLDCNT;
-	IOREG32 PCSR;
-} CMx_DWT;
-#define DWTBase			((CMx_DWT *)0xE0001000U)
-#define DWT_CTRL		(DWTBase->CTRL)
-#define DWT_CTRL_CYCCNTENA	(0x1U << 0)
 
 #ifndef MIN
 #define MIN(a, b) (a < b ? a : b)

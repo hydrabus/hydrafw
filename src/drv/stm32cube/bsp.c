@@ -19,28 +19,42 @@ limitations under the License.
 #include "bsp.h"
 #include "bsp_gpio.h"
 
-/* Internal Cycle Counter */
-#if !defined(IOREG32) || defined(__DOXYGEN__)
-typedef volatile uint32_t IOREG32;
-#endif
+static volatile uint64_t cyclecounter64 = 0;
 
-#if !defined(CMx_DWT) || defined(__DOXYGEN__)
-typedef struct {
-	IOREG32 CTRL;
-	IOREG32 CYCCNT;
-} CMx_DWT;
-#define DWTBase                 ((CMx_DWT *)0xE0001000U)
-#define DWT_CTRL                (DWTBase->CTRL)
-#define DWT_CTRL_CYCCNTENA      (0x1U << 0)
-#endif
+/* Enable SCS DWT Cycle Counter for cycle accurate measurements */
+void bsp_scs_dwt_cycle_counter_enabled(void)
+{
+	SCS_DEMCR |= SCS_DEMCR_TRCENA;
+	DWT_CTRL  |= DWT_CTRL_CYCCNTENA;
+}
 
-#if !defined(clear_cyclecounter) || defined(__DOXYGEN__)
-#define clear_cyclecounter() ( DWTBase->CYCCNT = 0 )
-#endif
+/*
+ If used this function shall be called at least every 2^32 cycles (to avoid overflow)
+ (2^32 cycles => 25.56 seconds @168MHz)
+ Use this function if interruptions are enabled
+*/
+uint64_t bsp_get_cyclecounter64(void)
+{
+	uint32_t primask;
+	asm volatile ("mrs %0, PRIMASK" : "=r"(primask));
+	asm volatile ("cpsid i");  // Disable interrupts.
+	int64_t r = cyclecounter64;
+	r += DWTBase->CYCCNT - (uint32_t)(r);
+	cyclecounter64 = r;
+	asm volatile ("msr PRIMASK, %0" : : "r"(primask));  // Restore interrupts.
+	return r;
+}
 
-#if !defined(get_cyclecounter) || defined(__DOXYGEN__)
-#define get_cyclecounter() ( DWTBase->CYCCNT )
-#endif
+/*
+ If used this function shall be called at least every 2^32 cycles (to avoid overflow)
+ (2^32 cycles => 25.56 seconds @168MHz)
+ Use this function if interruptions are disabled
+*/
+uint64_t bsp_get_cyclecounter64I(void)
+{
+	cyclecounter64 += DWTBase->CYCCNT - (uint32_t)(cyclecounter64);
+	return cyclecounter64;
+}
 
 /* Returns the number of system ticks since the system boot
  For tick frequency see common/chconf.h/CH_CFG_ST_FREQUENCY
@@ -65,10 +79,10 @@ bool delay_is_expired(bool start, uint32_t wait_nb_cycles)
 	if(start == TRUE) {
 		/* Disable IRQ globally */
 		__asm__("cpsid i");
-		clear_cyclecounter();
+		bsp_clear_cyclecounter();
 	} else {
 		/* Minus 10 cycles to take into account code overhead */
-		if(get_cyclecounter() >= (wait_nb_cycles-10)) {
+		if(bsp_get_cyclecounter() >= (wait_nb_cycles-10)) {
 			/* Enable IRQ globally */
 			__asm__("cpsie i");
 			return TRUE;
@@ -82,9 +96,9 @@ void wait_delay(uint32_t wait_nb_cycles)
 	/* Disable IRQ globally */
 	__asm__("cpsid i");
 
-	clear_cyclecounter();
+	bsp_clear_cyclecounter();
 	/* Minus 10 cycles to take into account code overhead */
-	while(get_cyclecounter() < (wait_nb_cycles-10)) {
+	while(bsp_get_cyclecounter() < (wait_nb_cycles-10)) {
 		__asm__("nop");
 	}
 

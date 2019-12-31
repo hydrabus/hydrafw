@@ -33,8 +33,6 @@
 #define HYDRAFW_VERSION "HydraFW (HydraBus) " HYDRAFW_GIT_TAG " " HYDRAFW_CHECKIN_DATE
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
-static volatile uint64_t cyclecounter64 = 0;
-
 /* CCM = .ram4 */
 uint8_t buf[512] __attribute__ ((section(".ram4")));
 /* Generic large buffer.*/
@@ -80,7 +78,6 @@ void cprint(t_hydra_console *con, const char *data, const uint32_t size)
 	stream_write(con, data, size);
 }
 
-
 void print_hex(t_hydra_console *con, uint8_t* data, uint8_t size)
 {
 	uint8_t ascii[17];
@@ -123,13 +120,6 @@ void cprintf(t_hydra_console *con, const char *fmt, ...)
 	va_end(va_args);
 
 	stream_write(con, cprintf_buff, real_size);
-}
-
-/* Internal Cycle Counter for measurement */
-void scs_dwt_cycle_counter_enabled(void)
-{
-	SCS_DEMCR |= SCS_DEMCR_TRCENA;
-	DWT_CTRL  |= DWT_CTRL_CYCCNTENA;
 }
 
 /**
@@ -195,8 +185,8 @@ void cmd_show_system(t_hydra_console *con)
 
 	cprintf(con, "%s\r\n", HYDRAFW_VERSION);
 
-	cycles_start = get_cyclecounter();
-	cycles64 = get_cyclecounter64();
+	cycles_start = bsp_get_cyclecounter();
+	cycles64 = bsp_get_cyclecounter64();
   system_time = osalOsGetSystemTimeX();
 	cprintf(con, "sysTime: 0x%08x.\r\n", system_time);
 	cprintf(con, "cyclecounter: 0x%08x cycles.\r\n", cycles_start);
@@ -204,9 +194,9 @@ void cmd_show_system(t_hydra_console *con)
 		(uint32_t)(cycles64 >> 32),
 		(uint32_t)(cycles64 & 0xFFFFFFFF));
 
-	cycles_start = get_cyclecounter();
+	cycles_start = bsp_get_cyclecounter();
 	DelayUs(10000);
-	cycles_stop = get_cyclecounter();
+	cycles_stop = bsp_get_cyclecounter();
 	cycles_delta = cycles_stop - cycles_start;
 	cprintf(con, "10ms delay: %d cycles.\r\n\r\n", cycles_delta);
 
@@ -268,18 +258,6 @@ int cmd_show(t_hydra_console *con, t_tokenline_parsed *p)
 		return FALSE;
 
 	return TRUE;
-}
-
-void waitcycles(uint32_t nbcycles)
-{
-	if (nbcycles < 20) {
-		return;
-	} else
-		nbcycles-=20; /* Remove 20 cycles because of code overhead */
-
-	clear_cyclecounter();
-
-	while ( get_cyclecounter() < nbcycles );
 }
 
 /* Just debug to check Timing and accuracy with output pin */
@@ -345,86 +323,86 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 
 		/* Delay 1us */
 		tick = ticks_1us;
-		waitcycles(tick);
+		wait_delay(tick);
 
 		/* Freq 10Mhz */
 		tick = ticks10MHz;
 		for(i=0; i<16; i++) {
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 		}
 
 		/* Delay 1us */
 		tick = ticks_1us;
-		waitcycles(tick);
+		wait_delay(tick);
 
 		/* Freq 3.39Mhz */
 		tick = ticks3_39MHz;
 		for(i=0; i<16; i++) {
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 		}
 
 		/* Delay 1us */
 		tick = ticks_1us;
-		waitcycles(tick);
+		wait_delay(tick);
 
 		/* Freq 1Mhz */
 		tick = tick1MHz;
 		for(i=0; i<16; i++) {
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 
 			TST_ON;
-			waitcycles(tick);
+			wait_delay(tick);
 			TST_OFF;
-			waitcycles(tick);
+			wait_delay(tick);
 		}
 
 	}
@@ -455,34 +433,6 @@ int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p)
 		//get_char(con);
 	}
 	return TRUE;
-}
-
-/*
- If used this function shall be called at least every 2^32 cycles (to avoid overflow)
- (2^32 cycles => 25.56 seconds @168MHz)
- Use this function if interruptions are enabled
-*/
-uint64_t get_cyclecounter64(void)
-{
-	uint32_t primask;
-	asm volatile ("mrs %0, PRIMASK" : "=r"(primask));
-	asm volatile ("cpsid i");  // Disable interrupts.
-	int64_t r = cyclecounter64;
-	r += DWTBase->CYCCNT - (uint32_t)(r);
-	cyclecounter64 = r;
-	asm volatile ("msr PRIMASK, %0" : : "r"(primask));  // Restore interrupts.
-	return r;
-}
-
-/*
- If used this function shall be called at least every 2^32 cycles (to avoid overflow)
- (2^32 cycles => 25.56 seconds @168MHz)
- Use this function if interruptions are disabled
-*/
-uint64_t get_cyclecounter64I(void)
-{
-	cyclecounter64 += DWTBase->CYCCNT - (uint32_t)(cyclecounter64);
-	return cyclecounter64;
 }
 
 static uint8_t hexchartonibble(char hex)

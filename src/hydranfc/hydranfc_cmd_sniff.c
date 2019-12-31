@@ -37,6 +37,7 @@
 #include "common.h"
 #include "microsd.h"
 #include "ff.h"
+#include "bsp.h"
 #include "bsp_uart.h"
 
 /* Disable D4 & TST output pin (used only for debug purpose) */
@@ -493,7 +494,7 @@ void sniff_write_pcd(void)
 	g_sbuf[i+0] = '\r';
 	g_sbuf[i+1] = '\n';
 
-	nb_cycles = get_cyclecounter();
+	nb_cycles = bsp_get_cyclecounter();
 	val = ((nb_cycles & 0xFF000000) >> 24);
 	g_sbuf[i+2] = htoa[(val & 0xF0) >> 4];
 	g_sbuf[i+3] = htoa[(val & 0x0F)];
@@ -528,7 +529,7 @@ void sniff_write_picc(void)
 	g_sbuf[i+0] = '\r';
 	g_sbuf[i+1] = '\n';
 
-	nb_cycles = get_cyclecounter();
+	nb_cycles = bsp_get_cyclecounter();
 	val = ((nb_cycles & 0xFF000000) >> 24);
 	g_sbuf[i+2] = htoa[(val & 0xF0) >> 4];
 	g_sbuf[i+3] = htoa[(val & 0x0F)];
@@ -569,7 +570,7 @@ void sniff_write_unknown_protocol(uint8_t data)
 	g_sbuf[i+0] = '\r';
 	g_sbuf[i+1] = '\n';
 
-	nb_cycles = get_cyclecounter();
+	nb_cycles = bsp_get_cyclecounter();
 	val = ((nb_cycles & 0xFF000000) >> 24);
 	g_sbuf[i+2] = htoa[(val & 0xF0) >> 4];
 	g_sbuf[i+3] = htoa[(val & 0x0F)];
@@ -711,7 +712,7 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 			uint32_t nb_cycles_start = 0;
 			uint32_t nb_cycles_end = 0;
 
-			nb_cycles_start = get_cyclecounter();
+			nb_cycles_start = bsp_get_cyclecounter();
 
 			u32_data = WaitGetDMABuffer();
 			old_data_bit = (uint32_t)(u32_data&1);
@@ -752,7 +753,7 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 			TST_OFF;
 			u32_data = WaitGetDMABuffer();
 			if(start_of_frame == true)
-				start_frame_cycles = get_cyclecounter();
+				start_frame_cycles = bsp_get_cyclecounter();
 			TST_ON;
 			f_data |= u32_data>>rsh_bit;
 
@@ -825,7 +826,7 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 			while (1) {
 				if ( (K4_BUTTON) || (hydrabus_ubtn()) ) {
 					if(end_of_frame == true)
-						total_frame_cycles = get_cyclecounter() - start_frame_cycles;
+						total_frame_cycles = bsp_get_cyclecounter() - start_frame_cycles;
 					break;
 				}
 
@@ -851,7 +852,7 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 						if (old_data_counter>1) {
 							/* No new data => End Of Frame detected => Wait new data & synchro */
 							if(end_of_frame == true)
-								total_frame_cycles = get_cyclecounter() - start_frame_cycles;
+								total_frame_cycles = bsp_get_cyclecounter() - start_frame_cycles;
 							break;
 						}
 					} else {
@@ -930,7 +931,7 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 						sniff_write_pcap_data(tmp_u8_data);
 			}
 
-			nb_cycles_end = get_cyclecounter();
+			nb_cycles_end = bsp_get_cyclecounter();
 
 			if (!sniff_pcap_output)
 				if(end_of_frame == true)
@@ -943,12 +944,12 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 				if (uart_buf_size > 0) {
 #ifdef STAT_UART_WRITE
 					uint32_t ticks;
-					ticks = get_cyclecounter();
+					ticks = bsp_get_cyclecounter();
 #endif
 					bsp_uart_write_u8(BSP_DEV_UART1, &g_sbuf[uart_buf_pos], uart_buf_size);
 					uart_buf_pos = g_sbuf_idx;
 #ifdef STAT_UART_WRITE
-					ticks = (get_cyclecounter() - ticks);
+					ticks = (bsp_get_cyclecounter() - ticks);
 					uart_nb_loop++;
 
 					if(ticks < uart_min)
@@ -1097,7 +1098,7 @@ void hydranfc_sniff_14443A_bin(t_hydra_console *con, bool start_of_frame, bool e
 			TST_OFF;
 			u32_data = WaitGetDMABuffer();
 			if(start_of_frame == true)
-				sniff_write_bin_timestamp(get_cyclecounter());
+				sniff_write_bin_timestamp(bsp_get_cyclecounter());
 			TST_ON;
 			f_data |= u32_data>>rsh_bit;
 
@@ -1167,7 +1168,7 @@ void hydranfc_sniff_14443A_bin(t_hydra_console *con, bool start_of_frame, bool e
 			while (1) {
 				if ( (K4_BUTTON) || (hydrabus_ubtn()) ) {
 					if(end_of_frame == true)
-						end_of_frame_cycles = get_cyclecounter();
+						end_of_frame_cycles = bsp_get_cyclecounter();
 					break;
 				}
 
@@ -1193,7 +1194,7 @@ void hydranfc_sniff_14443A_bin(t_hydra_console *con, bool start_of_frame, bool e
 						if (old_data_counter>1) {
 							/* No new data => End Of Frame detected => Wait new data & synchro */
 							if(end_of_frame == true)
-								end_of_frame_cycles = get_cyclecounter();
+								end_of_frame_cycles = bsp_get_cyclecounter();
 							break;
 						}
 					} else {
@@ -1271,13 +1272,13 @@ void hydranfc_sniff_14443A_bin(t_hydra_console *con, bool start_of_frame, bool e
 			if ((nb_data > 0) && (g_sbuf_idx >  sizeof(bin_frame_hdr))) {
 #ifdef STAT_UART_WRITE
 				uint32_t ticks;
-				ticks = get_cyclecounter();
+				ticks = bsp_get_cyclecounter();
 #endif
 				bin_frame_hdr.data_size = g_sbuf_idx;
 				memcpy(&g_sbuf[0], (uint8_t*)&bin_frame_hdr, sizeof(bin_frame_hdr));
 				bsp_uart_write_u8(BSP_DEV_UART1, &g_sbuf[0], g_sbuf_idx);
 #ifdef STAT_UART_WRITE
-				ticks = (get_cyclecounter() - ticks);
+				ticks = (bsp_get_cyclecounter() - ticks);
 				uart_nb_loop++;
 
 				if(ticks < uart_min)
@@ -1384,7 +1385,7 @@ void hydranfc_sniff_14443AB_bin_raw(t_hydra_console *con, bool start_of_frame, b
 			TST_OFF;
 			u32_data = WaitGetDMABuffer();
 			if(start_of_frame == true)
-				sniff_write_bin_timestamp(get_cyclecounter());
+				sniff_write_bin_timestamp(bsp_get_cyclecounter());
 			TST_ON;
 			f_data |= u32_data>>rsh_bit;
 
@@ -1404,7 +1405,7 @@ void hydranfc_sniff_14443AB_bin_raw(t_hydra_console *con, bool start_of_frame, b
 			while (1) {
 				if ( (K4_BUTTON) || (hydrabus_ubtn()) ) {
 					if(end_of_frame == true)
-						sniff_write_bin_timestamp(get_cyclecounter());
+						sniff_write_bin_timestamp(bsp_get_cyclecounter());
 					break;
 				}
 
@@ -1430,7 +1431,7 @@ void hydranfc_sniff_14443AB_bin_raw(t_hydra_console *con, bool start_of_frame, b
 						if (old_data_counter>1) {
 							/* No new data => End Of Frame detected => Wait new data & synchro */
 							if(end_of_frame == true)
-								sniff_write_bin_timestamp(get_cyclecounter());
+								sniff_write_bin_timestamp(bsp_get_cyclecounter());
 							break;
 						}
 					} else {
@@ -1457,13 +1458,13 @@ void hydranfc_sniff_14443AB_bin_raw(t_hydra_console *con, bool start_of_frame, b
 #ifdef STAT_UART_WRITE
 			{
 				uint32_t ticks;
-				ticks = get_cyclecounter();
+				ticks = bsp_get_cyclecounter();
 #endif
 				bin_frame_hdr.data_size = g_sbuf_idx;
 				memcpy(&g_sbuf[0], (uint8_t*)&bin_frame_hdr, sizeof(bin_frame_hdr));
 				bsp_uart_write_u8(BSP_DEV_UART1, &g_sbuf[0], g_sbuf_idx);
 #ifdef STAT_UART_WRITE
-				ticks = (get_cyclecounter() - ticks);
+				ticks = (bsp_get_cyclecounter() - ticks);
 				uart_nb_loop++;
 
 				if(ticks < uart_min)

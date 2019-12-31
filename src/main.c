@@ -141,7 +141,7 @@ int main(void)
 
 	chSysInit();
 
-	scs_dwt_cycle_counter_enabled();
+	bsp_scs_dwt_cycle_counter_enabled();
 
 	/* Configure PA0 (UBTN), PA4 (ULED) and initialize the SD driver. */
 	hydrabus_init();
