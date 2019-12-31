@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2014-2015 Benjamin VERNOUX
+ * Copyright (C) 2014-2019 Benjamin VERNOUX
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,24 @@
  * limitations under the License.
  */
 
-#include "common.h"
+#include "bsp.h"
+#include "bsp_print_dbg.h"
 #include <string.h>
+#include <stdarg.h>
 
 #define SCB_HFSR_FORCED (1 << 30)
 #define CFSR_USAGE_FAULT_MASK (SCB_CFSR_USGFAULTSR_Msk)
 #define CFSR_BUS_FAULT_MASK (SCB_CFSR_BUSFAULTSR_Msk)
 #define CFSR_MEM_FAULT_MASK (SCB_CFSR_MEMFAULTSR_Msk)
+
+#define BIT0    (1<<0)
+#define BIT1    (1<<1)
+#define BIT2    (1<<2)
+#define BIT3    (1<<3)
+#define BIT4    (1<<4)
+#define BIT5    (1<<5)
+#define BIT6    (1<<6)
+#define BIT7    (1<<7)
 
 /* Hard Fault Handler */
 typedef struct {
@@ -50,7 +61,6 @@ void printMemoryManagementErrorMsg(uint32_t CFSR_val)
 	printf_dbg("b7=MMFARVALID,b6=Res,b5=MLSPERR,b4=MSTKERR\n");
 	printf_dbg("b3=MUNSTKERR,b2=Res,b1=DACCVIAL,b0=IACCVIOL\n");
 }
-
 
 void printBusFaultErrorMsg(uint32_t CFSR_val)
 {
@@ -147,5 +157,3 @@ void usage_fault_handler_c(unsigned int* stack)
 	__ASM volatile("bkpt 1");
 	while(1);
 }
-
-
