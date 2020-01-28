@@ -26,6 +26,7 @@
 #include "hydrabus_bbio.h"
 #include "hydrabus_bbio_uart.h"
 #include "bsp_uart.h"
+#include "hydrabus_bbio_aux.h"
 
 void bbio_uart_init_proto_default(t_hydra_console *con)
 {
@@ -240,6 +241,9 @@ void bbio_mode_uart(t_hydra_console *con)
 						cprint(con, "\x00", 1);
 					}
 				} else if ((bbio_subcommand & BBIO_UART_CONFIG_PERIPH) == BBIO_UART_CONFIG_PERIPH) {
+					//Set AUX[0] (PC4) value
+					bbio_aux_write((bbio_subcommand & 0b10)>>1);
+
 					cprint(con, "\x01", 1);
 				}
 			}

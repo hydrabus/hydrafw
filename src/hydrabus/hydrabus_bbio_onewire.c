@@ -27,6 +27,7 @@
 #include "hydrabus_bbio.h"
 #include "hydrabus_bbio_onewire.h"
 #include "hydrabus_mode_onewire.h"
+#include "hydrabus_bbio_aux.h"
 
 
 static void bbio_mode_id(t_hydra_console *con)
@@ -79,6 +80,9 @@ void bbio_mode_onewire(t_hydra_console *con)
 				} else if ((bbio_subcommand & BBIO_ONEWIRE_CONFIG_PERIPH) == BBIO_ONEWIRE_CONFIG_PERIPH) {
 					proto->config.onewire.dev_gpio_pull = (bbio_subcommand & 0b100)?1:0;
 					status = onewire_pin_init(con);
+					//Set AUX[0] (PC4) value
+					bbio_aux_write((bbio_subcommand & 0b10)>>1);
+
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);
 					} else {

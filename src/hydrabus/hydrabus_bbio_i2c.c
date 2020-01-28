@@ -26,6 +26,7 @@
 #include "hydrabus_bbio.h"
 #include "hydrabus_bbio_i2c.h"
 #include "bsp_i2c.h"
+#include "hydrabus_bbio_aux.h"
 
 #define I2C_DEV_NUM (1)
 
@@ -182,6 +183,9 @@ void bbio_mode_i2c(t_hydra_console *con)
 				} else if ((bbio_subcommand & BBIO_I2C_CONFIG_PERIPH) == BBIO_I2C_CONFIG_PERIPH) {
 					proto->config.i2c.dev_gpio_pull = (bbio_subcommand & 0b100)?1:0;
 					status = bsp_i2c_init(proto->dev_num, proto);
+					//Set AUX[0] (PC4) value
+					bbio_aux_write((bbio_subcommand & 0b10)>>1);
+
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);
 					} else {

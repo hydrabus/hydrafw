@@ -27,6 +27,7 @@
 #include "hydrabus_bbio_rawwire.h"
 #include "hydrabus_mode_twowire.h"
 #include "hydrabus_mode_threewire.h"
+#include "hydrabus_bbio_aux.h"
 
 
 const mode_rawwire_exec_t bbio_twowire = {
@@ -209,6 +210,9 @@ void bbio_mode_rawwire(t_hydra_console *con)
 					} else {
 						proto->config.rawwire.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 					}
+					//Set AUX[0] (PC4) value
+					bbio_aux_write((bbio_subcommand & 0b10)>>1);
+
 					curmode.pin_init(con);
 					curmode.tim_init(con);
 					curmode.clock_low(con);

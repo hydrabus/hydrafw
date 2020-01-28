@@ -40,10 +40,14 @@
 
 int cmd_bbio(t_hydra_console *con)
 {
+	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t bbio_mode;
 
 	// Init auxiliary pins
-	bbio_aux_init_proto_default(con);
+	// output no pullup on PC4 - AUX[0]
+	// input no pullup on PC5-7 - AUX[1-3]
+	proto->aux_config = 0b00001110;
+	bbio_aux_mode_set(con);
 
 	cprint(con, "BBIO1", 5);
 

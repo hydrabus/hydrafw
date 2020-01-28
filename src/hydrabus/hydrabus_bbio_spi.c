@@ -26,6 +26,7 @@
 #include "hydrabus_bbio.h"
 #include "hydrabus_bbio_spi.h"
 #include "bsp_spi.h"
+#include "hydrabus_bbio_aux.h"
 
 void bbio_spi_init_proto_default(t_hydra_console *con)
 {
@@ -287,6 +288,9 @@ void bbio_mode_spi(t_hydra_console *con)
 					} else {
 						bsp_spi_select(proto->dev_num);
 					}
+					//Set AUX[0] (PC4) value
+					bbio_aux_write((bbio_subcommand & 0b10)>>1);
+
 					cprint(con, "\x01", 1);
 				}
 			}
