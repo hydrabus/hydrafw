@@ -178,6 +178,9 @@ t_token_dict tl_dict[] = {
 	{ T_AMPERSAND, "&" },
 	{ T_PERCENT, "%" },
 	{ T_TILDE, "~" },
+	{ T_AUX_OFF, "a" },
+	{ T_AUX_ON, "A" },
+	{ T_AUX_READ, "@" },
 	{ }
 };
 
@@ -526,6 +529,18 @@ t_token tokens_mode_uart[] = {
 		.help = "Write a random byte (repeat with :<num>)"
 	},
 	{
+		T_AUX_ON,
+		.help = "Toggle AUX[0](PC4) high"
+	},
+	{
+		T_AUX_OFF,
+		.help = "Toggle AUX[0](PC4) low"
+	},
+	{
+		T_AUX_READ,
+		.help = "Read AUX[0](PC4)"
+	},
+	{
 		T_BRIDGE,
 		.help = "UART bridge mode"
 	},
@@ -667,6 +682,18 @@ t_token tokens_mode_smartcard[] = {
 		.help = "Write a random byte (repeat with :<num>)"
 	},
 	{
+		T_AUX_ON,
+		.help = "Toggle AUX[0](PC4) high"
+	},
+	{
+		T_AUX_OFF,
+		.help = "Toggle AUX[0](PC4) low"
+	},
+	{
+		T_AUX_READ,
+		.help = "Read AUX[0](PC4)"
+	},
+	{
 		T_EXIT,
 		.help = "Exit SMARTCARD mode"
 	},
@@ -741,6 +768,18 @@ t_token tokens_mode_lin[] = {
 		T_TILDE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_AUX_ON,
+		.help = "Toggle AUX[0](PC4) high"
+	},
+	{
+		T_AUX_OFF,
+		.help = "Toggle AUX[0](PC4) low"
+	},
+	{
+		T_AUX_READ,
+		.help = "Read AUX[0](PC4)"
 	},
 	{
 		T_EXIT,
@@ -828,6 +867,18 @@ t_token tokens_mode_can[] = {
 		T_TILDE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_AUX_ON,
+		.help = "Toggle AUX[0](PC4) high"
+	},
+	{
+		T_AUX_OFF,
+		.help = "Toggle AUX[0](PC4) low"
+	},
+	{
+		T_AUX_READ,
+		.help = "Read AUX[0](PC4)"
 	},
 	{
 		T_SLCAN,
@@ -930,6 +981,18 @@ t_token tokens_mode_i2c[] = {
 		T_TILDE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_AUX_ON,
+		.help = "Toggle AUX[0](PC4) high"
+	},
+	{
+		T_AUX_OFF,
+		.help = "Toggle AUX[0](PC4) low"
+	},
+	{
+		T_AUX_READ,
+		.help = "Read AUX[0](PC4)"
 	},
 	{
 		T_EXIT,
@@ -1037,6 +1100,18 @@ t_token tokens_mode_spi[] = {
 		T_TILDE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_AUX_ON,
+		.help = "Toggle AUX[0](PC4) high"
+	},
+	{
+		T_AUX_OFF,
+		.help = "Toggle AUX[0](PC4) low"
+	},
+	{
+		T_AUX_READ,
+		.help = "Read AUX[0](PC4)"
 	},
 	{
 		T_EXIT,
@@ -1190,6 +1265,18 @@ t_token tokens_mode_jtag[] = {
 		.help = "Write a random byte (repeat with :<num>)"
 	},
 	{
+		T_AUX_ON,
+		.help = "Toggle AUX[0](PC4) high"
+	},
+	{
+		T_AUX_OFF,
+		.help = "Toggle AUX[0](PC4) low"
+	},
+	{
+		T_AUX_READ,
+		.help = "Read AUX[0](PC4)"
+	},
+	{
 		T_EXIT,
 		.help = "Exit JTAG mode"
 	},
@@ -1286,6 +1373,18 @@ t_token tokens_mode_onewire[] = {
 		T_TILDE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_AUX_ON,
+		.help = "Toggle AUX[0](PC4) high"
+	},
+	{
+		T_AUX_OFF,
+		.help = "Toggle AUX[0](PC4) low"
+	},
+	{
+		T_AUX_READ,
+		.help = "Read AUX[0](PC4)"
 	},
 	{
 		T_EXIT,
@@ -1408,6 +1507,18 @@ t_token tokens_mode_twowire[] = {
 		.help = "Write a random byte (repeat with :<num>)"
 	},
 	{
+		T_AUX_ON,
+		.help = "Toggle AUX[0](PC4) high"
+	},
+	{
+		T_AUX_OFF,
+		.help = "Toggle AUX[0](PC4) low"
+	},
+	{
+		T_AUX_READ,
+		.help = "Read AUX[0](PC4)"
+	},
+	{
 		T_EXIT,
 		.help = "Exit 2-wire mode"
 	},
@@ -1512,6 +1623,18 @@ t_token tokens_mode_threewire[] = {
 		T_TILDE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_AUX_ON,
+		.help = "Toggle AUX[0](PC4) high"
+	},
+	{
+		T_AUX_OFF,
+		.help = "Toggle AUX[0](PC4) low"
+	},
+	{
+		T_AUX_READ,
+		.help = "Read AUX[0](PC4)"
 	},
 	{
 		T_EXIT,
@@ -1668,6 +1791,18 @@ t_token tokens_mode_wiegand[] = {
 		T_TILDE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write a random byte (repeat with :<num>)"
+	},
+	{
+		T_AUX_ON,
+		.help = "Toggle AUX[0](PC4) high"
+	},
+	{
+		T_AUX_OFF,
+		.help = "Toggle AUX[0](PC4) low"
+	},
+	{
+		T_AUX_READ,
+		.help = "Read AUX[0](PC4)"
 	},
 	{
 		T_EXIT,

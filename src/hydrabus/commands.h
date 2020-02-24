@@ -170,5 +170,8 @@ enum {
 	T_AMPERSAND,
 	T_PERCENT,
 	T_TILDE,
+	T_AUX_OFF,
+	T_AUX_ON,
+	T_AUX_READ,
 };
 
