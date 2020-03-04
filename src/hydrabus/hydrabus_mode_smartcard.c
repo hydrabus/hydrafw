@@ -414,11 +414,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			}
 			break;
 		case T_QUERY:
-			t++;
 			smartcard_get_card_status(con);
 			break;
 		case T_ATR:
-			t++;
 			smartcard_get_atr(con);
 			break;
 		default:
