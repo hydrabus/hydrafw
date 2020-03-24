@@ -122,24 +122,28 @@ static void smartcard_get_atr(t_hydra_console *con)
 	uint8_t r = 1;
 	uint8_t checksum = 0;
 	uint8_t more_td = 1;
-        uint16_t Fi [] = {372, 372, 558, 744, 1116, 1488, 1860, 0xFF, 0xFF, 512, 768, 1024, 1536, 2048, 0xFF, 0xFF};
-        uint8_t Di [] = {0xFF, 1, 2, 4, 8, 16, 32, 64, 12, 20, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-        uint8_t FMax [] = {4, 5, 6, 8, 12, 16, 20, 0xFF, 0xFF, 5, 7.5, 10, 15, 20, 0xFF, 0xFF};
-        uint16_t F = 0;
-        uint8_t D = 0;
-        uint16_t E = 0;
+	uint16_t Fi [] = {372, 372, 558, 744, 1116, 1488, 1860, 0xFF, 0xFF, 512, 768, 1024, 1536, 2048, 0xFF, 0xFF};
+	uint8_t Di [] = {0xFF, 1, 2, 4, 8, 16, 32, 64, 12, 20, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+	uint8_t FMax [] = {4, 5, 6, 8, 12, 16, 20, 0xFF, 0xFF, 5, 7.5, 10, 15, 20, 0xFF, 0xFF};
+	uint16_t F = 0;
+	uint8_t D = 0;
+	uint16_t E = 0;
+	uint8_t max = 0;
 
 	/* Defaults */
 	init_proto_default(con);
 	bsp_smartcard_init(proto->dev_num, proto);
-	
-	bsp_smartcard_set_rst(proto->dev_num, 0);                           // Start with RST low.
-	DelayMs(1);                                          // RST low for at least 400 clocks.
+
+	bsp_smartcard_set_rst(proto->dev_num, 0);                       // Start with RST low.
+	DelayMs(1);							// RST low for at least 400 clocks (tb).
 	bsp_smartcard_read_u8_timeout(proto->dev_num, atr, 1, 1);       // Empty read buffer.
 	bsp_smartcard_set_vcc(proto->dev_num, 0);
 	bsp_smartcard_set_rst(proto->dev_num, 1);
-
 	bsp_smartcard_read_u8(proto->dev_num, atr, 1);
+
+	if (atr[0] == 0) {
+		bsp_smartcard_read_u8(proto->dev_num, atr, 1);
+	}
 
 	/* Inverse or Direct convention */
 	switch(atr[0]) {
@@ -179,22 +183,30 @@ static void smartcard_get_atr(t_hydra_console *con)
 		for(; r<=atr_size; r++) {
 			bsp_smartcard_read_u8(proto->dev_num, atr+r, 1);
 			apply_convention(con, atr+r, 1);
-                        
-                        // Test if TA1 is present from T0,
-                        if(r == 2 && (atr[1] >> 4) & 0x1) {
-                                F = Fi[atr[r] >> 4];
-                                D = Di[atr[r] & 0x0F];
-                                E = F/D;
 
+			// Test if TA1 is present from T0,
+			if(r == 2) {
+				if ((atr[1] >> 4) & 0x1) {
+					F = Fi[atr[r] >> 4];
+					D = Di[atr[r] & 0x0F];
+					max = FMax[atr[r] >> 4];
+				}
+				// TA1 is absent, using default values
+				else {
+					F = 372;
+					D = 1;
+					max = 5;
+				}
+				E = F/D;
 				cprintf(con, "Timing information:\r\n");
 				cprintf(con, "Fi=%d, Di=%d, %d cycles/ETU\r\n", F, D, E);
 				cprintf(con, "%d bits/s at ",
 					(uint32_t)bsp_smartcard_get_clk_frequency(proto->dev_num) / E);
 				print_freq(con, bsp_smartcard_get_clk_frequency(proto->dev_num));
 				cprintf(con, ", %d bits/s for fMax=%d MHz)\r\n",
-					FMax[atr[r] >> 4] * 1000000 / E,
-					FMax[atr[r] >> 4]);
-                        }
+					max * 1000000 / E,
+					max);
+			}
 		}
 	}
 
