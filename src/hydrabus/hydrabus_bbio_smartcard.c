@@ -173,6 +173,14 @@ void bbio_mode_smartcard(t_hydra_console *con)
 					cprint(con, "\x01", 1);
 				}
 				break;
+			case BBIO_SMARTCARD_ATR:
+				bsp_smartcard_set_rst(proto->dev_num, 0);
+				DelayMs(1);
+				bsp_smartcard_set_rst(proto->dev_num, 1);
+				i = bsp_smartcard_read_u8_timeout(proto->dev_num, rx_data, 33, TIME_MS2I(500));
+				cprint(con, (char *)&i, 1);
+				cprint(con, (char *)rx_data, i);
+				break;
 			default:
 				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
 					cprintf(con, "%c", bbio_aux(con, bbio_subcommand));

@@ -101,6 +101,14 @@ class Smartcard(Protocol):
         """
         return self.write_read(b"", read_len=read_len)
 
+    def get_atr(self):
+        """
+        Get smartcard ATR
+        """
+        self._hydrabus.write(b'\x08')
+        atr_length = int.from_bytes(self._hydrabus.read(1), byteorder='big')
+        return self._hydrabus.read(atr_length)
+
     @property
     def prescaler(self):
         """
