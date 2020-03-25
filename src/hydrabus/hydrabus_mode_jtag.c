@@ -488,7 +488,7 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 
 	uint8_t tck, tms, tdi, tdo, trst;
 	uint8_t valid_tck, valid_tms, valid_tdi, valid_tdo, valid_trst = 12;
-	uint8_t i;
+	uint8_t pinout_found = 0, i;
 
 	/* Set a dummy pin to prevent pin mismatch */
 	proto->config.jtag.trst_pin = 12;
@@ -515,6 +515,7 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 					}
 					jtag_pin_init(con);
 					if  (jtag_scan_bypass(con)) {
+						pinout_found = 1;
 						jtag_print_pins(con);
 						valid_tms = tms;
 						valid_tck = tck;
@@ -540,11 +541,15 @@ static void jtag_brute_pins_bypass(t_hydra_console *con, uint8_t num_pins)
 		}
 	}
 
-	proto->config.jtag.tms_pin = valid_tms;
-	proto->config.jtag.tck_pin = valid_tck;
-	proto->config.jtag.tdi_pin = valid_tdi;
-	proto->config.jtag.tdo_pin = valid_tdo;
-	proto->config.jtag.trst_pin = valid_trst;
+	if(pinout_found) {
+		proto->config.jtag.tms_pin = valid_tms;
+		proto->config.jtag.tck_pin = valid_tck;
+		proto->config.jtag.tdi_pin = valid_tdi;
+		proto->config.jtag.tdo_pin = valid_tdo;
+		proto->config.jtag.trst_pin = valid_trst;
+	} else {
+		init_proto_default(con);
+	}
 
 	jtag_pin_init(con);
 }
@@ -554,8 +559,8 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	uint8_t tck, tms, tdo, trst;
-	uint8_t valid_tck, valid_tms, valid_tdo, valid_trst= 12;
-	uint8_t i;
+	uint8_t valid_tck, valid_tms, valid_tdo, valid_trst = 12;
+	uint8_t pinout_found = 0, i;
 
 	/* Set dummy pins to prevent pin mismatch */
 	proto->config.jtag.tdi_pin = 12;
@@ -578,6 +583,7 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 				}
 				jtag_pin_init(con);
 				if  (jtag_scan_idcode(con)) {
+					pinout_found = 1;
 					jtag_print_pins(con);
 					valid_tms = tms;
 					valid_tck = tck;
@@ -600,10 +606,14 @@ static void jtag_brute_pins_idcode(t_hydra_console *con, uint8_t num_pins)
 			}
 		}
 	}
-	proto->config.jtag.tms_pin = valid_tms;
-	proto->config.jtag.tck_pin = valid_tck;
-	proto->config.jtag.tdo_pin = valid_tdo;
-	proto->config.jtag.trst_pin = valid_trst;
+	if(pinout_found) {
+		proto->config.jtag.tms_pin = valid_tms;
+		proto->config.jtag.tck_pin = valid_tck;
+		proto->config.jtag.tdo_pin = valid_tdo;
+		proto->config.jtag.trst_pin = valid_trst;
+	} else {
+		init_proto_default(con);
+	}
 
 	jtag_pin_init(con);
 }
