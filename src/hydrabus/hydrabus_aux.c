@@ -26,17 +26,12 @@
 
 bsp_status_t cmd_aux_write(uint8_t aux_num, uint8_t value)
 {
-	bsp_status_t status;
-
 	if (aux_num > AUX_PIN_MAX) {
 		return BSP_ERROR;
 	}
 
 	bsp_gpio_mode_out(AUX_PORT,
 			  AUX_PIN_START + aux_num);
-	if (status != BSP_OK) {
-		return BSP_ERROR;
-	}
 	if (value == 0) {
 		bsp_gpio_clr(AUX_PORT,
 			     AUX_PIN_START + aux_num);
@@ -49,17 +44,12 @@ bsp_status_t cmd_aux_write(uint8_t aux_num, uint8_t value)
 
 uint8_t cmd_aux_read(uint8_t aux_num)
 {
-	bsp_status_t status;
-
 	if (aux_num > AUX_PIN_MAX) {
 		return BSP_ERROR;
 	}
 
 	bsp_gpio_mode_in(AUX_PORT,
 			 AUX_PIN_START + aux_num);
-	if (status != BSP_OK) {
-		return BSP_ERROR;
-	}
 	return  bsp_gpio_pin_read(AUX_PORT,
 				  AUX_PIN_START + aux_num);
 }
