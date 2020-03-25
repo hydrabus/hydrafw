@@ -136,7 +136,6 @@ static void smartcard_get_atr(t_hydra_console *con)
 
 	bsp_smartcard_set_rst(proto->dev_num, 0);                       // Start with RST low.
 	DelayMs(1);							// RST low for at least 400 clocks (tb).
-	bsp_smartcard_read_u8_timeout(proto->dev_num, atr, 1, 1);       // Empty read buffer.
 	bsp_smartcard_set_vcc(proto->dev_num, 0);
 	bsp_smartcard_set_rst(proto->dev_num, 1);
 	bsp_smartcard_read_u8(proto->dev_num, atr, 1);
@@ -160,7 +159,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 	default:
 		cprintf(con, "Non standard TS byte: %02X\r\n", atr[0]);
 		cprintf(con, "Trying to read 8 more bytes\r\n");
-		/* We don't care about the convention sonce the TS is not
+		/* We don't care about the convention since the TS is not
 		 * standard
 		 */
 		atr_size = bsp_smartcard_read_u8_timeout(proto->dev_num, &atr[1], 8, TIME_MS2I(100));
