@@ -8,16 +8,11 @@
 import sys
 import serial
 import time
+import pyHydrabus
 
 from binascii import hexlify
 
 BBIO_SMARTCARD = 0b00001011
-BBIO_SMARTCARD_RST_LOW = 0b00000010
-BBIO_SMARTCARD_RST_HIGH = 0b00000011
-BBIO_SMARTCARD_WRITE_READ = 0b00000100
-BBIO_SMARTCARD_PRESCALER = 0b00000110
-BBIO_SMARTCARD_GUARDTIME = 0b00000111
-BBIO_SMARTCARD_SET_SPEED = 0b01100000
 BBIO_SMARTCARD_CONFIG = 0b10000000
 
 DEV_CONVENTION_INVERSE = 0x00
@@ -25,60 +20,8 @@ DEV_CONVENTION_DIRECT = 0x01
 
 speed_dict = {640:0, 1200:1, 2:2400, 4800:3, 9600:4, 19200:5, 31250:6, 38400:7, 57600:8, 115200:10}
 
-hydrabus = None
-
 Fi = [372, 372, 558, 744, 1116, 1488, 1860, "RFU", "RFU", 512, 768, 1024, 1536, 2048, "RFU", "RFU"];
 Di = ["RFU", 1, 2, 4, 8, 16, 32, 64, 12, 20, "RFU", "RFU", "RFU", "RFU", "RFU", "RFU"];
-
-def error(msg):
-    print(msg)
-    
-    global hydrabus
-    
-    if hydrabus != None:
-        # cleanup the hydrabus so that we don't have to reset it
-        hydrabus_cleanup
-        
-    quit()
-
-def hydrabus_cleanup():
-    global hydrabus
-    
-    #Return to main binary mode
-    hydrabus.write(b'\x00')
-
-    #Reset to console mode
-    hydrabus.write(b'\x0F\n')
-
-def hydrabus_setup():
-    global hydrabus
-    
-    #Serial port
-    hydrabus = serial.Serial('/dev/ttyACM0', 115200, timeout=0.5)
-
-    #Binary mode
-    for i in range(20):
-        hydrabus.write(b'\x00')
-        
-    rsp = hydrabus.read(5)
-    if b"BBIO1" not in rsp:
-        error("Could not get into binary mode, try again or reset hydrabus.")
-    
-    hydrabus.readline()
-    hydrabus.reset_input_buffer()
-
-    #Smartcard mode
-    hydrabus.write(bytes([BBIO_SMARTCARD]))
-    rsp = hydrabus.read(4)
-
-    if b"CRD1" not in rsp:
-        error("Cannot set smartcard mode, try again or reset hydrabus.")
-
-def smartcard_set_speed(speed):
-    hydrabus.write(bytes([BBIO_SMARTCARD_SET_SPEED, (speed >> 24) & 0xff, (speed >> 16) & 0xff, (speed >> 8) & 0xff, speed & 0xff]))
-    rsp = hydrabus.read(1)
-    if b"\x01" not in rsp:
-        error("Cannot set reset low, try again or reset hydrabus.")
 
 def smartcard_set_parity(parity):
 
@@ -106,29 +49,7 @@ def smartcard_apply_convention(data, convention):
     else:
         result = data
         
-    return result   
-
-def smartcard_write_read(data, size, convention):
-    hydrabus.write(bytes([BBIO_SMARTCARD_WRITE_READ, len(data) >> 4, len(data) & 0xff, size >> 4, size & 0xff]))
-    hydrabus.write(smartcard_apply_convention(data, convention))
-    rsp = hydrabus.read(1)
-    if b"\x01" not in rsp:
-        hydrabus_cleanup()
-        error("Cannot write or read data, try again or reset hydrabus.")
-    
-    data = smartcard_apply_convention(hydrabus.read(size), convention)
-    return data
-
-def smartcard_read(size, convention):
-    hydrabus.write(bytes([BBIO_SMARTCARD_WRITE_READ, 0, 0, size >> 4, size & 0xff]))
-    
-    rsp = hydrabus.read(1)
-    if b"\x01" not in rsp:
-        hydrabus_cleanup()
-        error("Cannot read data, try again or reset hydrabus.")
-
-    data = smartcard_apply_convention(hydrabus.read(size), convention)
-    return data
+    return result
 
 def smartcard_crc(data):
     crc = 0
@@ -136,123 +57,114 @@ def smartcard_crc(data):
         crc ^= i
     return bytes([crc])
 
-def smartcard_warmreset():
-    hydrabus.write(bytes([BBIO_SMARTCARD_RST_HIGH]))
-    rsp = hydrabus.read(1)
+def parse_atr(data):
+    """
+    Basic smartcard answer to reset (ATR) parser.
 
-    smartcard_set_speed(9600)
-    
-    if b"\x01" not in rsp:
-        error("Cannot set reset low, try again or reset hydrabus.")
+    :example:
 
-    hydrabus.write(bytes([BBIO_SMARTCARD_RST_LOW]))
-    rsp = hydrabus.read(1)
-    if b"\x01" not in rsp:
-        error("Cannot set reset high, try again or reset hydrabus.")
-    time.sleep(0.2)
-    hydrabus.reset_input_buffer()
+    >>> atr = bytes([0x3B, 0x04, 0x92, 0x23, 0x10, 0x91])
+    >>> convention = parse_atr(atr)
+    Parsing ATR:
+    TS:  0x3b, direct convention
+    T0:  0x4
+    TD1: absent, protocol T=0
+    TA2: absent, card in negotiable mode.
+    Historical bytes: 92231091
+    >>>
 
-    hydrabus.write(bytes([BBIO_SMARTCARD_RST_HIGH]))
-    rsp = hydrabus.read(1)
-    if b"\x01" not in rsp:
-        error("Cannot set reset low, try again or reset hydrabus.")
-
-def smartcard_parse_atr():
+    """
     print("Parsing ATR:")
-    convention = DEV_CONVENTION_DIRECT
-    data = smartcard_read(1, convention)
-    
-    if data[0] == 0x03:
-        print("Convention inverse: " + hex(data[0]))
-        convention = DEV_CONVENTION_INVERSE
-        #smartcard_set_parity(convention)
-    elif data[0] == 0x3b:
-        print("Convention direct: " + hex(data[0]))
-        convention = DEV_CONVENTION_DIRECT
-    else:
-        error("Non standard convention: " + hex(data[0]))
-    
-    data = smartcard_read(1, convention)
-    
-    # We may have a reading problem with the first byte
+    if len(data) < 2:
+        return 0
+
     if data[0] == 0x3b:
-        data = smartcard_read(1, convention)
-        
-    print("T0:  " + hex(data[0]))
-    y1 = data[0] >> 4
-    y = 0
-    k = data[0] & 0xf
-    
-    if y1 & 1:
-        data = smartcard_read(1, convention)
-        F = Fi[data[0] >> 4];
-        D = Di[data[0] & 0x0F];
-        E = F // D;
-        print("TA1: " + hex(data[0]) + ", Fi={:d}, Di={:d}, {:d} cycles/ETU".format(F, D, E))
-    if y1 & 2:
-        data = smartcard_read(1, convention)
-        print("TB1: " + hex(data[0]))
-    if y1 & 4:
-        data = smartcard_read(1, convention)
-        print("TC1: " + hex(data[0]) + ", extra guard time integer N={:d}".format(data[0]))
-    if y1 & 8:
-        data = smartcard_read(1, convention)
-        print("TD1: " + hex(data[0]) + ", protocol T={:d}".format(data[0] & 0xf))
-        y = data[0] >> 4
+        print("TS:  " + hex(data[0]) + ", direct convention")
+        convention = DEV_CONVENTION_DIRECT
+    elif data[0] == 0x3f:
+        print("TS:  " + hex(data[0]) + ", inverse convention")
+        convention = DEV_CONVENTION_INVERSE
     else:
+        print("TS:  " + hex(data[0]) + ", Non standard ATR")
+        return DEV_CONVENTION_DIRECT
+
+    print("T0:  " + hex(data[1]))
+    y1 = data[1] >> 4
+    y = 0
+    k = data[1] & 0xf
+    i = 1
+
+    if y1 & 1:
+        i += 1
+        F = Fi[data[i] >> 4];
+        D = Di[data[i] & 0x0F];
+        E = F // D;
+        print("TA1: " + hex(data[i]) + ", Fi={:d}, Di={:d}, {:d} cycles/ETU".format(F, D, E))
+    if y1 & 2:
+        i += 1
+        print("TB1: " + hex(data[i]))
+    if y1 & 4:
+        i += 1
+        print("TC1: " + hex(data[i]) + ", extra guard time integer N={:d}".format(data[i]))
+    if y1 & 8:
+        i += 1
+        print("TD1: " + hex(data[i]) + ", protocol T={:d}".format(data[i] & 0xf))
+        y = data[i] >> 4
+    else:
+        print("TD1: absent, protocol T=0")
+        protocol = 0
         y = 0
         
     if y & 1:
-        data = smartcard_read(1, convention)
-        print("TA2: " + hex(data[0]) + ", card in specific mode")
+        i += 1
+        print("TA2: " + hex(data[i]) + ", card in specific mode")
     else:
         print("TA2: absent, card in negotiable mode.")
 
     if y & 2:
-        data = smartcard_read(1, convention)
-        print("TB2: " + hex(data[0]))
+        i += 1
+        print("TB2: " + hex(data[i]))
     if y & 4:
-        data = smartcard_read(1, convention)
-        print("TC2: " + hex(data[0]))
+        i += 1
+        print("TC2: " + hex(data[i]))
     if y & 8:
-        data = smartcard_read(1, convention)
-        protocol = data[0] & 0xf
-        print("TD2: " + hex(data[0]) + ", protocol T={:d}".format(protocol))
-        y = data[0] >> 4
-        i = 3
+        i += 1
+        protocol = data[i] & 0xf
+        print("TD2: " + hex(data[i]) + ", protocol T={:d}".format(protocol))
+        y = data[i] >> 4
     else:
         y = 0
     
+    ind = 3
     while y > 0:
         if y & 1:
-            data = smartcard_read(1, convention)
+            i += 1
             if protocol == 15:
-                param = ", X={:d}, Y={:d}".format(data[0] >> 6, data[0] & 0x3f)
+                param = ", X={:d}, Y={:d}".format(data[i] >> 6, data[i] & 0x3f)
             else:
                 param = ""
-            print("TA" + str(i) + ": " + hex(data[0]) + param)
+            print("TA" + str(ind) + ": " + hex(data[i]) + param)
         if y & 2:
-            data = smartcard_read(1, convention)
-            print("TB" + str(i) + ": " + hex(data[0]))
-        if y & 4:
-            data = smartcard_read(1, convention)
-            print("TC" + str(i) + ": " + hex(data[0]))
-        if y & 8:
-            data = smartcard_read(1, convention)
-            protocol = data[0] & 0xf
-            print("TD" + str(i) + ": " + hex(data[0]) + ", protocol T={:d}".format(protocol))
-            y = data[0] >> 4
             i += 1
+            print("TB" + str(ind) + ": " + hex(data[i]))
+        if y & 4:
+            i += 1
+            print("TC" + str(ind) + ": " + hex(data[i]))
+        if y & 8:
+            i += 1
+            protocol = data[i] & 0xf
+            print("TD" + str(ind) + ": " + hex(data[i]) + ", protocol T={:d}".format(protocol))
+            y = data[i] >> 4
+            ind += 1
         else:
             y = 0
 
     if k > 0:
-        data = smartcard_read(k, convention)
-        print("Historical bytes: " + hexlify(data).decode())
+        i+=1
+        print("Historical bytes: " + hexlify(data[i:i+k]).decode())
     
-    if protocol != 0:
-        data = smartcard_read(1, convention)
-        print("TCK: " + hex(data[0]))
+    if protocol != 0 or data[i+k:] != b"":
+        print("TCK: " + hex(data[i+k]))
     
     return convention
 
@@ -261,28 +173,24 @@ def smartcard_t1(nad, pcb, data, rcv_length):
     cmd += smartcard_crc(cmd)
     
     print("Sending:   " + hexlify(cmd).decode())
-    rsp = smartcard_write_read(cmd, rcv_length, convention)
+    rsp = scard.write_read(cmd, rcv_length)
     print("Receiving: " + hexlify(rsp).decode())
     
-def smartcard_send_pps(F, D, T, convention):
+def smartcard_send_pps(F, D, T=0):
     ppss = b"\xff"
     pps0 = bytes([0x10 | T])
     pps1 = bytes([Fi.index(F) << 4 | Di.index(D)])
     pps = ppss + pps0 + pps1
     pps = pps + smartcard_crc(pps)
     print("Sending PPS: " + hexlify(pps).decode())
-    data = smartcard_write_read(pps, len(pps), convention)
+    data = scard.write_read(pps, len(pps))
     print("Reponse PPS: " + hexlify(data).decode())
 
 if __name__ == '__main__':
-    hydrabus_setup()
-    smartcard_warmreset()
-    convention = smartcard_parse_atr()
-    smartcard_set_parity("even")
-    smartcard_send_pps(372, 2, 1, convention)
-    smartcard_set_speed(18817)
-    
-    # IFS
-    smartcard_t1(0, 0xc1, b"\xfe", 5)
-    hydrabus_cleanup()
+    scard = pyHydrabus.Smartcard('/dev/ttyACM0')
+    atr = scard.get_atr()
+    print("ATR: " + hexlify(atr).decode())
+    convention = parse_atr(atr)
+    scard.convention = convention
+    scard.close()
     sys.exit()
