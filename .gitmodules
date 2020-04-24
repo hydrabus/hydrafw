@@ -4,3 +4,6 @@
 [submodule "chibios"]
 	path = src/chibios
 	url = https://github.com/hydrabus/ChibiOS.git
+[submodule "contrib/pyHydrabus"]
+	path = contrib/pyHydrabus
+	url = https://github.com/hydrabus/pyHydrabus
