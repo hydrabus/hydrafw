@@ -927,6 +927,10 @@ t_token tokens_mode_i2c[] = {
 		.help = "Scan for connected devices"
 	},
 	{
+		T_SNIFF,
+		.help = "Sniff I2C bus"
+	},
+	{
 		T_START,
 		.help = "Start"
 	},

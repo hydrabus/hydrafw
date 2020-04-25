@@ -25,7 +25,8 @@
 
 #include "hydrabus_bbio.h"
 #include "hydrabus_bbio_i2c.h"
-#include "bsp_i2c.h"
+#include "bsp_i2c_master.h"
+#include "bsp_i2c_slave.h"
 #include "hydrabus_bbio_aux.h"
 
 #define I2C_DEV_NUM (1)
@@ -44,7 +45,37 @@ void bbio_i2c_init_proto_default(t_hydra_console *con)
 void bbio_i2c_sniff(t_hydra_console *con)
 {
 	(void)con;
-	/* TODO bbio_i2c_sniff code */
+	bsp_status_t status;
+	uint16_t data;
+	uint8_t dummy;
+
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	bsp_i2c_master_deinit(proto->dev_num);
+	bsp_i2c_slave_init(proto->dev_num, proto);
+
+	while(!hydrabus_ubtn() || chnReadTimeout(con->sdu, &dummy, 1, TIME_IMMEDIATE)) {
+		status = bsp_i2c_slave_sniff(proto->dev_num, &data);
+		if (status != BSP_OK) {
+			continue;
+		}
+		switch(data) {
+		case 0x400:
+			cprint(con, "[", 1);
+			break;
+		case 0x200:
+			cprint(con, "]", 1);
+			break;
+		default:
+			cprintf(con, "\\%c", data>>1);
+			cprint(con, data & 1 ? "-" : "+", 1);
+			break;
+		}
+	}
+
+	bsp_i2c_slave_deinit(proto->dev_num);
+	bsp_i2c_master_init(proto->dev_num, proto);
+	cprint(con, "\x01", 1);
 }
 
 static void bbio_mode_id(t_hydra_console *con)
@@ -64,7 +95,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	bbio_i2c_init_proto_default(con);
-	bsp_i2c_init(proto->dev_num, proto);
+	bsp_i2c_master_init(proto->dev_num, proto);
 
 	bbio_mode_id(con);
 
@@ -72,7 +103,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
-				bsp_i2c_deinit(proto->dev_num);
+				bsp_i2c_master_deinit(proto->dev_num);
 				return;
 			case BBIO_MODE_ID:
 				bbio_mode_id(con);
@@ -174,7 +205,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 					}
 				} else if ((bbio_subcommand & BBIO_I2C_SET_SPEED) == BBIO_I2C_SET_SPEED) {
 					proto->config.i2c.dev_speed = bbio_subcommand & 0b11;
-					status = bsp_i2c_init(proto->dev_num, proto);
+					status = bsp_i2c_master_init(proto->dev_num, proto);
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);
 					} else {
@@ -182,7 +213,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 					}
 				} else if ((bbio_subcommand & BBIO_I2C_CONFIG_PERIPH) == BBIO_I2C_CONFIG_PERIPH) {
 					proto->config.i2c.dev_gpio_pull = (bbio_subcommand & 0b100)?1:0;
-					status = bsp_i2c_init(proto->dev_num, proto);
+					status = bsp_i2c_master_init(proto->dev_num, proto);
 					//Set AUX[0] (PC4) value
 					bbio_aux_write((bbio_subcommand & 0b10)>>1);
 
@@ -195,4 +226,5 @@ void bbio_mode_i2c(t_hydra_console *con)
 			}
 		}
 	}
+				cprint(con, "\x01", 1);
 }

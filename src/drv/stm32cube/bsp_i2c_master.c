@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "bsp_i2c.h"
+#include "bsp_i2c_master.h"
 #include "bsp_i2c_conf.h"
 
 #define BSP_I2C_DELAY_HC_50KHZ   (1680) /* 50KHz*2 (Half Clock) in number of cycles @168MHz */
@@ -88,11 +88,11 @@ static void i2c_gpio_hw_init(bsp_dev_i2c_t dev_num, uint32_t gpio_scl_sda_pull)
  * \return bsp_status_t: status of the init.
  *
  */
-bsp_status_t bsp_i2c_init(bsp_dev_i2c_t dev_num, mode_config_proto_t* mode_conf)
+bsp_status_t bsp_i2c_master_init(bsp_dev_i2c_t dev_num, mode_config_proto_t* mode_conf)
 {
 	uint32_t gpio_scl_sda_pull;
 
-	bsp_i2c_deinit(dev_num);
+	bsp_i2c_master_deinit(dev_num);
 
 	/* I2C peripheral configuration */
 	if(mode_conf->config.i2c.dev_speed < I2C_SPEED_MAX)
@@ -130,7 +130,7 @@ bsp_status_t bsp_i2c_init(bsp_dev_i2c_t dev_num, mode_config_proto_t* mode_conf)
  * \return bsp_status_t: status of the deinit.
  *
  */
-bsp_status_t bsp_i2c_deinit(bsp_dev_i2c_t dev_num)
+bsp_status_t bsp_i2c_master_deinit(bsp_dev_i2c_t dev_num)
 {
 	/* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
 	i2c_gpio_hw_deinit(dev_num);
