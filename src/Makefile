@@ -22,7 +22,7 @@ endif
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -Os -fomit-frame-pointer -falign-functions=16 -std=gnu89
+  USE_OPT = -Os -fomit-frame-pointer -falign-functions=16 -std=gnu89 --specs=nosys.specs
 endif
 
 ifeq ($(HYDRAFW_DEBUG),1)
