@@ -216,7 +216,7 @@ bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
 	else
 		hspi->Init.Mode = SPI_MODE_MASTER;
 
-	status = HAL_SPI_Init(hspi);
+	status = (bsp_status_t) HAL_SPI_Init(hspi);
 
 	/* Enable SPI peripheral */
 	__HAL_SPI_ENABLE(hspi);
@@ -237,7 +237,7 @@ bsp_status_t bsp_spi_deinit(bsp_dev_spi_t dev_num)
 	hspi = &spi_handle[dev_num];
 
 	/* De-initialize the SPI comunication bus */
-	status = HAL_SPI_DeInit(hspi);
+	status = (bsp_status_t) HAL_SPI_DeInit(hspi);
 
 	/* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
 	spi_gpio_hw_deinit(dev_num);
@@ -311,7 +311,7 @@ bsp_status_t bsp_spi_write_u8(bsp_dev_spi_t dev_num, uint8_t* tx_data, uint8_t n
 	hspi = &spi_handle[dev_num];
 
 	bsp_status_t status;
-	status = HAL_SPI_Transmit(hspi, tx_data, nb_data, SPIx_TIMEOUT_MAX);
+	status = (bsp_status_t) HAL_SPI_Transmit(hspi, tx_data, nb_data, SPIx_TIMEOUT_MAX);
 	if(status != BSP_OK) {
 		spi_error(dev_num);
 	}
@@ -331,7 +331,7 @@ bsp_status_t bsp_spi_read_u8(bsp_dev_spi_t dev_num, uint8_t* rx_data, uint8_t nb
 	hspi = &spi_handle[dev_num];
 
 	bsp_status_t status;
-	status = HAL_SPI_Receive(hspi, rx_data, nb_data, SPIx_TIMEOUT_MAX);
+	status = (bsp_status_t) HAL_SPI_Receive(hspi, rx_data, nb_data, SPIx_TIMEOUT_MAX);
 	if(status != BSP_OK) {
 		spi_error(dev_num);
 	}
@@ -351,7 +351,7 @@ bsp_status_t bsp_spi_write_read_u8(bsp_dev_spi_t dev_num, uint8_t* tx_data, uint
 	hspi = &spi_handle[dev_num];
 
 	bsp_status_t status;
-	status = HAL_SPI_TransmitReceive(hspi, tx_data, rx_data, nb_data, SPIx_TIMEOUT_MAX);
+	status = (bsp_status_t) HAL_SPI_TransmitReceive(hspi, tx_data, rx_data, nb_data, SPIx_TIMEOUT_MAX);
 	if(status != BSP_OK) {
 		spi_error(dev_num);
 	}

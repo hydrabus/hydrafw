@@ -170,7 +170,7 @@ bsp_status_t bsp_adc_read_u16(bsp_dev_adc_t dev_num, uint16_t* rx_data, uint8_t 
 {
 	(void)dev_num;
 	int i;
-	HAL_StatusTypeDef status;
+	bsp_status_t status;
 	ADC_HandleTypeDef* hadc;
 
 	status = BSP_ERROR;
@@ -178,9 +178,9 @@ bsp_status_t bsp_adc_read_u16(bsp_dev_adc_t dev_num, uint16_t* rx_data, uint8_t 
 
 	for(i=0; i<nb_data; i++) {
 		HAL_ADC_Start(hadc);
-		status = HAL_ADC_PollForConversion(hadc, ADCx_TIMEOUT_MAX);
+		status = (bsp_status_t) HAL_ADC_PollForConversion(hadc, ADCx_TIMEOUT_MAX);
 
-		if(status != HAL_OK)
+		if(status != BSP_OK)
 			return status;
 
 		rx_data[i] = HAL_ADC_GetValue(hadc);

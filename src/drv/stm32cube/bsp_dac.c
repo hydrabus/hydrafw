@@ -176,7 +176,7 @@ void bsp_dac_disable(void)
 bsp_status_t bsp_dac_write_u12(bsp_dev_dac_t dev_num, uint16_t data)
 {
 	uint32_t dac_chan_num;
-	HAL_StatusTypeDef status;
+	bsp_status_t status;
 	DAC_HandleTypeDef* hdac;
 
 	/* Configure DAC regular channel */

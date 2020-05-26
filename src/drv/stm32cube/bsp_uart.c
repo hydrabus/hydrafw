@@ -183,9 +183,9 @@ bsp_status_t bsp_uart_init(bsp_dev_uart_t dev_num, mode_config_proto_t* mode_con
 	huart->Init.Mode       = UART_MODE_TX_RX;
 
 	if(mode_conf->config.uart.bus_mode == BSP_UART_MODE_UART) {
-		status = HAL_UART_Init(huart);
+		status = (bsp_status_t) HAL_UART_Init(huart);
 	} else {
-		status = HAL_LIN_Init(huart, UART_LINBREAKDETECTLENGTH_11B);
+		status = (bsp_status_t) HAL_LIN_Init(huart, UART_LINBREAKDETECTLENGTH_11B);
 	}
 
 	/* Dummy read to flush old character */
@@ -205,7 +205,7 @@ bsp_status_t bsp_lin_break(bsp_dev_uart_t dev_num)
 	huart = &uart_handle[dev_num];
 
 	bsp_status_t status;
-	status = HAL_LIN_SendBreak(huart);
+	status = (bsp_status_t) HAL_LIN_SendBreak(huart);
 	if(status != BSP_OK) {
 		uart_error(dev_num);
 	}
@@ -225,7 +225,7 @@ bsp_status_t bsp_uart_deinit(bsp_dev_uart_t dev_num)
 	huart = &uart_handle[dev_num];
 
 	/* De-initialize the UART comunication bus */
-	status = HAL_UART_DeInit(huart);
+	status = (bsp_status_t) HAL_UART_DeInit(huart);
 
 	/* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
 	uart_gpio_hw_deinit(dev_num);
@@ -246,7 +246,7 @@ bsp_status_t bsp_uart_write_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, uint8_t
 	huart = &uart_handle[dev_num];
 
 	bsp_status_t status;
-	status = HAL_UART_Transmit(huart, tx_data, nb_data, UARTx_TIMEOUT_MAX);
+	status = (bsp_status_t) HAL_UART_Transmit(huart, tx_data, nb_data, UARTx_TIMEOUT_MAX);
 	if(status != BSP_OK) {
 		uart_error(dev_num);
 	}
@@ -266,7 +266,7 @@ bsp_status_t bsp_uart_read_u8(bsp_dev_uart_t dev_num, uint8_t* rx_data, uint8_t 
 	huart = &uart_handle[dev_num];
 
 	bsp_status_t status;
-	status = HAL_UART_Receive(huart, rx_data, nb_data, UARTx_TIMEOUT_MAX);
+	status = (bsp_status_t) HAL_UART_Receive(huart, rx_data, nb_data, UARTx_TIMEOUT_MAX);
 	if(status != BSP_OK) {
 		uart_error(dev_num);
 	}
@@ -288,7 +288,7 @@ bsp_status_t bsp_uart_read_u8_timeout(bsp_dev_uart_t dev_num, uint8_t* rx_data,
 	huart = &uart_handle[dev_num];
 
 	bsp_status_t status;
-	status = HAL_UART_Receive(huart, rx_data, nb_data, timeout);
+	status = (bsp_status_t) HAL_UART_Receive(huart, rx_data, nb_data, timeout);
 	switch(status){
 	case BSP_OK:
 	case BSP_TIMEOUT:
@@ -313,9 +313,9 @@ bsp_status_t bsp_uart_write_read_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, ui
 	huart = &uart_handle[dev_num];
 
 	bsp_status_t status;
-	status = HAL_UART_Transmit(huart, tx_data, nb_data, UARTx_TIMEOUT_MAX);
+	status = (bsp_status_t) HAL_UART_Transmit(huart, tx_data, nb_data, UARTx_TIMEOUT_MAX);
 	if(status == BSP_OK) {
-		status = HAL_UART_Receive(huart, rx_data, nb_data, UARTx_TIMEOUT_MAX);
+		status = (bsp_status_t) HAL_UART_Receive(huart, rx_data, nb_data, UARTx_TIMEOUT_MAX);
 	} else {
 		uart_error(dev_num);
 	}

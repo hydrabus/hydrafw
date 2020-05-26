@@ -189,7 +189,7 @@ bsp_status_t bsp_smartcard_init(bsp_dev_smartcard_t dev_num, mode_config_proto_t
 	/* Prescaler */
 	hsmartcard->Init.Prescaler = mode_conf->config.smartcard.dev_prescaler;
 
-	status = HAL_SMARTCARD_Init(hsmartcard);
+	status = (bsp_status_t) HAL_SMARTCARD_Init(hsmartcard);
 
 	/* Dummy read to flush old character */
 	dummy_read = hsmartcard->Instance->DR;
@@ -210,7 +210,7 @@ bsp_status_t bsp_smartcard_deinit(bsp_dev_smartcard_t dev_num)
 	hsmartcard = &smartcard_handle[dev_num];
 
 	/* De-initialize the SMARTCARD comunication bus */
-	status = HAL_SMARTCARD_DeInit(hsmartcard);
+	status = (bsp_status_t) HAL_SMARTCARD_DeInit(hsmartcard);
 
 	/* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
 	smartcard_gpio_hw_deinit(dev_num);
@@ -231,7 +231,7 @@ bsp_status_t bsp_smartcard_write_u8(bsp_dev_smartcard_t dev_num, uint8_t* tx_dat
 	hsmartcard = &smartcard_handle[dev_num];
 
 	bsp_status_t status;
-	status = HAL_SMARTCARD_Transmit(hsmartcard, tx_data, nb_data, SMARTCARDx_TIMEOUT_MAX);
+	status = (bsp_status_t) HAL_SMARTCARD_Transmit(hsmartcard, tx_data, nb_data, SMARTCARDx_TIMEOUT_MAX);
 	if(status != BSP_OK) {
 		smartcard_error(dev_num);
 	}
@@ -252,7 +252,7 @@ bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data
 
 	bsp_status_t status;
 	__HAL_SMARTCARD_FLUSH_DRREGISTER(hsmartcard);
-	status = HAL_SMARTCARD_Receive(hsmartcard, rx_data, nb_data, SMARTCARDx_TIMEOUT_MAX);
+	status = (bsp_status_t) HAL_SMARTCARD_Receive(hsmartcard, rx_data, nb_data, SMARTCARDx_TIMEOUT_MAX);
 
 	if(status != BSP_OK) {
 		smartcard_error(dev_num);
@@ -276,7 +276,7 @@ bsp_status_t bsp_smartcard_read_u8_timeout(bsp_dev_smartcard_t dev_num, uint8_t*
 
 	bsp_status_t status;
 	__HAL_SMARTCARD_FLUSH_DRREGISTER(hsmartcard);
-	status = HAL_SMARTCARD_Receive(hsmartcard, rx_data, nb_data, timeout);
+	status = (bsp_status_t) HAL_SMARTCARD_Receive(hsmartcard, rx_data, nb_data, timeout);
 	switch(status) {
 	case BSP_OK:
 	case BSP_TIMEOUT:
@@ -301,9 +301,9 @@ bsp_status_t bsp_smartcard_write_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* t
 	hsmartcard = &smartcard_handle[dev_num];
 
 	bsp_status_t status;
-	status = HAL_SMARTCARD_Transmit(hsmartcard, tx_data, nb_data, SMARTCARDx_TIMEOUT_MAX);
+	status = (bsp_status_t) HAL_SMARTCARD_Transmit(hsmartcard, tx_data, nb_data, SMARTCARDx_TIMEOUT_MAX);
 	if(status == BSP_OK) {
-		status = HAL_SMARTCARD_Receive(hsmartcard, rx_data, nb_data, SMARTCARDx_TIMEOUT_MAX);
+		status = (bsp_status_t) HAL_SMARTCARD_Receive(hsmartcard, rx_data, nb_data, SMARTCARDx_TIMEOUT_MAX);
 	} else {
 		smartcard_error(dev_num);
 	}

@@ -133,7 +133,7 @@ bsp_status_t bsp_can_set_speed(bsp_dev_can_t dev_num, uint32_t speed)
 
 	hcan->Init.Prescaler = 2000000/speed;
 	HAL_CAN_Stop(hcan);
-	status = HAL_CAN_Init(hcan);
+	status = (bsp_status_t) HAL_CAN_Init(hcan);
 	HAL_CAN_Start(hcan);
 
 	return status;
@@ -168,7 +168,7 @@ bsp_status_t bsp_can_set_timings(bsp_dev_can_t dev_num, mode_config_proto_t* mod
 	hcan->Init.SyncJumpWidth  = mode_conf->config.can.dev_timing&0x3000000;
 
 	HAL_CAN_Stop(hcan);
-	status = HAL_CAN_Init(hcan);
+	status = (bsp_status_t) HAL_CAN_Init(hcan);
 	HAL_CAN_Start(hcan);
 
 	return status;
@@ -185,7 +185,7 @@ bsp_status_t bsp_can_set_ts1(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 
 	hcan->Init.TimeSeg1 = (uint32_t)(ts1-1)<<16;
 	HAL_CAN_Stop(hcan);
-	status = HAL_CAN_Init(hcan);
+	status = (bsp_status_t) HAL_CAN_Init(hcan);
 	HAL_CAN_Start(hcan);
 
 	mode_conf->config.can.dev_timing = bsp_can_get_timings(dev_num);
@@ -204,7 +204,7 @@ bsp_status_t bsp_can_set_ts2(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 
 	hcan->Init.TimeSeg2 = (uint32_t)(ts2-1)<<20;
 	HAL_CAN_Stop(hcan);
-	status = HAL_CAN_Init(hcan);
+	status = (bsp_status_t) HAL_CAN_Init(hcan);
 	HAL_CAN_Start(hcan);
 
 	mode_conf->config.can.dev_timing = bsp_can_get_timings(dev_num);
@@ -223,7 +223,7 @@ bsp_status_t bsp_can_set_sjw(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 
 	hcan->Init.SyncJumpWidth = (uint32_t)(sjw-1)<<24;
 	HAL_CAN_Stop(hcan);
-	status = HAL_CAN_Init(hcan);
+	status = (bsp_status_t) HAL_CAN_Init(hcan);
 	HAL_CAN_Start(hcan);
 
 	mode_conf->config.can.dev_timing = bsp_can_get_timings(dev_num);
@@ -250,7 +250,7 @@ bsp_status_t bsp_can_mode_rw(bsp_dev_can_t dev_num, mode_config_proto_t* mode_co
 	mode_conf->config.can.dev_mode = BSP_CAN_MODE_RW;
 	hcan->Init.Mode = CAN_MODE_NORMAL;
 
-	status = HAL_CAN_Init(hcan);
+	status = (bsp_status_t) HAL_CAN_Init(hcan);
 	HAL_CAN_Start(hcan);
 
 	return status;
@@ -318,7 +318,7 @@ bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 	hcan->Init.Prescaler = 2000000/mode_conf->config.can.dev_speed;
 
 	HAL_CAN_Stop(hcan);
-	status = HAL_CAN_Init(hcan);
+	status = (bsp_status_t) HAL_CAN_Init(hcan);
 	HAL_CAN_Start(hcan);
 
 	return status;
@@ -352,7 +352,7 @@ bsp_status_t bsp_can_init_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mod
 	hcanfilter.SlaveStartFilterBank = 14;
 
 	HAL_CAN_Stop(hcan);
-	status = HAL_CAN_ConfigFilter(hcan, &hcanfilter);
+	status = (bsp_status_t) HAL_CAN_ConfigFilter(hcan, &hcanfilter);
 	HAL_CAN_Start(hcan);
 
 	return status;
@@ -389,7 +389,7 @@ bsp_status_t bsp_can_set_filter(bsp_dev_can_t dev_num,
 	hcanfilter.FilterActivation = ENABLE;
 	hcanfilter.SlaveStartFilterBank = 14;
 
-	status = HAL_CAN_ConfigFilter(hcan, &hcanfilter);
+	status = (bsp_status_t) HAL_CAN_ConfigFilter(hcan, &hcanfilter);
 
 	return status;
 }
@@ -410,7 +410,7 @@ bsp_status_t bsp_can_deinit(bsp_dev_can_t dev_num)
 	HAL_CAN_Stop(hcan);
 
 	/* De-initialize the CAN comunication bus */
-	status = HAL_CAN_DeInit(hcan);
+	status = (bsp_status_t) HAL_CAN_DeInit(hcan);
 
 	/* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
 	can_gpio_hw_deinit(dev_num);
@@ -440,7 +440,7 @@ bsp_status_t bsp_can_write(bsp_dev_can_t dev_num, can_tx_frame* tx_msg)
 			return BSP_TIMEOUT;
 		}
 	}
-	status = HAL_CAN_AddTxMessage(hcan, &(tx_msg->header), tx_msg->data, &dummy);
+	status = (bsp_status_t) HAL_CAN_AddTxMessage(hcan, &(tx_msg->header), tx_msg->data, &dummy);
 
 	switch(status) {
 	case BSP_ERROR:
@@ -475,7 +475,7 @@ bsp_status_t bsp_can_read(bsp_dev_can_t dev_num, can_rx_frame* rx_msg)
 			return BSP_TIMEOUT;
 		}
 	}
-	status = HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &(rx_msg->header), rx_msg->data);
+	status = (bsp_status_t) HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &(rx_msg->header), rx_msg->data);
 	switch(status) {
 	case BSP_ERROR:
 		can_error(dev_num);
