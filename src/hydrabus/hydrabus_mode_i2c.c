@@ -49,6 +49,8 @@ static uint32_t speeds[SPEED_NB] = {
 	1000000,
 };
 
+#define SNIFF_BUFFER_LENGTH 4096
+
 static void init_proto_default(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -333,10 +335,31 @@ static void scan(t_hydra_console *con, t_tokenline_parsed *p)
 		cprintf(con, "No devices found.\r\n");
 }
 
+static void print_sniff_buffer(t_hydra_console *con, uint16_t *buffer, uint16_t length)
+{
+	uint16_t i = 0;
+	while(i < length) {
+		switch(buffer[i]) {
+		case 0x400:
+			cprint(con, "[", 1);
+			break;
+		case 0x200:
+			cprint(con, "]\r\n", 3);
+			break;
+		default:
+			cprintf(con, "0x%02x", buffer[i]>>1);
+			cprint(con, buffer[i] & 1 ? "-" : "+", 1);
+			break;
+		}
+		i++;
+	}
+}
+
 static void sniff(t_hydra_console *con)
 {
 	bsp_status_t status = BSP_OK;
-	uint16_t data;
+	uint16_t *buffer = (uint16_t *)g_sbuf;
+	uint16_t index = 0;
 
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -347,21 +370,12 @@ static void sniff(t_hydra_console *con)
 	cprint(con, "\r\n", 2);
 
 	while(!hydrabus_ubtn()) {
-		status = bsp_i2c_slave_sniff(proto->dev_num, &data);
-		if (status != BSP_OK) {
-			continue;
-		}
-		switch(data) {
-		case 0x400:
-			cprint(con, "[", 2);
-			break;
-		case 0x200:
-			cprint(con, "]\r\n", 3);
-			break;
-		default:
-			cprintf(con, "0x%02x", data>>1);
-			cprint(con, data & 1 ? "-" : "+", 1);
-			break;
+		status = bsp_i2c_slave_sniff(proto->dev_num, &buffer[index]);
+		if(buffer[index] == 0x200 || index == SNIFF_BUFFER_LENGTH || status == BSP_TIMEOUT) {
+			print_sniff_buffer(con, buffer, index+1);
+			index = 0;
+		} else {
+			index++;
 		}
 	}
 
