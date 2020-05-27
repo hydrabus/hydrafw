@@ -37,7 +37,9 @@
 #include "hydrabus_bbio_adc.h"
 #include "hydrabus_bbio_freq.h"
 #include "hydrabus_bbio_aux.h"
+#ifdef HYDRANFC
 #include "hydranfc_bbio_reader.h"
+#endif
 
 int cmd_bbio(t_hydra_console *con)
 {
@@ -86,9 +88,11 @@ int cmd_bbio(t_hydra_console *con)
 			case BBIO_SMARTCARD:
 				bbio_mode_smartcard(con);
 				break;
+#ifdef HYDRANFC
 			case BBIO_NFC_READER:
 				bbio_mode_hydranfc_reader(con);
 				break;
+#endif
 			case BBIO_RESET_HW:
 				/* Needed for flashrom detection */
 				cprint(con, "Hydrabus\r\n", 10);
