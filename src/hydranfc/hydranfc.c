@@ -112,7 +112,7 @@ static bool hydranfc_test_shield(void)
 
 extern t_mode_config mode_con1;
 
-static bool init_gpio(t_hydra_console *con)
+bool init_gpio(t_hydra_console *con)
 {
 	/* TRF7970A IRQ output / HydraBus PA1 input */
 	palClearPad(GPIOA, 1);
@@ -221,7 +221,7 @@ static bool init_gpio(t_hydra_console *con)
 	return TRUE;
 }
 
-static void deinit_gpio(void)
+void deinit_gpio(void)
 {
 	palSetPadMode(GPIOA, 3, PAL_MODE_INPUT);
 	palSetPadMode(GPIOA, 2, PAL_MODE_INPUT);

@@ -1,6 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
+ * Copyright (C) 2020 Guillaume VINET
  * Copyright (C) 2015-2016 Nicolas OBERLI
  * Copyright (C) 2016 Benjamin VERNOUX
  *
@@ -38,6 +39,7 @@
 #define BBIO_PIN	0b00001001
 #define BBIO_FLASH	0b00001010
 #define BBIO_SMARTCARD	0b00001011
+#define BBIO_NFC_READER	0b00001100
 
 #define BBIO_RESET_HW	0b00001111
 #define BBIO_PWM	0b00010010
@@ -179,5 +181,15 @@
 #define BBIO_AUX_WRITE		0b11010000
 #define BBIO_AUX_MODE_READ	0b11100000
 #define BBIO_AUX_MODE_SET	0b11110000
+
+/*
+ * Hydra NFC specific comamnds
+ */
+#define BBIO_NFC_RF_OFF			      0b00000001
+#define BBIO_NFC_RF_ON                0b00000010
+#define BBIO_NFC_CMD_SEND_BITS        0b00000011
+#define BBIO_NFC_CMD_SEND_BYTES       0b00000100
+#define BBIO_NFC_SET_MODE_ISO_14443A  0b00000101
+#define BBIO_NFC_SET_MODE_ISO_15693   0b00000110
 
 int cmd_bbio(t_hydra_console *con);
