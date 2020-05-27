@@ -81,7 +81,7 @@ void set_mode_iso_15693(void) {
 
 void bbio_mode_hydranfc_reader(t_hydra_console *con) {
     uint8_t bbio_subcommand;
-    uint8_t rlen, clen;
+    uint8_t rlen, clen, compute_crc;
     uint8_t *rx_data = (uint8_t *) g_sbuf + 4096;
 
     init_gpio(con);
@@ -122,15 +122,18 @@ void bbio_mode_hydranfc_reader(t_hydra_console *con) {
                     break;
                 }
                 case BBIO_NFC_CMD_SEND_BYTES: {
+                    // If compute_crc equals 1, HydraNFC will compute the two-bytes CRC
+                    // on the received data and send it
+                    chnRead(con->sdu, &compute_crc, 1);
                     chnRead(con->sdu, &clen, 1);
                     chnRead(con->sdu, rx_data, clen);
                     rlen = Trf797x_transceive_bytes(
-                            &rx_data[1],
-                            (uint8_t) ((clen - 1) & 0x00FF),
+                            &rx_data[0],
+                            clen,
                             rx_data,
                             0xFF,
                             250, // XXms TX/RX Timeout
-                            rx_data[0] & 1);
+                            compute_crc & 1);
                     cprint(con, (char *) &rlen, 1);
                     cprint(con, (char *) rx_data, rlen);
                     break;
