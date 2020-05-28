@@ -594,7 +594,7 @@ uint8_t Trf797x_transceive_bits(uint8_t tx_databuf, uint8_t tx_databuf_nb_bits,
 /*
 * Send Nb Bytes (Max TX 32bytes) and receive the data.
 * timeout_ms is the max timeout to wait in ms (it is the timeout for whole transfer TX+RX).
-* Return 0 if timeout, no data received, or tx_databuf_nb_bytes>32 else return number of bytes received.
+* Return 0 if timeout, no data received, or tx_databuf_nb_bytes>122 else return number of bytes received.
 *  */
 int Trf797x_transceive_bytes(uint8_t* tx_databuf, uint8_t tx_databuf_nb_bytes,
 			     uint8_t* rx_databuf, uint8_t rx_databuf_nb_bytes,
@@ -602,7 +602,7 @@ int Trf797x_transceive_bytes(uint8_t* tx_databuf, uint8_t tx_databuf_nb_bytes,
 			     uint8_t flag_crc)
 {
 #undef DATA_MAX
-#define DATA_MAX (32+6)
+#define DATA_MAX 127
 	static uint8_t data_buf[DATA_MAX];
 
 	int i;
@@ -619,7 +619,7 @@ int Trf797x_transceive_bytes(uint8_t* tx_databuf, uint8_t tx_databuf_nb_bytes,
 	data_buf[3] = ((tx_databuf_nb_bytes&0xF0)>>4); /* Number of Bytes to be sent MSB 0x00 @0x1D */
 	data_buf[4] = ((tx_databuf_nb_bytes<<4)&0xF0); /* Number of Byte to be sent LSB 0x00 @0x1E = Max 7bits */
 
-	if(tx_databuf_nb_bytes>32)
+	if(tx_databuf_nb_bytes>122)
 		return 0;
 
 	for(i=0; i<tx_databuf_nb_bytes; i++) {
