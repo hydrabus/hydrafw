@@ -96,7 +96,6 @@ t_token_dict tl_dict[] = {
 	{ T_READ_MF_ULTRALIGHT, "read-mf-ul" },
 	{ T_EMUL_MF_ULTRALIGHT, "emul-mf-ul" },
 	{ T_CLONE_MF_ULTRALIGHT, "clone-mf-ul" },
-	{ T_SNIFF, "sniff" },
 	{ T_TRACE_UART1, "trace-uart1" },
 	{ T_FRAME_TIME, "frame-time" },
 	{ T_PCAP, "pcap" },
@@ -104,6 +103,7 @@ t_token_dict tl_dict[] = {
 	{ T_DIRECT_MODE_0, "dm0" },
 	{ T_DIRECT_MODE_1, "dm1" },
 #endif
+	{ T_SNIFF, "sniff" },
 	{ T_GPIO, "gpio" },
 	{ T_IN, "in" },
 	{ T_OUT, "out" },
