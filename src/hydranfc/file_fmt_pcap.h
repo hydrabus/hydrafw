@@ -30,16 +30,16 @@ int sniff_create_pcap_file(uint8_t* buffer, uint32_t size);
 int file_fmt_create_pcap(FIL *file_handle);
 int file_fmt_flush_close(FIL *file_handle, uint8_t* buffer, uint32_t size);
 
-__attribute__ ((always_inline)) inline
+//__attribute__ ((always_inline)) inline
 void sniff_write_pcap_global_header(void);
 
-__attribute__ ((always_inline)) inline
+//__attribute__ ((always_inline)) inline
 void sniff_write_pcap_packet_header (uint32_t nb_cycles_start);
 
-__attribute__ ((always_inline)) inline
+//__attribute__ ((always_inline)) inline
 void sniff_write_data_header (uint8_t pow, uint32_t protocol, uint32_t speed, uint32_t nb_cycles_end, uint32_t parity);
 
-__attribute__ ((always_inline)) inline
+//__attribute__ ((always_inline)) inline
 void sniff_write_pcap_data(uint8_t data);
 
 uint32_t sniffer_get_size_pcap(void);

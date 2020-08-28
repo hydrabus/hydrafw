@@ -15,10 +15,18 @@ limitations under the License.
 #ifndef _BSP_PRINT_DBG_H_
 #define _BSP_PRINT_DBG_H_
 
+#ifndef MAKE_DEBUG
+
+#define print_dbg(...)
+#define printf_dbg(...)
+
+#else
+
 /* Low level print debug through Semi Hosting(SWD debug) */
 void print_dbg(const char *data, const uint32_t size);
 
 /* Low level printf debug through Semi Hosting(SWD debug) */
 void printf_dbg(const char *fmt, ...);
+#endif
 
 #endif /* _BSP_PRINT_DBG_H_ */

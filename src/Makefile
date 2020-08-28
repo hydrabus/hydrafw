@@ -22,12 +22,22 @@ endif
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -Os -fomit-frame-pointer -falign-functions=16 -std=gnu89 --specs=nosys.specs
+  USE_OPT = -fomit-frame-pointer -falign-functions=16 -std=gnu89 --specs=nosys.specs
 endif
 
 ifeq ($(HYDRAFW_DEBUG),1)
+  HYDRAFW_OPTS += -DMAKE_DEBUG
+  # Host Debug is either async trace via SWO or Semihosting
+  # Leave disabled if using neither.
+  HYDRAFW_OPTS += -DUSE_HOST_DEBUG
   USE_OPT += -ggdb
+  USE_OPT += -fstack-usage
+  USE_OPT += -Og
+  USE_OPT += -Wshadow
+  USE_OPT += -Wformat=2
   USE_LTO = no
+else
+  USE_OPT += -Os
 endif
 
 # C specific options here (added to USE_OPT).

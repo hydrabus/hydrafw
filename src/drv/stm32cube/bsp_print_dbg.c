@@ -21,6 +21,11 @@
 #include <stdio.h> /* vsnprintf */
 #include <stdarg.h> /* va_list / va_start / va_end */
 
+#ifdef MAKE_DEBUG
+// undef USE_SWO to use semihosting as debug output
+#define USE_SWO TRUE
+#endif
+
 /** \brief print debug through Semi Hosting(SWD debug) & SWV
  *
  * \param data const char*
@@ -28,8 +33,11 @@
  * \return void
  *
  */
+#ifdef MAKE_DEBUG
 void print_dbg(const char *data, const uint32_t size)
 {
+#ifdef USE_HOST_DEBUG
+#ifndef USE_SWO
 	static uint32_t args[3];
 
 	args[0] = 1;
@@ -40,15 +48,20 @@ void print_dbg(const char *data, const uint32_t size)
 		"mov r1, %0\n"
 		"bkpt 0x00AB" : : "r"(args) : "r0", "r1");
 
-#if 0
+#else
 	{
-		int i;
+		uint32_t i;
 		/* SWV Debug requires PB3 configured as SWO & connected to SWD last pin */
 		for(i = 0; i<size; i++)
 			ITM_SendChar(data[i]); /* core_cm4.h */
 	}
 #endif
+#else
+	(void)data;
+	(void)size;
+#endif
 }
+#endif
 
 /** \brief printf debug through Semi Hosting(SWD debug)
  *
@@ -57,16 +70,19 @@ void print_dbg(const char *data, const uint32_t size)
  * \return void
  *
  */
+#ifdef MAKE_DEBUG
 void printf_dbg(const char *fmt, ...)
 {
+#ifdef USE_HOST_DEBUG
 	int real_size;
 	va_list va_args;
 #define PRINTF_DBG_BUFFER_SIZE (80)
 	static char printf_dbg_string[PRINTF_DBG_BUFFER_SIZE+1];
-	static uint32_t args[3];
 
 	va_start(va_args, fmt);
 	real_size = vsnprintf(printf_dbg_string, PRINTF_DBG_BUFFER_SIZE, fmt, va_args);
+#ifndef USE_SWO
+	static uint32_t args[3];
 	/* Semihosting SWI print through SWD/JTAG debugger */
 	args[0] = 1;
 	args[1] = (uint32_t)printf_dbg_string;
@@ -75,7 +91,7 @@ void printf_dbg(const char *fmt, ...)
 		"mov r1, %0\n"
 		"bkpt 0x00AB" : : "r"(args) : "r0", "r1");
 
-#if 0
+#else
 	{
 		int i;
 		/* SWV Debug requires PB3 configured as SWO & connected to SWD last pin */
@@ -84,4 +100,8 @@ void printf_dbg(const char *fmt, ...)
 	}
 #endif
 	va_end(va_args);
+#else
+	(void)fmt;
+#endif
 }
+#endif

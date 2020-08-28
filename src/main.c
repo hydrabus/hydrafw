@@ -41,6 +41,7 @@
 #include "hydrabus/hydrabus_serprog.h"
 
 #include "bsp.h"
+#include "bsp_print_dbg.h"
 
 #include "script.h"
 
@@ -150,6 +151,12 @@ int main(void)
 	chSysInit();
 
 	bsp_scs_dwt_cycle_counter_enabled();
+
+#ifdef MAKE_DEBUG
+	// set SWO on PB3
+	palSetPadMode(GPIOB, 3, PAL_MODE_ALTERNATE(0));
+	printf_dbg("DEBUG Trace started\n");
+#endif
 
 	/* Configure PA0 (UBTN), PA4 (ULED) and initialize the SD driver. */
 	hydrabus_init();
