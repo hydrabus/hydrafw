@@ -38,6 +38,7 @@
 #endif
 #include "hydrabus/hydrabus_bbio.h"
 #include "hydrabus/hydrabus_sump.h"
+#include "hydrabus/hydrabus_serprog.h"
 
 #include "bsp.h"
 
@@ -98,6 +99,13 @@ THD_FUNCTION(console, arg)
 			if(i == 5) {
 				cprintf(con, "1ALS");
 				sump(con);
+			}
+			break;
+		/* SERPROG identification is 8*\x00, then \x10 */
+		/* Enter SERPROG mode automatically */
+		case 0x10:
+			if(i == 8) {
+				bbio_mode_serprog(con);
 			}
 			break;
 		default:
