@@ -1,7 +1,7 @@
-HydraFW official firmware for HydraBus/HydraNFC
+HydraFW official firmware for HydraBus
 ========
 
-HydraFW is a native C (and asm) open source firmware for HydraBus board with support of HydraNFC Shield.
+HydraFW is a native C (and asm) open source firmware for HydraBus board.
 
 You can Buy HydraBus/HydraNFC Online: http://hydrabus.com/buy-online
 
@@ -13,7 +13,7 @@ You can Buy HydraBus/HydraNFC Online: http://hydrabus.com/buy-online
 * HydraFW Wiki: https://github.com/hydrabus/hydrafw/wiki
 * HydraFW usage with VT100 Terminal see wiki https://github.com/hydrabus/hydrafw/wiki/HydraFW-commands
 * For more details on HydraBus Hardware and Firmware see also: https://github.com/hydrabus/hydrabus
-* For more details on HydraNFC Hardware see: https://github.com/hydrabus/hydranfc
+* For more details on HydraNFC Shield v2 see: https://github.com/hydrabus/hydrafw_hydranfc_shield_v2
 * If you want to help on this project see:
   * [Coding Styles](https://github.com/hydrabus/hydrafw/blob/master/CODING_STYLE.md), [Wiki](https://github.com/hydrabus/hydrafw/wiki) & [Wiki Task List](https://github.com/hydrabus/hydrafw/wiki/Task-List) 
   * [How to Build/Flash/Use HydraFW on Windows](https://github.com/hydrabus/hydrafw/wiki/how-to-build-flash-and-use-hydrafw-on-windows)
