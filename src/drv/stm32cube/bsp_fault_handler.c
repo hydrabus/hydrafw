@@ -55,8 +55,9 @@ void printMemoryManagementErrorMsg(uint32_t CFSR_val)
 {
 	CFSR_val &= 0xFF;
 	print_dbg("CFSR MemManage Status Register:: 0x%02X\n", CFSR_val);
-	if(CFSR_val & BIT7)
+	if(CFSR_val & BIT7) {
 		printf_dbg("MemManage fault addr(MMFAR): 0x%08X\n", SCB->MMFAR);
+	}
 
 	printf_dbg("b7=MMFARVALID,b6=Res,b5=MLSPERR,b4=MSTKERR\n");
 	printf_dbg("b3=MUNSTKERR,b2=Res,b1=DACCVIAL,b0=IACCVIOL\n");
@@ -66,8 +67,9 @@ void printBusFaultErrorMsg(uint32_t CFSR_val)
 {
 	CFSR_val = ((CFSR_val & 0xFF00) >> 8);
 	printf_dbg("CFSR BusFault Status Register: 0x%02X\n", CFSR_val);
-	if(CFSR_val & BIT7)
+	if(CFSR_val & BIT7) {
 		printf_dbg("Bus fault addr(BFAR): 0x%08X\n", SCB->BFAR);
+	}
 
 	printf_dbg("b15=BFARVALID,b6-b5=Res,b4=STKERR\n");
 	printf_dbg("b3=UNSTKERR,b2=IMPRECISERR,b1=PRECISERR,b0=IBUSEER\n");
@@ -84,6 +86,7 @@ void printUsageErrorMsg(uint32_t CFSR_val)
 
 void stackDump(unsigned int* stack)
 {
+	(void) stack;
 	printf_dbg("\nStack Dump:\n");
 	printf_dbg("r0  = 0x%08X\n", stack[r0]);
 	printf_dbg("r1  = 0x%08X\n", stack[r1]);
