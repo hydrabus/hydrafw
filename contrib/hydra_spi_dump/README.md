@@ -6,12 +6,12 @@ Usage:
 
     hydra_spi_flash.py dump <dump_file> <n_4k_sectors> <hex_address> [slow|fast]
         Dumps n_4k_sectors into dump_file, starting at hex_address.
-        By default, it dumps in slow (320kHz) mode, choose fast to increase to 10.5 mHz.
+        By default, it dumps in slow (320kHz) mode, choose fast to increase to 10.5 MHz.
     hydra_spi_flash.py chip_id
         Prints chip idenfification (RDID).
     
     
-This script requires Python 3.2+, pip3 install serial hexdump
+This script requires Python 3.2+, pip3 install pyserial hexdump
 
 Author: Pedro Ribeiro <pedrib@gmail.com>
 
