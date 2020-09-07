@@ -286,7 +286,7 @@ t_token tokens_mode_adc_trigger[] = {
 	},
 	{
 		T_START,
-		.help = "Stat trigger"
+		.help = "Start trigger"
 	},
 	{ }
 };
