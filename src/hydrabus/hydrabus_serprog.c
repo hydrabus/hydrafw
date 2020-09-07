@@ -58,13 +58,11 @@ void bbio_mode_serprog(t_hydra_console *con)
 			case S_CMD_NOP:
 				break;
 			case S_CMD_Q_IFACE:
-				//TODO
 				cprint(con, S_ACK, 1);
 				cprint(con, "\x01\x00", 2);
 				break;
 			case S_CMD_Q_CMDMAP:
 				cprint(con, S_ACK, 1);
-				//TODO
 				cprint(con, "\x3f\x01\x3f\x00", 4);
 				cprint(con, "\x00\x00\x00\x00", 4);
 				cprint(con, "\x00\x00\x00\x00", 4);
