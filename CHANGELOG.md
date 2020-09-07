@@ -1,5 +1,52 @@
 # CHANGELOG of 'hydrafw'
 ----------------------
+#### 07.09.2020 - [HydraFW v0.10](https://github.com/hydrabus/hydrafw/releases/tag/v0.10)
+
+This version is the first stable version (if you find any issue please create an [issue](https://github.com/hydrabus/hydrafw/issues)).
+
+Big thanks to [Baldanos](https://github.com/hydrabus/hydrafw/commits?author=Baldanos) to be the lead developer on HydraFW since 2015 including all major contributions of the project (191 commits, 545776 lines added and 479088 lines removed)
+
+##### Generic:
+* Update ST drivers to 1.7.8 (Based on STM32CubeF4 Firmware Package V1.25.x / 12-February-2020)
+* Update ChibiOS 18.2.0 (git version)
+* Plug & Play USB Serial Driver using standard driver for windows 8.1 & 10 (Thanks to Guigz2000)
+
+##### HydraBus specific:
+* Console syntax improvements (Thanks to Azox)
+  * Support [Compressed mode](https://github.com/hydrabus/hydrafw/wiki/Bus-interaction-commands#compressed-mode-allows-no-space-between-commands-example)
+  * Add error message when invalid token found with position highlighted
+  * Various fixes for BP compatibility + TL_TOKEN_DELIMITER issue
+  * For more details see [https://github.com/hydrabus/tokenline/commits/master](https://github.com/hydrabus/tokenline/commits/master)
+
+* [Console mode](https://github.com/hydrabus/hydrafw/wiki/HydraFW-console-commands)
+  * [Smart Card](https://github.com/hydrabus/hydrafw/wiki/HydraFW-SMARTCARD-guide) (Big thanks to the contributors sylvainpelissier/Azox)
+  * [ADC trigger](https://github.com/hydrabus/hydrafw/wiki/HydraFW-ADC-guide)
+  * [SWD bruteforce (2-wire mode)](https://github.com/hydrabus/hydrafw/wiki/HydraFW-2wire-guide#swd-interaction)
+   * See also [HydraFW OpenOCD guide](https://github.com/hydrabus/hydrafw/wiki/HydraFW-OpenOCD-guide)
+  * [JTAG bruteforce](https://github.com/hydrabus/hydrafw/wiki/HydraFW-JTAG-guide) fixes and improvements
+   * See also [HydraFW OpenOCD guide](https://github.com/hydrabus/hydrafw/wiki/HydraFW-OpenOCD-guide)
+  * [Auxiliary pin](https://github.com/hydrabus/hydrafw/wiki/Bus-interaction-commands#toggle--read-aux-pin)
+  * [I2C for non intrusive sniffer for SDA line](https://github.com/hydrabus/hydrafw/wiki/HydraFW-I2C-guide#i2c-sniffer)
+  * Display improvement for [delays (microseconds)](https://github.com/hydrabus/hydrafw/wiki/Bus-interaction-commands#timing-and-delays) (Thanks to Azox)
+
+* [Binary mode](https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-mode-guide)
+  * [Smart Card](https://github.com/hydrabus/hydrafw/wiki/HydraFW-binary-SMARTCARD-mode-guide) (Big thanks to the contributors sylvainpelissier/Azox)
+  * [Auxiliary pin](https://github.com/hydrabus/hydrafw/wiki/Auxiliary-pins)
+  * [Flashrom](https://www.flashrom.org/Flashrom) support using native Serprog mode (see [https://github.com/hydrabus/hydrafw/wiki/HydraFW-SPI-guide#flashrom-usage](https://github.com/hydrabus/hydrafw/wiki/HydraFW-SPI-guide#flashrom-usage) for more details)
+   * Supported with any version of Flashrom since v0.9.8 or more (tested with success also with latest Flashrom v1.2)
+
+##### HydraNFC Shield v1 specific:
+* [Binary NFC Reader mode](https://github.com/hydrabus/hydrafw/wiki/HydraFW-binary-NFC-Reader-mode-guide) (Thanks to gvinet)
+* pcap file format support for sniffer output (Thanks to AAsyunkin-se)
+* HydraNFC Shield v1 is now superseded by HydraNFC Shield v2 in an other fork see [https://github.com/hydrabus/hydrafw_hydranfc_shield_v2](https://github.com/hydrabus/hydrafw_hydranfc_shield_v2)
+
+##### Contrib / script / documentation
+* [pyHydrabus](https://pyhydrabus.readthedocs.io/en/latest/) Python bindings (Thanks to Gheko for helping on this)
+* [Script to dump SPI flash](https://github.com/hydrabus/hydrafw/tree/master/contrib/hydra_spi_dump)
+* [Script for 93c46 EEPROM read/write/erase](https://github.com/hydrabus/hydrafw/tree/master/contrib/pyHydra_93xx)
+* [HydraBus/HydraFW wiki updates](https://github.com/hydrabus/hydrafw/wiki)
+* [Build/Debug on Windows/Linux with STM32CubeIDE using SWD and SWO traces](https://github.com/hydrabus/hydrafw/wiki/Getting-Started-with-HydraBus-and-STM32CubeIDE)
+
 #### 30.09.2018 - [HydraFW v0.9 Beta](https://github.com/hydrabus/hydrafw/releases/tag/v0.9-beta)
 
 ##### Generic:
