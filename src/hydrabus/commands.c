@@ -1290,9 +1290,6 @@ t_token tokens_jtag[] = {
 };
 
 #define ONEWIRE_PARAMETERS \
-	{ T_DEVICE, \
-		.arg_type = T_ARG_UINT, \
-		.help = "1-wire device (1)" }, \
 	{ T_PULL, \
 		.arg_type = T_ARG_TOKEN, \
 		.subtokens = tokens_gpio_pull, \
@@ -1400,9 +1397,6 @@ t_token tokens_onewire[] = {
 };
 
 #define TWOWIRE_PARAMETERS \
-	{ T_DEVICE, \
-		.arg_type = T_ARG_UINT, \
-		.help = "2-wire device (1)" }, \
 	{ T_PULL, \
 		.arg_type = T_ARG_TOKEN, \
 		.subtokens = tokens_gpio_pull, \
@@ -1532,9 +1526,6 @@ t_token tokens_twowire[] = {
 };
 
 #define THREEWIRE_PARAMETERS \
-	{ T_DEVICE, \
-		.arg_type = T_ARG_UINT, \
-		.help = "3-wire device (1)" }, \
 	{ T_PULL, \
 		.arg_type = T_ARG_TOKEN, \
 		.subtokens = tokens_gpio_pull, \
@@ -1730,9 +1721,6 @@ t_token tokens_gpio[] = {
 };
 
 #define WIEGAND_PARAMETERS \
-	{ T_DEVICE, \
-		.arg_type = T_ARG_UINT, \
-		.help = "Wiegand device (1)" }, \
 	{ T_PULL, \
 		.arg_type = T_ARG_TOKEN, \
 		.subtokens = tokens_gpio_pull, \
