@@ -1130,9 +1130,6 @@ t_token tokens_spi[] = {
 };
 
 #define JTAG_PARAMETERS \
-	{ T_DEVICE, \
-		.arg_type = T_ARG_UINT, \
-		.help = "JTAG device (1)" }, \
 	{ T_PULL, \
 		.arg_type = T_ARG_TOKEN, \
 		.subtokens = tokens_gpio_pull, \
