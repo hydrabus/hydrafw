@@ -195,7 +195,7 @@ uint32_t bsp_freq_getchannel(bsp_dev_freq_t dev_num, uint8_t channel)
 
 }
 
-uint8_t bsp_freq_get_values(bsp_dev_freq_t dev_num, uint32_t *freq, uint32_t *duty)
+bsp_status_t bsp_freq_get_values(bsp_dev_freq_t dev_num, uint32_t *freq, uint32_t *duty)
 {
 	uint32_t period = 0;
 	float v = 0;
@@ -204,11 +204,11 @@ uint8_t bsp_freq_get_values(bsp_dev_freq_t dev_num, uint32_t *freq, uint32_t *du
 	bool sampled = FALSE;
 	while (sampled == FALSE) {
 		if(bsp_freq_init(dev_num, scale) != BSP_OK) {
-			return FALSE;
+			return BSP_ERROR;
 		}
 		status = bsp_freq_sample(dev_num);
 		if(status == BSP_TIMEOUT) {
-			return FALSE;
+			return BSP_TIMEOUT;
 		}
 
 		period = bsp_freq_getchannel(dev_num, 1);
@@ -232,5 +232,36 @@ uint8_t bsp_freq_get_values(bsp_dev_freq_t dev_num, uint32_t *freq, uint32_t *du
 	}else{
 		*duty=0;
 	}
-	return TRUE;
+
+	return BSP_OK;
+}
+
+bsp_status_t bsp_freq_get_baudrate(bsp_dev_freq_t dev_num, uint32_t *baudrate)
+{
+	uint32_t v1, v2;
+	bsp_status_t status;
+	bool sampled = FALSE;
+	while (sampled == FALSE) {
+		if(bsp_freq_init(dev_num, 1) != BSP_OK) {
+			return FALSE;
+		}
+		status = bsp_freq_sample(dev_num);
+		if(status == BSP_TIMEOUT) {
+			return FALSE;
+		}
+
+		v1 = bsp_freq_getchannel(dev_num, 1);
+		v1 +=2;
+
+		v2 = bsp_freq_getchannel(dev_num, 2);
+		v2+=2;
+
+		if(v2 < v1) {
+			sampled = TRUE;
+		}
+	}
+
+	*baudrate = BSP_FREQ_BASE_FREQ/(v1-v2);
+
+	return BSP_OK;
 }

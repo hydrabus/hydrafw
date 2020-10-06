@@ -545,6 +545,10 @@ t_token tokens_mode_uart[] = {
 		.help = "UART bridge mode"
 	},
 	{
+		T_SCAN,
+		.help = "Measure baudrate (PC6)"
+	},
+	{
 		T_EXIT,
 		.help = "Exit UART mode"
 	},

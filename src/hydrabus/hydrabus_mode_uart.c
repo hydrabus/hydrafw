@@ -19,6 +19,7 @@
 #include "common.h"
 #include "hydrabus_mode_uart.h"
 #include "bsp_uart.h"
+#include "bsp_freq.h"
 #include <string.h>
 
 #define UART_DEFAULT_SPEED (9600)
@@ -130,6 +131,24 @@ static void bridge(t_hydra_console *con)
 	chThdWait(bthread);
 }
 
+static void baudrate(t_hydra_console *con)
+{
+	uint32_t baudrate=0, tmp;
+	uint8_t i;
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	for(i=0; i<10; i++) {
+		bsp_freq_get_baudrate(proto->dev_num, &tmp);
+		if(tmp > baudrate) {
+			baudrate = tmp;
+		}
+	}
+	cprintf(con, "Estimated baudrate : %d\r\n", baudrate);
+	cprintf(con, "\r\n");
+
+	bsp_freq_deinit(proto->dev_num);
+}
+
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -230,6 +249,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_BRIDGE:
 			bridge(con);
+			break;
+		case T_SCAN:
+			baudrate(con);
 			break;
 		default:
 			return t - token_pos;
