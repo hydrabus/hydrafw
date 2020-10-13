@@ -24,7 +24,7 @@
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 /* Developer warning keep this list synchronized with same number of items and same items order as commands.h => enum */
-t_token_dict tl_dict[] = {
+const t_token_dict tl_dict[] = {
 	{ /* Dummy entry */ },
 	{ T_HELP, "help" },
 	{ T_HISTORY, "history" },
@@ -184,7 +184,7 @@ t_token_dict tl_dict[] = {
 	{ }
 };
 
-t_token tokens_on_off[] = {
+const t_token tokens_on_off[] = {
 	{ T_ON },
 	{ T_OFF },
 	{ }
@@ -421,7 +421,7 @@ t_token tokens_mode_nfc_sniff[] = {
 	},
 
 t_token tokens_sd[];
-t_token tokens_mode_nfc[] = {
+const t_token tokens_mode_nfc[] = {
 	{
 		T_SD,
 		.subtokens = tokens_sd,
@@ -475,7 +475,7 @@ t_token tokens_parity[] = {
 		.help = "Stop bits (1/2)"\
 	},
 
-t_token tokens_mode_uart[] = {
+const t_token tokens_mode_uart[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
@@ -604,7 +604,7 @@ t_token tokens_uart[] = {
 		.help_full = "Set communication convention (0=normal, 1=inverse)"\
 	},
 
-t_token tokens_mode_smartcard[] = {
+const t_token tokens_mode_smartcard[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
@@ -716,7 +716,7 @@ t_token tokens_smartcard[] = {
 		.help = "LIN device (1/2)"\
 	},\
 
-t_token tokens_mode_lin[] = {
+const t_token tokens_mode_lin[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
@@ -824,7 +824,7 @@ t_token tokens_lin[] = {
 		.help = "Resynchronisation jump width (1-4)"\
 	},
 
-t_token tokens_mode_can[] = {
+const t_token tokens_mode_can[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_can_show,
@@ -913,7 +913,7 @@ t_token tokens_can[] = {
 		.help = "Bus frequency"\
 	},
 
-t_token tokens_mode_i2c[] = {
+const t_token tokens_mode_i2c[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
@@ -1040,7 +1040,7 @@ t_token tokens_i2c[] = {
 	{ T_LSB_FIRST, \
 		.help = "Send/receive LSB first" },
 
-t_token tokens_mode_spi[] = {
+const t_token tokens_mode_spi[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
@@ -1143,7 +1143,7 @@ t_token tokens_spi[] = {
 	{ T_LSB_FIRST, \
 		.help = "Send/receive LSB first" },
 
-t_token tokens_mode_jtag[] = {
+const t_token tokens_mode_jtag[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
@@ -1303,7 +1303,7 @@ t_token tokens_jtag[] = {
 	{ T_LSB_FIRST, \
 		.help = "Send/receive LSB first" },
 
-t_token tokens_mode_onewire[] = {
+const t_token tokens_mode_onewire[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
@@ -1410,7 +1410,7 @@ t_token tokens_onewire[] = {
 	{ T_LSB_FIRST, \
 		.help = "Send/receive LSB first" },
 
-t_token tokens_mode_twowire[] = {
+const t_token tokens_mode_twowire[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
@@ -1539,7 +1539,7 @@ t_token tokens_twowire[] = {
 	{ T_LSB_FIRST, \
 		.help = "Send/receive LSB first" },
 
-t_token tokens_mode_threewire[] = {
+const t_token tokens_mode_threewire[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
@@ -1644,7 +1644,7 @@ t_token tokens_threewire[] = {
 	{ }
 };
 
-t_token tokens_mode_flash[] = {
+const t_token tokens_mode_flash[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
@@ -1729,7 +1729,7 @@ t_token tokens_gpio[] = {
 		.arg_type = T_ARG_TOKEN, \
 		.subtokens = tokens_gpio_pull, \
 		.help = "GPIO pull (up/down/floating)" },
-t_token tokens_mode_wiegand[] = {
+const t_token tokens_mode_wiegand[] = {
 	{
 		T_SHOW,
 		.subtokens = tokens_mode_show,
@@ -2038,7 +2038,7 @@ t_token tokens_logging[] = {
 	{ }
 };
 
-t_token tl_tokens[] = {
+const t_token tl_tokens[] = {
 	{
 		T_HELP,
 		.arg_type = T_ARG_HELP,
