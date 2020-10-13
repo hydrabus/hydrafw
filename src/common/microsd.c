@@ -32,8 +32,8 @@
 
 #include "script.h"
 
-static uint8_t outbuf[IN_OUT_BUF_SIZE+8];
-static uint8_t inbuf[IN_OUT_BUF_SIZE+8];
+static uint8_t *outbuf = g_sbuf;
+static uint8_t *inbuf = g_sbuf+(IN_OUT_BUF_SIZE+8);
 
 /* FS object.*/
 FATFS SDC_FS;
