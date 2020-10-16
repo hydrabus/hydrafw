@@ -26,5 +26,7 @@ enum {
 	SPI_LSB_FIRST,
 };
 
-#endif /* _HYDRABUS_MODE_SPI_H_ */
+#define SPI_SPEED_NB (8)
+extern const uint32_t spi_speeds[2][SPI_SPEED_NB];
 
+#endif /* _HYDRABUS_MODE_SPI_H_ */

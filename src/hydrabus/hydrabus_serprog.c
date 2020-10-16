@@ -22,6 +22,7 @@
 
 #include "hydrabus_bbio.h"
 #include "hydrabus_serprog.h"
+#include "hydrabus_mode_spi.h"
 #include "bsp_spi.h"
 
 void bbio_serprog_init_proto_default(t_hydra_console *con)
@@ -148,8 +149,35 @@ void bbio_mode_serprog(t_hydra_console *con)
 				break;
 			case S_CMD_S_SPI_FREQ:
 				chnRead(con->sdu, rx_data, 4);
-				//TODO: define variable speed.
+				/* requested speed */
+				to_rx = ((uint32_t)rx_data[3] << 24) | \
+				        ((uint32_t)rx_data[2] << 16) | \
+				        ((uint32_t)rx_data[1] << 8)  | rx_data[0];
+				/* value 0 is reserved and should not be requested as speed */
+				if (to_rx == 0) {
+					cprint(con, S_NAK, 1);
+					break;
+				}
+				/* find available SPI speed <= request speed */
+				i = 0;
+				while (i < SPI_SPEED_NB && spi_speeds[proto->dev_num][i] <= to_rx) {
+					i++;
+				}
+				i = i == 0 ? 0 : i - 1;
+				/* configure selected speed */
+				proto->config.spi.dev_speed = i;
+				if (bsp_spi_init(proto->dev_num, proto) != BSP_OK) {
+					cprint(con, S_NAK, 1);
+					break;
+				}
+				/* send back selected speed */
+				to_tx = spi_speeds[proto->dev_num][i];
+				tx_data[0] = (uint8_t)((to_tx >> 0 ) & 0xff);
+				tx_data[1] = (uint8_t)((to_tx >> 8 ) & 0xff);
+				tx_data[2] = (uint8_t)((to_tx >> 16) & 0xff);
+				tx_data[3] = (uint8_t)((to_tx >> 24) & 0xff);
 				cprint(con, S_ACK, 1);
+				cprint(con, (char *)tx_data, 4);
 				break;
 			case S_CMD_S_PIN_STATE:
 				chnRead(con->sdu, rx_data, 1);

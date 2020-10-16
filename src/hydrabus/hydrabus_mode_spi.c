@@ -38,8 +38,7 @@ static const char* str_bsp_init_err= { "bsp_spi_init() error %d\r\n" };
 
 #define MODE_DEV_NB_ARGC ((int)ARRAY_SIZE(mode_dev_arg)) /* Number of arguments/parameters for this mode */
 
-#define SPEED_NB (8)
-static uint32_t speeds[2][SPEED_NB] = {
+const uint32_t spi_speeds[2][SPI_SPEED_NB] = {
 	/* SPI1 */
 	{
 		320000,
@@ -91,14 +90,14 @@ static void show_params(t_hydra_console *con)
 		"floating",
 		proto->config.spi.dev_mode == DEV_MASTER ? "master" : "slave");
 
-	print_freq(con, speeds[proto->dev_num][proto->config.spi.dev_speed]);
+	print_freq(con, spi_speeds[proto->dev_num][proto->config.spi.dev_speed]);
 	cprintf(con, " (");
-	for (i = 0, cnt = 0; i < SPEED_NB; i++) {
+	for (i = 0, cnt = 0; i < SPI_SPEED_NB; i++) {
 		if (proto->config.spi.dev_speed == i)
 			continue;
 		if (cnt++)
 			cprintf(con, ", ");
-		print_freq(con, speeds[proto->dev_num][i]);
+		print_freq(con, spi_speeds[proto->dev_num][i]);
 	}
 	cprintf(con, ")\r\n");
 	cprintf(con, "Polarity: %d\r\nPhase: %d\r\nBit order: %s first\r\n",
@@ -187,8 +186,8 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 		case T_FREQUENCY:
 			t += 2;
 			memcpy(&arg_float, p->buf + p->tokens[t], sizeof(float));
-			for (i = 0; i < SPEED_NB; i++) {
-				if (arg_float == speeds[proto->dev_num][i]) {
+			for (i = 0; i < SPI_SPEED_NB; i++) {
+				if (arg_float == spi_speeds[proto->dev_num][i]) {
 					proto->config.spi.dev_speed = i;
 					break;
 				}
