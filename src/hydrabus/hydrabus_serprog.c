@@ -160,7 +160,7 @@ void bbio_mode_serprog(t_hydra_console *con)
 				}
 				/* find available SPI speed <= request speed */
 				i = 0;
-				while (i < SPEED_NB && speeds[proto->dev_num][i] <= to_rx) {
+				while (i < SPI_SPEED_NB && spi_speeds[proto->dev_num][i] <= to_rx) {
 					i++;
 				}
 				i = i == 0 ? 0 : i - 1;
@@ -171,7 +171,7 @@ void bbio_mode_serprog(t_hydra_console *con)
 					break;
 				}
 				/* send back selected speed */
-				to_tx = speeds[proto->dev_num][i];
+				to_tx = spi_speeds[proto->dev_num][i];
 				tx_data[0] = (uint8_t)((to_tx >> 0 ) & 0xff);
 				tx_data[1] = (uint8_t)((to_tx >> 8 ) & 0xff);
 				tx_data[2] = (uint8_t)((to_tx >> 16) & 0xff);
