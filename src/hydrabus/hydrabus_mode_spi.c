@@ -38,8 +38,7 @@ static const char* str_bsp_init_err= { "bsp_spi_init() error %d\r\n" };
 
 #define MODE_DEV_NB_ARGC ((int)ARRAY_SIZE(mode_dev_arg)) /* Number of arguments/parameters for this mode */
 
-#define SPEED_NB (8)
-static uint32_t speeds[2][SPEED_NB] = {
+const uint32_t speeds[2][SPEED_NB] = {
 	/* SPI1 */
 	{
 		320000,
