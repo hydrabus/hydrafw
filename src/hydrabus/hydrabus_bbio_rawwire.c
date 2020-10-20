@@ -130,17 +130,6 @@ void bbio_mode_rawwire(t_hydra_console *con)
 			default:
 				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
 					cprintf(con, "%c", bbio_aux(con, bbio_subcommand));
-				} else if ((bbio_subcommand & BBIO_RAWWIRE_BULK_TRANSFER) == BBIO_RAWWIRE_BULK_TRANSFER) {
-					// data contains the number of bytes to
-					// write
-					data = (bbio_subcommand & 0b1111) + 1;
-
-					chnRead(con->sdu, tx_data, data);
-					cprint(con, "\x01", 1);
-					for(i=0; i<data; i++) {
-						rx_data[i] = curmode.write_u8(con, tx_data[i]);
-					}
-					cprint(con, (char *)rx_data, data);
 				} else if ((bbio_subcommand & BBIO_RAWWIRE_BULK_BIT) == BBIO_RAWWIRE_BULK_BIT) {
 					// data contains the number of bits to
 					// write
@@ -155,6 +144,17 @@ void bbio_mode_rawwire(t_hydra_console *con)
 					}
 					cprint(con, "\x01", 1);
 
+				} else if ((bbio_subcommand & BBIO_RAWWIRE_BULK_TRANSFER) == BBIO_RAWWIRE_BULK_TRANSFER) {
+					// data contains the number of bytes to
+					// write
+					data = (bbio_subcommand & 0b1111) + 1;
+
+					chnRead(con->sdu, tx_data, data);
+					cprint(con, "\x01", 1);
+					for(i=0; i<data; i++) {
+						rx_data[i] = curmode.write_u8(con, tx_data[i]);
+					}
+					cprint(con, (char *)rx_data, data);
 				} else if ((bbio_subcommand & BBIO_RAWWIRE_BULK_CLK) == BBIO_RAWWIRE_BULK_CLK) {
 					// data contains the number of bytes to
 					// write
