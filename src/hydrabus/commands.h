@@ -153,6 +153,7 @@ enum {
 	T_PRESCALER,
 	T_CONVENTION,
 	T_DELAY,
+	T_MMC,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */

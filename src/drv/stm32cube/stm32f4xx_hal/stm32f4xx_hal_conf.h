@@ -82,7 +82,7 @@
 /* #define HAL_SPDIFRX_MODULE_ENABLED */
 /* #define HAL_DFSDM_MODULE_ENABLED */
 /* #define HAL_LPTIM_MODULE_ENABLED */
-/* #define HAL_MMC_MODULE_ENABLED */
+#define HAL_MMC_MODULE_ENABLED
 
 /* ########################## HSE/HSI Values adaptation ##################### */
 /**

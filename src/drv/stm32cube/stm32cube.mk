@@ -14,6 +14,7 @@ STM32CUBESRC = ./drv/stm32cube/bsp.c \
                ./drv/stm32cube/bsp_freq.c \
                ./drv/stm32cube/bsp_trigger.c \
                ./drv/stm32cube/bsp_tim.c \
+               ./drv/stm32cube/bsp_mmc.c \
                ./drv/stm32cube/bsp_fault_handler.c \
                ./drv/stm32cube/bsp_print_dbg.c
 

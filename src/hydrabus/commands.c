@@ -161,6 +161,7 @@ const t_token_dict tl_dict[] = {
 	{ T_PRESCALER, "prescaler" },
 	{ T_CONVENTION, "convention" },
 	{ T_DELAY, "delay" },
+	{ T_MMC, "mmc" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -1667,6 +1668,29 @@ t_token tokens_flash[] = {
 	{ }
 };
 
+t_token tokens_mode_mmc[] = {
+	{
+		T_SHOW,
+		.subtokens = tokens_mode_show,
+		.help = "Show mmc parameters"
+	},
+	/* mmc-specific commands */
+	{
+		T_ID,
+		.help = "Displays the CID and CSD registers"
+	},
+	/* BP commands */
+	{
+		T_EXIT,
+		.help = "Exit mmc mode"
+	},
+	{ }
+};
+
+t_token tokens_mmc[] = {
+	{ }
+};
+
 t_token tokens_gpio_mode[] = {
 	{
 		T_IN,
@@ -2159,6 +2183,11 @@ t_token tl_tokens[] = {
 		T_FLASH,
 		.subtokens = tokens_flash,
 		.help = "NAND flash mode"
+	},
+	{
+		T_MMC,
+		.subtokens = tokens_mmc,
+		.help = "MMC/eMMC mode"
 	},
 	{
 		T_WIEGAND,

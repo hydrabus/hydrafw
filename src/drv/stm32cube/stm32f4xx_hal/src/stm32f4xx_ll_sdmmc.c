@@ -158,6 +158,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
+extern void DelayMs(uint32_t delay_ms);
+
 #if defined(SDIO)
 
 /** @addtogroup STM32F4xx_HAL_Driver
@@ -313,7 +315,8 @@ HAL_StatusTypeDef SDIO_PowerState_ON(SDIO_TypeDef *SDIOx)
 
   /* 1ms: required power up waiting time before starting the SD initialization
   sequence */
-  HAL_Delay(2);
+  //HAL_Delay(2);
+  DelayMs(2);
   
   return HAL_OK;
 }

@@ -213,6 +213,7 @@ static struct cmd_map {
 	{ T_WIEGAND, cmd_mode_init },
 	{ T_LIN, cmd_mode_init },
 	{ T_SMARTCARD, cmd_mode_init },
+	{ T_MMC, cmd_mode_init },
 	{ 0, NULL }
 };
 

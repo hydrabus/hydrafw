@@ -9,7 +9,9 @@ STM32F4XX_HAL_SRC = ./drv/stm32cube/stm32f4xx_hal/stm32f4xx_hal_msp.c \
                     ./drv/stm32cube/stm32f4xx_hal/src/stm32f4xx_hal_tim.c \
                     ./drv/stm32cube/stm32f4xx_hal/src/stm32f4xx_hal_tim_ex.c \
                     ./drv/stm32cube/stm32f4xx_hal/src/stm32f4xx_hal_can.c \
-                    ./drv/stm32cube/stm32f4xx_hal/src/stm32f4xx_hal_smartcard.c
+                    ./drv/stm32cube/stm32f4xx_hal/src/stm32f4xx_hal_smartcard.c \
+                    ./drv/stm32cube/stm32f4xx_hal/src/stm32f4xx_hal_mmc.c \
+                    ./drv/stm32cube/stm32f4xx_hal/src/stm32f4xx_ll_sdmmc.c
 
 # Required include directories
 STM32F4XX_HAL_INC = ./drv/stm32cube \
