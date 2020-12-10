@@ -42,6 +42,7 @@ void threewire_init_proto_default(t_hydra_console *con)
 	proto->config.rawwire.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 	proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
 	proto->config.rawwire.dev_speed = THREEWIRE_MAX_FREQ;
+	proto->config.rawwire.clock_polarity = 0;
 
 	proto->config.rawwire.clk_pin = 3;
 	proto->config.rawwire.sdi_pin = 4;
@@ -119,8 +120,15 @@ inline void threewire_clk_low(t_hydra_console *con)
 
 inline void threewire_clock(t_hydra_console *con)
 {
-	threewire_clk_high(con);
-	threewire_clk_low(con);
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	if (proto->config.rawwire.clock_polarity == 0) {
+		threewire_clk_high(con);
+		threewire_clk_low(con);
+	} else {
+		threewire_clk_low(con);
+		threewire_clk_high(con);
+	}
 }
 
 uint8_t threewire_send_bit(t_hydra_console *con, uint8_t bit)
@@ -143,9 +151,15 @@ uint8_t threewire_read_bit_clock(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t bit;
-	threewire_clk_high(con);
-	bit = bsp_gpio_pin_read(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin);
-	threewire_clk_low(con);
+	if (proto->config.rawwire.clock_polarity == 0) {
+		threewire_clk_high(con);
+		bit = bsp_gpio_pin_read(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin);
+		threewire_clk_low(con);
+	} else {
+		threewire_clk_low(con);
+		bit = bsp_gpio_pin_read(BSP_GPIO_PORTB, proto->config.rawwire.sdi_pin);
+		threewire_clk_high(con);
+	}
 	return bit;
 }
 
@@ -267,7 +281,7 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	float arg_float;
-	int t;
+	int t, arg_int;
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
@@ -302,6 +316,21 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			} else {
 				proto->config.rawwire.dev_speed = (int)arg_float;
 				threewire_tim_set_prescaler(con);
+			}
+			break;
+		case T_POLARITY:
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(uint32_t));
+			if (arg_int == 0 || arg_int == 1) {
+				proto->config.rawwire.clock_polarity = (int)arg_int;
+				if (arg_int == 0) {
+					threewire_clk_low(con);
+				} else {
+					threewire_clk_high(con);
+				}
+			} else {
+				cprintf(con, "Polarity must be 0 or 1.\r\n");
+				return t;
 			}
 			break;
 		default:

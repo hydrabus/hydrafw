@@ -198,9 +198,18 @@ void bbio_mode_rawwire(t_hydra_console *con)
 					} else {
 						proto->config.rawwire.dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_OPENDRAIN;
 					}
+					if(bbio_subcommand & 0b1){
+						proto->config.rawwire.clock_polarity = 1;
+					} else {
+						proto->config.rawwire.clock_polarity = 0;
+					}
 					curmode.pin_init(con);
 					curmode.tim_init(con);
-					curmode.clock_low(con);
+					if (proto->config.rawwire.clock_polarity == 0) {
+						curmode.clock_low(con);
+					} else {
+						curmode.clock_high(con);
+					}
 					curmode.data_low(con);
 
 					cprint(con, "\x01", 1);
@@ -215,7 +224,11 @@ void bbio_mode_rawwire(t_hydra_console *con)
 
 					curmode.pin_init(con);
 					curmode.tim_init(con);
-					curmode.clock_low(con);
+					if (proto->config.rawwire.clock_polarity == 0) {
+						curmode.clock_low(con);
+					} else {
+						curmode.clock_high(con);
+					}
 					curmode.data_low(con);
 
 					cprint(con, "\x01", 1);

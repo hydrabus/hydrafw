@@ -149,6 +149,7 @@ typedef struct {
 	uint8_t clk_pin;
 	uint8_t sdi_pin;
 	uint8_t sdo_pin;
+	uint8_t clock_polarity;
 } rawwire_config_t;
 
 typedef struct {

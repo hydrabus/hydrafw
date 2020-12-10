@@ -1445,6 +1445,11 @@ t_token tokens_mode_twowire[] = {
 		.help = "Bus frequency"
 	},
 	{
+		T_POLARITY,
+		.arg_type = T_ARG_UINT,
+		.help = "Clock polarity (0/1)"
+	},
+	{
 		T_IDCODE,
 		.help = "Read SWD IDCODE."
 	},
@@ -1567,6 +1572,11 @@ t_token tokens_mode_threewire[] = {
 		T_FREQUENCY,
 		.arg_type = T_ARG_FLOAT,
 		.help = "Bus frequency"
+	},
+	{
+		T_POLARITY,
+		.arg_type = T_ARG_UINT,
+		.help = "Clock polarity (0/1)"
 	},
 	{
 		T_ARG_UINT,
