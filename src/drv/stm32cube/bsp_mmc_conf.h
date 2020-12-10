@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef _BSP_UART_CONF_H_
-#define _BSP_UART_CONF_H_
+#ifndef _BSP_MMC_CONF_H_
+#define _BSP_MMC_CONF_H_
 
 /* MMC1 */
 #define BSP_MMC		      SDIO
@@ -30,4 +30,4 @@ limitations under the License.
 #define BSP_MMC_D0_PORT       GPIOC
 #define BSP_MMC_D0_PIN        GPIO_PIN_8  /* PC.08 */
 
-#endif /* _BSP_UART_CONF_H_ */
+#endif /* _BSP_MMC_CONF_H_ */

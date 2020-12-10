@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-#ifndef _HYDRABUS_MODE_UART_H_
-#define _HYDRABUS_MODE_UART_H_
+#ifndef _HYDRABUS_MODE_MMC_H_
+#define _HYDRABUS_MODE_MMC_H_
 
 #include "hydrabus_mode.h"
 
-#endif /* _HYDRABUS_MODE_UART_H_ */
+#endif /* _HYDRABUS_MODE_MMC_H_ */
 
