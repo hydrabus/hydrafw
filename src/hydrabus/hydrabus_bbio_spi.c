@@ -274,7 +274,7 @@ void bbio_mode_spi(t_hydra_console *con)
 					}
 				} else if ((bbio_subcommand & BBIO_SPI_CONFIG) == BBIO_SPI_CONFIG) {
 					proto->config.spi.dev_polarity = (bbio_subcommand & 0b100)?1:0;
-					proto->config.spi.dev_phase = (bbio_subcommand & 0b10)?0:1;
+					proto->config.spi.dev_phase = (bbio_subcommand & 0b10)?1:0;
 					proto->dev_num = (bbio_subcommand & 0b1)?BSP_DEV_SPI1:BSP_DEV_SPI2;
 					status = bsp_spi_init(proto->dev_num, proto);
 					if(status == BSP_OK) {
