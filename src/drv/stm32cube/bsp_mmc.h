@@ -45,5 +45,6 @@ uint32_t *bsp_mmc_get_cid(bsp_dev_mmc_t dev_num);
 uint32_t *bsp_mmc_get_csd(bsp_dev_mmc_t dev_num);
 bsp_status_t bsp_mmc_get_info(bsp_dev_mmc_t dev_num, bsp_mmc_info_t * mmc_info);
 bsp_status_t bsp_mmc_change_bus_width(bsp_dev_mmc_t dev_num, uint8_t bus_size);
+bsp_status_t bsp_mmc_read_extcsd(bsp_dev_mmc_t dev_num, uint8_t * extcsd);
 
 #endif /* _BSP_MMC_H_ */

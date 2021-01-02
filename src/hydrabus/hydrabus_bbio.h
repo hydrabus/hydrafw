@@ -200,6 +200,7 @@
 #define BBIO_MMC_CSD		0b00000011
 #define BBIO_MMC_READ_PAGE	0b00000100
 #define BBIO_MMC_WRITE_PAGE	0b00000101
+#define BBIO_MMC_EXT_CSD	0b00000110
 #define BBIO_MMC_CONFIG		0b10000000
 
 int cmd_bbio(t_hydra_console *con);

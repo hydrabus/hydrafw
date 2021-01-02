@@ -19,6 +19,7 @@
 #include "common.h"
 #include "hydrabus_mode_mmc.h"
 #include "bsp_mmc.h"
+#include <string.h>
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
@@ -114,6 +115,16 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			cprintf(con, "0x%08x ", mmc_reg[1]);
 			cprintf(con, "0x%08x ", mmc_reg[2]);
 			cprintf(con, "0x%08x\r\n", mmc_reg[3]);
+			status = bsp_mmc_read_extcsd(proto->dev_num, g_sbuf);
+			if(status == BSP_OK) {
+				cprint(con, "EXT_CSD : ", 10);
+				for(arg_int = 0; arg_int < 512; arg_int++) {
+					cprintf(con, "%02x", g_sbuf[arg_int]);
+				}
+				cprint(con, "\r\n", 2);
+			} else {
+				cprintf(con, "EXT_CSD error : %d\r\n", status);
+			}
 			bsp_mmc_get_info(proto->dev_num, &mmc_info);
 			cprintf(con, "Number of blocks: %d\r\n", mmc_info.BlockNbr);
 			cprintf(con, "Number of logical blocks: %d\r\n", mmc_info.LogBlockNbr);

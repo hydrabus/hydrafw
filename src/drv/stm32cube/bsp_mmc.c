@@ -197,6 +197,65 @@ bsp_status_t bsp_mmc_change_bus_width(bsp_dev_mmc_t dev_num, uint8_t bus_size)
 	return status;
 }
 
+bsp_status_t bsp_mmc_read_extcsd(bsp_dev_mmc_t dev_num, uint8_t * extcsd)
+{
+	MMC_HandleTypeDef* hmmc;
+	hmmc = &mmc_handle[dev_num];
+	SDIO_CmdInitTypeDef cmd;
+	SDIO_DataInitTypeDef config;
+
+	bsp_status_t status;
+	uint32_t tickstart, data, dataremaining=512;
+	uint8_t count;
+
+	cmd.CmdIndex = SDMMC_CMD_HS_SEND_EXT_CSD;
+	cmd.Argument = 0;
+	cmd.Response = SDIO_RESPONSE_SHORT;
+	cmd.WaitForInterrupt = SDIO_WAIT_NO;
+	cmd.CPSM = SDIO_CPSM_ENABLE;
+
+	config.DataTimeOut   = SDMMC_DATATIMEOUT;
+	config.DataLength    = 512;
+	config.DataBlockSize = SDIO_DATABLOCK_SIZE_512B;
+	config.TransferDir   = SDIO_TRANSFER_DIR_TO_SDIO;
+	config.TransferMode  = SDIO_TRANSFER_MODE_BLOCK;
+	config.DPSM          = SDIO_DPSM_ENABLE;
+	(void)SDIO_ConfigData(hmmc->Instance, &config);
+
+	status = (bsp_status_t)SDIO_SendCommand(hmmc->Instance, &cmd);
+	if(status != BSP_OK) {
+		return status;
+	}
+
+	tickstart = HAL_GetTick();
+	while (!__HAL_MMC_GET_FLAG(hmmc, SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DATAEND)) {
+		if(__HAL_MMC_GET_FLAG(hmmc, SDIO_FLAG_RXFIFOHF) && (dataremaining > 0U)) {
+			for(count = 0U; count < 8U; count++) {
+				data = SDIO_ReadFIFO(hmmc->Instance);
+				*extcsd = (uint8_t)(data & 0xFFU);
+				extcsd++;
+				dataremaining--;
+				*extcsd = (uint8_t)((data >> 8U) & 0xFFU);
+				extcsd++;
+				dataremaining--;
+				*extcsd = (uint8_t)((data >> 16U) & 0xFFU);
+				extcsd++;
+				dataremaining--;
+				*extcsd = (uint8_t)((data >> 24U) & 0xFFU);
+				extcsd++;
+				dataremaining--;
+			}
+		}
+
+		if (((HAL_GetTick() - tickstart) >= MMC_TIMEOUT_MAX)) {
+			__HAL_MMC_CLEAR_FLAG(hmmc, SDMMC_STATIC_FLAGS);
+			return BSP_TIMEOUT;
+		}
+	}
+	__HAL_MMC_CLEAR_FLAG(hmmc, SDMMC_STATIC_FLAGS);
+	return BSP_OK;
+}
+
 bsp_status_t bsp_mmc_get_info(bsp_dev_mmc_t dev_num, bsp_mmc_info_t * mmc_info)
 {
 	MMC_HandleTypeDef* hmmc;
