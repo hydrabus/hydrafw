@@ -40,6 +40,7 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
+	proto->config.mmc.bus_width = 1;
 }
 
 static void show_params(t_hydra_console *con)
@@ -48,6 +49,8 @@ static void show_params(t_hydra_console *con)
 
 	cprintf(con, "Device: MMC%d\r\n",
 		proto->dev_num + 1);
+	cprintf(con, "Bus width: %d bits\r\n",
+		proto->config.mmc.bus_width);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -81,12 +84,24 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	mode_config_proto_t* proto = &con->mode->proto;
 	bsp_mmc_info_t mmc_info;
 	uint32_t * mmc_reg;
-	int t;
+	bsp_status_t status;
+	int t, arg_int;
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
 		case T_SHOW:
 			t += show(con, p);
+			break;
+		case T_PINS:
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			if((arg_int == 1) || (arg_int == 4)) {
+				proto->config.mmc.bus_width = arg_int;
+				status = bsp_mmc_change_bus_width(proto->dev_num, proto->config.mmc.bus_width);
+			}
+			if(status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, status);
+			}
 			break;
 		case T_ID:
 			mmc_reg = bsp_mmc_get_cid(proto->dev_num);

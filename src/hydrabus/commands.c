@@ -1686,6 +1686,11 @@ t_token tokens_mode_mmc[] = {
 	},
 	/* mmc-specific commands */
 	{
+		T_PINS,
+		.arg_type = T_ARG_UINT,
+		.help = "Number of data pins (1 or 4)"
+	},
+	{
 		T_ID,
 		.help = "Displays the CID and CSD registers"
 	},

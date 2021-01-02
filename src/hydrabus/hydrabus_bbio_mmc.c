@@ -108,7 +108,15 @@ void bbio_mode_mmc(t_hydra_console *con)
 				}
 				break;
 			default:
-				cprint(con, "\x00", 1);
+				if ((bbio_subcommand & BBIO_MMC_CONFIG) == BBIO_MMC_CONFIG) {
+					proto->config.mmc.bus_width = (bbio_subcommand & 0b1)?4:1;
+					status = bsp_mmc_change_bus_width(proto->dev_num, proto->config.mmc.bus_width);
+					if(status == BSP_OK) {
+						cprint(con, "\x01", 1);
+					} else {
+						cprint(con, "\x00", 1);
+					}
+				}
 			}
 		}
 	}

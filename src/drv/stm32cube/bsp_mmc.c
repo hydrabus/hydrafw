@@ -172,6 +172,31 @@ uint32_t *bsp_mmc_get_csd(bsp_dev_mmc_t dev_num)
 	return hmmc->CSD;
 }
 
+bsp_status_t bsp_mmc_change_bus_width(bsp_dev_mmc_t dev_num, uint8_t bus_size)
+{
+	MMC_HandleTypeDef* hmmc;
+	bsp_status_t status;
+
+	hmmc = &mmc_handle[dev_num];
+
+	switch(bus_size) {
+	case 1:
+		status = (bsp_status_t) HAL_MMC_ConfigWideBusOperation(hmmc, SDIO_BUS_WIDE_1B);
+		break;
+	case 4:
+		status = (bsp_status_t) HAL_MMC_ConfigWideBusOperation(hmmc, SDIO_BUS_WIDE_4B);
+		break;
+	/* Unused, pins are not present on Hydrabus v1
+	case 8:
+		status = (bsp_status_t) HAL_MMC_ConfigWideBusOperation(hmmc, SDIO_BUS_WIDE_8B);
+		break;
+	*/
+	default:
+		status = BSP_ERROR;
+	}
+	return status;
+}
+
 bsp_status_t bsp_mmc_get_info(bsp_dev_mmc_t dev_num, bsp_mmc_info_t * mmc_info)
 {
 	MMC_HandleTypeDef* hmmc;
