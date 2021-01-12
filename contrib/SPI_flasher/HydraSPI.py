@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 #
-# Script to dump SPI flash chips with Hydrabus
-# Based on https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-SPI-mode-guide
+# Script for dumping/programming SPI flash chips with Hydrabus.
+# Based on HydraBus BBIO documentation: https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-SPI-mode-guide
 #
 # Author: MrKalach [https://github.com/MrKalach]
 # License: GPLv3 (https://choosealicense.com/licenses/gpl-3.0/)
@@ -59,25 +59,25 @@ class SPI_hydra:
     def __enter__(self):
         self.serial = serial.Serial(self.params.serial_port, self.params.serial_speed)
 
-        #Switch HydraBus to binary mode
+        # Switching HydraBus to binary mode
         for _ in range(20):
             self.serial.write(b'\x00')
-        check_result(b"BBIO1", self.serial.read(5), 'Cannot switch into binary mode!')
+        check_result(b"BBIO1", self.serial.read(5), 'Could not switch into binary mode!')
 
         self.serial.reset_input_buffer()
 
-        # SPI mode
+        # Sitching to SPI mode
         self.write_bytes(0b00000001)
-        check_result(b"SPI1", self.serial.read(4), 'Cannot set SPI mode')
+        check_result(b"SPI1", self.serial.read(4), 'Could not switch to SPI mode')
 
-        # Configure SPI
+        # Configuring SPI
         cfg = 0b10000000 | self.params.polarity << 3 | self.params.clock_phase << 2 | self.params.spi
         self.write_bytes(cfg) #polarity => 0, phase => 0, SPI1
-        check_result(b'\x01', self.serial.read(1),'Cannot setup SPI port!')
+        check_result(b'\x01', self.serial.read(1),'Could not setup SPI port!')
 
-        # Set SPI speed
+        # Setting up SPI speed
         self.write_bytes(self.params.SPI_speed)
-        check_result(b'\x01', self.serial.read(1), 'Cannot set SPI speed!')
+        check_result(b'\x01', self.serial.read(1), 'Could not setup SPI speed!')
 
         self.cs_off()
 
@@ -159,7 +159,8 @@ def dump_flash(params, filename, blocks, start_addr_hex):
 
         print('\nDone')
 
-# This is example for Macronix MX25L12845E but somekind of generic commands is used
+# This code has been proofed && worked with Macronix MX25L12845E chip
+# But somekind of generic commands is used, so it should work for most of other chips
 def program_flash(params, filename, start_addr_hex, erase_before_program):
     MAX_ATTEMPTS = 30
 
@@ -237,6 +238,7 @@ def program_flash(params, filename, start_addr_hex, erase_before_program):
 
         # Program data
         # PP - page program, 0x02 + 3 bytes of address + data
+        # low byte of address is always 0x00
         hydra.write_bytes(b'\x04\x01\x04\x00\x00')
         hydra.write_bytes(b'\x02' + num_to_bytes(page, 2) + b'\x00')
         hydra.write_bytes(data)
@@ -245,7 +247,7 @@ def program_flash(params, filename, start_addr_hex, erase_before_program):
         # Check status
         status = 1
         attempts = 0
-        while status & 0b1 != 0: #write in progress bit check
+        while status & 0b1 != 0: #write in progress bit checking
             # RDSR
             hydra.write_bytes(b'\x04\x00\x01\x00\x01')
             hydra.write_bytes(0x05)
@@ -272,8 +274,9 @@ def program_flash(params, filename, start_addr_hex, erase_before_program):
                 if len(data) == 0:
                     break
 
-                if erase_before_program and page % 0xF == 0:
-                    erase_sector_4k(start_addr)
+                if page % 0xF == 0:
+                    if erase_before_program:
+                        erase_sector_4k(start_addr)
                     start_addr += 0x1000
                     block_number = int(start_addr / 0x1000)
                     if block_number % 10 == 0:
@@ -292,7 +295,7 @@ def main():
     parser.add_argument(
         '-hsp', '--hydra-serial-port',
         type=str, default=Params.serial_port,
-        help='Hydra COM port")'
+        help='Hydra COM port (eg. COM4 or /dev/ttyS0)'
     )
     parser.add_argument(
         '-hss', '--hydra-serial-speed',
@@ -347,7 +350,7 @@ def main():
     dump_parser.add_argument('blocks', type=int, help='Blocks to read')
     dump_parser.add_argument('start_address', type=str, help='Start address (HEX)')
 
-    burn_parser = subparsers.add_parser('program', help='Program binary img into flash')
+    burn_parser = subparsers.add_parser('program', help='Program img into flash')
     burn_parser.add_argument('filename', type=str, help='File to program')
     burn_parser.add_argument('start_address', type=str, help='Start address (HEX)')
     burn_parser.add_argument('-ebw', '--erase_before_program', action='store_true', help='Erase data before program')
