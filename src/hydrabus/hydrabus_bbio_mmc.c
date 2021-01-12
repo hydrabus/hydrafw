@@ -83,6 +83,15 @@ void bbio_mode_mmc(t_hydra_console *con)
 				cprint(con, "\x01", 1);
 				cprint(con, (char *)mmc_cid, 16);
 				break;
+			case BBIO_MMC_EXT_CSD:
+				status = bsp_mmc_read_extcsd(proto->dev_num, rx_data);
+				if(status == BSP_OK) {
+					cprint(con, "\x01", 1);
+					cprint(con, (char *)rx_data, 512);
+				} else {
+					cprint(con, "\x00", 1);
+				}
+				break;
 			case BBIO_MMC_READ_PAGE:
 				chnRead(con->sdu, rx_data, 4);
 				block_number = (rx_data[0] << 24) + (rx_data[1]<<16);
@@ -108,7 +117,15 @@ void bbio_mode_mmc(t_hydra_console *con)
 				}
 				break;
 			default:
-				cprint(con, "\x00", 1);
+				if ((bbio_subcommand & BBIO_MMC_CONFIG) == BBIO_MMC_CONFIG) {
+					proto->config.mmc.bus_width = (bbio_subcommand & 0b1)?4:1;
+					status = bsp_mmc_change_bus_width(proto->dev_num, proto->config.mmc.bus_width);
+					if(status == BSP_OK) {
+						cprint(con, "\x01", 1);
+					} else {
+						cprint(con, "\x00", 1);
+					}
+				}
 			}
 		}
 	}
