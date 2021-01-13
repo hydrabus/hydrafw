@@ -1,6 +1,6 @@
-Script to dump/program SPI flash. Tested with HydraBus FW version 0.10
+Script for dumping/programming SPI flash chips. Tested with HydraBus FW version 0.10
 
-Based on https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-SPI-mode-guide
+Based on HydraBus BBIO documentation: https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-SPI-mode-guide
 
 Usage:
 ```
@@ -40,12 +40,15 @@ Examples:
     ```
 - dump flash:
     ```
-    HydraSPI.py dump test.bin 60 0x0
+    # Dump chip, starting from address 0x00. 60 blocks will be read. by default block size is 4096
+    HydraSPI.py dump test.bin 60 0x00
     ```
 - program flash:
     ```
-    # -ebw (or --erase_before_program) flag is used
-    HydraSPI.py program u-boot.bin 0x0 -ebw
+    # --erase_before_program flag is used
+    # starting from address 0x00
+    # Be careful, current implementation doesn't check flash size and file size
+    HydraSPI.py program u-boot.bin 0x00 --erase_before_program
     ```
 
 Requirements:
