@@ -27,7 +27,6 @@
 //===============================================================
 
 u08_t	command[2];
-extern uint8_t buf[512] __attribute__ ((section(".cmm")));
 extern u08_t	tag_flag;
 extern u08_t	i_reg;
 #ifdef ENABLE14443A
@@ -43,9 +42,6 @@ extern u08_t	stand_alone_flag;
 
 extern volatile int irq_end_rx;
 extern volatile int irq;
-
-#define SAMPLING_NB_BYTES   (512)
-u08_t   sampling[SAMPLING_NB_BYTES];
 
 //===============================================================
 
@@ -87,11 +83,10 @@ void Trf797xDirectCommand(u08_t *pbuf)
 
 void Trf797xDisableSlotCounter(void)
 {
-	buf[40] = IRQ_MASK;
-	buf[41] = IRQ_MASK;				// next slot counter
-	Trf797xReadSingle(&buf[41], 1);
-	buf[41] &= 0xFE;				// clear BIT0 in register 0x01
-	Trf797xWriteSingle(&buf[40], 2);
+	u08_t buf[2] = {IRQ_MASK,IRQ_MASK};
+	Trf797xReadSingle(&buf[1], 1);
+	buf[1] &= 0xFE;				// clear BIT0 in register 0x01
+	Trf797xWriteSingle(&buf[0], 2);
 }
 
 //===============================================================
@@ -100,11 +95,10 @@ void Trf797xDisableSlotCounter(void)
 
 void Trf797xEnableSlotCounter(void)
 {
-	buf[40] = IRQ_MASK;
-	buf[41] = IRQ_MASK;				// next slot counter
-	Trf797xReadSingle (&buf[41], 1);
-	buf[41] |= BIT0;				// set BIT0 in register 0x01
-	Trf797xWriteSingle(&buf[40], 2);
+	u08_t buf[2] = {IRQ_MASK,IRQ_MASK};
+	Trf797xReadSingle (&buf[1], 1);
+	buf[1] |= BIT0;				// set BIT0 in register 0x01
+	Trf797xWriteSingle(&buf[0], 2);
 }
 
 //===============================================================
