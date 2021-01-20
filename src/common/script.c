@@ -19,11 +19,10 @@
 #include "ff.h"
 #include "microsd.h"
 
-static uint8_t inbuf[IN_OUT_BUF_SIZE+8];
-
 int execute_script(t_hydra_console *con, char *filename)
 {
 	FIL fp;
+	uint8_t inbuf[256];
 	int i;
 	if (!is_fs_ready()) {
 		if(mount() != 0) {
@@ -39,7 +38,7 @@ int execute_script(t_hydra_console *con, char *filename)
 	/* Clear any input in tokenline buffer */
 	tl_input(con->tl, 0x03);
 
-	while(file_readline(&fp, inbuf, IN_OUT_BUF_SIZE)) {
+	while(file_readline(&fp, inbuf, 255)) {
 		i=0;
 		if(inbuf[0] == '#') {
 			continue;
