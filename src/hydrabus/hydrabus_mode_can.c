@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "common.h"
 #include "bsp.h"
 #include "bsp_gpio.h"
 #include "bsp_can.h"
@@ -101,7 +102,7 @@ static void can_slcan_out(t_hydra_console *con, can_rx_frame *msg)
 
 static bsp_status_t can_slcan_in(uint8_t *slcanmsg, can_tx_frame *msg)
 {
-	uint8_t result = 0;
+	uint8_t data_index, i;
 	switch(slcanmsg[0]) {
 	case 't':
 		msg->header.RTR = CAN_RTR_DATA;
@@ -124,35 +125,29 @@ static bsp_status_t can_slcan_in(uint8_t *slcanmsg, can_tx_frame *msg)
 	}
 
 	if (msg->header.IDE == CAN_ID_STD) {
-		result = sscanf((char *)slcanmsg, "%*[tr]%3X%1d%02X%02X%02X%02X%02X%02X%02X%02X",
-		       (unsigned int *) &msg->header.StdId,
-		       (unsigned int *) &msg->header.DLC,
-		       (unsigned int *) &msg->data[0],
-		       (unsigned int *) &msg->data[1],
-		       (unsigned int *) &msg->data[2],
-		       (unsigned int *) &msg->data[3],
-		       (unsigned int *) &msg->data[4],
-		       (unsigned int *) &msg->data[5],
-		       (unsigned int *) &msg->data[6],
-		       (unsigned int *) &msg->data[7]);
+		msg->header.StdId = hexchartonibble(slcanmsg[1])<<8;
+		msg->header.StdId |= hexchartonibble(slcanmsg[2])<<4;
+		msg->header.StdId |= hexchartonibble(slcanmsg[3]);
+		msg->header.DLC = hexchartonibble(slcanmsg[4])%8;
+		data_index = 5;
 	} else {
-		result = sscanf((char *)slcanmsg, "%*[TR]%8X%1d%02X%02X%02X%02X%02X%02X%02X%02X",
-		       (unsigned int *) &msg->header.ExtId,
-		       (unsigned int *) &msg->header.DLC,
-		       (unsigned int *) &msg->data[0],
-		       (unsigned int *) &msg->data[1],
-		       (unsigned int *) &msg->data[2],
-		       (unsigned int *) &msg->data[3],
-		       (unsigned int *) &msg->data[4],
-		       (unsigned int *) &msg->data[5],
-		       (unsigned int *) &msg->data[6],
-		       (unsigned int *) &msg->data[7]);
+		msg->header.ExtId = hexchartonibble(slcanmsg[1])<<28;
+		msg->header.ExtId |= hexchartonibble(slcanmsg[2])<<24;
+		msg->header.ExtId |= hexchartonibble(slcanmsg[3])<<20;
+		msg->header.ExtId |= hexchartonibble(slcanmsg[4])<<16;
+		msg->header.ExtId |= hexchartonibble(slcanmsg[5])<<12;
+		msg->header.ExtId |= hexchartonibble(slcanmsg[6])<<8;
+		msg->header.ExtId |= hexchartonibble(slcanmsg[7])<<4;
+		msg->header.ExtId |= hexchartonibble(slcanmsg[8]);
+		msg->header.DLC = hexchartonibble(slcanmsg[9])%8;
+		data_index = 10;
 	}
-	if(result >= (msg->header.DLC+2)) {
-		return BSP_OK;
-	} else {
-		return BSP_ERROR;
+	for(i=0; i<msg->header.DLC; i+=2) {
+		msg->data[i] = hex2byte((char *)&slcanmsg[data_index+i]);
 	}
+
+
+	return BSP_OK;
 }
 
 static void slcan_read_command(t_hydra_console *con, uint8_t *buff){

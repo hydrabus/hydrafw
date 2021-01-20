@@ -133,6 +133,8 @@ void cprint(t_hydra_console *con, const char *data, const uint32_t size);
 void cprintf(t_hydra_console *con, const char *fmt, ...);
 void print_hex(t_hydra_console *con, uint8_t* data, uint8_t size);
 uint8_t parse_escaped_string(char * input, uint8_t * output);
+uint8_t hexchartonibble(char hex);
+uint8_t hex2byte(char * hex);
 
 uint8_t reverse_u8(uint8_t value);
 uint16_t reverse_u16(uint16_t value);

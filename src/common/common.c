@@ -433,7 +433,7 @@ int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p)
 	return TRUE;
 }
 
-static uint8_t hexchartonibble(char hex)
+uint8_t hexchartonibble(char hex)
 {
 	if (hex >= '0' && hex <= '9') return hex - '0';
 	if (hex >= 'a' && hex <='f') return hex - 'a' + 10;
@@ -441,7 +441,7 @@ static uint8_t hexchartonibble(char hex)
 	return 0;
 }
 
-static uint8_t hex2byte(char * hex)
+uint8_t hex2byte(char * hex)
 {
 	uint8_t val = 0;
 	val = (hexchartonibble(hex[0]) << 4);
