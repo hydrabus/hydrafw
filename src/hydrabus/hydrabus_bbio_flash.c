@@ -39,9 +39,15 @@ void bbio_mode_flash(t_hydra_console *con)
 	FIL outfile;
 	uint32_t to_rx, to_tx, i;
 	uint8_t bbio_subcommand;
-	uint8_t *tx_data = (uint8_t *)g_sbuf;
-	uint8_t *rx_data = (uint8_t *)g_sbuf+4096;
+	uint8_t *tx_data = pool_alloc_bytes(0x1000); // 4096 bytes
+	uint8_t *rx_data = pool_alloc_bytes(0x1000); // 4096 bytes
 	bool to_sd = FALSE;
+
+	if(tx_data == 0 || rx_data == 0) {
+		pool_free(tx_data);
+		pool_free(rx_data);
+		return;
+	}
 
 	flash_init_proto_default(con);
 	flash_pin_init(con);
@@ -52,6 +58,8 @@ void bbio_mode_flash(t_hydra_console *con)
 		if(chnRead(con->sdu, &bbio_subcommand, 1) == 1) {
 			switch(bbio_subcommand) {
 			case BBIO_RESET:
+				pool_free(tx_data);
+				pool_free(rx_data);
 				flash_cleanup(con);
 				return;
 			case BBIO_MODE_ID:
@@ -155,6 +163,8 @@ void bbio_mode_flash(t_hydra_console *con)
 			}
 		}
 	}
+	pool_free(tx_data);
+	pool_free(rx_data);
 	file_close(&outfile);
 	flash_cleanup(con);
 }
