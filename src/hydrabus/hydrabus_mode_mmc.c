@@ -85,8 +85,10 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	mode_config_proto_t* proto = &con->mode->proto;
 	bsp_mmc_info_t mmc_info;
 	uint32_t * mmc_reg;
+	uint8_t * ext_csd_buf;
 	bsp_status_t status;
 	int t, arg_int;
+
 
 	for (t = token_pos; p->tokens[t]; t++) {
 		switch (p->tokens[t]) {
@@ -115,16 +117,23 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			cprintf(con, "0x%08x ", mmc_reg[1]);
 			cprintf(con, "0x%08x ", mmc_reg[2]);
 			cprintf(con, "0x%08x\r\n", mmc_reg[3]);
-			status = bsp_mmc_read_extcsd(proto->dev_num, g_sbuf);
+			ext_csd_buf = pool_alloc_bytes(MMCSD_BLOCK_SIZE);
+			if(ext_csd_buf == 0) {
+				cprintf(con, "Error, unable to get buffer space.\r\n");
+				t++;
+				break;
+			}
+			status = bsp_mmc_read_extcsd(proto->dev_num, ext_csd_buf);
 			if(status == BSP_OK) {
 				cprint(con, "EXT_CSD : ", 10);
 				for(arg_int = 0; arg_int < 512; arg_int++) {
-					cprintf(con, "%02x", g_sbuf[arg_int]);
+					cprintf(con, "%02x", ext_csd_buf[arg_int]);
 				}
 				cprint(con, "\r\n", 2);
 			} else {
 				cprintf(con, "EXT_CSD error : %d\r\n", status);
 			}
+			pool_free(ext_csd_buf);
 			bsp_mmc_get_info(proto->dev_num, &mmc_info);
 			cprintf(con, "Number of blocks: %d\r\n", mmc_info.BlockNbr);
 			cprintf(con, "Number of logical blocks: %d\r\n", mmc_info.LogBlockNbr);
