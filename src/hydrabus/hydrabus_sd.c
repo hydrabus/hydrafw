@@ -33,8 +33,8 @@
 
 #include "script.h"
 
-static uint8_t *outbuf = g_sbuf;
-static uint8_t *inbuf = g_sbuf+(IN_OUT_BUF_SIZE+8);
+extern uint8_t outbuf[IN_OUT_BUF_SIZE+8];
+extern uint8_t inbuf[IN_OUT_BUF_SIZE+8];
 
 /* FS object.*/
 extern FATFS SDC_FS;
@@ -510,7 +510,7 @@ int cmd_sd_erase(t_hydra_console *con, t_tokenline_parsed *p)
 		/* DESTRUCTIVE TEST START */
 		cprintf(con, "Formatting... ");
 		chThdSleepMilliseconds(10);
-		err = f_mkfs("", FM_ANY, 0, g_sbuf, NB_SBUFFER);
+		err = f_mkfs("", FM_ANY, 0, outbuf, IN_OUT_BUF_SIZE);
 		if (err != FR_OK) {
 			cprintf(con, "f_mkfs err:%d\r\n", err);
 			umount();

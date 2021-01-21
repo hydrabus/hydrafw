@@ -32,8 +32,8 @@
 
 #include "script.h"
 
-static uint8_t *outbuf = g_sbuf;
-static uint8_t *inbuf = g_sbuf+(IN_OUT_BUF_SIZE+8);
+uint8_t outbuf[IN_OUT_BUF_SIZE+8];
+uint8_t inbuf[IN_OUT_BUF_SIZE+8];
 
 /* FS object.*/
 FATFS SDC_FS;
@@ -334,7 +334,7 @@ static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offse
 	end = start + TIME_MS2I(seconds * 1000);
 	n = 0;
 	do {
-		if (blkRead(&SDCD1, startblk, g_sbuf + offset, sectors)) {
+		if (blkRead(&SDCD1, startblk, inbuf + offset, sectors)) {
 			cprintf(con, "SD read failed.\r\n");
 			return FALSE;
 		}
