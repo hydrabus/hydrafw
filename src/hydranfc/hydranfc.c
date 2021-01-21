@@ -1086,8 +1086,6 @@ void show_registers(t_hydra_console *con)
 	unsigned int i;
 	uint8_t data_buf[2];
 
-	memset(buf, 0x20, 30);
-	buf[30] = 0;
 	cprintf(con, "TRF7970A Registers:\r\n");
 	for (i = 0; i < ARRAY_SIZE(registers); i++) {
 		data_buf[0] = registers[i].reg;
@@ -1095,9 +1093,8 @@ void show_registers(t_hydra_console *con)
 			Trf797xReadIrqStatus(data_buf);
 		else
 			Trf797xReadSingle(&data_buf[0], 1);
-		cprintf(con, "0x%02x\t%s%s: 0x%02x\r\n", registers[i].reg,
-			registers[i].name, buf + strlen(registers[i].name),
-			data_buf[0]);
+		cprintf(con, "0x%02x\t%-30s: 0x%02x\r\n", registers[i].reg,
+			registers[i].name, data_buf[0]);
 	}
 }
 
