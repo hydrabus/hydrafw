@@ -358,8 +358,13 @@ static void print_sniff_buffer(t_hydra_console *con, uint16_t *buffer, uint16_t 
 static void sniff(t_hydra_console *con)
 {
 	bsp_status_t status = BSP_OK;
-	uint16_t *buffer = (uint16_t *)g_sbuf;
+	uint16_t *buffer = pool_alloc_bytes(SNIFF_BUFFER_LENGTH); // 8192 bytes
 	uint16_t index = 0;
+
+	if(buffer == 0) {
+		cprintf(con, "Error, unable to get buffer space.\r\n");
+		return;
+	}
 
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -379,6 +384,7 @@ static void sniff(t_hydra_console *con)
 		}
 	}
 
+	pool_free(buffer);
 	bsp_i2c_slave_deinit(proto->dev_num);
 	bsp_i2c_master_init(proto->dev_num, proto);
 }
