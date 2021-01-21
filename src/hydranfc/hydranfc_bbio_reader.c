@@ -86,7 +86,7 @@ void bbio_mode_hydranfc_reader(t_hydra_console *con)
 {
 	uint8_t bbio_subcommand;
 	uint8_t rlen, clen, compute_crc;
-	uint8_t *rx_data = (uint8_t *) g_sbuf + 4096;
+	uint8_t *rx_data = pool_alloc_bytes(256);
 
 	init_gpio(con);
 
@@ -143,6 +143,7 @@ void bbio_mode_hydranfc_reader(t_hydra_console *con)
 				break;
 			}
 			case BBIO_RESET: {
+				pool_free(rx_data);
 				deinit_gpio();
 				palDisablePadEvent(GPIOA, 1);
 				return;
