@@ -64,8 +64,6 @@ extern uint8_t fbuff[2048] __attribute__ ((section(".cmm")));
 
 #define NB_SBUFFER  (65536)
 #define G_SBUF_SDC_BURST_SIZE (NB_SBUFFER/MMCSD_BLOCK_SIZE) /* how many sectors reads at once */
-extern uint32_t g_sbuf_idx;
-extern uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));
 
 /* USB1: Virtual serial port over USB.*/
 extern SerialUSBDriver SDU1;

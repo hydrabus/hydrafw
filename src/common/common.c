@@ -36,9 +36,6 @@
 /* Generic large buffer.*/
 uint8_t fbuff[2048];
 
-uint32_t g_sbuf_idx;
-uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));
-
 extern uint32_t debug_flags;
 extern char log_dest[];
 
@@ -434,10 +431,11 @@ int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p)
 {
 	(void)p;
 	BaseSequentialStream* chp = con->bss;
+	uint8_t * inbuf = pool_alloc_bytes(0x1000); // 4096 bytes
 
 	cprintf(con, "Test debug-rx started, stop it with UBTN + Key\r\n");
 	while(1) {
-		chnRead(chp, (uint8_t *)g_sbuf, sizeof(g_sbuf) - 1);
+		chnRead(chp, inbuf, 0x0FFF);
 
 		/* Exit if User Button is pressed */
 		if (hydrabus_ubtn()) {
@@ -445,6 +443,7 @@ int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p)
 		}
 		//get_char(con);
 	}
+	pool_free(inbuf);
 	return TRUE;
 }
 
