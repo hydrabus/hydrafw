@@ -161,6 +161,9 @@ int main(void)
 	/* Configure PA0 (UBTN), PA4 (ULED) and initialize the SD driver. */
 	hydrabus_init();
 
+	/* Initialize memory pool */
+	pool_init();
+
 	/*
 	 * Initializes a serial-over-USB CDC driver.
 	 */

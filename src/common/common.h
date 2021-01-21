@@ -28,6 +28,7 @@
 #include "commands.h"
 #include "mode_config.h"
 #include "ff.h"
+#include "alloc.h"
 
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
 

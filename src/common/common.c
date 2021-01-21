@@ -34,7 +34,7 @@
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
 /* Generic large buffer.*/
-uint8_t fbuff[2048] __attribute__ ((section(".ram4")));
+uint8_t fbuff[2048];
 
 uint32_t g_sbuf_idx;
 uint8_t g_sbuf[NB_SBUFFER+128] __attribute__ ((aligned (4)));
@@ -142,13 +142,28 @@ void DelayMs(uint32_t delay_ms)
 
 void cmd_show_memory(t_hydra_console *con)
 {
-  size_t n, total, largest;
+	uint32_t used, free;
+	size_t n, total, largest;
 
-  n = chHeapStatus(NULL, &total, &largest);
+	n = chHeapStatus(NULL, &total, &largest);
 	cprintf(con, "core free memory : %u bytes\r\n", chCoreGetStatusX());
 	cprintf(con, "heap fragments   : %u\r\n", n);
-  cprintf(con, "heap free total  : %u bytes\r\n", total);
+	cprintf(con, "heap free total  : %u bytes\r\n", total);
 	cprintf(con, "heap free largest: %u bytes\r\n", largest);
+	free = pool_stats_free();
+	used = pool_stats_used();
+	cprintf(con, "pool free : %u blocks\r\n", free);
+	cprintf(con, "pool used : %u blocks\r\n", used);
+#ifdef MAKE_DEBUG
+	uint8_t * blocks;
+	blocks = pool_stats_blocks();
+	cprintf(con, "pool block status: \r\n");
+	for(n=0; n<POOL_BLOCK_NUMBER; n++) {
+		cprintf(con, "%02x ", blocks[n]);
+	}
+	cprint(con, "\r\n", 2);
+#endif
+
 }
 
 void cmd_show_threads(t_hydra_console *con)
