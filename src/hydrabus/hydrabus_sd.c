@@ -935,6 +935,7 @@ static void cmd_show_sd_csd(t_hydra_console *con, uint8_t *csd)
 
 int cmd_show_sd(t_hydra_console *con)
 {
+	uint8_t buf[16];
 	int i;
 	char *s;
 
