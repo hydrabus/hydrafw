@@ -28,7 +28,6 @@
 #include "hydrabus_bbio_flash.h"
 #include "hydrabus_mode_flash.h"
 
-static FIL outfile;
 
 static void bbio_mode_id(t_hydra_console *con)
 {
@@ -37,6 +36,7 @@ static void bbio_mode_id(t_hydra_console *con)
 
 void bbio_mode_flash(t_hydra_console *con)
 {
+	FIL outfile;
 	uint32_t to_rx, to_tx, i;
 	uint8_t bbio_subcommand;
 	uint8_t *tx_data = (uint8_t *)g_sbuf;
