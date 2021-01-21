@@ -361,7 +361,7 @@ int sd_perf(t_hydra_console *con, int offset)
 	if (!(ret = sd_perf_run(con, PERFRUN_SECONDS, 1, offset)))
 		return ret;
 
-	for(nb_sectors = 2; nb_sectors <= G_SBUF_SDC_BURST_SIZE; nb_sectors=nb_sectors*2) {
+	for(nb_sectors = 2; nb_sectors <= SDC_BURST_SIZE*2; nb_sectors=nb_sectors*2) {
 		/* Multiple sequential blocks read performance, aligned.*/
 		cprintf(con, "%3dKiB blocks: ", nb_sectors/2 );
 		ret = sd_perf_run(con, PERFRUN_SECONDS, nb_sectors, offset);
