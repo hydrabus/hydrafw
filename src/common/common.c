@@ -33,8 +33,6 @@
 #define HYDRAFW_VERSION "HydraFW (HydraBus) " HYDRAFW_GIT_TAG " " HYDRAFW_CHECKIN_DATE
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
-/* CCM = .ram4 */
-uint8_t buf[512] __attribute__ ((section(".ram4")));
 /* Generic large buffer.*/
 uint8_t fbuff[2048] __attribute__ ((section(".ram4")));
 

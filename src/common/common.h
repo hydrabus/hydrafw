@@ -58,7 +58,6 @@
 void DelayUs(uint32_t delay_us);
 void DelayMs(uint32_t delay_ms);
 
-extern uint8_t buf[512] __attribute__ ((section(".cmm")));
 /* Generic large buffer.*/
 extern uint8_t fbuff[2048] __attribute__ ((section(".cmm")));
 
