@@ -28,7 +28,6 @@
 
 #define STATES_LEN 8192
 
-static uint16_t *buffer = (uint16_t *)g_sbuf;
 static uint16_t INDEX = 0;
 
 static void portc_init(void)
@@ -71,8 +70,8 @@ static void sump_init(t_hydra_console *con)
 	tim_init(con);
 }
 
-static void get_samples(t_hydra_console *con) __attribute__((optimize("-O3")));
-static void get_samples(t_hydra_console *con)
+static void get_samples(t_hydra_console *con, uint16_t * buffer) __attribute__((optimize("-O3")));
+static void get_samples(t_hydra_console *con, uint16_t * buffer)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint32_t config_state;
@@ -152,6 +151,11 @@ void sump(t_hydra_console *con) __attribute__((optimize("-O3")));
 void sump(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
+	uint16_t *buffer = pool_alloc_bytes(STATES_LEN*2);
+
+	if(buffer == 0) {
+		return;
+	}
 
 	sump_init(con);
 	proto->config.sump.state = SUMP_STATE_IDLE;
@@ -171,7 +175,7 @@ void sump(t_hydra_console *con)
 			case SUMP_RUN:
 				INDEX=0;
 				proto->config.sump.state = SUMP_STATE_ARMED;
-				get_samples(con);
+				get_samples(con, buffer);
 
 				while(proto->config.sump.read_count > 0) {
 					if (INDEX == 0) {
@@ -288,6 +292,7 @@ void sump(t_hydra_console *con)
 			}
 		}
 	}
+	pool_free(buffer);
 	sump_deinit();
 }
 
