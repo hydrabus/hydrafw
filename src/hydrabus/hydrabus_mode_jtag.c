@@ -649,7 +649,11 @@ void openOCD(t_hydra_console *con)
 
 	uint8_t ocd_command, values;
 	uint8_t ocd_parameters[2] = {0};
-	static uint8_t *buffer = (uint8_t *)g_sbuf;
+	uint8_t *buffer = pool_alloc_bytes(0x2000); // 8192 bytes - magic value from bus pirate
+
+	if(buffer == 0) {
+		return;
+	}
 
 	while (!hydrabus_ubtn()) {
 		if(chnReadTimeout(con->sdu, &ocd_command, 1, 1)) {
@@ -731,7 +735,7 @@ void openOCD(t_hydra_console *con)
 					cprintf(con, "%c%c%c", CMD_OCD_TAP_SHIFT, ocd_parameters[0],
 						ocd_parameters[1]);
 
-					chnRead(con->sdu, g_sbuf,((num_sequences+7)/8)*2);
+					chnRead(con->sdu, buffer,((num_sequences+7)/8)*2);
 					i=0;
 					while(num_sequences>0) {
 						bits = (num_sequences > 8) ? 8 : num_sequences;
@@ -752,6 +756,7 @@ void openOCD(t_hydra_console *con)
 			}
 		}
 	}
+	pool_free(buffer);
 }
 
 void jtag_enter_openocd(t_hydra_console *con)
