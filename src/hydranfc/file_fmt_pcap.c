@@ -38,6 +38,8 @@
 #include "ff.h"
 
 extern void tprintf(const char *fmt, ...);
+extern uint8_t * nfc_sniffer_buffer;
+extern uint32_t nfc_sniffer_index;
 
 static filename_t write_filename;
 
@@ -118,54 +120,54 @@ __attribute__ ((always_inline)) inline
 void sniff_write_pcap_global_header() /*MSB*/
 {
     uint32_t i;
-    i = g_sbuf_idx;
+    i = nfc_sniffer_index;
 
     //magic_number nsecond resolution
-    g_sbuf[i+0] = 0xa1;
-    g_sbuf[i+1] = 0xb2;
-    g_sbuf[i+2] = 0x3c;
-    g_sbuf[i+3] = 0x4d;
+    nfc_sniffer_buffer[i+0] = 0xa1;
+    nfc_sniffer_buffer[i+1] = 0xb2;
+    nfc_sniffer_buffer[i+2] = 0x3c;
+    nfc_sniffer_buffer[i+3] = 0x4d;
 
     //version_major
-    g_sbuf[i+4] = 0x0;
-    g_sbuf[i+5] = 0x2;
+    nfc_sniffer_buffer[i+4] = 0x0;
+    nfc_sniffer_buffer[i+5] = 0x2;
 
     //version_minor
-    g_sbuf[i+6] = 0x0;
-    g_sbuf[i+7] = 0x4;
+    nfc_sniffer_buffer[i+6] = 0x0;
+    nfc_sniffer_buffer[i+7] = 0x4;
 
     //thiszone
-    g_sbuf[i+8] = 0x0;
-    g_sbuf[i+9] = 0x0;
-    g_sbuf[i+10] = 0x0;
-    g_sbuf[i+11] = 0x0;
+    nfc_sniffer_buffer[i+8] = 0x0;
+    nfc_sniffer_buffer[i+9] = 0x0;
+    nfc_sniffer_buffer[i+10] = 0x0;
+    nfc_sniffer_buffer[i+11] = 0x0;
 
     //sigfigs
-    g_sbuf[i+12] = 0x0;
-    g_sbuf[i+13] = 0x0;
-    g_sbuf[i+14] = 0x0;
-    g_sbuf[i+15] = 0x0;
+    nfc_sniffer_buffer[i+12] = 0x0;
+    nfc_sniffer_buffer[i+13] = 0x0;
+    nfc_sniffer_buffer[i+14] = 0x0;
+    nfc_sniffer_buffer[i+15] = 0x0;
 
     //snaplen
-    g_sbuf[i+16] = 0x00;
-    g_sbuf[i+17] = 0x00;
-    g_sbuf[i+18] = 0xff;
-    g_sbuf[i+19] = 0xff;
+    nfc_sniffer_buffer[i+16] = 0x00;
+    nfc_sniffer_buffer[i+17] = 0x00;
+    nfc_sniffer_buffer[i+18] = 0xff;
+    nfc_sniffer_buffer[i+19] = 0xff;
 
     //linktype
-    g_sbuf[i+20] = 0x0;
-    g_sbuf[i+21] = 0x0;
-    g_sbuf[i+22] = 0x0;
-    g_sbuf[i+23] = 0x93; /*(0x93=>0xa2)  private use*/
+    nfc_sniffer_buffer[i+20] = 0x0;
+    nfc_sniffer_buffer[i+21] = 0x0;
+    nfc_sniffer_buffer[i+22] = 0x0;
+    nfc_sniffer_buffer[i+23] = 0x93; /*(0x93=>0xa2)  private use*/
 
-    g_sbuf_idx +=24;
+    nfc_sniffer_index +=24;
 }
 
 __attribute__ ((always_inline)) inline
 void sniff_write_pcap_packet_header(uint32_t nb_cycles_start) /*MSB*/
 {
     uint32_t i;
-	i = g_sbuf_idx;
+	i = nfc_sniffer_index;
 
     uint32_t second, nsecond, data_size;
     uint8_t val;
@@ -176,23 +178,23 @@ void sniff_write_pcap_packet_header(uint32_t nb_cycles_start) /*MSB*/
     //ts-sec
     //Epoch time:555d03e0 = 05/21/2015 00:00:00
     val = ((second & 0xFF000000) >> 24);
-    g_sbuf[i+0] = 0x55 + val;
+    nfc_sniffer_buffer[i+0] = 0x55 + val;
     val = ((second & 0x00FF0000) >> 16);
-    g_sbuf[i+1] = 0x5d + val;
+    nfc_sniffer_buffer[i+1] = 0x5d + val;
     val = ((second & 0x0000FF00) >> 8);
-    g_sbuf[i+2] = 0x03 + val;
+    nfc_sniffer_buffer[i+2] = 0x03 + val;
     val = (second & 0x000000FF);
-    g_sbuf[i+3] = 0xe0 + val;
+    nfc_sniffer_buffer[i+3] = 0xe0 + val;
 
     //ts-nsec
     val = ((nsecond & 0xFF000000) >> 24);
-    g_sbuf[i+4] = val;
+    nfc_sniffer_buffer[i+4] = val;
     val = ((nsecond & 0x00FF0000) >> 16);
-    g_sbuf[i+5] = val;
+    nfc_sniffer_buffer[i+5] = val;
     val = ((nsecond & 0x0000FF00) >> 8);
-    g_sbuf[i+6] = val;
+    nfc_sniffer_buffer[i+6] = val;
     val = (nsecond & 0x000000FF);
-    g_sbuf[i+7] = val;
+    nfc_sniffer_buffer[i+7] = val;
 
     //data size
     if (tmp_sniffer_get_size() == 0) /*for ISO 7816*/
@@ -203,49 +205,49 @@ void sniff_write_pcap_packet_header(uint32_t nb_cycles_start) /*MSB*/
     data_size = tmp_sniffer_get_size()+8; /*8 = header packet size*/
 
     val = ((data_size & 0xFF000000) >> 24);
-    g_sbuf[i+8] = val;
+    nfc_sniffer_buffer[i+8] = val;
     val = ((data_size & 0x00FF0000) >> 16);
-    g_sbuf[i+9] = val;
+    nfc_sniffer_buffer[i+9] = val;
     val = ((data_size & 0x0000FF00) >> 8);
-    g_sbuf[i+10] = val;
+    nfc_sniffer_buffer[i+10] = val;
     val = (data_size & 0x000000FF);
-    g_sbuf[i+11] = val;
+    nfc_sniffer_buffer[i+11] = val;
 
     val = ((data_size & 0xFF000000) >> 24);
-    g_sbuf[i+12] = val;
+    nfc_sniffer_buffer[i+12] = val;
     val = ((data_size & 0x00FF0000) >> 16);
-    g_sbuf[i+13] = val;
+    nfc_sniffer_buffer[i+13] = val;
     val = ((data_size & 0x0000FF00) >> 8);
-    g_sbuf[i+14] = val;
+    nfc_sniffer_buffer[i+14] = val;
     val = (data_size & 0x000000FF);
-    g_sbuf[i+15] = val;
+    nfc_sniffer_buffer[i+15] = val;
 
-    g_sbuf_idx +=16;
+    nfc_sniffer_index +=16;
 }
 
 __attribute__ ((always_inline)) inline
 void sniff_write_data_header (uint8_t pow, uint32_t protocol, uint32_t speed, uint32_t nb_cycles_end, uint32_t parity)
 {
     uint32_t i;
-    i = g_sbuf_idx;
+    i = nfc_sniffer_index;
 
     // power
-    g_sbuf[i+0] = pow;
+    nfc_sniffer_buffer[i+0] = pow;
 
 
     // norm
     switch (protocol)
     {
     case 1:  /*A PCD*/
-        g_sbuf[i+1] = 0xb0;
+        nfc_sniffer_buffer[i+1] = 0xb0;
         break;
 
     case 2:  /*A PICC*/
-        g_sbuf[i+1] = 0xb1;
+        nfc_sniffer_buffer[i+1] = 0xb1;
         break;
 
     default: /*Unknown*/
-        g_sbuf[i+1] = 0xb2;
+        nfc_sniffer_buffer[i+1] = 0xb2;
         break;
     }
 
@@ -255,42 +257,42 @@ void sniff_write_data_header (uint8_t pow, uint32_t protocol, uint32_t speed, ui
             switch (speed)
             {
             case 1:  /*106*/
-                g_sbuf[i+2] = 0xc0;
+                nfc_sniffer_buffer[i+2] = 0xc0;
                 break;
 
             case 2:  /*212*/
-                g_sbuf[i+2] = 0xc1;
+                nfc_sniffer_buffer[i+2] = 0xc1;
                 break;
 
             case 3:  /*424*/
-                g_sbuf[i+2] = 0xc2;
+                nfc_sniffer_buffer[i+2] = 0xc2;
                 break;
 
             /*848 not supported*/
             }
         }
-    else g_sbuf[i+2] = 0xc0;;               /* B PCD; B PICC;...*/
+    else nfc_sniffer_buffer[i+2] = 0xc0;;               /* B PCD; B PICC;...*/
 
     //timestamp
     uint8_t val;
 
 	val = ((nb_cycles_end & 0xFF000000) >> 24);
-	g_sbuf[i+3] = val;
+	nfc_sniffer_buffer[i+3] = val;
 	val = ((nb_cycles_end & 0x00FF0000) >> 16);
-	g_sbuf[i+4] = val;
+	nfc_sniffer_buffer[i+4] = val;
 	val = ((nb_cycles_end & 0x0000FF00) >> 8);
-	g_sbuf[i+5] = val;
+	nfc_sniffer_buffer[i+5] = val;
 	val = (nb_cycles_end & 0x000000FF);
-	g_sbuf[i+6] = val;
+	nfc_sniffer_buffer[i+6] = val;
 
 
     //odd parity bit option
     if (parity == 0)
-            g_sbuf[i+7] = 0xd0;
+            nfc_sniffer_buffer[i+7] = 0xd0;
     else
-            g_sbuf[i+7] = 0xd1;
+            nfc_sniffer_buffer[i+7] = 0xd1;
 
-    g_sbuf_idx +=8;
+    nfc_sniffer_index +=8;
 }
 
 uint32_t tmp_sniffer_get_size(void)

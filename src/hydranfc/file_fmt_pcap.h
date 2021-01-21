@@ -44,8 +44,6 @@ void sniff_write_pcap_data(uint8_t data);
 
 uint32_t sniffer_get_size_pcap(void);
 
-uint32_t sniffer_get_pcap_data_size (uint32_t g_sbuf_idx);
-
 uint32_t tmp_sniffer_get_size(void);
 
 #endif
