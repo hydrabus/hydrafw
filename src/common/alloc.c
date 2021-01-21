@@ -22,7 +22,8 @@
 /* Taken from linux kernel */
 #define DIV_ROUND_UP(n, d) (((n) + (d) - 1) / (d))
 
-static uint8_t pool_buf[POOL_BUFFER_SIZE] __attribute__ ((section(".ram4")));
+//static uint8_t pool_buf[POOL_BUFFER_SIZE] __attribute__ ((section(".ram4")));
+static uint8_t pool_buf[POOL_BUFFER_SIZE];
 static pool_t ram_pool;
 
 void pool_init(void)

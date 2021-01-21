@@ -32,9 +32,6 @@
 
 #include "script.h"
 
-uint8_t outbuf[IN_OUT_BUF_SIZE+8];
-uint8_t inbuf[IN_OUT_BUF_SIZE+8];
-
 /* FS object.*/
 FATFS SDC_FS;
 /* FS Root */
@@ -269,6 +266,17 @@ bool badblocks(uint32_t start, uint32_t end, uint32_t blockatonce, uint8_t patte
 {
 	uint32_t position = 0;
 	uint32_t i = 0;
+	uint8_t *outbuf, *inbuf;
+
+	outbuf = pool_alloc_bytes(IN_OUT_BUF_SIZE+8);
+	inbuf = pool_alloc_bytes(IN_OUT_BUF_SIZE+8);
+
+	if(inbuf == 0 || outbuf == 0) {
+		pool_free(inbuf);
+		pool_free(outbuf);
+		return FALSE;
+	}
+
 
 	chDbgCheck(blockatonce <= SDC_BURST_SIZE);
 
@@ -293,9 +301,13 @@ bool badblocks(uint32_t start, uint32_t end, uint32_t blockatonce, uint8_t patte
 			goto ERROR;
 		position += blockatonce;
 	}
+	pool_free(inbuf);
+	pool_free(outbuf);
 	return FALSE;
 
 ERROR:
+	pool_free(inbuf);
+	pool_free(outbuf);
 	return TRUE;
 }
 
@@ -326,6 +338,12 @@ static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offse
 {
 	uint32_t n, startblk;
 	systime_t start, end;
+	uint8_t * inbuf = pool_alloc_bytes(IN_OUT_BUF_SIZE+8);
+
+	if(inbuf == 0) {
+		pool_free(inbuf);
+		return FALSE;
+	}
 
 	/* The test is performed in the middle of the flash area. */
 	startblk = (SDCD1.capacity / MMCSD_BLOCK_SIZE) / 2;
@@ -336,6 +354,7 @@ static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offse
 	do {
 		if (blkRead(&SDCD1, startblk, inbuf + offset, sectors)) {
 			cprintf(con, "SD read failed.\r\n");
+			pool_free(inbuf);
 			return FALSE;
 		}
 		n += sectors;
@@ -345,6 +364,7 @@ static int sd_perf_run(t_hydra_console *con, int seconds, int sectors, int offse
 	print_mbs(con, (n * MMCSD_BLOCK_SIZE) / seconds);
 	cprintf(con, " MB/s\r\n");
 
+	pool_free(inbuf);
 	return TRUE;
 }
 

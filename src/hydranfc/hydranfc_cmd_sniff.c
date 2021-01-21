@@ -736,6 +736,7 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 				chThdSleepMilliseconds(50);
 				if(sniff_trace_uart1)
 					deinitUART1_sniff();
+				pool_free(nfc_sniffer_buffer);
 				return;
 			}
 
@@ -1008,7 +1009,6 @@ void hydranfc_sniff_14443A(t_hydra_console *con, bool start_of_frame, bool end_o
 			TST_OFF;
 		}
 	} // Main While Loop
-	pool_free(nfc_sniffer_buffer);
 }
 
 void hydranfc_sniff_14443A_bin(t_hydra_console *con, bool start_of_frame, bool end_of_frame, bool parity)
@@ -1081,6 +1081,7 @@ void hydranfc_sniff_14443A_bin(t_hydra_console *con, bool start_of_frame, bool e
 				/* Wait a bit in order to display all text */
 				chThdSleepMilliseconds(50);
 				deinitUART1_sniff();
+				pool_free(nfc_sniffer_buffer);
 				return;
 			}
 
@@ -1300,7 +1301,6 @@ void hydranfc_sniff_14443A_bin(t_hydra_console *con, bool start_of_frame, bool e
 			TST_OFF;
 		}
 	} // Main While Loop
-	pool_free(nfc_sniffer_buffer);
 }
 
 /* Special raw data sniffer for ISO14443 TypeA or TypeB @106kbps with:
@@ -1373,6 +1373,7 @@ void hydranfc_sniff_14443AB_bin_raw(t_hydra_console *con, bool start_of_frame, b
 				/* Wait a bit in order to display all text */
 				chThdSleepMilliseconds(50);
 				deinitUART1_sniff();
+				pool_free(nfc_sniffer_buffer);
 				return;
 			}
 			
@@ -1487,6 +1488,5 @@ void hydranfc_sniff_14443AB_bin_raw(t_hydra_console *con, bool start_of_frame, b
 			TST_OFF;
 		}
 	} // Main While Loop
-	pool_free(nfc_sniffer_buffer);
 }
 
