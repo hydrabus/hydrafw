@@ -95,7 +95,6 @@ filename_t write_filename;
 #define SPI_RX_DMA_SIZE (4)
 uint8_t spi_rx_dma_buf[2][SPI_RX_DMA_SIZE+12] __attribute__ ((aligned (16)));
 uint8_t htoa[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
-uint8_t tmp_buf[16];
 uint8_t irq_no;
 volatile int irq_sampling = 0;
 
@@ -222,6 +221,7 @@ void terminate_sniff_nfc(void)
 
 static void init_sniff_nfc(INIT_NFC_PROTOCOL iso_proto)
 {
+	uint8_t tmp_buf[16];
 	tprintf("TRF7970A chipset init start\r\n");
 
 	/* Init TRF797x */
