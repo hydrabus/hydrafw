@@ -377,7 +377,8 @@ int cmd_sd_erase(t_hydra_console *con, t_tokenline_parsed *p)
 
 		cprintf(con, "Multiple aligned reads...");
 		chThdSleepMilliseconds(10);
-		fillbuffers(0x55);
+		fillbuffer(0x55, inbuf);
+		fillbuffer(0x55, outbuf);
 
 		/* fill reference buffer from SD card */
 		if (sdcRead(&SDCD1, 0, inbuf, SDC_BURST_SIZE)) {
@@ -406,7 +407,8 @@ int cmd_sd_erase(t_hydra_console *con, t_tokenline_parsed *p)
 
 		cprintf(con, "Multiple unaligned reads...");
 		chThdSleepMilliseconds(10);
-		fillbuffers(0x55);
+		fillbuffer(0x55, inbuf);
+		fillbuffer(0x55, outbuf);
 		/* fill reference buffer from SD card */
 		if (sdcRead(&SDCD1, 0, inbuf + 1, SDC_BURST_SIZE)) {
 			cprintf(con, "sdcRead KO\r\n");

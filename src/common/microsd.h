@@ -34,7 +34,6 @@ bool is_fs_ready(void);
 bool is_file_present(char * filename);
 int sd_perf(t_hydra_console *con, int offset);
 void fillbuffer(uint8_t pattern, uint8_t *b);
-void fillbuffers(uint8_t pattern);
 bool badblocks(uint32_t start, uint32_t end, uint32_t blockatonce, uint8_t pattern);
 
 bool file_open(FIL *file_handle, const char * filename, const char mode);

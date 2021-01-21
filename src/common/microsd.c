@@ -309,15 +309,6 @@ void fillbuffer(uint8_t pattern, uint8_t *b)
 		b[i] = pattern;
 }
 
-/**
- *
- */
-void fillbuffers(uint8_t pattern)
-{
-	fillbuffer(pattern, inbuf);
-	fillbuffer(pattern, outbuf);
-}
-
 #define PRINT_PERF_VAL_DIGITS	(100)
 static void print_mbs(t_hydra_console *con, uint32_t val_perf_kibs)
 {
