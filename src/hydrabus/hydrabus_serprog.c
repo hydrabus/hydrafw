@@ -43,13 +43,19 @@ void bbio_mode_serprog(t_hydra_console *con)
 {
 	uint8_t serprog_command;
 	uint32_t to_rx, to_tx, i;
-	uint8_t *tx_data = (uint8_t *)g_sbuf;
-	uint8_t *rx_data = (uint8_t *)g_sbuf+4096;
+	uint8_t *tx_data = pool_alloc_bytes(0x1000); // 4096 bytes
+	uint8_t *rx_data = pool_alloc_bytes(0x1000); // 4096 bytes
 	mode_config_proto_t* proto = &con->mode->proto;
+
+	if(tx_data == 0 || rx_data == 0) {
+		pool_free(tx_data);
+		pool_free(rx_data);
+		return;
+	}
 
 	bbio_serprog_init_proto_default(con);
 
-	// We no not initialize here, since flashrom takes care of starting the
+	// We do not initialize here, since flashrom takes care of starting the
 	// SPI interface. this allows to avoid potential electrical issues.
 	//bsp_spi_init(proto->dev_num, proto);
 
@@ -194,6 +200,8 @@ void bbio_mode_serprog(t_hydra_console *con)
 			}
 		}
 	}
+	pool_free(tx_data);
+	pool_free(rx_data);
 	bsp_spi_deinit(proto->dev_num);
 	return;
 }
