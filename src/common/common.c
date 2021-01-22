@@ -34,7 +34,7 @@
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
 /* Generic large buffer.*/
-uint8_t fbuff[2048];
+uint8_t fbuff[2048] __attribute__ ((section(".ram4")));
 
 extern uint32_t debug_flags;
 extern char log_dest[];

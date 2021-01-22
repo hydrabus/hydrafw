@@ -58,11 +58,11 @@ extern t_token tl_tokens[];
 extern t_token_dict tl_dict[];
 
 /* Create tokenline objects for each console. */
-t_tokenline tl_con1;
-t_mode_config mode_con1 = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
+t_tokenline tl_con1  __attribute__ ((section(".ram4")));
+t_mode_config mode_con1  __attribute__ ((section(".ram4"))) = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
 
-t_tokenline tl_con2;
-t_mode_config mode_con2 = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
+t_tokenline tl_con2  __attribute__ ((section(".ram4")));
+t_mode_config mode_con2  __attribute__ ((section(".ram4"))) = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
 
 t_hydra_console consoles[] = {
 	{ .thread_name="console USB1", .sdu=&SDU1, .tl=&tl_con1, .mode = &mode_con1 },

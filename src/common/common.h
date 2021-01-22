@@ -60,7 +60,7 @@ void DelayUs(uint32_t delay_us);
 void DelayMs(uint32_t delay_ms);
 
 /* Generic large buffer.*/
-extern uint8_t fbuff[2048] __attribute__ ((section(".cmm")));
+extern uint8_t fbuff[2048] __attribute__ ((section(".ram4")));
 
 #define NB_SBUFFER  (65536)
 #define G_SBUF_SDC_BURST_SIZE (NB_SBUFFER/MMCSD_BLOCK_SIZE) /* how many sectors reads at once */
