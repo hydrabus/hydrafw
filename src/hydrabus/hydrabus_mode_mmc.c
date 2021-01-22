@@ -99,9 +99,9 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			if((arg_int == 1) || (arg_int == 4)) {
 				proto->config.mmc.bus_width = arg_int;
 				status = bsp_mmc_change_bus_width(proto->dev_num, proto->config.mmc.bus_width);
-			}
-			if(status != BSP_OK) {
-				cprintf(con, str_bsp_init_err, status);
+				if(status != BSP_OK) {
+					cprintf(con, str_bsp_init_err, status);
+				}
 			}
 			break;
 		case T_ID:
