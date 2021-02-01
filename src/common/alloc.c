@@ -22,10 +22,17 @@
 /* Taken from linux kernel */
 #define DIV_ROUND_UP(n, d) (((n) + (d) - 1) / (d))
 
-//static uint8_t pool_buf[POOL_BUFFER_SIZE] __attribute__ ((section(".ram4")));
 static uint8_t pool_buf[POOL_BUFFER_SIZE];
 static pool_t ram_pool;
 
+/**
+  * @brief  Init pool allocator
+  * @retval None
+  */
+/*
+ * This function initiates the pool allocator.
+ * The number of blocks must be lower than 256
+*/
 void pool_init(void)
 {
 	uint32_t i;
@@ -40,6 +47,16 @@ void pool_init(void)
 	}
 }
 
+/**
+  * @brief Allocates a number of contiguous blocks
+  * @param  num_blocks: number of contiguous blocks to allocate
+  * @retval Pointer to the starting buffer, 0 if requested size is not available
+  */
+/*
+ * This function tries to allocate contiguous blocks by looking at the free
+ * blocks list.
+ * If found, it will mark the blocks as used (number of allocated blocks).
+*/
 void * pool_alloc_blocks(uint8_t num_blocks)
 {
 	uint32_t i,j;
@@ -77,12 +94,30 @@ void * pool_alloc_blocks(uint8_t num_blocks)
 	return 0;
 }
 
-void * pool_alloc_bytes(uint32_t bytes)
+/**
+  * @brief  Helper function to allocate a buffer of at least n bytes
+  * @param  bytes: Number of bytes requested
+  * @retval Pointer to the starting buffer, 0 if requested size is not available
+  */
+/*
+ * This helper function will allocate enough pool blocks to store the requested
+ * number of bytes.
+*/
+void * pool_alloc_bytes(uint32_t num_bytes)
 {
-	uint32_t blocks_needed = DIV_ROUND_UP(bytes, POOL_BLOCK_SIZE);
+	uint32_t blocks_needed = DIV_ROUND_UP(num_bytes, POOL_BLOCK_SIZE);
 	return pool_alloc_blocks(blocks_needed);
 }
 
+/**
+  * @brief  Free pool blocks
+  * @param  ptr: pointer to the beginning of the buffer to be freed
+  * @retval None
+  */
+/*
+ * Marks the pool blocks as free (0). The number of allocated blocks is stored in
+ * the block status.
+*/
 void pool_free(void * ptr)
 {
 	uint8_t block_index, num_blocks, i;
