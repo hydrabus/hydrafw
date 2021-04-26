@@ -38,6 +38,7 @@ void twowire_init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
+	proto->wwr = 0;
 	proto->config.rawwire.dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
 	proto->config.rawwire.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
 	proto->config.rawwire.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
@@ -233,7 +234,7 @@ uint8_t twowire_write_u8(t_hydra_console *con, uint8_t tx_data)
 	for (i=0; i<8; i++) {
 		twowire_send_bit(con, (tx_data>>i) & 1);
 	}
-	return 1;
+	return BSP_OK;
 }
 
 uint8_t twowire_read_u8(t_hydra_console *con)
