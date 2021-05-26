@@ -116,8 +116,8 @@ typedef struct {
 	uint8_t dev_mode;
 	uint32_t dev_timing;
 	uint32_t can_id;
-	uint32_t filter_id_low;
-	uint32_t filter_id_high;
+	uint32_t filter_id;
+	uint32_t filter_mask;
 } can_config_t;
 
 typedef struct {

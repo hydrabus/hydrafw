@@ -52,8 +52,8 @@ static void init_proto_default(t_hydra_console *con)
 	/* TS1 = 15TQ, TS2 = 5TQ, SJW = 2TQ */
 	proto->config.can.dev_timing = 0x14e0000;
 
-	proto->config.can.filter_id_low = 0;
-	proto->config.can.filter_id_high = 0;
+	proto->config.can.filter_id = 0;
+	proto->config.can.filter_mask = 0;
 
 }
 
@@ -280,9 +280,14 @@ void slcan(t_hydra_console *con) {
 			/*status*/
 			break;
 		case 'M':
+			proto->config.can.filter_id = *(uint32_t *) &buff[1];
+			proto->config.can.filter_id = reverse_u32(proto->config.can.filter_id);
+			bsp_can_set_filter(proto->dev_num, proto);
+			break;
 		case 'm':
-			/*Filter*/
-			bsp_can_init_filter(proto->dev_num, proto);
+			proto->config.can.filter_mask = *(uint32_t *) &buff[1];
+			proto->config.can.filter_mask = reverse_u32(proto->config.can.filter_mask);
+			bsp_can_set_filter(proto->dev_num, proto);
 			break;
 		case 'V':
 			/*Version*/
@@ -327,10 +332,8 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	}
 
 	/* By default, get all packets */
-	if (proto->config.can.filter_id_low != 0 || proto->config.can.filter_id_high != 0) {
-		bsp_status = bsp_can_set_filter(proto->dev_num, proto,
-						proto->config.can.filter_id_low,
-						proto->config.can.filter_id_high);
+	if (proto->config.can.filter_id != 0 || proto->config.can.filter_mask != 0) {
+		bsp_status = bsp_can_set_filter(proto->dev_num, proto);
 	} else {
 		bsp_status = bsp_can_init_filter(proto->dev_num, proto);
 	}
@@ -436,21 +439,15 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 					cprintf(con, "Reset filter error %02X", bsp_status);
 				}
 				break;
-			case T_LOW:
+			case T_ID:
 				memcpy(&arg_int, p->buf + p->tokens[t+3], sizeof(int));
-				proto->config.can.filter_id_low = arg_int;
-				bsp_status = bsp_can_set_filter(proto->dev_num,
-								proto,
-								proto->config.can.filter_id_low,
-								proto->config.can.filter_id_high);
+				proto->config.can.filter_id = arg_int;
+				bsp_status = bsp_can_set_filter(proto->dev_num, proto);
 				break;
-			case T_HIGH:
+			case T_MASK:
 				memcpy(&arg_int, p->buf + p->tokens[t+3], sizeof(int));
-				proto->config.can.filter_id_high = arg_int;
-				bsp_status = bsp_can_set_filter(proto->dev_num,
-								proto,
-								proto->config.can.filter_id_low,
-								proto->config.can.filter_id_high);
+				proto->config.can.filter_mask = arg_int;
+				bsp_status = bsp_can_set_filter(proto->dev_num, proto);
 				break;
 			}
 			t+=3;
@@ -613,9 +610,9 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 		break;
 	case T_FILTER:
 		tokens_used++;
-		cprintf(con, "Low : 0x%02X\r\nHigh: 0x%02X\r\n",
-			proto->config.can.filter_id_low,
-			proto->config.can.filter_id_high);
+		cprintf(con, "ID : 0x%08X\r\nMask: 0x%08X\r\n",
+			proto->config.can.filter_id,
+			proto->config.can.filter_mask);
 		break;
 	default:
 		show_params(con);

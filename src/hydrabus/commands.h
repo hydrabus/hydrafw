@@ -132,6 +132,7 @@ enum {
 	T_TWOWIRE,
 	T_CAN,
 	T_ID,
+	T_MASK,
 	T_FILTER,
 	T_LOW,
 	T_HIGH,

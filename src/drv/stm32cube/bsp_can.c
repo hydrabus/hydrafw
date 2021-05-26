@@ -325,6 +325,25 @@ bsp_status_t bsp_can_init(bsp_dev_can_t dev_num, mode_config_proto_t* mode_conf)
 }
 
 /**
+  * @brief  Prepare the filter values 
+  * @param  filter_value: Filter value to be applied
+  * @retval Value to be placed in CAN_FxR register
+  */
+uint32_t bsp_can_prepare_filter(uint32_t filter_value)
+{
+	uint32_t final = 0;
+
+	// Only use 29 bits for ID / mask
+	filter_value &= 0x1fffffff;
+	//Place STDID
+	final |= (filter_value & 0x7ff) << 21;
+	//Place EXTID
+	final |= (filter_value & 0x1ffff800) >> 8;
+
+	return final;
+}
+
+/**
   * @brief  Init CAN device filter to capture all
   * @param  dev_num: CAN dev num.
   * @param  mode_conf: Mode config proto.
@@ -347,7 +366,7 @@ bsp_status_t bsp_can_init_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mod
 	hcanfilter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
 	hcanfilter.FilterBank = 14*dev_num;
 	hcanfilter.FilterMode = CAN_FILTERMODE_IDMASK;
-	hcanfilter.FilterScale = CAN_FILTERSCALE_16BIT;
+	hcanfilter.FilterScale = CAN_FILTERSCALE_32BIT;
 	hcanfilter.FilterActivation = ENABLE;
 	hcanfilter.SlaveStartFilterBank = 14;
 
@@ -367,25 +386,29 @@ bsp_status_t bsp_can_init_filter(bsp_dev_can_t dev_num, mode_config_proto_t* mod
   * @retval status: status of the init.
   */
 bsp_status_t bsp_can_set_filter(bsp_dev_can_t dev_num,
-				mode_config_proto_t* mode_conf,
-				uint32_t id_low, uint32_t id_high)
+				mode_config_proto_t* mode_conf)
 {
 	CAN_FilterTypeDef hcanfilter;
 	CAN_HandleTypeDef* hcan;
+	uint32_t filter_reg;
 
 	can_mode_conf[dev_num] = mode_conf;
 	hcan = &can_handle[dev_num];
 
 	bsp_status_t status;
 
-	hcanfilter.FilterIdLow = id_low<<5;
-	hcanfilter.FilterIdHigh = id_high<<5;
-	hcanfilter.FilterMaskIdHigh = 0;
-	hcanfilter.FilterMaskIdLow = 0;
+	filter_reg = bsp_can_prepare_filter(mode_conf->config.can.filter_id);
+	hcanfilter.FilterIdLow = filter_reg & 0xffff;
+	hcanfilter.FilterIdHigh = filter_reg >> 16;
+
+	filter_reg = bsp_can_prepare_filter(mode_conf->config.can.filter_mask);
+	hcanfilter.FilterMaskIdLow = filter_reg & 0xffff;
+	hcanfilter.FilterMaskIdHigh = filter_reg >> 16;
+
 	hcanfilter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
 	hcanfilter.FilterBank = 14*dev_num;
-	hcanfilter.FilterMode = CAN_FILTERMODE_IDLIST;
-	hcanfilter.FilterScale = CAN_FILTERSCALE_16BIT;
+	hcanfilter.FilterMode = CAN_FILTERMODE_IDMASK;
+	hcanfilter.FilterScale = CAN_FILTERSCALE_32BIT;
 	hcanfilter.FilterActivation = ENABLE;
 	hcanfilter.SlaveStartFilterBank = 14;
 

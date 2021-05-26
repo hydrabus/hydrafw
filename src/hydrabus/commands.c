@@ -140,6 +140,7 @@ const t_token_dict tl_dict[] = {
 	{ T_TWOWIRE, "2-wire" },
 	{ T_CAN, "can" },
 	{ T_ID, "id" },
+	{ T_MASK, "mask" },
 	{ T_FILTER, "filter" },
 	{ T_LOW, "low" },
 	{ T_HIGH, "high" },
@@ -257,14 +258,14 @@ t_token tokens_mode_can_filter[] = {
 		.help = "Disable filter"
 	},
 	{
-		T_LOW,
+		T_ID,
 		.arg_type = T_ARG_UINT,
-		.help = "Lower ID to include in filter"
+		.help = "Filter value"
 	},
 	{
-		T_HIGH,
+		T_MASK,
 		.arg_type = T_ARG_UINT,
-		.help = "Higher ID to include in filter"
+		.help = "Filter mask"
 	},
 	{ }
 };

@@ -64,7 +64,6 @@ void bbio_mode_can(t_hydra_console *con)
 	can_tx_frame tx_msg;
 	can_rx_frame rx_msg;
 	uint32_t can_id=0;
-	uint32_t filter_low=0, filter_high=0;
 
 	proto->dev_num = 0;
 	proto->config.can.dev_speed = 500000;
@@ -101,7 +100,7 @@ void bbio_mode_can(t_hydra_console *con)
 					}
 				break;
 			case BBIO_CAN_FILTER_ON:
-				status = bsp_can_set_filter(proto->dev_num, proto, filter_low, filter_high);
+				status = bsp_can_set_filter(proto->dev_num, proto);
 				if(status == BSP_OK) {
 					cprint(con, "\x01", 1);
 				} else {
@@ -192,18 +191,17 @@ void bbio_mode_can(t_hydra_console *con)
 				} else if((bbio_subcommand & BBIO_CAN_FILTER) == BBIO_CAN_FILTER) {
 					chnRead(con->sdu, rx_buff, 4);
 					if(bbio_subcommand & 1) {
-						filter_high =  rx_buff[0] << 24;
-						filter_high += rx_buff[1] << 16;
-						filter_high += rx_buff[2] << 8;
-						filter_high += rx_buff[3];
+						proto->config.can.filter_id =  rx_buff[0] << 24;
+						proto->config.can.filter_id |= rx_buff[1] << 16;
+						proto->config.can.filter_id |= rx_buff[2] << 8;
+						proto->config.can.filter_id |= rx_buff[3];
 					} else {
-						filter_low =  rx_buff[0] << 24;
-						filter_low += rx_buff[1] << 16;
-						filter_low += rx_buff[2] << 8;
-						filter_low += rx_buff[3];
+						proto->config.can.filter_mask =  rx_buff[0] << 24;
+						proto->config.can.filter_mask |= rx_buff[1] << 16;
+						proto->config.can.filter_mask |= rx_buff[2] << 8;
+						proto->config.can.filter_mask |= rx_buff[3];
 					}
-					status = bsp_can_set_filter(proto->dev_num, proto,
-							   filter_low, filter_high);
+					status = bsp_can_set_filter(proto->dev_num, proto);
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);
 					} else {
