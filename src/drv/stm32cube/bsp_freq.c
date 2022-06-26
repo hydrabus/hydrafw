@@ -243,18 +243,18 @@ bsp_status_t bsp_freq_get_baudrate(bsp_dev_freq_t dev_num, uint32_t *baudrate)
 	bool sampled = FALSE;
 	while (sampled == FALSE) {
 		if(bsp_freq_init(dev_num, 1) != BSP_OK) {
-			return FALSE;
+			return BSP_ERROR;
 		}
 		status = bsp_freq_sample(dev_num);
 		if(status == BSP_TIMEOUT) {
-			return FALSE;
+			return status;
 		}
 
 		v1 = bsp_freq_getchannel(dev_num, 1);
 		v1 +=2;
 
 		v2 = bsp_freq_getchannel(dev_num, 2);
-		v2+=2;
+		v2 +=2;
 
 		if(v2 < v1) {
 			sampled = TRUE;
