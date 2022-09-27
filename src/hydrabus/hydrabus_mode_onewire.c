@@ -156,7 +156,7 @@ static void bitr(t_hydra_console *con)
 }
 
 static bool
-onewire_start_and_check (t_hydra_console *con)
+onewire_start_and_check(t_hydra_console *con)
 {
 	bool devices_present_p;
 
