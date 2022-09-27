@@ -222,6 +222,14 @@ static uint8_t onewire_crc8(uint8_t value, struct onewire_scan_state *state)
 	return state->crc8;
 }
 
+/* onewire_search() is based on the official bus scan example published by
+ * Dallas and now hosted by Maxim. It can be found at
+ * https://www.maximintegrated.com/en/design/technical-documents/app-notes/1/187.html
+ *
+ * Changes have been made: Variables no longer use camel case and search state
+ * was move from a bunch of global variables to a struct. But the overall
+ * design remains unchanged.
+ */
 static bool onewire_search(t_hydra_console *con, struct onewire_scan_state *state, enum onewire_scan_mode mode)
 {
 	int id_bit_number;
