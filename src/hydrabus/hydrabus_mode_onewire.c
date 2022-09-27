@@ -31,6 +31,26 @@ static const char* str_prompt_onewire[] = {
 	"onewire1" PROMPT,
 };
 
+static uint8_t onewire_crc_table[] = {
+	  0, 94,188,226, 97, 63,221,131,194,156,126, 32,163,253, 31, 65,
+	157,195, 33,127,252,162, 64, 30, 95,  1,227,189, 62, 96,130,220,
+	 35,125,159,193, 66, 28,254,160,225,191, 93,  3,128,222, 60, 98,
+	190,224,  2, 92,223,129, 99, 61,124, 34,192,158, 29, 67,161,255,
+	 70, 24,250,164, 39,121,155,197,132,218, 56,102,229,187, 89,  7,
+	219,133,103, 57,186,228,  6, 88, 25, 71,165,251,120, 38,196,154,
+	101, 59,217,135,  4, 90,184,230,167,249, 27, 69,198,152,122, 36,
+	248,166, 68, 26,153,199, 37,123, 58,100,134,216, 91,  5,231,185,
+	140,210, 48,110,237,179, 81, 15, 78, 16,242,172, 47,113,147,205,
+	 17, 79,173,243,112, 46,204,146,211,141,111, 49,178,236, 14, 80,
+	175,241, 19, 77,206,144,114, 44,109, 51,209,143, 12, 82,176,238,
+	 50,108,142,208, 83, 13,239,177,240,174, 76, 18,145,207, 45,115,
+	202,148,118, 40,171,245, 23, 73,  8, 86,180,234,105, 55,213,139,
+	 87,  9,235,181, 54,104,138,212,149,203, 41,119,244,170, 72, 22,
+	233,183, 85, 11,136,214, 52,106, 43,117,151,201, 74, 20,246,168,
+	116, 42,200,150, 21, 75,169,247,182,232, 10, 84,215,137,107, 53
+};
+
+
 void onewire_init_proto_default(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -135,17 +155,32 @@ static void bitr(t_hydra_console *con)
 	cprintf(con, hydrabus_mode_str_read_one_u8, rx_data);
 }
 
-void onewire_start(t_hydra_console *con)
+static bool
+onewire_start_and_check (t_hydra_console *con)
 {
+	bool devices_present_p;
+
+	/* Pull low for >= 480µsec to signal a bus reset.  */
 	onewire_mode_output(con);
 	onewire_low();
 	DelayUs(480);
 	onewire_high();
+
+	/* After some 15..60µsec, devices will pull down the bus if anybody recognized the reset pulse.  */
 	DelayUs(70);
 	onewire_mode_input(con);
-	// Can check for device presence here
+	devices_present_p = ! bsp_gpio_pin_read (BSP_GPIO_PORTB, ONEWIRE_PIN);
+
+	/* Wait some more to let all devices release their presence pulse.  */
 	DelayUs(410);
 
+	return devices_present_p;
+}
+
+void onewire_start(t_hydra_console *con)
+{
+	onewire_start_and_check (con);
+	return;
 }
 
 void onewire_write_u8(t_hydra_console *con, uint8_t tx_data)
@@ -180,58 +215,149 @@ uint8_t onewire_read_u8(t_hydra_console *con)
 	return value;
 }
 
-void onewire_scan(t_hydra_console *con)
+static uint8_t onewire_crc8(uint8_t value, struct onewire_scan_state *state)
 {
-	uint8_t id_bit_number = 0;
-	uint8_t last_zero = 0;
-	uint8_t id_bit = 0, cmp_id_bit = 0;
-	uint8_t search_direction = 0;
-	uint8_t LastDiscrepancy = 0;
-	uint8_t LastDeviceFlag = 0;
-	uint8_t i;
-	uint8_t ROM_NO[8] = {0};
-	onewire_start(con);
-	onewire_write_u8(con, 0xf0);
-	cprintf(con, "Discovered devices : ");
-	while(!LastDeviceFlag && !hydrabus_ubtn()) {
-		do{
+	state->crc8 = onewire_crc_table[state->crc8 ^ value];
+
+	return state->crc8;
+}
+
+static bool onewire_search(t_hydra_console *con, struct onewire_scan_state *state, enum onewire_scan_mode mode)
+{
+	int id_bit_number;
+	int last_zero, rom_byte_number, search_result;
+	int id_bit, cmp_id_bit;
+	unsigned char rom_byte_mask, search_direction;
+
+	/* Initialize global search state.  */
+	if(mode == onewire_scan_start) {
+		state->last_discrepancy = 0;
+		state->last_device_p = false;
+		state->last_family_discrepancy = 0;
+	}
+
+	/* Initialize for this search.  */
+	id_bit_number = 1;
+	last_zero = 0;
+	rom_byte_number = 0;
+	rom_byte_mask = 1;
+	search_result = 0;
+	state->crc8 = 0;
+
+	/* If the last call was not the last one.  */
+	if(!state->last_device_p) {
+		/* 1-Wire reset.  */
+		if(!onewire_start_and_check(con)) {
+			/* Reset the search.  */
+			state->last_discrepancy = 0;
+			state->last_device_p = false;
+			state->last_family_discrepancy = 0;
+			return false;
+		}
+
+		/* Issue the search command.  */
+		onewire_write_u8(con, ONEWIRE_CMD_SEARCHROM);
+
+		/* Loop to do the search.  */
+		do {
+			/* Read a bit and its complement.  */
 			id_bit = onewire_read_bit(con);
 			cmp_id_bit = onewire_read_bit(con);
-			if(id_bit && cmp_id_bit) {
+
+			/* Check for no devices on 1-wire.  */
+			if(id_bit && cmp_id_bit)
 				break;
-			} else {
-				if (!id_bit && !cmp_id_bit) {
-					if (id_bit_number == LastDiscrepancy) {
-						search_direction = 1;
-					} else {
-						if (id_bit_number > LastDiscrepancy) {
-							search_direction = 0;
-						} else {
-							search_direction = 
-								(ROM_NO[id_bit_number/8]
-								& (id_bit_number%8))>0;
-						}
-					}
+			else {
+				/* All devices coupled have 0 or 1.  */
+				if(id_bit != cmp_id_bit)
+					search_direction = id_bit;  /* Bit write value for search.  */
+				else {
+					/* If this discrepancy if before the Last Discrepancy
+					   on a previous next then pick the same as last time.  */
+					if(id_bit_number < state->last_discrepancy)
+						search_direction = ((state->ROM_ADDR[rom_byte_number] & rom_byte_mask) > 0);
+					else
+						/* If equal to last pick 1, if not then pick 0.  */
+						search_direction = (id_bit_number == state->last_discrepancy);
+
+					/* If 0 was picked then record its position in LastZero.  */
 					if(search_direction == 0) {
 						last_zero = id_bit_number;
+
+						/* Check for Last discrepancy in family.  */
+						if(last_zero < 9)
+							state->last_family_discrepancy = last_zero;
 					}
-				} else {
-					search_direction = id_bit;
+				}
+
+				/* Set or clear the bit in the ROM byte rom_byte_number
+				   with mask rom_byte_mask.  */
+				if(search_direction == 1)
+					state->ROM_ADDR[rom_byte_number] |= rom_byte_mask;
+				else
+					state->ROM_ADDR[rom_byte_number] &= ~rom_byte_mask;
+
+				/* Serial number search direction write bit.  */
+				onewire_write_bit(con, search_direction);
+
+				/* Increment the byte counter id_bit_number
+				   and shift the mask rom_byte_mask.  */
+				id_bit_number++;
+				rom_byte_mask <<= 1;
+
+				/* If the mask is 0 then go to new SerialNum byte rom_byte_number and reset mask.  */
+				if(rom_byte_mask == 0) {
+					onewire_crc8(state->ROM_ADDR[rom_byte_number], state);  /* Accumulate the CRC.  */
+					rom_byte_number++;
+					rom_byte_mask = 1;
 				}
 			}
-			ROM_NO[id_bit_number/8] |= search_direction<<(id_bit_number%8);
-			onewire_write_bit(con, search_direction);
-			id_bit_number++;
-		}while(id_bit_number<64);
-		LastDiscrepancy = last_zero;
-		if (LastDiscrepancy == 0) {
-			LastDeviceFlag = true;
+		} while (rom_byte_number < 8);  /* Loop until through all ROM bytes 0-7.  */
+
+		/* If the search was successful then...  */
+		if(!((id_bit_number < 65) || (state->crc8 != 0))) {
+			/* ...search successful so set last_discrepancy,last_device_p,search_result. */
+			state->last_discrepancy = last_zero;
+
+			/* Check for last device.  */
+			if (state->last_discrepancy == 0)
+				state->last_device_p = true;
+
+			search_result = true;
 		}
-		for(i=0; i<8; i++) {
-			cprintf(con, "%02X ", ROM_NO[i]);
-		}
-		cprintf(con, "\r\n");
 	}
+
+	/* If no device found then reset counters so next 'search' will be like a first.  */
+	if(!search_result || !state->ROM_ADDR[0]) {
+		state->last_discrepancy = 0;
+		state->last_device_p = false;
+		state->last_family_discrepancy = 0;
+		search_result = false;
+	}
+
+	return search_result;
+}
+
+static void onewire_scan(t_hydra_console *con)
+{
+	int i;
+	int count = 0;
+	bool device_found_p;
+	struct onewire_scan_state state;
+
+	cprintf(con, "Scanning bus for devices.\r\n");
+
+	device_found_p = onewire_search(con, &state, onewire_scan_start);
+	while(device_found_p) {
+		cprintf(con, "%i: ", ++count);
+		for(i = 0; i < 8; i++)
+			cprintf(con, "%02X ", state.ROM_ADDR[i]);
+		cprintf(con, "\r\n");
+
+		device_found_p = onewire_search(con, &state, onewire_scan_continue);
+	}
+
+	return;
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)

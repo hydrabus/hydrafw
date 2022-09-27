@@ -38,4 +38,15 @@ void onewire_send_bit(t_hydra_console *con, uint8_t bit);
 uint8_t onewire_read_bit(t_hydra_console *con);
 void onewire_cleanup(t_hydra_console *con);
 void onewire_start(t_hydra_console *con);
-void onewire_scan(t_hydra_console *con);
+
+struct onewire_scan_state {
+	uint8_t ROM_ADDR[8];
+	int last_discrepancy;
+	int last_family_discrepancy;
+	bool last_device_p;
+	uint8_t crc8;
+};
+enum onewire_scan_mode {
+	onewire_scan_start,
+	onewire_scan_continue,
+};
