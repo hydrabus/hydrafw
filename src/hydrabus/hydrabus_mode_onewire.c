@@ -67,13 +67,13 @@ static void show_params(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "Device: onewire%d\r\nGPIO resistor: %s\r\n",
-		proto->dev_num + 1,
-		proto->config.onewire.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
-		proto->config.onewire.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
-		"floating");
+	        proto->dev_num + 1,
+	        proto->config.onewire.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
+	        proto->config.onewire.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
+	        "floating");
 
 	cprintf(con, "Bit order: %s first\r\n",
-		proto->config.onewire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB ? "MSB" : "LSB");
+	        proto->config.onewire.dev_bit_lsb_msb == DEV_FIRSTBIT_MSB ? "MSB" : "LSB");
 }
 
 bool onewire_pin_init(t_hydra_console *con)
@@ -81,7 +81,7 @@ bool onewire_pin_init(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	bsp_gpio_init(BSP_GPIO_PORTB, ONEWIRE_PIN,
-		      proto->config.onewire.dev_gpio_mode, proto->config.onewire.dev_gpio_pull);
+	              proto->config.onewire.dev_gpio_mode, proto->config.onewire.dev_gpio_pull);
 	return true;
 }
 
@@ -111,11 +111,11 @@ void onewire_write_bit(t_hydra_console *con, uint8_t bit)
 {
 	onewire_mode_output(con);
 	onewire_low();
-	if(bit){
+	if(bit) {
 		DelayUs(6);
 		onewire_high();
 		DelayUs(64);
-	}else{
+	} else {
 		DelayUs(60);
 		onewire_high();
 		DelayUs(10);
@@ -434,7 +434,7 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 		cprintf(con, hydrabus_mode_str_mul_write);
 		for(i = 0; i < nb_data; i++) {
 			cprintf(con, hydrabus_mode_str_mul_value_u8,
-				tx_data[i]);
+			        tx_data[i]);
 		}
 		cprintf(con, hydrabus_mode_str_mul_br);
 	}
@@ -456,7 +456,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 		cprintf(con, hydrabus_mode_str_mul_read);
 		for(i = 0; i < nb_data; i++) {
 			cprintf(con, hydrabus_mode_str_mul_value_u8,
-				rx_data[i]);
+			        rx_data[i]);
 		}
 		cprintf(con, hydrabus_mode_str_mul_br);
 	}
@@ -468,7 +468,7 @@ static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	uint8_t i;
 
 	i = 0;
-	while(i < nb_data){
+	while(i < nb_data) {
 		rx_data[i] = onewire_read_u8(con);
 		i++;
 	}
