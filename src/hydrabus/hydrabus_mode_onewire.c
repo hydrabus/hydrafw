@@ -225,7 +225,8 @@ static uint8_t onewire_crc8(uint8_t value, struct onewire_scan_state *state)
 static bool onewire_search(t_hydra_console *con, struct onewire_scan_state *state, enum onewire_scan_mode mode)
 {
 	int id_bit_number;
-	int last_zero, rom_byte_number, search_result;
+	int last_zero, rom_byte_number;
+	bool device_found_p;
 	int id_bit, cmp_id_bit;
 	unsigned char rom_byte_mask, search_direction;
 
@@ -241,7 +242,7 @@ static bool onewire_search(t_hydra_console *con, struct onewire_scan_state *stat
 	last_zero = 0;
 	rom_byte_number = 0;
 	rom_byte_mask = 1;
-	search_result = 0;
+	device_found_p = false;
 	state->crc8 = 0;
 
 	/* If the last call was not the last one.  */
@@ -316,23 +317,23 @@ static bool onewire_search(t_hydra_console *con, struct onewire_scan_state *stat
 
 		/* If the search was successful then...  */
 		if(!((id_bit_number < 65) || (state->crc8 != 0))) {
-			/* ...search successful so set last_discrepancy,last_device_p,search_result. */
+			/* ...search successful so set last_discrepancy,last_device_p,device_found_p. */
 			state->last_discrepancy = last_zero;
 
 			/* Check for last device.  */
 			if (state->last_discrepancy == 0)
 				state->last_device_p = true;
 
-			search_result = true;
+			device_found_p = true;
 		}
 	}
 
 	/* If no device found then reset counters so next 'search' will be like a first.  */
-	if(!search_result || !state->ROM_ADDR[0]) {
+	if(!device_found_p || !state->ROM_ADDR[0]) {
 		state->last_discrepancy = 0;
 		state->last_device_p = false;
 		state->last_family_discrepancy = 0;
-		search_result = false;
+		device_found_p = false;
 	}
 
 	return search_result;
