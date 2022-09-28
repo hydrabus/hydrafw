@@ -344,7 +344,7 @@ static bool onewire_search(t_hydra_console *con, struct onewire_scan_state *stat
 		device_found_p = false;
 	}
 
-	return search_result;
+	return device_found_p;
 }
 
 static void onewire_scan(t_hydra_console *con)
