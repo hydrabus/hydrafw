@@ -209,8 +209,6 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uin
 	(void)dev_num;
 	int i;
 	unsigned char ack_val;
-	int clock_stretch_count;
-	unsigned char scl_val;
 
 	/* Write 8 bits */
 	for(i = 0; i < 8; i++) {
@@ -221,26 +219,7 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uin
 
 		i2c_sw_delay();
 
-		set_scl_float();
-		i2c_sw_delay();
-
-		// If we are failing to pull up the clock during I2C write, it means the target device is doing clock streching and force
-		// pulling down clock line to slow the bus. In this case, we will have to wait until the target device to be ready again.
-		scl_val = get_scl();
-		if (scl_val == 0) {
-			clock_stretch_count = 0;
-
-			// Clock streching doesn't have any defined maximum time limit in I2C and can hang the bus indefinitely, so we will 
-			// have to put a timer to avoid dead loop here. However, when this happens (usually a faulty device), there is nothing
-			// we could do in master, but fail and move on.
-			//
-			// By default, here we wait for 30 clock cycles.
-			while (scl_val == 0 && clock_stretch_count < max_i2c_clock_streching_cycles) {
-				i2c_sw_delay();
-				scl_val = get_scl();
-				++clock_stretch_count;
-			}
-		}
+		bsp_i2c_master_set_scl_float_and_wait_ready();
 
 		set_scl_low();
 		tx_data <<= 1;
@@ -250,8 +229,7 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uin
 	set_sda_float();
 	i2c_sw_delay();
 
-	set_scl_float();
-	i2c_sw_delay();
+	bsp_i2c_master_set_scl_float_and_wait_ready();
 
 	ack_val = get_sda();
 
@@ -285,8 +263,7 @@ void bsp_i2c_read_ack(bsp_dev_i2c_t dev_num, bool enable_ack)
 
 	i2c_sw_delay();
 
-	set_scl_float();
-	i2c_sw_delay();
+	bsp_i2c_master_set_scl_float_and_wait_ready();
 
 	set_scl_low();
 }
@@ -310,8 +287,7 @@ bsp_status_t bsp_i2c_master_read_u8(bsp_dev_i2c_t dev_num, uint8_t* rx_data)
 		set_sda_float();
 		i2c_sw_delay();
 
-		set_scl_float();
-		i2c_sw_delay();
+		bsp_i2c_master_set_scl_float_and_wait_ready();
 
 		data <<= 1;
 		if(get_sda())
@@ -327,3 +303,29 @@ bsp_status_t bsp_i2c_master_read_u8(bsp_dev_i2c_t dev_num, uint8_t* rx_data)
 	return BSP_OK;
 }
 
+void bsp_i2c_master_set_scl_float_and_wait_ready()
+{
+	int clock_stretch_count;
+	unsigned char scl_val;
+
+	set_scl_float();
+	i2c_sw_delay();
+
+	// If we are failing to pull up the clock during I2C write, it means the target device is doing clock streching and force
+	// pulling down clock line to slow the bus. In this case, we will have to wait until the target device to be ready again.
+	scl_val = get_scl();
+	if (scl_val == 0) {
+		clock_stretch_count = 0;
+
+		// Clock streching doesn't have any defined maximum time limit in I2C and can hang the bus indefinitely, so we will 
+		// have to put a timer to avoid dead loop here. However, when this happens (usually a faulty device), there is nothing
+		// we could do in master, but fail and move on.
+		//
+		// By default, here we wait for 30 clock cycles.
+		while (scl_val == 0 && clock_stretch_count < max_i2c_clock_streching_cycles) {
+			i2c_sw_delay();
+			scl_val = get_scl();
+			++clock_stretch_count;
+		}
+	}
+}
