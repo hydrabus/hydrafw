@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#include "bsp.h"
+#include "bsp_print_dbg.h"
 #include "bsp_i2c_master.h"
 #include "bsp_i2c_conf.h"
 
@@ -29,7 +31,7 @@ const int i2c_speed[I2C_SPEED_MAX] = {
 };
 int i2c_speed_delay;
 bool i2c_started;
-int max_i2c_clock_streching_cycles = 30;
+int max_i2c_clock_streching_cycles = 300;
 
 /* Set SCL LOW = 0/GND (0/GND => Set pin = logic reversed in open drain) */
 #define set_scl_low() (gpio_set_pin(BSP_I2C1_SCL_SDA_GPIO_PORT, BSP_I2C1_SCL_PIN))
@@ -196,6 +198,39 @@ bsp_status_t bsp_i2c_stop(bsp_dev_i2c_t dev_num)
 	return BSP_OK;
 }
 
+/** \brief Set SCL to float and wait for slave device to be ready
+ */
+static void i2c_master_set_scl_float_and_wait_ready(void)
+{
+	int clock_stretch_count;
+	unsigned char scl_val;
+
+	set_scl_float();
+	i2c_sw_delay();
+
+	// If we are failing to pull up the clock during I2C write, it means the target device is doing clock streching and force
+	// pulling down clock line to slow the bus. In this case, we will have to wait until the target device to be ready again.
+	scl_val = get_scl();
+	if (scl_val == 0) {
+		clock_stretch_count = 0;
+
+		// Clock streching doesn't have any defined maximum time limit in I2C and can hang the bus indefinitely, so we will 
+		// have to put a timer to avoid dead loop here. However, when this happens (usually a faulty device), there is nothing
+		// we could do in master, but fail and move on.
+		//
+		// By default, here we wait for 30 clock cycles.
+		while (scl_val == 0 && clock_stretch_count < max_i2c_clock_streching_cycles) {
+			i2c_sw_delay();
+			scl_val = get_scl();
+			++clock_stretch_count;
+		}
+
+		if (clock_stretch_count == max_i2c_clock_streching_cycles) {
+			printf_dbg("\nI2C clock streching timeout: half cycle count = %d\n", clock_stretch_count);
+		}
+	}
+}
+
 /** \brief Sends a Byte in blocking mode and set the status.
  *
  * \param dev_num bsp_dev_i2c_t: I2C dev num.
@@ -219,7 +254,7 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uin
 
 		i2c_sw_delay();
 
-		bsp_i2c_master_set_scl_float_and_wait_ready();
+		i2c_master_set_scl_float_and_wait_ready();
 
 		set_scl_low();
 		tx_data <<= 1;
@@ -229,7 +264,7 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uin
 	set_sda_float();
 	i2c_sw_delay();
 
-	bsp_i2c_master_set_scl_float_and_wait_ready();
+	i2c_master_set_scl_float_and_wait_ready();
 
 	ack_val = get_sda();
 
@@ -263,7 +298,7 @@ void bsp_i2c_read_ack(bsp_dev_i2c_t dev_num, bool enable_ack)
 
 	i2c_sw_delay();
 
-	bsp_i2c_master_set_scl_float_and_wait_ready();
+	i2c_master_set_scl_float_and_wait_ready();
 
 	set_scl_low();
 }
@@ -287,7 +322,7 @@ bsp_status_t bsp_i2c_master_read_u8(bsp_dev_i2c_t dev_num, uint8_t* rx_data)
 		set_sda_float();
 		i2c_sw_delay();
 
-		bsp_i2c_master_set_scl_float_and_wait_ready();
+		i2c_master_set_scl_float_and_wait_ready();
 
 		data <<= 1;
 		if(get_sda())
@@ -301,31 +336,4 @@ bsp_status_t bsp_i2c_master_read_u8(bsp_dev_i2c_t dev_num, uint8_t* rx_data)
 	/* Do not Send ACK / NACK because sent by bsp_i2c_read_ack() */
 
 	return BSP_OK;
-}
-
-void bsp_i2c_master_set_scl_float_and_wait_ready()
-{
-	int clock_stretch_count;
-	unsigned char scl_val;
-
-	set_scl_float();
-	i2c_sw_delay();
-
-	// If we are failing to pull up the clock during I2C write, it means the target device is doing clock streching and force
-	// pulling down clock line to slow the bus. In this case, we will have to wait until the target device to be ready again.
-	scl_val = get_scl();
-	if (scl_val == 0) {
-		clock_stretch_count = 0;
-
-		// Clock streching doesn't have any defined maximum time limit in I2C and can hang the bus indefinitely, so we will 
-		// have to put a timer to avoid dead loop here. However, when this happens (usually a faulty device), there is nothing
-		// we could do in master, but fail and move on.
-		//
-		// By default, here we wait for 30 clock cycles.
-		while (scl_val == 0 && clock_stretch_count < max_i2c_clock_streching_cycles) {
-			i2c_sw_delay();
-			scl_val = get_scl();
-			++clock_stretch_count;
-		}
-	}
 }
