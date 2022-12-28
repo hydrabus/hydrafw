@@ -29,6 +29,7 @@ const int i2c_speed[I2C_SPEED_MAX] = {
 };
 int i2c_speed_delay;
 bool i2c_started;
+int max_i2c_clock_streching_cycles = 30;
 
 /* Set SCL LOW = 0/GND (0/GND => Set pin = logic reversed in open drain) */
 #define set_scl_low() (gpio_set_pin(BSP_I2C1_SCL_SDA_GPIO_PORT, BSP_I2C1_SCL_PIN))
@@ -42,6 +43,9 @@ bool i2c_started;
 
 /* Get SDA pin state 0 or 1 */
 #define get_sda() (gpio_get_pin(BSP_I2C1_SCL_SDA_GPIO_PORT, BSP_I2C1_SDA_PIN))
+
+/* Get SCL pin state 0 or 1 */
+#define get_scl() (gpio_get_pin(BSP_I2C1_SCL_SDA_GPIO_PORT, BSP_I2C1_SCL_PIN))
 
 /* wait I2C half clock delay */
 #define i2c_sw_delay() (wait_delay(i2c_speed_delay))
@@ -205,6 +209,8 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uin
 	(void)dev_num;
 	int i;
 	unsigned char ack_val;
+	int clock_stretch_count;
+	unsigned char scl_val;
 
 	/* Write 8 bits */
 	for(i = 0; i < 8; i++) {
@@ -217,6 +223,24 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uin
 
 		set_scl_float();
 		i2c_sw_delay();
+
+		// If we are failing to pull up the clock during I2C write, it means the target device is doing clock streching and force
+		// pulling down clock line to slow the bus. In this case, we will have to wait until the target device to be ready again.
+		scl_val = get_scl();
+		if (scl_val == 0) {
+			clock_stretch_count = 0;
+
+			// Clock streching doesn't have any defined maximum time limit in I2C and can hang the bus indefinitely, so we will 
+			// have to put a timer to avoid dead loop here. However, when this happens (usually a faulty device), there is nothing
+			// we could do in master, but fail and move on.
+			//
+			// By default, here we wait for 30 clock cycles.
+			while (scl_val == 0 && clock_stretch_count < max_i2c_clock_streching_cycles) {
+				i2c_sw_delay();
+				scl_val = get_scl();
+				++clock_stretch_count;
+			}
+		}
 
 		set_scl_low();
 		tx_data <<= 1;
