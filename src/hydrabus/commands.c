@@ -918,7 +918,7 @@ t_token tokens_can[] = {
 	{\
 		T_CLOCK_STRETCH,\
 		.arg_type = T_ARG_UINT,\
-		.help = "Max clock stretch tick count. (0 = Disable)"\
+		.help = "Max clock stretch tick count. (0 = Disabled, n = Ticks)"\
 	},
 
 t_token tokens_mode_i2c[] = {
