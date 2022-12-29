@@ -89,7 +89,7 @@ static void show_params(t_hydra_console *con)
 	cprintf(con, ")\r\n");
 
 	clock_stretch_timeout_time_in_microseconds = proto->config.i2c.dev_clock_stretch_timeout * 1000000.0 / speeds[proto->config.i2c.dev_speed];
-	cprintf(con, "Clock stretch timeout: %d ticks / %.2lf us (0 = Disabled, n = ticks)\r\n",
+	cprintf(con, "Clock stretch timeout: %d ticks / %.2lf us (0 = Disabled, n = Ticks)\r\n",
 		proto->config.i2c.dev_clock_stretch_timeout,
 		clock_stretch_timeout_time_in_microseconds);
 }
