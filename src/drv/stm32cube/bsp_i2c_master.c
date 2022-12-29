@@ -229,7 +229,7 @@ static void i2c_master_set_scl_float_and_wait_ready(void)
 		}
 
 		if (i2c_clock_strech_timeout != 0 && clock_stretch_count == i2c_clock_strech_timeout) {
-			printf_dbg("\nI2C clock streching timeout: half cycle count = %d\n", clock_stretch_count);
+			printf_dbg("\nI2C clock streching timeout: waited tick count = %u\n", clock_stretch_count);
 		}
 	}
 }
