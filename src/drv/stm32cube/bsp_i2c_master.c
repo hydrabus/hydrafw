@@ -31,7 +31,7 @@ const int i2c_speed[I2C_SPEED_MAX] = {
 };
 int i2c_speed_delay;
 bool i2c_started;
-int i2c_clock_strech_timeout = 300;
+uint32_t i2c_clock_strech_timeout;
 
 /* Set SCL LOW = 0/GND (0/GND => Set pin = logic reversed in open drain) */
 #define set_scl_low() (gpio_set_pin(BSP_I2C1_SCL_SDA_GPIO_PORT, BSP_I2C1_SCL_PIN))
@@ -204,7 +204,7 @@ bsp_status_t bsp_i2c_stop(bsp_dev_i2c_t dev_num)
  */
 static void i2c_master_set_scl_float_and_wait_ready(void)
 {
-	int clock_stretch_count;
+	uint32_t clock_stretch_count;
 	unsigned char scl_val;
 
 	set_scl_float();
@@ -220,7 +220,10 @@ static void i2c_master_set_scl_float_and_wait_ready(void)
 		// have to put a timer to avoid dead loop here. However, when this happens (usually a faulty device), there is nothing
 		// we could do in master, but fail and move on.
 		while (scl_val == 0 && clock_stretch_count < i2c_clock_strech_timeout) {
+			// We always wait for a full clock cycle before checking the clock line.
 			i2c_sw_delay();
+			i2c_sw_delay();
+
 			scl_val = get_scl();
 			++clock_stretch_count;
 		}

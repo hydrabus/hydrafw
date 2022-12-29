@@ -67,6 +67,7 @@ static void init_proto_default(t_hydra_console *con)
 static void show_params(t_hydra_console *con)
 {
 	uint8_t i, cnt;
+	float clock_stretch_timeout_time_in_microseconds;
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "GPIO resistor: %s\r\nMode: %s\r\nFrequency: ",
@@ -87,7 +88,10 @@ static void show_params(t_hydra_console *con)
 	}
 	cprintf(con, ")\r\n");
 
-	cprintf(con, "Clock stretch timeout (ticks): %d (0 = Disabled)\r\n", proto->config.i2c.dev_clock_stretch_timeout);
+	clock_stretch_timeout_time_in_microseconds = proto->config.i2c.dev_clock_stretch_timeout * 1000000.0 / speeds[proto->config.i2c.dev_speed];
+	cprintf(con, "Clock stretch timeout: %d ticks / %.2lf us (0 = Disabled, n = ticks)\r\n",
+		proto->config.i2c.dev_clock_stretch_timeout,
+		clock_stretch_timeout_time_in_microseconds);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
