@@ -163,6 +163,7 @@ const t_token_dict tl_dict[] = {
 	{ T_CONVENTION, "convention" },
 	{ T_DELAY, "delay" },
 	{ T_MMC, "mmc" },
+	{ T_CLOCK_STRETCH, "clock-stretch" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -913,6 +914,11 @@ t_token tokens_can[] = {
 		T_FREQUENCY,\
 		.arg_type = T_ARG_FLOAT,\
 		.help = "Bus frequency"\
+	},\
+	{\
+		T_CLOCK_STRETCH,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Max clock stretch tick count. (0 = Disable)"\
 	},
 
 t_token tokens_mode_i2c[] = {

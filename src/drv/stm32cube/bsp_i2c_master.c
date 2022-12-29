@@ -31,7 +31,7 @@ const int i2c_speed[I2C_SPEED_MAX] = {
 };
 int i2c_speed_delay;
 bool i2c_started;
-int max_i2c_clock_streching_cycles = 300;
+int i2c_clock_strech_timeout = 300;
 
 /* Set SCL LOW = 0/GND (0/GND => Set pin = logic reversed in open drain) */
 #define set_scl_low() (gpio_set_pin(BSP_I2C1_SCL_SDA_GPIO_PORT, BSP_I2C1_SCL_PIN))
@@ -105,6 +105,8 @@ bsp_status_t bsp_i2c_master_init(bsp_dev_i2c_t dev_num, mode_config_proto_t* mod
 		i2c_speed_delay = i2c_speed[mode_conf->config.i2c.dev_speed];
 	else
 		return BSP_ERROR;
+
+	i2c_clock_strech_timeout = mode_conf->config.i2c.dev_clock_stretch_timeout;
 
 	/* Init the I2C */
 	switch(mode_conf->config.i2c.dev_gpio_pull) {
@@ -217,15 +219,13 @@ static void i2c_master_set_scl_float_and_wait_ready(void)
 		// Clock streching doesn't have any defined maximum time limit in I2C and can hang the bus indefinitely, so we will 
 		// have to put a timer to avoid dead loop here. However, when this happens (usually a faulty device), there is nothing
 		// we could do in master, but fail and move on.
-		//
-		// By default, here we wait for 30 clock cycles.
-		while (scl_val == 0 && clock_stretch_count < max_i2c_clock_streching_cycles) {
+		while (scl_val == 0 && clock_stretch_count < i2c_clock_strech_timeout) {
 			i2c_sw_delay();
 			scl_val = get_scl();
 			++clock_stretch_count;
 		}
 
-		if (clock_stretch_count == max_i2c_clock_streching_cycles) {
+		if (clock_stretch_count == i2c_clock_strech_timeout) {
 			printf_dbg("\nI2C clock streching timeout: half cycle count = %d\n", clock_stretch_count);
 		}
 	}

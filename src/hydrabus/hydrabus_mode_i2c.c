@@ -61,6 +61,7 @@ static void init_proto_default(t_hydra_console *con)
 	proto->config.i2c.dev_speed = 1;
 	proto->config.i2c.ack_pending = 0;
 	proto->config.i2c.dev_mode = DEV_MASTER;
+	proto->config.i2c.dev_clock_stretch_timeout = 0;
 }
 
 static void show_params(t_hydra_console *con)
@@ -85,6 +86,8 @@ static void show_params(t_hydra_console *con)
 		print_freq(con, speeds[i]);
 	}
 	cprintf(con, ")\r\n");
+
+	cprintf(con, "Clock stretch timeout (ticks): %d (0 = Disabled)\r\n", proto->config.i2c.dev_clock_stretch_timeout);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -147,6 +150,15 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, "Invalid frequency.\r\n");
 				return t;
 			}
+			bsp_status = bsp_i2c_master_init(proto->dev_num, proto);
+			if( bsp_status != BSP_OK) {
+				cprintf(con, str_bsp_init_err, bsp_status);
+				return t;
+			}
+			break;
+		case T_CLOCK_STRETCH:
+			t += 2;
+			memcpy(&proto->config.i2c.dev_clock_stretch_timeout, p->buf + p->tokens[t], sizeof(int));
 			bsp_status = bsp_i2c_master_init(proto->dev_num, proto);
 			if( bsp_status != BSP_OK) {
 				cprintf(con, str_bsp_init_err, bsp_status);
