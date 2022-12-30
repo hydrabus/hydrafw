@@ -16,4 +16,5 @@ hydrafwEm.elay
 *.hdr
 /src/.settings
 /src/.idea/
+.vscode/
 src/hydrafw Debug.launch

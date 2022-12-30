@@ -88,6 +88,7 @@ typedef struct {
 	uint32_t dev_speed;
 	uint8_t ack_pending : 1;
 	uint8_t dev_mode;
+	uint32_t dev_clock_stretch_timeout;
 } i2c_config_t;
 
 typedef struct {
