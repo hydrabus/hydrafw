@@ -202,9 +202,9 @@ bsp_status_t bsp_i2c_stop(bsp_dev_i2c_t dev_num)
 
 /** \brief Set SCL to float and wait for slave device to be ready
  */
-static void i2c_master_set_scl_float_and_wait_ready(void)
+static bsp_status_t i2c_master_set_scl_float_and_wait_ready(void)
 {
-	uint32_t clock_stretch_count;
+	uint32_t clock_stretch_tick_count;
 	unsigned char scl_val;
 
 	set_scl_float();
@@ -214,24 +214,27 @@ static void i2c_master_set_scl_float_and_wait_ready(void)
 	// pulling down clock line to slow the bus. In this case, we will have to wait until the target device to be ready again.
 	scl_val = get_scl();
 	if (scl_val == 0) {
-		clock_stretch_count = 0;
+		clock_stretch_tick_count = 0;
 
 		// Clock streching doesn't have any defined maximum time limit in I2C and can hang the bus indefinitely, so we will 
 		// have to put a timer to avoid dead loop here. However, when this happens (usually a faulty device), there is nothing
 		// we could do in master, but fail and move on.
-		while (scl_val == 0 && clock_stretch_count < i2c_clock_strech_timeout) {
+		while (scl_val == 0 && clock_stretch_tick_count < i2c_clock_strech_timeout) {
 			// We always wait for a full clock cycle before checking the clock line.
 			i2c_sw_delay();
 			i2c_sw_delay();
 
 			scl_val = get_scl();
-			++clock_stretch_count;
+			++clock_stretch_tick_count;
 		}
 
-		if (i2c_clock_strech_timeout != 0 && clock_stretch_count == i2c_clock_strech_timeout) {
-			printf_dbg("\nI2C clock streching timeout: waited tick count = %u\n", clock_stretch_count);
+		if (i2c_clock_strech_timeout != 0 && clock_stretch_tick_count == i2c_clock_strech_timeout) {
+			printf_dbg("\nI2C clock streching timeout: waited tick count = %u\n", clock_stretch_tick_count);
+			return BSP_TIMEOUT;
 		}
 	}
+
+	return BSP_OK;
 }
 
 /** \brief Sends a Byte in blocking mode and set the status.
@@ -247,6 +250,7 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uin
 	(void)dev_num;
 	int i;
 	unsigned char ack_val;
+	bsp_status_t status;
 
 	/* Write 8 bits */
 	for(i = 0; i < 8; i++) {
@@ -257,7 +261,10 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uin
 
 		i2c_sw_delay();
 
-		i2c_master_set_scl_float_and_wait_ready();
+		status = i2c_master_set_scl_float_and_wait_ready();
+		if (status != BSP_OK) {
+			return status;
+		}
 
 		set_scl_low();
 		tx_data <<= 1;
@@ -267,7 +274,10 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uin
 	set_sda_float();
 	i2c_sw_delay();
 
-	i2c_master_set_scl_float_and_wait_ready();
+	status = i2c_master_set_scl_float_and_wait_ready();
+	if (status != BSP_OK) {
+		return status;
+	}
 
 	ack_val = get_sda();
 
@@ -289,9 +299,10 @@ bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uin
  * \return void
  *
  */
-void bsp_i2c_read_ack(bsp_dev_i2c_t dev_num, bool enable_ack)
+bsp_status_t bsp_i2c_read_ack(bsp_dev_i2c_t dev_num, bool enable_ack)
 {
 	(void)dev_num;
+	bsp_status_t status;
 
 	/* Write 1 bit ACK or NACK */
 	if(enable_ack == TRUE)
@@ -301,9 +312,14 @@ void bsp_i2c_read_ack(bsp_dev_i2c_t dev_num, bool enable_ack)
 
 	i2c_sw_delay();
 
-	i2c_master_set_scl_float_and_wait_ready();
+	status = i2c_master_set_scl_float_and_wait_ready();
+	if (status != BSP_OK) {
+		return status;
+	}
 
 	set_scl_low();
+
+	return BSP_OK;
 }
 
 /** \brief Read a Byte in blocking mode and set the status.
@@ -318,6 +334,7 @@ bsp_status_t bsp_i2c_master_read_u8(bsp_dev_i2c_t dev_num, uint8_t* rx_data)
 	(void)dev_num;
 	unsigned char data;
 	int i;
+	bsp_status_t status;
 
 	/* Read 8 bits */
 	data = 0;
@@ -325,7 +342,10 @@ bsp_status_t bsp_i2c_master_read_u8(bsp_dev_i2c_t dev_num, uint8_t* rx_data)
 		set_sda_float();
 		i2c_sw_delay();
 
-		i2c_master_set_scl_float_and_wait_ready();
+		status = i2c_master_set_scl_float_and_wait_ready();
+		if (status != BSP_OK) {
+			return status;
+		}
 
 		data <<= 1;
 		if(get_sda())

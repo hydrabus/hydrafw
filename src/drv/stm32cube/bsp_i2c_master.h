@@ -35,6 +35,6 @@ bsp_status_t bsp_i2c_stop(bsp_dev_i2c_t dev_num);
 
 bsp_status_t bsp_i2c_master_write_u8(bsp_dev_i2c_t dev_num, uint8_t tx_data, uint8_t* tx_ack_flag);
 bsp_status_t bsp_i2c_master_read_u8(bsp_dev_i2c_t dev_num, uint8_t* rx_data);
-void bsp_i2c_read_ack(bsp_dev_i2c_t dev_num, bool enable_ack);
+bsp_status_t bsp_i2c_read_ack(bsp_dev_i2c_t dev_num, bool enable_ack);
 
 #endif /* _BSP_I2C_MASTER_H_ */

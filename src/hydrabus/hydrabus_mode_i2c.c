@@ -212,6 +212,17 @@ static void stop(t_hydra_console *con)
 	cprintf(con, str_i2c_stop_br);
 }
 
+static bool i2c_io_failed(t_hydra_console *con, bsp_status_t status) {
+	if (status == BSP_TIMEOUT) {
+		cprintf(con, "\r\ni2c clock stretching timed out. Please consider increase the timeout with clock-stretch command to see if it helps.\r\n");
+		return true;
+	} else if (status != BSP_OK) {
+		return true;
+	}
+
+	return false;
+}
+
 static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 {
 	int i;
@@ -221,7 +232,10 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 
 	if(proto->config.i2c.ack_pending) {
 		/* Send I2C ACK */
-		bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
+		status = bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
+		if (i2c_io_failed(con, status))
+			return status;
+
 		cprintf(con, str_i2c_ack_br);
 		proto->config.i2c.ack_pending = 0;
 	}
@@ -240,7 +254,7 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 			cprintf(con, str_i2c_nack);
 
 		cprintf(con, " ");
-		if(status != BSP_OK)
+		if (i2c_io_failed(con, status))
 			break;
 	}
 	cprintf(con, hydrabus_mode_str_mul_br);
@@ -258,7 +272,10 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	for(i = 0; i < nb_data; i++) {
 		if(proto->config.i2c.ack_pending) {
 			/* Send I2C ACK */
-			bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
+			status = bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
+			if (i2c_io_failed(con, status))
+				return status;
+
 			cprintf(con, str_i2c_ack);
 			cprintf(con, hydrabus_mode_str_mul_br);
 		}
@@ -268,7 +285,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 		/* Read 1 data */
 		cprintf(con, hydrabus_mode_str_mul_read);
 		cprintf(con, hydrabus_mode_str_mul_value_u8, rx_data[0]);
-		if(status != BSP_OK)
+		if (i2c_io_failed(con, status))
 			break;
 
 		proto->config.i2c.ack_pending = 1;
@@ -285,13 +302,15 @@ static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	for(i = 0; i < nb_data; i++) {
 		if(proto->config.i2c.ack_pending) {
 			/* Send I2C ACK */
-			bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
+			status = bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
+			if (i2c_io_failed(con, status))
+				break;
 		}
 
 		status = bsp_i2c_master_read_u8(proto->dev_num, &tmp);
 		rx_data[i] = tmp;
 		/* Read 1 data */
-		if(status != BSP_OK)
+		if (i2c_io_failed(con, status))
 			break;
 
 		proto->config.i2c.ack_pending = 1;
