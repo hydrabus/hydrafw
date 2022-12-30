@@ -255,8 +255,9 @@ static uint32_t write(t_hydra_console *con, uint8_t *tx_data, uint8_t nb_data)
 
 		cprintf(con, " ");
 		if (i2c_io_failed(con, status))
-			break;
+			return status;
 	}
+
 	cprintf(con, hydrabus_mode_str_mul_br);
 
 	return status;
@@ -274,7 +275,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 			/* Send I2C ACK */
 			status = bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);
 			if (i2c_io_failed(con, status))
-				return status;
+				break;
 
 			cprintf(con, str_i2c_ack);
 			cprintf(con, hydrabus_mode_str_mul_br);
