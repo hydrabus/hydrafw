@@ -1,5 +1,5 @@
 /*
-HydraBus/HydraNFC - Copyright (C) 2014 Benjamin VERNOUX
+HydraBus/HydraNFC - Copyright (C) 2014-2023 Benjamin VERNOUX
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "bsp.h"
-#include "bsp_print_dbg.h"
 #include "bsp_i2c_master.h"
 #include "bsp_i2c_conf.h"
 
@@ -21,17 +20,18 @@ limitations under the License.
 #define BSP_I2C_DELAY_HC_100KHZ  (840) /* 100KHz*2 (Half Clock) in number of cycles @168MHz */
 #define BSP_I2C_DELAY_HC_400KHZ  (210) /* 400KHz*2 (Half Clock) in number of cycles @168MHz */
 #define BSP_I2C_DELAY_HC_1MHZ    (84) /* 1MHz*2 (Half Clock) in number of cycles @168MHz */
+
 /* Corresponds to Delay of half clock */
 #define I2C_SPEED_MAX (4)
-const int i2c_speed[I2C_SPEED_MAX] = {
+static const int i2c_speed[I2C_SPEED_MAX] = {
 	/* 0 */ BSP_I2C_DELAY_HC_50KHZ,
 	/* 1 */ BSP_I2C_DELAY_HC_100KHZ,
 	/* 2 */ BSP_I2C_DELAY_HC_400KHZ,
 	/* 3 */ BSP_I2C_DELAY_HC_1MHZ
 };
-int i2c_speed_delay;
-bool i2c_started;
-uint32_t i2c_clock_strech_timeout;
+static int i2c_speed_delay;
+static bool i2c_started;
+static uint32_t i2c_clock_strech_timeout;
 
 /* Set SCL LOW = 0/GND (0/GND => Set pin = logic reversed in open drain) */
 #define set_scl_low() (gpio_set_pin(BSP_I2C1_SCL_SDA_GPIO_PORT, BSP_I2C1_SCL_PIN))
@@ -81,7 +81,7 @@ static void i2c_gpio_hw_init(bsp_dev_i2c_t dev_num, uint32_t gpio_scl_sda_pull)
 	/* BSP_I2C1 SCL and SDA pins configuration ---------------------------*/
 	gpio_init.Pin = BSP_I2C1_SCL_PIN | BSP_I2C1_SDA_PIN;
 	gpio_init.Mode = GPIO_MODE_OUTPUT_OD; /* output open drain */
-	gpio_init.Speed = GPIO_SPEED_FAST;
+	gpio_init.Speed = GPIO_SPEED_LOW; /* GPIO Max 8MHz */
 	gpio_init.Pull = gpio_scl_sda_pull;
 	gpio_init.Alternate = 0; /* Not used */
 	HAL_GPIO_Init(BSP_I2C1_SCL_SDA_GPIO_PORT, &gpio_init);
@@ -201,6 +201,10 @@ bsp_status_t bsp_i2c_stop(bsp_dev_i2c_t dev_num)
 }
 
 /** \brief Set SCL to float and wait for slave device to be ready
+ *
+ * \param dev_num bsp_dev_i2c_t: I2C dev num.
+ * \return bsp_status_t: status of the transfer.
+ *
  */
 static bsp_status_t i2c_master_set_scl_float_and_wait_ready(void)
 {
@@ -210,27 +214,28 @@ static bsp_status_t i2c_master_set_scl_float_and_wait_ready(void)
 	set_scl_float();
 	i2c_sw_delay();
 
-	// If we are failing to pull up the clock during I2C write, it means the target device is doing clock streching and force
-	// pulling down clock line to slow the bus. In this case, we will have to wait until the target device to be ready again.
-	scl_val = get_scl();
-	if (scl_val == 0) {
-		clock_stretch_tick_count = 0;
+	if (i2c_clock_strech_timeout != 0) {
+		// If we are failing to pull up the clock during I2C write, it means the target device is doing clock streching and force
+		// pulling down clock line to slow the bus. In this case, we will have to wait until the target device to be ready again.
+		scl_val = get_scl();
+		if (scl_val == 0) {
+			clock_stretch_tick_count = 0;
 
-		// Clock streching doesn't have any defined maximum time limit in I2C and can hang the bus indefinitely, so we will 
-		// have to put a timer to avoid dead loop here. However, when this happens (usually a faulty device), there is nothing
-		// we could do in master, but fail and move on.
-		while (scl_val == 0 && clock_stretch_tick_count < i2c_clock_strech_timeout) {
-			// We always wait for a full clock cycle before checking the clock line.
-			i2c_sw_delay();
-			i2c_sw_delay();
-
-			scl_val = get_scl();
-			++clock_stretch_tick_count;
-		}
-
-		if (i2c_clock_strech_timeout != 0 && clock_stretch_tick_count == i2c_clock_strech_timeout) {
-			printf_dbg("\nI2C clock streching timeout: waited tick count = %u\n", clock_stretch_tick_count);
-			return BSP_TIMEOUT;
+			// Clock streching doesn't have any defined maximum time limit in I2C and can hang the bus indefinitely, so we will 
+			// have to put a timer to avoid dead loop here. However, when this happens (usually a faulty device), there is nothing
+			// we could do in master, but fail and move on.
+			while ((scl_val == 0) && (clock_stretch_tick_count < i2c_clock_strech_timeout)) {
+				// We always wait for a full clock cycle before checking the clock line.
+				i2c_sw_delay();
+				i2c_sw_delay();
+	
+				scl_val = get_scl();
+				clock_stretch_tick_count++;
+			}
+	
+			if (clock_stretch_tick_count == i2c_clock_strech_timeout) {
+				return BSP_TIMEOUT;
+			}
 		}
 	}
 
