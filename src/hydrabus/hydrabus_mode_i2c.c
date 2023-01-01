@@ -1,7 +1,7 @@
 /*
  * HydraBus/HydraNFC
  *
- * Copyright (C) 2014-2015 Benjamin VERNOUX
+ * Copyright (C) 2014-2023 Benjamin VERNOUX
  * Copyright (C) 2014 Bert Vermeulen <bert@biot.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,7 +67,7 @@ static void init_proto_default(t_hydra_console *con)
 static void show_params(t_hydra_console *con)
 {
 	uint8_t i, cnt;
-	float clock_stretch_timeout_time_in_microseconds;
+	float clock_stretch_timeout_time_in_milliseconds;
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	cprintf(con, "GPIO resistor: %s\r\nMode: %s\r\nFrequency: ",
@@ -88,10 +88,10 @@ static void show_params(t_hydra_console *con)
 	}
 	cprintf(con, ")\r\n");
 
-	clock_stretch_timeout_time_in_microseconds = proto->config.i2c.dev_clock_stretch_timeout * 1000000.0 / speeds[proto->config.i2c.dev_speed];
-	cprintf(con, "Clock stretch timeout: %d ticks / %.2lf us (0 = Disabled)\r\n",
+	clock_stretch_timeout_time_in_milliseconds = proto->config.i2c.dev_clock_stretch_timeout * 1000.0 / speeds[proto->config.i2c.dev_speed];
+	cprintf(con, "Clock stretch timeout: %d ticks / %.2lf ms (0=Disabled)\r\n",
 		proto->config.i2c.dev_clock_stretch_timeout,
-		clock_stretch_timeout_time_in_microseconds);
+		clock_stretch_timeout_time_in_milliseconds);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
