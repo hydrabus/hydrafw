@@ -2,7 +2,7 @@
  * HydraBus/HydraNFC
  *
  * Copyright (C) 2015-2016 Nicolas OBERLI
- * Copyright (C) 2016 Benjamin VERNOUX
+ * Copyright (C) 2016-2023 Benjamin VERNOUX
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ void bbio_i2c_init_proto_default(t_hydra_console *con)
 	proto->config.i2c.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_PULLUP;
 	proto->config.i2c.dev_speed = 1;
 	proto->config.i2c.ack_pending = 0;
+	proto->config.i2c.dev_clock_stretch_timeout = 0;
 }
 
 void bbio_i2c_sniff(t_hydra_console *con)
@@ -91,6 +92,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 	uint8_t *rx_data = pool_alloc_bytes(0x1000); // 4096 bytes
 	uint8_t data;
 	uint8_t tx_ack_flag;
+	uint32_t clock_stretch_timeout;
 	bsp_status_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
@@ -125,6 +127,7 @@ void bbio_mode_i2c(t_hydra_console *con)
 				cprint(con, "\x01", 1);
 				break;
 			case BBIO_I2C_READ_BYTE:
+				data = 0;
 				status = bsp_i2c_master_read_u8(proto->dev_num, &data);
 				cprint(con, (char *)&data, 1);
 				break;
@@ -155,13 +158,13 @@ void bbio_mode_i2c(t_hydra_console *con)
 				/* Send all I2C Data */
 				for(i = 0; i < to_tx; i++)
 				{
-					bsp_i2c_master_write_u8(proto->dev_num, tx_data[i], &tx_ack_flag);
-					if(tx_ack_flag != TRUE)
+					status = bsp_i2c_master_write_u8(proto->dev_num, tx_data[i], &tx_ack_flag);
+					if((status != BSP_OK) || (tx_ack_flag != TRUE))
 					{
 						break; /* Error */
 					}
 				}
-				if(tx_ack_flag != TRUE)
+				if((status != BSP_OK) || (tx_ack_flag != TRUE))
 				{
 					/* Error */
 					cprint(con, "\x00", 1);
@@ -174,13 +177,38 @@ void bbio_mode_i2c(t_hydra_console *con)
 					/* Read I2C bytes with ACK */
 					for(i = 0; i < to_rx - 1; i++)
 					{
-						bsp_i2c_master_read_u8(proto->dev_num, &rx_data[i]);
-						bsp_i2c_read_ack(proto->dev_num, TRUE);
+						status = bsp_i2c_master_read_u8(proto->dev_num, &rx_data[i]);
+						if(status != BSP_OK)
+						{
+							break; /* Return now */
+						}
+						status = bsp_i2c_read_ack(proto->dev_num, TRUE);
+						if(status != BSP_OK)
+						{
+							break; /* Return now */
+						}
 					}
-
+					if(status != BSP_OK)
+					{
+						/* Error */
+						cprint(con, "\x00", 1);
+						break; /* Return now */
+					}
 					/* Send NACK for last I2C byte read */
-					bsp_i2c_master_read_u8(proto->dev_num, &rx_data[i]);
-					bsp_i2c_read_ack(proto->dev_num, FALSE);
+					status = bsp_i2c_master_read_u8(proto->dev_num, &rx_data[i]);
+					if(status != BSP_OK)
+					{
+						/* Error */
+						cprint(con, "\x00", 1);
+						break; /* Return now */
+					}					
+					status = bsp_i2c_read_ack(proto->dev_num, FALSE);
+					if(status != BSP_OK)
+					{
+						/* Error */
+						cprint(con, "\x00", 1);
+						break; /* Return now */
+					}
 				}
 
 				/* Send I2C Stop */
@@ -188,6 +216,17 @@ void bbio_mode_i2c(t_hydra_console *con)
 
 				cprint(con, "\x01", 1);
 				cprint(con, (char *)rx_data, to_rx);
+				break;
+			case BBIO_I2C_CLK_STRETCH:
+					chnRead(con->sdu, rx_data, 4);
+					clock_stretch_timeout = (rx_data[0] << 24) + (rx_data[1] << 16) + (rx_data[2] << 8) + rx_data[3];
+					proto->config.i2c.dev_clock_stretch_timeout = clock_stretch_timeout;
+					status = bsp_i2c_master_init(proto->dev_num, proto);
+					if(status == BSP_OK) {
+						cprint(con, "\x01", 1);
+					} else {
+						cprint(con, "\x00", 1);
+					}
 				break;
 			default:
 				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
@@ -224,7 +263,6 @@ void bbio_mode_i2c(t_hydra_console *con)
 					status = bsp_i2c_master_init(proto->dev_num, proto);
 					//Set AUX[0] (PC4) value
 					bbio_aux_write((bbio_subcommand & 0b10)>>1);
-
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);
 					} else {
