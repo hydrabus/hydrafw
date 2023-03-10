@@ -39,7 +39,8 @@ HYDRABUSSRC = hydrabus/hydrabus.c \
             hydrabus/hydrabus_aux.c \
             hydrabus/hydrabus_serprog.c \
             hydrabus/hydrabus_mode_mmc.c \
-            hydrabus/hydrabus_bbio_mmc.c
+            hydrabus/hydrabus_bbio_mmc.c \
+            hydrabus/hydrabus_bbio_sdio.c
 
 # Required include directories
 HYDRABUSINC = ./hydrabus

@@ -35,7 +35,7 @@ void bbio_mmc_init_proto_default(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	/* Defaults */
-	proto->dev_num = BSP_DEV_MMC1;
+	proto->dev_num = BSP_DEV_SDIO1;
 }
 
 static void bbio_mode_id(t_hydra_console *con)
@@ -107,7 +107,7 @@ void bbio_mode_mmc(t_hydra_console *con)
 				status = bsp_mmc_read_block(proto->dev_num, rx_data, block_number);
 				if(status == BSP_OK) {
 					cprint(con, "\x01", 1);
-					cprint(con, (char *)rx_data, BSP_MMC_BLOCK_LEN);
+					cprint(con, (char *)rx_data, BSP_SDIO_BLOCK_LEN);
 				} else {
 					cprint(con, "\x00", 1);
 				}
@@ -116,7 +116,7 @@ void bbio_mode_mmc(t_hydra_console *con)
 				chnRead(con->sdu, rx_data, 4);
 				block_number = (rx_data[0] << 24) + (rx_data[1]<<16);
 				block_number |= (rx_data[2] << 8) + rx_data[3];
-				chnRead(con->sdu, tx_data, BSP_MMC_BLOCK_LEN);
+				chnRead(con->sdu, tx_data, BSP_SDIO_BLOCK_LEN);
 				status = bsp_mmc_write_block(proto->dev_num, tx_data, block_number);
 				if(status == BSP_OK) {
 					cprint(con, "\x01", 1);
