@@ -1,5 +1,36 @@
 # CHANGELOG of 'hydrafw'
 ----------------------
+#### 24.03.2023 - [HydraFW v0.11](https://github.com/bvernoux/hydrafw/releases/tag/v0.11)
+
+Big thanks again to [Baldanos](https://github.com/hydrabus/hydrafw/commits?author=Baldanos) to be the lead developer on HydraFW since 2015 including all major contributions of the project
+
+##### Generic:
+* Memory pool allocator for temporary buffers (pool_alloc_bytes()/pool_alloc_blocks()/pool_free())
+* Memory(RAM) optimizations
+* Replace SDCard driver by SDIO
+* Convert all python scripts to python3
+
+##### HydraBus specific:
+* [Console mode](https://github.com/hydrabus/hydrafw/wiki/HydraFW-console-commands)
+  * [I2C Add clock stretching support](https://github.com/hydrabus/hydrafw/wiki/HydraFW-I2C-guide#protocol-configuration-syntax-description) (Thanks to [r12f ](https://github.com/r12f))
+  * 1-wire Implement scan for multiple devices (Thanks to [jbglaw](https://github.com/jbglaw))
+  * [CAN Change filter method](https://github.com/hydrabus/hydrafw/wiki/HydraFW-CAN-guide#filters)
+  * 2-wire Fix CLI error when writing in 2-wire mode
+  * [UART Add baud rate detector](https://github.com/hydrabus/hydrafw/wiki/HydraFW-UART-guide#baud-rate-detection)
+
+* [Binary mode](https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-mode-guide)
+  * [SDIO](https://github.com/hydrabus/hydrafw/wiki/HydraFW-binary-SDIO-mode-guide)
+  * [I2C Add clock stretching](https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-I2C-mode-guide#i2c-clock-stretching-configuration-0b00100000)
+  * [CAN Change filter method](https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-CAN-mode-guide#filter-commands)
+  * SPI fix bug, set phase value properly (Thanks to [MrKalach](https://github.com/MrKalach))
+  * [MMC/eMMC](https://github.com/hydrabus/hydrafw/wiki/HydraFW-binary-MMC-mode-guide)
+  * [flashrom Implement serprog protocol SPI speed](https://github.com/hydrabus/hydrafw/wiki/HydraFW-SPI-guide#flashrom-usage) (Thanks to [nlfx](https://github.com/nlfx))
+
+##### Contrib / script / documentation
+* [pyHydrabus](https://pyhydrabus.readthedocs.io/en/latest/) Documentation updated
+* Add contrib/SPI_flasher/HydraSPI.py script: dump/program (Thanks to [MrKalach](https://github.com/MrKalach))
+* Add contrib/pyHydra_SHT3x/hydra_SHT3x.py script for I2C Sensirion Humidity and Temperature Sensor(SHT30, SHT31, SHT35)
+
 #### 07.09.2020 - [HydraFW v0.10](https://github.com/hydrabus/hydrafw/releases/tag/v0.10)
 
 This version is the first stable version (if you find any issue please create an [issue](https://github.com/hydrabus/hydrafw/issues)).
