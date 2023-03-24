@@ -169,7 +169,7 @@ typedef struct {
 
 typedef struct {
 	uint8_t bus_width;
-} mmc_config_t;
+} sdio_config_t;
 
 #define MODE_CONFIG_PROTO_BUFFER_SIZE (256)
 typedef struct {
@@ -187,7 +187,7 @@ typedef struct {
 		wiegand_config_t wiegand;
 		sump_config_t sump;
 		hydranfc_config_t hydranfc;
-		mmc_config_t mmc;
+		sdio_config_t sdio;
 	} config;
 
 	uint8_t aux_config;

@@ -116,7 +116,11 @@ bsp_status_t bsp_sdio_init(bsp_dev_sdio_t dev_num, mode_config_proto_t* mode_con
 	init.ClockEdge           = SDIO_CLOCK_EDGE_RISING;
 	init.ClockBypass         = SDIO_CLOCK_BYPASS_DISABLE;
 	init.ClockPowerSave      = SDIO_CLOCK_POWER_SAVE_DISABLE;
-	init.BusWide             = SDIO_BUS_WIDE_1B;
+	if(sdio_mode_conf[dev_num]->config.sdio.bus_width ==4) {
+		init.BusWide             = SDIO_BUS_WIDE_4B;
+	} else {
+		init.BusWide             = SDIO_BUS_WIDE_1B;
+	}
 	init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
 	init.ClockDiv            = SDIO_INIT_CLK_DIV;
 
@@ -280,4 +284,25 @@ bsp_status_t bsp_sdio_read_data(bsp_dev_sdio_t dev_num, uint8_t cmdid, uint32_t 
 	} else {
 		return BSP_ERROR;
 	}
+}
+
+bsp_status_t bsp_sdio_change_bus_width(bsp_dev_sdio_t dev_num, uint8_t bus_size)
+{
+	bsp_status_t status;
+
+
+	switch(bus_size) {
+	case 1:
+	case 4:
+		sdio_mode_conf[dev_num]->config.sdio.bus_width = bus_size;
+		if(bsp_sdio_deinit(dev_num) == BSP_OK) {
+			/* Re-Initialize the SDIO comunication bus */
+			bsp_sdio_init(dev_num, sdio_mode_conf[dev_num]);
+		}
+		status = BSP_OK;
+		break;
+	default:
+		status = BSP_ERROR;
+	}
+	return status;
 }

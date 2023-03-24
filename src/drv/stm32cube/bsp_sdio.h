@@ -33,5 +33,6 @@ bsp_status_t bsp_sdio_read_response(bsp_dev_sdio_t dev_num, uint32_t* response);
 bsp_status_t bsp_sdio_send_command(bsp_dev_sdio_t dev_num, uint8_t cmdid, uint32_t argument, uint8_t resp_type);
 bsp_status_t bsp_sdio_write_data(bsp_dev_sdio_t dev_num, uint8_t cmdid, uint32_t argument, uint8_t resp_type, uint8_t * data);
 bsp_status_t bsp_sdio_read_data(bsp_dev_sdio_t dev_num, uint8_t cmdid, uint32_t argument, uint8_t resp_type, uint8_t * data);
+bsp_status_t bsp_sdio_change_bus_width(bsp_dev_sdio_t dev_num, uint8_t bus_size);
 
 #endif /* _BSP_SDIO_H_ */
