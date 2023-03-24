@@ -154,7 +154,6 @@ enum {
 	T_PRESCALER,
 	T_CONVENTION,
 	T_DELAY,
-	T_MMC,
 	T_CLOCK_STRETCH,
 	/* Developer warning add new command(s) here */
 
