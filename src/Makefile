@@ -6,13 +6,21 @@
 .SUFFIXES:            # Delete the default suffixes
 MAKEFLAGS += --no-builtin-rules
 
+ifeq ($(OS), Windows_NT)
+  PYTHON = python
+else ifeq ($(shell which python3),)
+  PYTHON = python
+else
+  PYTHON = python3
+endif
+
 # Set CPU target (default STM32F4XX)
 export STM32F4XX ?= 1
 
 # Set to 1 HYDRAFW_NFC to include HydraNFC extension support
 export HYDRAFW_NFC ?= 1
 export HYDRAFW_DEBUG ?= 0
-export FW_REVISION := $(shell python3 build-scripts/hydrafw-revision.py)
+export FW_REVISION := $(shell $(PYTHON) build-scripts/hydrafw-revision.py)
 
 HYDRAFW_OPTS =
 
@@ -316,19 +324,19 @@ FORCE:
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	echo Creating ./common/hydrafw_version.hdr
 	-rm -f $(OBJDIR)/common.o
-    python3 build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
+    $(PYTHON) build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
 else
 	@echo Creating ./common/hydrafw_version.hdr
 	@rm -f $(OBJDIR)/common.o
-	@python3 build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
+	@$(PYTHON) build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
 endif
 
 %.dfu: %.hex $(LDSCRIPT)
 ifeq ($(USE_VERBOSE_COMPILE),yes)
-	python3 build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
+	$(PYTHON) build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
 else
 	@echo Creating $@
-	@python3 build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
+	@$(PYTHON) build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
 endif
 
 # This rule hook is defined in the ChibiOS build system
