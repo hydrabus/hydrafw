@@ -20,6 +20,8 @@ limitations under the License.
 #include "mode_config.h"
 
 #define BSP_SDIO_BLOCK_LEN	512
+#define BSP_SDIO_CLOCK_SLOW	SDIO_INIT_CLK_DIV
+#define BSP_SDIO_CLOCK_FAST	0x0
 
 typedef enum {
 	BSP_DEV_SDIO1 = 0,

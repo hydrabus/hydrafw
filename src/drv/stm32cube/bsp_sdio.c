@@ -19,7 +19,7 @@ limitations under the License.
 /*
 Warning in order to use this driver all GPIOs peripherals shall be enabled.
 */
-#define SDIO_TIMEOUT_MAX (100000) // About 10sec (see common/chconf.h/CH_CFG_ST_FREQUENCY) can be aborted by UBTN too
+#define SDIO_TIMEOUT_MAX (0x100000) // About 10sec (see common/chconf.h/CH_CFG_ST_FREQUENCY)
 #define NB_SDIO (1)
 
 static mode_config_proto_t* sdio_mode_conf[NB_SDIO];
@@ -56,6 +56,27 @@ static void sdio_gpio_hw_init(bsp_dev_sdio_t dev_num)
 	HAL_GPIO_Init(BSP_SDIO_D0_PORT, &GPIO_InitStructure);
 }
 
+/**
+  * @brief  Switch CMD and Data line to push-pull
+  * @param  dev_num: SDIO dev num
+  * @retval None
+  */
+static void sdio_gpio_hw_init_high(bsp_dev_sdio_t dev_num)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	(void)dev_num;
+
+	GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStructure.Pull  = GPIO_NOPULL;
+	GPIO_InitStructure.Speed = BSP_SDIO_GPIO_SPEED;
+	GPIO_InitStructure.Alternate = BSP_SDIO_AF;
+
+	GPIO_InitStructure.Pin = BSP_SDIO_CMD_PIN;
+	HAL_GPIO_Init(BSP_SDIO_CMD_PORT, &GPIO_InitStructure);
+
+	GPIO_InitStructure.Pin = BSP_SDIO_D0_PIN;
+	HAL_GPIO_Init(BSP_SDIO_D0_PORT, &GPIO_InitStructure);
+}
 /**
   * @brief  DeInit low level hardware: GPIO, CLOCK, NVIC...
   * @param  dev_num: SDIO dev num
@@ -122,7 +143,7 @@ bsp_status_t bsp_sdio_init(bsp_dev_sdio_t dev_num, mode_config_proto_t* mode_con
 		init.BusWide             = SDIO_BUS_WIDE_1B;
 	}
 	init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-	init.ClockDiv            = SDIO_INIT_CLK_DIV;
+	init.ClockDiv            = sdio_mode_conf[dev_num]->config.sdio.frequency_divider;
 
 	status = (bsp_status_t) SDIO_Init(hsdio, init);
 
@@ -214,7 +235,7 @@ bsp_status_t bsp_sdio_write_data(bsp_dev_sdio_t dev_num, uint8_t cmdid, uint32_t
 	uint16_t count, remaining=512;
 
 	/* Configure the SD DPSM (Data Path State Machine) */
-	config.DataTimeOut   = SDMMC_DATATIMEOUT;
+	config.DataTimeOut   = SDIO_TIMEOUT_MAX;
 	config.DataLength    = BSP_SDIO_BLOCK_LEN;
 	config.DataBlockSize = SDIO_DATABLOCK_SIZE_512B;
 	config.TransferDir   = SDIO_TRANSFER_DIR_TO_CARD;
@@ -229,7 +250,6 @@ bsp_status_t bsp_sdio_write_data(bsp_dev_sdio_t dev_num, uint8_t cmdid, uint32_t
 		if(__SDIO_GET_FLAG(SDIO, SDIO_FLAG_TXFIFOHE)  && (remaining > 0)) {
 			for(count = 0; count < 8; count++) {
 				tmp = pData[(BSP_SDIO_BLOCK_LEN-remaining)>>2];
-				tmp = reverse_u32(tmp);
 				(void)SDIO_WriteFIFO(SDIO, &tmp);
 				remaining -=4;
 			}
@@ -237,11 +257,19 @@ bsp_status_t bsp_sdio_write_data(bsp_dev_sdio_t dev_num, uint8_t cmdid, uint32_t
 	}
 
 	__SDIO_CLEAR_FLAG(SDIO, SDIO_STATIC_CMD_FLAGS);
-	__SDIO_CLEAR_FLAG(SDIO, SDIO_STATIC_DATA_FLAGS);
 	if(remaining == 0) {
+		__SDIO_CLEAR_FLAG(SDIO, SDIO_STATIC_DATA_FLAGS);
 		return BSP_OK;
 	} else {
-		return BSP_ERROR;
+		if (__SDIO_GET_FLAG(SDIO, SDIO_FLAG_DTIMEOUT)) {
+			__SDIO_CLEAR_FLAG(SDIO, SDIO_STATIC_DATA_FLAGS);
+			return BSP_TIMEOUT;
+		} else {
+			__SDIO_CLEAR_FLAG(SDIO, SDIO_STATIC_DATA_FLAGS);
+			config.DPSM          = SDIO_DPSM_DISABLE;
+			(void)SDIO_ConfigData(SDIO, &config);
+			return BSP_ERROR;
+		}
 	}
 }
 
@@ -254,7 +282,7 @@ bsp_status_t bsp_sdio_read_data(bsp_dev_sdio_t dev_num, uint8_t cmdid, uint32_t 
 	uint16_t count, remaining = 512;
 
 	/* Configure the SD DPSM (Data Path State Machine) */
-	config.DataTimeOut   = SDMMC_DATATIMEOUT;
+	config.DataTimeOut   = SDIO_TIMEOUT_MAX;
 	config.DataLength    = BSP_SDIO_BLOCK_LEN;
 	config.DataBlockSize = SDIO_DATABLOCK_SIZE_512B;
 	config.TransferDir   = SDIO_TRANSFER_DIR_TO_SDIO;
@@ -271,18 +299,25 @@ bsp_status_t bsp_sdio_read_data(bsp_dev_sdio_t dev_num, uint8_t cmdid, uint32_t 
 			/* Read data from SDIO Rx FIFO */
 			for(count = 0; count < 8; count++) {
 				tmp = SDIO_ReadFIFO(SDIO);
-				tmp = reverse_u32(tmp);
 				pData[(BSP_SDIO_BLOCK_LEN-remaining)>>2] = tmp;
 				remaining -=4;
 			}
 		}
 	}
 	__SDIO_CLEAR_FLAG(SDIO, SDIO_STATIC_CMD_FLAGS);
-	__SDIO_CLEAR_FLAG(SDIO, SDIO_STATIC_DATA_FLAGS);
 	if(remaining == 0) {
+		__SDIO_CLEAR_FLAG(SDIO, SDIO_STATIC_DATA_FLAGS);
 		return BSP_OK;
 	} else {
-		return BSP_ERROR;
+		if (__SDIO_GET_FLAG(SDIO, SDIO_FLAG_DTIMEOUT)) {
+			__SDIO_CLEAR_FLAG(SDIO, SDIO_STATIC_DATA_FLAGS);
+			return BSP_TIMEOUT;
+		} else {
+			__SDIO_CLEAR_FLAG(SDIO, SDIO_STATIC_DATA_FLAGS);
+			config.DPSM          = SDIO_DPSM_DISABLE;
+			(void)SDIO_ConfigData(SDIO, &config);
+			return BSP_ERROR;
+		}
 	}
 }
 
@@ -295,14 +330,31 @@ bsp_status_t bsp_sdio_change_bus_width(bsp_dev_sdio_t dev_num, uint8_t bus_size)
 	case 1:
 	case 4:
 		sdio_mode_conf[dev_num]->config.sdio.bus_width = bus_size;
-		if(bsp_sdio_deinit(dev_num) == BSP_OK) {
-			/* Re-Initialize the SDIO comunication bus */
-			bsp_sdio_init(dev_num, sdio_mode_conf[dev_num]);
-		}
-		status = BSP_OK;
 		break;
 	default:
-		status = BSP_ERROR;
+		return BSP_ERROR;
 	}
+	SDIO_TypeDef* hsdio;
+	SDIO_InitTypeDef init;
+
+	hsdio = SDIO;
+
+	init.ClockEdge           = SDIO_CLOCK_EDGE_RISING;
+	init.ClockBypass         = SDIO_CLOCK_BYPASS_DISABLE;
+	init.ClockPowerSave      = SDIO_CLOCK_POWER_SAVE_DISABLE;
+	if(sdio_mode_conf[dev_num]->config.sdio.bus_width ==4) {
+		init.BusWide             = SDIO_BUS_WIDE_4B;
+	} else {
+		init.BusWide             = SDIO_BUS_WIDE_1B;
+	}
+	init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
+	init.ClockDiv            = sdio_mode_conf[dev_num]->config.sdio.frequency_divider;
+
+	if(init.ClockDiv < BSP_SDIO_CLOCK_SLOW) {
+		sdio_gpio_hw_init_high(dev_num);
+	}
+
+	status = (bsp_status_t) SDIO_Init(hsdio, init);
+
 	return status;
 }

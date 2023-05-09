@@ -169,6 +169,7 @@ typedef struct {
 
 typedef struct {
 	uint8_t bus_width;
+	uint8_t frequency_divider;
 } sdio_config_t;
 
 #define MODE_CONFIG_PROTO_BUFFER_SIZE (256)

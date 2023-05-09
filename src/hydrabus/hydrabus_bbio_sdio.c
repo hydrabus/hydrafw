@@ -36,6 +36,7 @@ void bbio_sdio_init_proto_default(t_hydra_console *con)
 	mode_config_proto_t* proto = &con->mode->proto;
 
 	proto->config.sdio.bus_width = 1;
+	proto->config.sdio.frequency_divider = BSP_SDIO_CLOCK_SLOW;
 
 	/* Defaults */
 	proto->dev_num = BSP_DEV_SDIO1;
@@ -133,8 +134,11 @@ void bbio_mode_sdio(t_hydra_console *con)
 					}
 					break;
 				}
-				if ((bbio_subcommand & BBIO_SDIO_CONFIG) == BBIO_SDIO_CONFIG) {
+				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
+					cprintf(con, "%c", bbio_aux(con, bbio_subcommand));
+				} else if ((bbio_subcommand & BBIO_SDIO_CONFIG) == BBIO_SDIO_CONFIG) {
 					proto->config.sdio.bus_width = (bbio_subcommand & 0b1)?4:1;
+					proto->config.sdio.frequency_divider = (bbio_subcommand & 0b10)?BSP_SDIO_CLOCK_FAST:BSP_SDIO_CLOCK_SLOW;
 					status = bsp_sdio_change_bus_width(proto->dev_num, proto->config.sdio.bus_width);
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);
