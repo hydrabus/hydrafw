@@ -348,4 +348,4 @@ POST_MAKE_ALL_RULE_HOOK: $(BUILDDIR)/$(PROJECT).dfu
 # Custom rule to flash firmware when hydrabus is connected in dfu mode
 flash: $(BUILDDIR)/$(PROJECT).dfu
 	@echo Flashing $^
-	@dfu-util  -d 0483:df11  -a 0  -D $^
+	@dfu-util -d 0483:df11 -a 0 -R -D $^
