@@ -1,0 +1,11 @@
+# UDEV Rules for HydraBus boards, http://www.hydrabus.com
+#
+# To install, type this command in a terminal:
+#   sudo cp 09-hydrabus.rules /etc/udev/rules.d/09-hydrabus.rules
+#
+# disable ModemManager
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", ENV{ID_MM_DEVICE_IGNORE}="1"
+# disable autosuspend USB from kernel (solve TLP issue)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", TEST=="power/control", ATTR{power/control}="on"
+# create a symlink into /dev/hydrabus
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", SYMLINK+="hydrabus"
