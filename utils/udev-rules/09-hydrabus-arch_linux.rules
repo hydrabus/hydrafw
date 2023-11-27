@@ -1,4 +1,4 @@
-# UDEV Rules for HydraBus boards, http://www.hydrabus.com
+# UDEV Rules for HydraBus boards tested on Arch Linux 27 Nov 2023, http://www.hydrabus.com
 #
 # To install, type this command in a terminal:
 #   sudo cp 09-hydrabus-arch_linux.rules /etc/udev/rules.d/09-hydrabus-arch_linux.rules
@@ -8,4 +8,4 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", ENV{ID_MM_
 # disable autosuspend USB from kernel (solve TLP issue)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", TEST=="power/control", ATTR{power/control}="on"
 # create a symlink into /dev/hydrabusX where X is the number of hydrabus
-SUBSYSTEM=="tty", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", SYMLINK+="hydrabus%n"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", PROGRAM="/bin/sh -c 'echo $$((%n+1))'", SYMLINK+="hydrabus%c"
