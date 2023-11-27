@@ -7,5 +7,5 @@
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", ENV{ID_MM_DEVICE_IGNORE}="1"
 # disable autosuspend USB from kernel (solve TLP issue)
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", TEST=="power/control", ATTR{power/control}="on"
-# create a symlink into /dev/hydrabus
-SUBSYSTEM=="tty", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", SYMLINK+="hydrabus"
+# create a symlink into /dev/hydrabusX where X is the number of hydrabus
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", SYMLINK+="hydrabus%n"
