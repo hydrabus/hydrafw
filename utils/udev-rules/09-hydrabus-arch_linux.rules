@@ -1,7 +1,7 @@
 # UDEV Rules for HydraBus boards, http://www.hydrabus.com
 #
 # To install, type this command in a terminal:
-#   sudo cp 09-hydrabus.rules /etc/udev/rules.d/09-hydrabus.rules
+#   sudo cp 09-hydrabus-arch_linux.rules /etc/udev/rules.d/09-hydrabus-arch_linux.rules
 #
 # disable ModemManager
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60a7", ENV{ID_MM_DEVICE_IGNORE}="1"
