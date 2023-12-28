@@ -324,7 +324,7 @@ FORCE:
 ifeq ($(USE_VERBOSE_COMPILE),yes)
 	echo Creating ./common/hydrafw_version.hdr
 	-rm -f $(OBJDIR)/common.o
-    $(PYTHON) build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
+	$(PYTHON) build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
 else
 	@echo Creating ./common/hydrafw_version.hdr
 	@rm -f $(OBJDIR)/common.o
