@@ -79,8 +79,15 @@ ifeq ($(USE_THUMB),)
 endif
 
 # Enable this if you want to see the full log while compiling.
-ifeq ($(USE_VERBOSE_COMPILE),)
-  USE_VERBOSE_COMPILE = no
+# Also set directives to use with commands depending on verbosity status.
+ifeq ($(USE_VERBOSE_COMPILE),yes)
+  # if verbose build then print out the full commands without description
+  OUT_LOG = @\#
+  OUT_CMD =
+else
+  # if silent build then print out only short description for commands
+  OUT_LOG = @
+  OUT_CMD = @
 endif
 
 # If enabled, this option makes the build process faster by not compiling
@@ -321,23 +328,13 @@ FORCE:
 .PHONY: FORCE
 
 %.hdr: FORCE
-ifeq ($(USE_VERBOSE_COMPILE),yes)
-	echo Creating ./common/hydrafw_version.hdr
-	-rm -f $(OBJDIR)/common.o
-	$(PYTHON) build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
-else
-	@echo Creating ./common/hydrafw_version.hdr
-	@rm -f $(OBJDIR)/common.o
-	@$(PYTHON) build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
-endif
+	$(OUT_LOG) echo Creating ./common/hydrafw_version.hdr
+	$(OUT_CMD) rm -f $(OBJDIR)/common.o
+	$(OUT_CMD) $(PYTHON) build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
 
 %.dfu: %.hex $(LDSCRIPT)
-ifeq ($(USE_VERBOSE_COMPILE),yes)
-	$(PYTHON) build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
-else
-	@echo Creating $@
-	@$(PYTHON) build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
-endif
+	$(OUT_LOG) echo Creating $@
+	$(OUT_CMD) $(PYTHON) build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
 
 # This rule hook is defined in the ChibiOS build system
 PRE_MAKE_ALL_RULE_HOOK: ./common/hydrafw_version.hdr
@@ -347,9 +344,9 @@ POST_MAKE_ALL_RULE_HOOK: $(BUILDDIR)/$(PROJECT).dfu
 
 # Custom rule to flash firmware when hydrabus is connected in dfu mode
 flash: $(BUILDDIR)/$(PROJECT).dfu
-	@echo Flashing $^
+	$(OUT_LOG) echo Flashing $^
 ifeq ($(OS), Windows_NT)
-	@../utils/windows_dfu_util/DfuSeCommand.exe -c --de 0 -d --fn $^
+	$(OUT_CMD) ../utils/windows_dfu_util/DfuSeCommand.exe -c --de 0 -d --fn $^
 else
-	@dfu-util -d 0483:df11 -a 0 -R -D $^
+	$(OUT_CMD) dfu-util -d 0483:df11 -a 0 -R -D $^
 endif
