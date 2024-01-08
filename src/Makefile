@@ -342,6 +342,9 @@ PRE_MAKE_ALL_RULE_HOOK: ./common/hydrafw_version.hdr
 # This rule hook is defined in the ChibiOS build system
 POST_MAKE_ALL_RULE_HOOK: $(BUILDDIR)/$(PROJECT).dfu
 
+# This rule hook for `make clean` is defined in the ChibiOS build system
+CLEAN_RULE_HOOK: $(shell rm -f ./common/hydrafw_version.hdr)
+
 # Custom rule to flash firmware when hydrabus is connected in dfu mode
 flash: $(BUILDDIR)/$(PROJECT).dfu
 	$(OUT_LOG) echo Flashing $^
