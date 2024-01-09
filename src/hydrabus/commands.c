@@ -238,12 +238,12 @@ t_token tokens_mode_brute[] = {
 	{
 		T_BYPASS,
 		.arg_type = T_ARG_UINT,
-		.help = "Performs a BYPASS scan on n pins"
+		.help = "Performs a BYPASS scan on x pins (PB0 up to PB11)"
 	},
 	{
 		T_IDCODE,
 		.arg_type = T_ARG_UINT,
-		.help = "Performs an IDCODE scan on n pins"
+		.help = "Performs an IDCODE scan on x pins (PB0 up to PB11)"
 	},
 	{ }
 };
@@ -1462,7 +1462,7 @@ t_token tokens_mode_twowire[] = {
 	{
 		T_BRUTE,
 		.arg_type = T_ARG_UINT,
-		.help = "Perform a SWD enumeration on pins"
+		.help = "Perform a SWD enumeration on x pins (PB0 up to PB11)"
 	},
 	{
 		T_ARG_UINT,
