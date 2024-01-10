@@ -316,6 +316,13 @@ ULIBDIR =
 # List all user libraries here
 ULIBS =
 
+# Flash tool with arguments depending on platform
+ifeq ($(OS), Windows_NT)
+FLASH_CMD = ../utils/windows_dfu_util/DfuSeCommand.exe -c --de 0 -d --fn
+else
+FLASH_CMD = dfu-util -d 0483:df11 -a 0 -R -D
+endif
+
 #
 # End of user defines
 ##############################################################################
@@ -348,8 +355,4 @@ CLEAN_RULE_HOOK: $(shell rm -f ./common/hydrafw_version.hdr)
 # Custom rule to flash firmware when hydrabus is connected in dfu mode
 flash: $(BUILDDIR)/$(PROJECT).dfu
 	$(OUT_LOG) echo Flashing $^
-ifeq ($(OS), Windows_NT)
-	$(OUT_CMD) ../utils/windows_dfu_util/DfuSeCommand.exe -c --de 0 -d --fn $^
-else
-	$(OUT_CMD) dfu-util -d 0483:df11 -a 0 -R -D $^
-endif
+	$(OUT_CMD) $(FLASH_CMD) $^
