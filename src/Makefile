@@ -79,6 +79,10 @@ ifeq ($(USE_THUMB),)
 endif
 
 # Enable this if you want to see the full log while compiling.
+ifeq ($(V),1)
+  USE_VERBOSE_COMPILE = yes
+endif
+
 # Also set directives to use with commands depending on verbosity status.
 ifeq ($(USE_VERBOSE_COMPILE),yes)
   # if verbose build then print out the full commands without description
