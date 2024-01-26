@@ -16,6 +16,7 @@ limitations under the License.
 #include "ch.h"
 #include "osal.h"
 
+#include "hal_lld.h"
 #include "bsp.h"
 #include "bsp_gpio.h"
 
@@ -66,12 +67,12 @@ uint32_t HAL_GetTick(void)
 
 uint32_t HAL_RCC_GetPCLK1Freq(void)
 {
-	return 42000000;
+	return STM32_PCLK1;
 }
 
 uint32_t HAL_RCC_GetPCLK2Freq(void)
 {
-	return 84000000;
+	return STM32_PCLK2;
 }
 
 bool delay_is_expired(bool start, uint32_t wait_nb_cycles)
@@ -108,7 +109,7 @@ void wait_delay(uint32_t wait_nb_cycles)
 
 uint32_t bsp_get_apb1_freq(void)
 {
-	return 42000000;
+	return STM32_PCLK1;
 }
 
 void reboot_usb_dfu(void)
@@ -135,7 +136,7 @@ void bsp_enter_usb_dfu(void)
 	__GPIOA_CLK_ENABLE();
 	bsp_gpio_init(BSP_GPIO_PORTA, 0, MODE_CONFIG_DEV_GPIO_IN, MODE_CONFIG_DEV_GPIO_NOPULL);
 
-	if(bsp_gpio_pin_read(BSP_GPIO_PORTA, 0)) {
+	if(bsp_gpio_pin_read(BSP_GPIO_PORTA, 0) == 0) {
 		reboot_usb_dfu();
 	}
 }
