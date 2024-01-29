@@ -34,7 +34,7 @@
 #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
 /* Generic large buffer.*/
-uint8_t fbuff[2048] __attribute__ ((section(".ram4")));
+uint8_t fbuff[2048] __attribute__ ((section(".ram0")));
 
 extern uint32_t debug_flags;
 extern char log_dest[];
@@ -331,6 +331,8 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 			TST_OFF;
 		}
 
+		cprintf(con, "10mhz\r\n");
+
 		/* Delay 1us */
 		tick = ticks_1us;
 		wait_delay(tick);
@@ -358,6 +360,8 @@ int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p)
 			TST_OFF;
 			wait_delay(tick);
 		}
+
+		cprintf(con, "3.39mhz\r\n");
 
 		/* Delay 1us */
 		tick = ticks_1us;
@@ -525,5 +529,5 @@ uint32_t reverse_u32(uint32_t value)
 
 uint8_t hydrabus_ubtn(void)
 {
-	return bsp_gpio_pin_read(BSP_GPIO_PORTA, 0);
+	return 1 - bsp_gpio_pin_read(BSP_GPIO_PORTA, 0);
 }

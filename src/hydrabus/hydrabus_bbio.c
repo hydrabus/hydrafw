@@ -78,9 +78,6 @@ int cmd_bbio(t_hydra_console *con)
 				cprint(con, "OCD1", 4);
 				jtag_enter_openocd(con);
 				break;
-			case BBIO_CAN:
-				bbio_mode_can(con);
-				break;
 			case BBIO_PIN:
 				bbio_mode_pin(con);
 				break;

@@ -70,7 +70,7 @@ bsp_status_t bsp_freq_init(bsp_dev_freq_t dev_num, uint16_t scale)
 	bsp_freq_deinit(dev_num);
 
 	/* Configure the FREQ (TIM8) peripheral */
-	__TIM8_CLK_ENABLE();
+	__TIM9_CLK_ENABLE();
 
 	/* Init the FREQ GPIO */
 	freq_gpio_hw_init(dev_num);

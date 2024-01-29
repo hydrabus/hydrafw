@@ -197,15 +197,12 @@ static struct cmd_map {
 #ifdef HYDRANFC
 	{ T_NFC, cmd_mode_init },
 #endif
-	{ T_CAN, cmd_mode_init },
 	{ T_ADC, cmd_adc },
-	{ T_DAC, cmd_dac },
 	{ T_PWM, cmd_pwm },
 	{ T_FREQUENCY, cmd_freq },
 	{ T_GPIO, cmd_gpio },
 	{ T_SUMP, cmd_sump },
 	{ T_JTAG, cmd_mode_init },
-	{ T_RNG, cmd_rng },
 	{ T_ONEWIRE, cmd_mode_init },
 	{ T_TWOWIRE, cmd_mode_init },
 	{ T_THREEWIRE, cmd_mode_init },

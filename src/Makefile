@@ -18,7 +18,7 @@ endif
 export STM32F4XX ?= 1
 
 # Set to 1 HYDRAFW_NFC to include HydraNFC extension support
-export HYDRAFW_NFC ?= 1
+export HYDRAFW_NFC ?= 0
 export HYDRAFW_DEBUG ?= 0
 export FW_REVISION := $(shell $(PYTHON) build-scripts/hydrafw-revision.py)
 
@@ -152,7 +152,7 @@ ifeq ($(STM32F4XX),1)
 include $(CHIBIOS)/os/hal/ports/STM32/STM32F4xx/platform.mk
 endif
 
-include ./board/board.mk
+include ./board_blackpill/board.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
@@ -175,11 +175,6 @@ endif
 ifeq ($(HYDRAFW_NFC),1)
 include hydranfc/trf7970a/trf7970a.mk
 include hydranfc/hydranfc.mk
-endif
-
-# Define linker script file here
-ifeq ($(STM32F4XX),1)
-LDSCRIPT= $(STARTUPLD)/STM32F405xG.ld
 endif
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global

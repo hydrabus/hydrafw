@@ -1,7 +1,6 @@
 # List of all the stm32cube used files
 STM32CUBESRC = ./drv/stm32cube/bsp.c \
                ./drv/stm32cube/bsp_adc.c \
-               ./drv/stm32cube/bsp_dac.c \
                ./drv/stm32cube/bsp_pwm.c \
                ./drv/stm32cube/bsp_gpio.c \
                ./drv/stm32cube/bsp_i2c_master.c \
@@ -9,8 +8,6 @@ STM32CUBESRC = ./drv/stm32cube/bsp.c \
                ./drv/stm32cube/bsp_spi.c \
                ./drv/stm32cube/bsp_uart.c \
                ./drv/stm32cube/bsp_smartcard.c \
-               ./drv/stm32cube/bsp_rng.c \
-               ./drv/stm32cube/bsp_can.c \
                ./drv/stm32cube/bsp_freq.c \
                ./drv/stm32cube/bsp_trigger.c \
                ./drv/stm32cube/bsp_tim.c \

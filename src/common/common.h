@@ -37,9 +37,9 @@
 
 /* ULED PA4 Configured as Output for Test */
 #undef ULED_ON
-#define ULED_ON  (palSetPad(GPIOA, 4))
+#define ULED_ON  (palSetPad(GPIOC, 13))
 #undef ULED_OFF
-#define ULED_OFF (palClearPad(GPIOA, 4))
+#define ULED_OFF (palClearPad(GPIOC, 13))
 
 /* PB3 Test */
 #undef TST_ON
@@ -60,7 +60,7 @@ void DelayUs(uint32_t delay_us);
 void DelayMs(uint32_t delay_ms);
 
 /* Generic large buffer.*/
-extern uint8_t fbuff[2048] __attribute__ ((section(".ram4")));
+extern uint8_t fbuff[2048] __attribute__ ((section(".ram0")));
 
 #define NB_SBUFFER  (65536)
 #define G_SBUF_SDC_BURST_SIZE (NB_SBUFFER/MMCSD_BLOCK_SIZE) /* how many sectors reads at once */

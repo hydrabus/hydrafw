@@ -19,8 +19,8 @@ limitations under the License.
 
 /* FREQ1 -> PC6
 */
-#define BSP_FREQ1_TIMER TIM8
-#define BSP_FREQ1_AF	GPIO_AF3_TIM8
+#define BSP_FREQ1_TIMER TIM9
+#define BSP_FREQ1_AF	GPIO_AF3_TIM9
 #define BSP_FREQ1_PORT	GPIOC
 #define BSP_FREQ1_PIN	GPIO_PIN_6 // PC.6
 #define BSP_FREQ1_CHAN	TIM_CHANNEL_1

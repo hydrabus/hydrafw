@@ -63,12 +63,12 @@ extern t_token tl_tokens[];
 extern t_token_dict tl_dict[];
 
 /* Create tokenline objects for each console. */
-t_tokenline tl_con1  __attribute__ ((section(".ram4")));
-t_mode_config mode_con1  __attribute__ ((section(".ram4"))) = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
+t_tokenline tl_con1  __attribute__ ((section(".ram0")));
+t_mode_config mode_con1  __attribute__ ((section(".ram0"))) = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
 
 #if STM32_USB_USE_OTG2
-t_tokenline tl_con2  __attribute__ ((section(".ram4")));
-t_mode_config mode_con2  __attribute__ ((section(".ram4"))) = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
+t_tokenline tl_con2  __attribute__ ((section(".ram0")));
+t_mode_config mode_con2  __attribute__ ((section(".ram0"))) = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
 #endif
 
 t_hydra_console consoles[] = {

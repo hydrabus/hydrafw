@@ -15,7 +15,11 @@ limitations under the License.
 #ifndef _STM32_H_
 #define _STM32_H_
 
+#ifdef STM32F411xE
+#include "stm32f411xe.h"
+#elif defined(STM32F405xx)
 #include "stm32f405xx.h"
+#endif
 #include "stm32f4xx_hal.h"
 
 #endif /* _STM32_H_ */

@@ -19,7 +19,8 @@ limitations under the License.
 #include "bsp.h"
 #include "mode_config.h"
 
-#define BSP_FREQ_BASE_FREQ 168000000.0
+//TODO: set to PLL freq?
+#define BSP_FREQ_BASE_FREQ 96000000.0
 
 typedef enum {
 	BSP_DEV_FREQ1 = 0, /* PC6 */
