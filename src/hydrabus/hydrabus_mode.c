@@ -488,7 +488,7 @@ static int hydrabus_mode_hexdump(t_hydra_console *con, t_tokenline_parsed *p,
 			to_rx = (count-bytes_read);
 		}
 
-		if(con->mode->exec->read != NULL) {
+		if(con->mode->exec->dump != NULL) {
 			mode_status = con->mode->exec->dump(con, p_proto->buffer_rx, to_rx);
 		}
 		if (mode_status == HYDRABUS_MODE_STATUS_OK) {

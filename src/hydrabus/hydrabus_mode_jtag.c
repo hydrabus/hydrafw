@@ -959,6 +959,18 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return BSP_OK;
 }
 
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
+{
+	uint8_t i;
+
+	i = 0;
+	while(i < nb_data) {
+		rx_data[i] = jtag_read_u8(con);
+		i++;
+	}
+	return BSP_OK;
+}
+
 static void cleanup(t_hydra_console *con)
 {
 	jtag_pin_deinit(con);
@@ -990,6 +1002,7 @@ const mode_exec_t mode_jtag_exec = {
 	.exec = &exec,
 	.write = &write,
 	.read = &read,
+	.dump = &dump,
 	.cleanup = &cleanup,
 	.get_prompt = &get_prompt,
 	.clkl = &clkl,

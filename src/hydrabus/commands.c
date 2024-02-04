@@ -1164,6 +1164,11 @@ t_token tokens_mode_jtag[] = {
 		.help = "Read byte (repeat with :<num>)"
 	},
 	{
+		T_HD,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>) and print hexdump"
+	},
+	{
 		T_WRITE,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Write byte (repeat with :<num>)"
@@ -1568,6 +1573,11 @@ t_token tokens_mode_threewire[] = {
 		T_READ,
 		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
 		.help = "Read byte (repeat with :<num>)"
+	},
+	{
+		T_HD,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.help = "Read byte (repeat with :<num>) and print hexdump"
 	},
 	{
 		T_WRITE,
