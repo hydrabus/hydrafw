@@ -45,7 +45,7 @@ def hex_to_bin(num, padding):
 def calc_hex_addr(addr, add):
     addr_int = int(addr, 16)
     addr_int += add
-    byte_arr = hex_to_bin(addr_int, 3)
+    byte_arr = hex_to_bin(addr_int, 4)
     return byte_arr
     
 def hydrabus_setup():
@@ -111,10 +111,10 @@ def dump_chip():
     
     while sector < sectors:
         # write-then-read: write 4 bytes (1 read cmd + 3 read addr), read sector_size bytes
-        hydrabus.write(b'\x04\x00\x04' + hex_to_bin(sector_size, 2))
+        hydrabus.write(b'\x04\x00\x05' + hex_to_bin(sector_size, 2))
 
-        # read command (\x03) and address
-        hydrabus.write(b'\x03' + calc_hex_addr(start_addr, sector * sector_size))
+        # read 4bytes address command (\x13) and address
+        hydrabus.write(b'\x13' + calc_hex_addr(start_addr, sector * sector_size))
         
         # Hydrabus will send \x01 in case of success...
         ok = hydrabus.read(1)
