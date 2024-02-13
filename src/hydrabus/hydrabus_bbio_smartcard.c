@@ -27,7 +27,7 @@
 #include "hydrabus_bbio_smartcard.h"
 #include "bsp_smartcard.h"
 
-#define SMARTCARD_DEFAULT_SPEED (9600)
+#define SMARTCARD_DEFAULT_SPEED (9408)
 
 void bbio_smartcard_init_proto_default(t_hydra_console *con)
 {

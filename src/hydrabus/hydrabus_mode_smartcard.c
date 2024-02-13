@@ -22,7 +22,7 @@
 #include "bsp_smartcard.h"
 #include <string.h>
 
-#define SMARTCARD_DEFAULT_SPEED (9600)
+#define SMARTCARD_DEFAULT_SPEED (9408)
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
