@@ -29,7 +29,10 @@
 #include "common.h"
 
 #include "usb1cfg.h"
+
+#if STM32_USB_USE_OTG2
 #include "usb2cfg.h"
+#endif
 
 #include "microsd.h"
 #include "hydrabus.h"
@@ -51,8 +54,10 @@ volatile int nb_console = 0;
 
 /* USB1: Virtual serial port over USB. */
 SerialUSBDriver SDU1;
+#ifdef STM32_USB_USE_OTG2
 /* USB2: Virtual serial port over USB. */
 SerialUSBDriver SDU2;
+#endif
 
 extern t_token tl_tokens[];
 extern t_token_dict tl_dict[];
@@ -61,12 +66,16 @@ extern t_token_dict tl_dict[];
 t_tokenline tl_con1  __attribute__ ((section(".ram4")));
 t_mode_config mode_con1  __attribute__ ((section(".ram4"))) = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
 
+#if STM32_USB_USE_OTG2
 t_tokenline tl_con2  __attribute__ ((section(".ram4")));
 t_mode_config mode_con2  __attribute__ ((section(".ram4"))) = { .proto={ .dev_num = 0 }, .cmd={ 0 } };
+#endif
 
 t_hydra_console consoles[] = {
-	{ .thread_name="console USB1", .sdu=&SDU1, .tl=&tl_con1, .mode = &mode_con1 },
-	{ .thread_name="console USB2", .sdu=&SDU2, .tl=&tl_con2, .mode = &mode_con2 }
+	{ .thread_name="console USB1", .sdu=&SDU1, .tl=&tl_con1, .mode = &mode_con1 }
+#if STM32_USB_USE_OTG2
+	,{ .thread_name="console USB2", .sdu=&SDU2, .tl=&tl_con2, .mode = &mode_con2 }
+#endif
 };
 
 THD_FUNCTION(console, arg)
@@ -131,7 +140,7 @@ volatile int a, b, c;
 
 int main(void)
 {
-	int sleep_ms, i;
+	uint32_t sleep_ms, i;
 	int local_nb_console;
 #ifdef HYDRANFC
 	bool hydranfc_detected;
@@ -170,8 +179,10 @@ int main(void)
 	sduObjectInit(&SDU1);
 	sduStart(&SDU1, &serusb1cfg);
 
+#if STM32_USB_USE_OTG2
 	sduObjectInit(&SDU2);
 	sduStart(&SDU2, &serusb2cfg);
+#endif
 
 	/*
 	 * Activates the USB1 & 2 driver and then the USB bus pull-up on D+.
@@ -179,7 +190,9 @@ int main(void)
 	 * after a reset.
 	 */
 	usbDisconnectBus(serusb1cfg.usbp);
+#if STM32_USB_USE_OTG2
 	usbDisconnectBus(serusb2cfg.usbp);
+#endif
 
 	chThdSleepMilliseconds(500);
 
@@ -194,8 +207,10 @@ int main(void)
 
 	usbConnectBus(serusb1cfg.usbp);
 
+#if STM32_USB_USE_OTG2
 	usbStart(serusb2cfg.usbp, &usb2cfg);
 	usbConnectBus(serusb2cfg.usbp);
+#endif
 
 	/* Wait for USB Enumeration. */
 	chThdSleepMilliseconds(100);
@@ -210,7 +225,7 @@ int main(void)
 	chRegSetThreadName("main");
 	while (TRUE) {
 		local_nb_console = 0;
-		for (i = 0; i < 2; i++) {
+		for (i = 0; i < ARRAY_SIZE(consoles); i++) {
 			if (!consoles[i].thread) {
 				if (consoles[i].sdu->config->usbp->state != USB_ACTIVE)
 					continue;

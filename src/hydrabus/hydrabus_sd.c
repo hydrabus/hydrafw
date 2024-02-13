@@ -24,9 +24,6 @@
 
 #include "ff.h"
 
-#include "usb1cfg.h"
-#include "usb2cfg.h"
-
 #include "microsd.h"
 #include "hydrabus_sd.h"
 #include "common.h"
