@@ -50,6 +50,7 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
+	proto->wwr = 0;
 	proto->config.uart.dev_speed = UART_DEFAULT_SPEED;
 	proto->config.uart.dev_parity = 0;
 	proto->config.uart.dev_stop_bit = 1;
