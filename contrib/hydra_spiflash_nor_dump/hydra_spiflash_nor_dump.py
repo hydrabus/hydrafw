@@ -1,17 +1,18 @@
 #!/usr/bin/python3
-#
+
 # Script to dump SPI flash chips with Hydrabus, tested with Hydrabus hardware v1.0 and firmware v0.8 beta
 # Based on https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-SPI-mode-guide
 #
 # Author: Pedro Ribeiro <pedrib@gmail.com>
 # License: GPLv3 (https://choosealicense.com/licenses/gpl-3.0/)
 #
+import sys
 import hexdump
 import serial
-import sys
+
 import signal
 
-sector_size = 0x1000  # max buffer supported by hydrabus
+SECTORE_SIZE = 0x1000  # max buffer supported by hydrabus
 hydrabus = None
 
 
@@ -24,21 +25,26 @@ def error(msg):
         # cleanup the hydrabus so that we don't have to reset it
         hydrabus_cleanup
 
-    quit()
+    sys.exit()
+
 
 def signal_handler(signal, frame):
-        error("CTRL+C pressed, cleaning up and exiting")
+    error("CTRL+C pressed, cleaning up and exiting")
 
 
 def print_usage():
     print("Usage:")
-    print("\thydra_spi_dump.py dump <dump_file> <n_4k_sectors> <hex_address> [slow|fast]")
+    print(
+        "\thydra_spi_dump.py dump <dump_file> <n_4k_sectors> <hex_address> [slow|fast]"
+    )
     print("\t\tDumps n_4k_sectors into dump_file, starting at hex_address.")
-    print("\t\tBy default, it dumps in slow (320kHz) mode, choose fast to increase to 10.5 mHz.")
+    print(
+        "\t\tBy default, it dumps in slow (320kHz) mode, choose fast to increase to 10.5 mHz."
+    )
     print("\n\thydra_spi_flash.py chip_id")
     print("\t\tPrints chip idenfification (RDID).")
     print("\nThis script requires Python 3.2+, pip3 install serial hexdump")
-    quit()
+    sys.exit()
 
 
 def hex_to_bin(num, padding):
@@ -59,7 +65,7 @@ def hydrabus_setup():
     hydrabus = serial.Serial('/dev/ttyACM0', 115200)
 
     # Open binary mode
-    for i in range(20):
+    for _ in range(20):
         hydrabus.write(b'\x00')
     if b"BBIO1" not in hydrabus.read(5):
         error("Could not get into binary mode, try again or reset hydrabus.")
@@ -112,25 +118,45 @@ def dump_chip():
     print('Reading ' + str(sectors) + ' sectors')
 
     sector = 0
-    buf = bytearray()
 
-    while sector < sectors:
-        # write-then-read: write 4 bytes (1 read cmd + 3 read addr), read sector_size bytes
-        hydrabus.write(b'\x04\x00\x05' + hex_to_bin(sector_size, 2))
+    with open(dump_file, 'wb+') as dst:
 
-        # read 4bytes address command (\x13) and address
-        hydrabus.write(b'\x13' + calc_hex_addr(start_addr, sector * sector_size))
+        print(f"sectors: {sectors}: {SECTORE_SIZE}")
+        if sectors * SECTORE_SIZE > 0xffffff:
+            print("Size is bigger than 3bytes address, using 0x13 command")
+            # the size is bigger than 3bytes address so use the 0x13 command
+            while sector < sectors:
+                # write-then-read: write 5 bytes (1 read cmd + 4 read addr), read SECTORE_SIZE bytes
+                hydrabus.write(b'\x04\x00\x05' + hex_to_bin(SECTORE_SIZE, 2))
 
-        # Hydrabus will send \x01 in case of success...
-        ok = hydrabus.read(1)
+                # read 4bytes address command (\x13) and address
+                hydrabus.write(b'\x13' + calc_hex_addr(start_addr, sector *
+                                                       SECTORE_SIZE, 4))
 
-        # ...followed by sector_size read bytes
-        buf += hydrabus.read(sector_size)
-        print('Read sector ' + str(sector))
-        sector += 1
+                # Hydrabus will send \x01 in case of success...
+                ok = hydrabus.read(1)
 
-    with open(dump_file, 'wb+') as f:
-        f.write(buf)
+                # ...followed by SECTORE_SIZE read bytes
+                dst.write(hydrabus.read(SECTORE_SIZE))
+                print('Read sector ' + str(sector))
+                sector += 1
+        else:
+            # the size is less than 3bytes address so use the 0x03 command
+            while sector < sectors:
+                # write-then-read: write 4 bytes (1 read cmd + 3 read addr), read SECTORE_SIZE bytes
+                hydrabus.write(b'\x04\x00\x04' + hex_to_bin(SECTORE_SIZE, 2))
+
+                # read 4bytes address command (\x03) and address
+                hydrabus.write(b'\x03' + calc_hex_addr(start_addr, sector *
+                                                       SECTORE_SIZE, 3))
+
+                # Hydrabus will send \x01 in case of success...
+                ok = hydrabus.read(1)
+
+                # ...followed by SECTORE_SIZE read bytes
+                dst.write(hydrabus.read(SECTORE_SIZE))
+                print('Read sector ' + str(sector))
+                sector += 1
 
     print('Finished dumping to ' + dump_file)
 
