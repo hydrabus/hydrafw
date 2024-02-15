@@ -119,8 +119,13 @@ class HydrabusSpiFlash:
         if b'\x01' not in self.hydrabus.read(1):
             self.error('Oups something went wrong...')
 
-        print(f"Chip ID: 0x{self.hydrabus.read(3).hex()}")
-        print("Finished get_chip_id function.")
+        chip_id = self.hydrabus.read(3)
+        if int.from_bytes(chip_id) == 0:
+            print('Cannot read get chip ID')
+
+        else:
+            print(f"Chip ID: 0x{chip_id.hex()}")
+            print("Finished get_chip_id function.")
         self.cleanup()
         sys.exit(0)
 
