@@ -23,19 +23,29 @@ def signal_handler(signal, frame):
 class HydrabusSpiFlash:
 
     def __init__(self, serial_port):
+
+        self.top_parser = argparse.ArgumentParser(add_help=False)
+        self.top_parser.add_argument('--spi',
+                                     default=1,
+                                     help='Set the SPI port to SPI1 or SPI2',
+                                     metavar='{1,2}')
+
         parser = argparse.ArgumentParser(
+            parents=[self.top_parser],
             description='Tool to query NOR memory flash with Hydrabus',
             epilog='This script requires python 3.7+, and serial',
-            usage='''hydra_spiflash_nor_dump.py <command> [<args>]
+            usage='''hydra_spiflash_nor_dump.py <command> [<args>] [OPTIONS]
 
     Commands are:
-    get_chip_id                                     Return the chip identification
-    dump <dump_file> <n_4k_sectors> <hex_address>   Dump the flash in <dump_file> starting at <hex_address>
+    get_chip_id                                       Return the chip identification
+    dump <dump_file> <n_4k_sectors> <hex_address>     Dump the flash in <dump_file> starting at <hex_address>
 
             ''')
 
         parser.add_argument('command',
                             help='dump to dump the flash or get_chip_id')
+
+        args_spi = parser.parse_args()
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
             print('Unrecognized command')
@@ -44,7 +54,7 @@ class HydrabusSpiFlash:
 
         self.serial_port = serial_port
         self.hydrabus = None
-        self.setup()
+        self.setup(args_spi.spi)
 
         # use dispatch pattern to invoke method with same name
         getattr(self, args.command)()
@@ -61,7 +71,7 @@ class HydrabusSpiFlash:
         byte_arr = self.hex_to_bin(addr + add, addr_len)
         return byte_arr
 
-    def setup(self):
+    def setup(self, spi):
 
         # Open serial port
         self.hydrabus = serial.Serial(self.serial_port, 115200)
@@ -80,8 +90,12 @@ class HydrabusSpiFlash:
         if b"SPI1" not in self.hydrabus.read(4):
             self.error("Cannot set SPI mode, try again or reset hydrabus.")
 
-        # Configure SPI port (default polarity and clock phase, SPI1 device)
-        self.hydrabus.write(b'\x81')
+        if spi == 1:
+            # Configure SPI port (default polarity and clock phase, SPI1 device)
+            self.hydrabus.write(b'\x81')
+        else:
+            # Configure SPI port (default polarity and clock phase, SPI2 device)
+            self.hydrabus.write(b'\x80')
         if b'\x01' not in self.hydrabus.read(1):
             self.error(
                 "Cannot set SPI device settings, try again or reset hydrabus.")
@@ -102,7 +116,6 @@ class HydrabusSpiFlash:
 
         # send rdid byte (0x9f)
         self.hydrabus.write(b'\x9f')
-
         if b'\x01' not in self.hydrabus.read(1):
             self.error('Oups something went wrong...')
 
