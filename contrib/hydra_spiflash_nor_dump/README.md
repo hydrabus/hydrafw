@@ -1,7 +1,7 @@
-Script to dump SPI flash chips with Hydrabus, tested with Hydrabus hardware v1.0 and firmware v0.8 beta or more
+# Script to dump SPI flash chips with Hydrabus, tested with Hydrabus hardware v1.0 and firmware v0.8 beta or more
 
 Based on https://github.com/hydrabus/hydrafw/wiki/HydraFW-Binary-SPI-mode-guide
-
+```
 Usage:
     hydra_spiflash_nor_dump.py [options] <command> [<args>]
     options:
@@ -13,18 +13,23 @@ Usage:
         By default, it dumps in slow (320kHz) mode, choose fast for 10.5 MHz or max for SPI speed 42MHz SPI1/21MHz SPI2.
     hydra_spiflash_nor_dump.py get_chip_id
         Prints chip idenfification (RDID).
-
+```
 Example Debian get_chip_id SPI1(default) with COM Port(default /dev/ttyACM0)
+```
     python hydra_spiflash_nor_dump.py get_chip_id
-
+```
 Example Debian dump SPI1(default) with COM Port(default /dev/ttyACM0) 100 sectors of 4K (400K) speed default(slow)
+```
     python hydra_spiflash_nor_dump.py dump dump.bin 100 0
-
+```
 Example Windows get_chip_id SPI2 with COM9
+```
     python hydra_spiflash_nor_dump.py --com_port COM9 --spi 2 get_chip_id
-
+```
 Example Windows dump SPI2 with COM9 100 sectors of 4K (400K) speed fast
+```
     python hydra_spiflash_nor_dump.py --com_port COM9 --spi 2 dump dump.bin 100 0 --speed fast
+```
 
 This script requires Python 3.7+, pip3 install pyserial
 
