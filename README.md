@@ -11,7 +11,7 @@ You can Buy HydraBus v1 Online: http://hydrabus.com/buy-online
 
 * Getting Started with HydraBus v1: https://github.com/hydrabus/hydrafw/wiki/Getting-Started-with-HydraBus
 * HydraFW Wiki: https://github.com/hydrabus/hydrafw/wiki
-* HydraFW usage with VT100 Terminal see wiki https://github.com/hydrabus/hydrafw/wiki/HydraFW-commands
+* HydraFW usage with VT100 Terminal see wiki https://github.com/hydrabus/hydrafw/wiki/HydraFW-console-commands 
 * For more details on HydraBus v1 Hardware and Firmware see also: https://github.com/hydrabus/hydrabus
 * For more details on HydraNFC Shield v2 see: https://github.com/hydrabus/hydrafw_hydranfc_shield_v2
 * If you want to help on this project see:
