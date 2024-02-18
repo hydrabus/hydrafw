@@ -1690,10 +1690,6 @@ t_token tokens_mode_flash[] = {
 	{ }
 };
 
-t_token tokens_flash[] = {
-	{ }
-};
-
 t_token tokens_gpio_mode[] = {
 	{
 		T_IN,
@@ -2184,7 +2180,7 @@ t_token tl_tokens[] = {
 	},
 	{
 		T_FLASH,
-		.subtokens = tokens_flash,
+		.subtokens = tokens_mode_flash,
 		.help = "NAND flash mode"
 	},
 	{
