@@ -79,7 +79,7 @@ static void smartcard_gpio_hw_init(bsp_dev_smartcard_t dev_num)
 	/*SMARTCARD1 CD pin configuration*/
 	GPIO_InitStructure.Pin = BSP_SMARTCARD1_CD_PIN;
 	GPIO_InitStructure.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStructure.Pull = GPIO_NOPULL;
+	GPIO_InitStructure.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(BSP_SMARTCARD1_CD_PORT, &GPIO_InitStructure);
 }
 
@@ -142,7 +142,7 @@ bsp_status_t bsp_smartcard_init(bsp_dev_smartcard_t dev_num, mode_config_proto_t
 	hsmartcard->Instance = BSP_SMARTCARD1;
 
 	/* Defaults */
-	hsmartcard->Init.BaudRate 		= 9600; /* Starting baudrate = 3,5MHz / 372etu */
+	hsmartcard->Init.BaudRate 		= 9408; /* Starting baudrate = 3,5MHz / 372etu */
 	hsmartcard->Init.WordLength 		= SMARTCARD_WORDLENGTH_9B;
 	hsmartcard->Init.StopBits 		= SMARTCARD_STOPBITS_1_5;
 	hsmartcard->Init.Parity 		= SMARTCARD_PARITY_EVEN;
