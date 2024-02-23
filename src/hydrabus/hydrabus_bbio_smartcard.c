@@ -57,7 +57,7 @@ void bbio_mode_smartcard(t_hydra_console *con)
 	uint8_t bbio_subcommand;
 	uint8_t *tx_data = pool_alloc_bytes(0x1000); // 4096 bytes
 	uint8_t *rx_data = pool_alloc_bytes(0x1000); // 4096 bytes
-	uint8_t data;
+	uint8_t data, tmp;
 	uint32_t dev_speed=0;
 	uint32_t final_baudrate;
 	bsp_status_t status;
@@ -144,11 +144,12 @@ void bbio_mode_smartcard(t_hydra_console *con)
 					if((to_rx-i) >= 255) {
 						bsp_smartcard_read_u8(proto->dev_num,
 						                rx_data+i,
-						                255);
+						                &(uint8_t){255});
 					} else {
+						tmp = to_rx-i;
 						bsp_smartcard_read_u8(proto->dev_num,
 						                rx_data+i,
-						                to_rx-i);
+						                &tmp);
 					}
 					i+=255;
 				}

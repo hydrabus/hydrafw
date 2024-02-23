@@ -138,10 +138,10 @@ static void smartcard_get_atr(t_hydra_console *con)
 	DelayMs(1);							// RST low for at least 400 clocks (tb).
 	bsp_smartcard_set_vcc(proto->dev_num, 0);
 	bsp_smartcard_set_rst(proto->dev_num, 1);
-	bsp_smartcard_read_u8(proto->dev_num, atr, 1);
+	bsp_smartcard_read_u8(proto->dev_num, atr, &(uint8_t){1});
 
 	if (atr[0] == 0) {
-		bsp_smartcard_read_u8(proto->dev_num, atr, 1);
+		bsp_smartcard_read_u8(proto->dev_num, atr, &(uint8_t){1});
 	}
 
 	/* Inverse or Direct convention */
@@ -167,7 +167,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 		return;
 	}
 
-	bsp_smartcard_read_u8(proto->dev_num, atr+1, 1);
+	bsp_smartcard_read_u8(proto->dev_num, atr+1, &(uint8_t){1});
 	apply_convention(con, atr+1, 1);
 
 	while(more_td) {
@@ -180,7 +180,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 			checksum |= atr[r]&0x1;
 		r++;
 		for(; r<=atr_size; r++) {
-			bsp_smartcard_read_u8(proto->dev_num, atr+r, 1);
+			bsp_smartcard_read_u8(proto->dev_num, atr+r, &(uint8_t){1});
 			apply_convention(con, atr+r, 1);
 
 			// Test if TA1 is present from T0,
@@ -211,20 +211,20 @@ static void smartcard_get_atr(t_hydra_console *con)
 
 	/* Read last Ti */
 	for(; r<=atr_size; r++) {
-		bsp_smartcard_read_u8(proto->dev_num, atr+r, 1);
+		bsp_smartcard_read_u8(proto->dev_num, atr+r, &(uint8_t){1});
 		apply_convention(con, atr+r, 1);
 	}
 
 	/* Read historical data */
 	for(i=0; i<(atr[1] & 0x0f); i++) {
-		bsp_smartcard_read_u8(proto->dev_num, atr+(r+i), 1);
+		bsp_smartcard_read_u8(proto->dev_num, atr+(r+i), &(uint8_t){1});
 		apply_convention(con, atr+(r+i), 1);
 	}
 	r+=i;
 
 	/* Read checksum if present and print ATR */
 	if(checksum) {
-		bsp_smartcard_read_u8(proto->dev_num, atr+r, 1);
+		bsp_smartcard_read_u8(proto->dev_num, atr+r, &(uint8_t){1});
 		apply_convention(con, atr+r, 1);
 		print_hex(con, atr, r+1);
 	} else {
@@ -467,10 +467,15 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	int i;
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
+	uint8_t orig_nb_data = nb_data;
 
-	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, nb_data);
+	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, &nb_data);
 	apply_convention(con, rx_data, nb_data);
-	if(status == BSP_OK) {
+	switch(status) {
+	case BSP_TIMEOUT:
+		cprintf(con, hydrabus_mode_str_read_timeout, nb_data, orig_nb_data);
+		__attribute__ ((fallthrough)); // Explicitly fall through
+	case BSP_OK:
 		if(nb_data == 1) {
 			/* Read 1 data */
 			cprintf(con, hydrabus_mode_str_read_one_u8, rx_data[0]);
@@ -491,7 +496,7 @@ static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, nb_data);
+	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, &nb_data);
 	apply_convention(con, rx_data, nb_data);
 
 	return status;
