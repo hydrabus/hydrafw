@@ -23,7 +23,7 @@
 #include <string.h>
 
 #define UART_DEFAULT_SPEED (9600)
-#define UART_DEFAULT_TIMEOUT (10000)
+#define UART_DEFAULT_TIMEOUT (2000)
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);

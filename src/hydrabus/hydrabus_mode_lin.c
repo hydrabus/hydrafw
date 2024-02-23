@@ -22,7 +22,7 @@
 #include "hydrabus_trigger.h"
 #include <string.h>
 
-#define LIN_DEFAULT_TIMEOUT (10000)
+#define LIN_DEFAULT_TIMEOUT (2000)
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);

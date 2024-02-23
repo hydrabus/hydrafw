@@ -23,7 +23,7 @@
 #include <string.h>
 
 #define SMARTCARD_DEFAULT_SPEED (9408)
-#define SMARTCARD_DEFAULT_TIMEOUT (10000)
+#define SMARTCARD_DEFAULT_TIMEOUT (1000)
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
