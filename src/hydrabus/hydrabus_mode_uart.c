@@ -23,6 +23,7 @@
 #include <string.h>
 
 #define UART_DEFAULT_SPEED (9600)
+#define UART_DEFAULT_TIMEOUT (10000)
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
@@ -51,6 +52,7 @@ static void init_proto_default(t_hydra_console *con)
 	/* Defaults */
 	proto->dev_num = 0;
 	proto->wwr = 0;
+	proto->timeout = UART_DEFAULT_TIMEOUT;
 	proto->config.uart.dev_speed = UART_DEFAULT_SPEED;
 	proto->config.uart.dev_parity = 0;
 	proto->config.uart.dev_stop_bit = 1;
@@ -66,6 +68,8 @@ static void show_params(t_hydra_console *con)
 	cprintf(con, "Parity: %s\r\nStop bits: %d\r\n",
 		str_dev_param_parity[proto->config.uart.dev_parity],
 		proto->config.uart.dev_stop_bit);
+	cprintf(con, "Timeout: %d msec\r\n",
+				proto->timeout);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -248,6 +252,16 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			break;
+		case T_TIMEOUT:
+			/* Integer parameter. */
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			if (arg_int < 1 || arg_int > 30000) {
+				cprintf(con, "Timeout value must be set between 1 and 30000.\r\n");
+				return t;
+			}
+			proto->timeout = arg_int;
+			break;
 		case T_BRIDGE:
 			bridge(con);
 			break;
@@ -292,7 +306,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t orig_nb_data = nb_data;
 
-	status = bsp_uart_read_u8(proto->dev_num, rx_data, &nb_data);
+	status = bsp_uart_read_u8(proto->dev_num, rx_data, &nb_data, TIME_MS2I(proto->timeout));
 	switch(status) {
 	case BSP_TIMEOUT:
 		cprintf(con, hydrabus_mode_str_read_timeout, nb_data, orig_nb_data);
@@ -318,7 +332,7 @@ static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	status = bsp_uart_read_u8(proto->dev_num, rx_data, &nb_data);
+	status = bsp_uart_read_u8(proto->dev_num, rx_data, &nb_data, TIME_MS2I(proto->timeout));
 
 	return status;
 }

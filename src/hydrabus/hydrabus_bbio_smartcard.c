@@ -35,6 +35,7 @@ void bbio_smartcard_init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
+	proto->timeout = 10000;
 	proto->config.smartcard.dev_speed = 9600;
 	proto->config.smartcard.dev_parity = 0;
 	proto->config.smartcard.dev_stop_bit = 1;
@@ -144,12 +145,14 @@ void bbio_mode_smartcard(t_hydra_console *con)
 					if((to_rx-i) >= 255) {
 						bsp_smartcard_read_u8(proto->dev_num,
 						                rx_data+i,
-						                &(uint8_t){255});
+						                &(uint8_t){255},
+								TIME_MS2I(proto->timeout));
 					} else {
 						tmp = to_rx-i;
 						bsp_smartcard_read_u8(proto->dev_num,
 						                rx_data+i,
-						                &tmp);
+						                &tmp,
+								TIME_MS2I(proto->timeout));
 					}
 					i+=255;
 				}
@@ -186,7 +189,7 @@ void bbio_mode_smartcard(t_hydra_console *con)
 				bsp_smartcard_set_rst(proto->dev_num, 0);
 				DelayMs(1);
 				bsp_smartcard_set_rst(proto->dev_num, 1);
-				i = bsp_smartcard_read_u8_timeout(proto->dev_num, rx_data, 33, TIME_MS2I(500));
+				bsp_smartcard_read_u8_timeout(proto->dev_num, rx_data, 33, TIME_MS2I(500));
 				cprint(con, (char *)&i, 1);
 				cprint(con, (char *)rx_data, i);
 				break;

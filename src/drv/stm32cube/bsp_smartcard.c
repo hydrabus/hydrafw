@@ -243,16 +243,18 @@ bsp_status_t bsp_smartcard_write_u8(bsp_dev_smartcard_t dev_num, uint8_t* tx_dat
   * @param  dev_num: SMARTCARD dev num.
   * @param  rx_data: Data to receive.
   * @param  nb_data: Number of data to receive.
-  * @retval status of the transfer.
+  * @param  timeout: Number of miliseconds to wait
+  * @retval status of the transfer. nb_data will contain the number of read
+  * bytes
   */
-bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data, uint8_t *nb_data)
+bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data, uint8_t *nb_data, uint32_t timeout)
 {
 	SMARTCARD_HandleTypeDef* hsmartcard;
 	hsmartcard = &smartcard_handle[dev_num];
 
 	bsp_status_t status;
 	__HAL_SMARTCARD_FLUSH_DRREGISTER(hsmartcard);
-	status = (bsp_status_t) HAL_SMARTCARD_Receive(hsmartcard, rx_data, *nb_data, SMARTCARDx_TIMEOUT_MAX);
+	status = (bsp_status_t) HAL_SMARTCARD_Receive(hsmartcard, rx_data, *nb_data, timeout);
 
 	switch(status){
 	case BSP_OK:

@@ -34,6 +34,7 @@ void bbio_uart_init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
+	proto->timeout = 10000;
 	proto->config.uart.dev_speed = 9600;
 	proto->config.uart.dev_parity = 0;
 	proto->config.uart.dev_stop_bit = 1;

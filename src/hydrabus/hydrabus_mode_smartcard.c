@@ -23,6 +23,7 @@
 #include <string.h>
 
 #define SMARTCARD_DEFAULT_SPEED (9408)
+#define SMARTCARD_DEFAULT_TIMEOUT (10000)
 
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
@@ -55,6 +56,7 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
+	proto->timeout = SMARTCARD_DEFAULT_TIMEOUT;
 	proto->config.smartcard.dev_speed = SMARTCARD_DEFAULT_SPEED;
 	proto->config.smartcard.dev_parity = 0;
 	proto->config.smartcard.dev_stop_bit = 1;
@@ -83,6 +85,8 @@ static void show_params(t_hydra_console *con)
 		proto->config.smartcard.dev_prescaler);
 	print_freq(con, bsp_smartcard_get_clk_frequency(proto->dev_num));
 	cprint(con, "\r\n", 2);
+	cprintf(con, "Timeout: %d msec\r\n",
+				proto->timeout);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -138,10 +142,10 @@ static void smartcard_get_atr(t_hydra_console *con)
 	DelayMs(1);							// RST low for at least 400 clocks (tb).
 	bsp_smartcard_set_vcc(proto->dev_num, 0);
 	bsp_smartcard_set_rst(proto->dev_num, 1);
-	bsp_smartcard_read_u8(proto->dev_num, atr, &(uint8_t){1});
+	bsp_smartcard_read_u8(proto->dev_num, atr, &(uint8_t){1}, TIME_MS2I(proto->timeout));
 
 	if (atr[0] == 0) {
-		bsp_smartcard_read_u8(proto->dev_num, atr, &(uint8_t){1});
+		bsp_smartcard_read_u8(proto->dev_num, atr, &(uint8_t){1}, TIME_MS2I(proto->timeout));
 	}
 
 	/* Inverse or Direct convention */
@@ -167,7 +171,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 		return;
 	}
 
-	bsp_smartcard_read_u8(proto->dev_num, atr+1, &(uint8_t){1});
+	bsp_smartcard_read_u8(proto->dev_num, atr+1, &(uint8_t){1}, TIME_MS2I(proto->timeout));
 	apply_convention(con, atr+1, 1);
 
 	while(more_td) {
@@ -180,7 +184,7 @@ static void smartcard_get_atr(t_hydra_console *con)
 			checksum |= atr[r]&0x1;
 		r++;
 		for(; r<=atr_size; r++) {
-			bsp_smartcard_read_u8(proto->dev_num, atr+r, &(uint8_t){1});
+			bsp_smartcard_read_u8(proto->dev_num, atr+r, &(uint8_t){1}, TIME_MS2I(proto->timeout));
 			apply_convention(con, atr+r, 1);
 
 			// Test if TA1 is present from T0,
@@ -211,20 +215,20 @@ static void smartcard_get_atr(t_hydra_console *con)
 
 	/* Read last Ti */
 	for(; r<=atr_size; r++) {
-		bsp_smartcard_read_u8(proto->dev_num, atr+r, &(uint8_t){1});
+		bsp_smartcard_read_u8(proto->dev_num, atr+r, &(uint8_t){1}, TIME_MS2I(proto->timeout));
 		apply_convention(con, atr+r, 1);
 	}
 
 	/* Read historical data */
 	for(i=0; i<(atr[1] & 0x0f); i++) {
-		bsp_smartcard_read_u8(proto->dev_num, atr+(r+i), &(uint8_t){1});
+		bsp_smartcard_read_u8(proto->dev_num, atr+(r+i), &(uint8_t){1}, TIME_MS2I(proto->timeout));
 		apply_convention(con, atr+(r+i), 1);
 	}
 	r+=i;
 
 	/* Read checksum if present and print ATR */
 	if(checksum) {
-		bsp_smartcard_read_u8(proto->dev_num, atr+r, &(uint8_t){1});
+		bsp_smartcard_read_u8(proto->dev_num, atr+r, &(uint8_t){1}, TIME_MS2I(proto->timeout));
 		apply_convention(con, atr+r, 1);
 		print_hex(con, atr, r+1);
 	} else {
@@ -424,6 +428,16 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				return t;
 			}
 			break;
+		case T_TIMEOUT:
+			/* Integer parameter. */
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			if (arg_int < 1 || arg_int > 30000) {
+				cprintf(con, "Timeout value must be set between 1 and 30000.\r\n");
+				return t;
+			}
+			proto->timeout = arg_int;
+			break;
 		case T_QUERY:
 			smartcard_get_card_status(con);
 			break;
@@ -469,7 +483,7 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	mode_config_proto_t* proto = &con->mode->proto;
 	uint8_t orig_nb_data = nb_data;
 
-	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, &nb_data);
+	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, &nb_data, TIME_MS2I(proto->timeout));
 	apply_convention(con, rx_data, nb_data);
 	switch(status) {
 	case BSP_TIMEOUT:
@@ -496,7 +510,7 @@ static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, &nb_data);
+	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, &nb_data, TIME_MS2I(proto->timeout));
 	apply_convention(con, rx_data, nb_data);
 
 	return status;
