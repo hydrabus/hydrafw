@@ -445,6 +445,11 @@ static int hydrabus_mode_read(t_hydra_console *con, t_tokenline_parsed *p,
 		count = 1;
 	}
 
+	if(count > UINT8_MAX) {
+		cprintf(con, "ERROR: read is limited to %d\r\n", UINT8_MAX);
+		return t - token_pos;
+	}
+
 	mode_status = !HYDRABUS_MODE_STATUS_OK;
 	if(con->mode->exec->read != NULL) {
 		mode_status = con->mode->exec->read(con, p_proto->buffer_rx, count);
