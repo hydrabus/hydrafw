@@ -54,10 +54,10 @@ static THD_FUNCTION(uart_reader_thread, arg)
 		if(!chThdShouldTerminateX())
 		{
 			if(bsp_uart_rxne(proto->dev_num)) {
-				bytes_read = bsp_uart_read_u8_timeout(proto->dev_num,
-											proto->buffer_rx,
-											UART_BRIDGE_BUFF_SIZE,
-											TIME_US2I(100));
+				bytes_read = bsp_uart_read_u8(proto->dev_num,
+							      proto->buffer_rx,
+							      &(uint8_t){UART_BRIDGE_BUFF_SIZE},
+							      TIME_US2I(100));
 				if(bytes_read > 0) {
 					cprint(con, (char *)proto->buffer_rx, bytes_read);
 				}

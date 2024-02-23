@@ -166,7 +166,8 @@ static void smartcard_get_atr(t_hydra_console *con)
 		/* We don't care about the convention since the TS is not
 		 * standard
 		 */
-		atr_size = bsp_smartcard_read_u8_timeout(proto->dev_num, &atr[1], 8, TIME_MS2I(100));
+		atr_size = 8;
+		atr_size = bsp_smartcard_read_u8(proto->dev_num, &atr[1], &atr_size, TIME_MS2I(100));
 		print_hex(con, atr, atr_size);
 		return;
 	}

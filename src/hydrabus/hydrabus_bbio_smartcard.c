@@ -189,7 +189,7 @@ void bbio_mode_smartcard(t_hydra_console *con)
 				bsp_smartcard_set_rst(proto->dev_num, 0);
 				DelayMs(1);
 				bsp_smartcard_set_rst(proto->dev_num, 1);
-				bsp_smartcard_read_u8_timeout(proto->dev_num, rx_data, 33, TIME_MS2I(500));
+				bsp_smartcard_read_u8(proto->dev_num, rx_data, &(uint8_t){33}, TIME_MS2I(500));
 				cprint(con, (char *)&i, 1);
 				cprint(con, (char *)rx_data, i);
 				break;

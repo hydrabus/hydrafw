@@ -273,34 +273,6 @@ bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data
 }
 
 /**
-  * @brief  Read bytes in blocking mode, with timeout
-  * @param  dev_num: SMARTCARD dev num.
-  * @param  rx_data: Data to receive.
-  * @param  nb_data: Number of data to receive.
-  * @param  timeout: Number of ticks to wait
-  * @retval Number of bytes read
-  */
-bsp_status_t bsp_smartcard_read_u8_timeout(bsp_dev_smartcard_t dev_num, uint8_t* rx_data,
-        uint8_t nb_data, uint32_t timeout)
-{
-	SMARTCARD_HandleTypeDef* hsmartcard;
-	hsmartcard = &smartcard_handle[dev_num];
-
-	bsp_status_t status;
-	__HAL_SMARTCARD_FLUSH_DRREGISTER(hsmartcard);
-	status = (bsp_status_t) HAL_SMARTCARD_Receive(hsmartcard, rx_data, nb_data, timeout);
-	switch(status) {
-	case BSP_OK:
-	case BSP_TIMEOUT:
-		return (nb_data-(hsmartcard->RxXferCount)-1);
-	case BSP_ERROR:
-	default:
-		smartcard_error(dev_num);
-		return 0;
-	}
-}
-
-/**
   * @brief  Send a byte then Read a byte through the SMARTCARD interface.
   * @param  tx_data: Data to send.
   * @param  rx_data: Data to receive.
