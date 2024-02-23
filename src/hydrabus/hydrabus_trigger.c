@@ -63,7 +63,7 @@ static int trigger_run(t_hydra_console *con)
 	bsp_trigger_init();
 	while(!hydrabus_ubtn()) {
 		if(con->mode->exec->read) {
-			con->mode->exec->dump(con,&rx_data,1);
+			con->mode->exec->dump(con,&rx_data,&(uint8_t){1});
 		}
 		if(rx_data == trigger_data[i]) {
 			i++;

@@ -258,46 +258,30 @@ bsp_status_t bsp_uart_write_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, uint8_t
   * @param  dev_num: UART dev num.
   * @param  rx_data: Data to receive.
   * @param  nb_data: Number of data to receive.
-  * @retval status of the transfer.
+  * @param  timeout: Number of miliseconds to wait
+  * @retval status of the transfer. nb_data will contain the number of read
+  * bytes
   */
-bsp_status_t bsp_uart_read_u8(bsp_dev_uart_t dev_num, uint8_t* rx_data, uint8_t nb_data)
+bsp_status_t bsp_uart_read_u8(bsp_dev_uart_t dev_num, uint8_t* rx_data, uint8_t *nb_data, uint32_t timeout)
 {
 	UART_HandleTypeDef* huart;
 	huart = &uart_handle[dev_num];
 
 	bsp_status_t status;
-	status = (bsp_status_t) HAL_UART_Receive(huart, rx_data, nb_data, UARTx_TIMEOUT_MAX);
-	if(status != BSP_OK) {
+	status = (bsp_status_t) HAL_UART_Receive(huart, rx_data, *nb_data, timeout);
+	switch(status){
+	case BSP_OK:
+		*nb_data = huart->RxXferSize;
+		break;
+	case BSP_TIMEOUT:
+		*nb_data = huart->RxXferSize - huart->RxXferCount - 1;
+		break;
+	case BSP_ERROR:
+	default:
+		*nb_data = 0;
 		uart_error(dev_num);
 	}
 	return status;
-}
-
-/**
-  * @brief  Read bytes in blocking mode, with timeout
-  * @param  dev_num: UART dev num.
-  * @param  rx_data: Data to receive.
-  * @param  nb_data: Number of data to receive.
-  * @param  timeout: Number of ticks to wait
-  * @retval Number of bytes read
-  */
-bsp_status_t bsp_uart_read_u8_timeout(bsp_dev_uart_t dev_num, uint8_t* rx_data,
-				      uint8_t nb_data, uint32_t timeout)
-{
-	UART_HandleTypeDef* huart;
-	huart = &uart_handle[dev_num];
-
-	bsp_status_t status;
-	status = (bsp_status_t) HAL_UART_Receive(huart, rx_data, nb_data, timeout);
-	switch(status){
-	case BSP_OK:
-	case BSP_TIMEOUT:
-	    return (nb_data-(huart->RxXferCount)-1);
-	case BSP_ERROR:
-	default:
-		uart_error(dev_num);
-		return 0;
-	}
 }
 
 /**

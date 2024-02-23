@@ -175,6 +175,7 @@ typedef struct {
 #define MODE_CONFIG_PROTO_BUFFER_SIZE (256)
 typedef struct {
 	uint8_t dev_num;
+	uint32_t timeout;
 	union {
 		uart_config_t uart;
 		smartcard_config_t smartcard;

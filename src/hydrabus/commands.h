@@ -155,6 +155,7 @@ enum {
 	T_CONVENTION,
 	T_DELAY,
 	T_CLOCK_STRETCH,
+	T_TIMEOUT,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
