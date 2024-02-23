@@ -506,13 +506,13 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return status;
 }
 
-static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t *nb_data)
 {
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, &nb_data, TIME_MS2I(proto->timeout));
-	apply_convention(con, rx_data, nb_data);
+	status = bsp_smartcard_read_u8(proto->dev_num, rx_data, nb_data, TIME_MS2I(proto->timeout));
+	apply_convention(con, rx_data, *nb_data);
 
 	return status;
 }
