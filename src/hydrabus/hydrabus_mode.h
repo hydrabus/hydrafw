@@ -52,6 +52,9 @@ extern const char hydrabus_mode_str_mul_value_u8[];
 /* "\r\n" */
 extern const char hydrabus_mode_str_mul_br[];
 
+/* "TIMEOUT: read %lu out of %lu\r\n" */
+extern const char hydrabus_mode_str_read_timeout[];
+
 typedef struct mode_exec_t {
 	/* Initialize mode hardware. */
 	int (*init)(t_hydra_console *con, t_tokenline_parsed *p);

@@ -260,14 +260,23 @@ bsp_status_t bsp_uart_write_u8(bsp_dev_uart_t dev_num, uint8_t* tx_data, uint8_t
   * @param  nb_data: Number of data to receive.
   * @retval status of the transfer.
   */
-bsp_status_t bsp_uart_read_u8(bsp_dev_uart_t dev_num, uint8_t* rx_data, uint8_t nb_data)
+bsp_status_t bsp_uart_read_u8(bsp_dev_uart_t dev_num, uint8_t* rx_data, uint8_t *nb_data)
 {
 	UART_HandleTypeDef* huart;
 	huart = &uart_handle[dev_num];
 
 	bsp_status_t status;
-	status = (bsp_status_t) HAL_UART_Receive(huart, rx_data, nb_data, UARTx_TIMEOUT_MAX);
-	if(status != BSP_OK) {
+	status = (bsp_status_t) HAL_UART_Receive(huart, rx_data, *nb_data, 1000); //TODO: Change timeout value
+	switch(status){
+	case BSP_OK:
+		*nb_data = huart->RxXferSize;
+		break;
+	case BSP_TIMEOUT:
+		*nb_data = huart->RxXferSize - huart->RxXferCount - 1;
+		break;
+	case BSP_ERROR:
+	default:
+		*nb_data = 0;
 		uart_error(dev_num);
 	}
 	return status;

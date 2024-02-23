@@ -290,9 +290,14 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	int i;
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
+	uint8_t orig_nb_data = nb_data;
 
-	status = bsp_uart_read_u8(proto->dev_num, rx_data, nb_data);
-	if(status == BSP_OK) {
+	status = bsp_uart_read_u8(proto->dev_num, rx_data, &nb_data);
+	switch(status) {
+	case BSP_TIMEOUT:
+		cprintf(con, hydrabus_mode_str_read_timeout, nb_data, orig_nb_data);
+		__attribute__ ((fallthrough)); // Explicitly fall through
+	case BSP_OK:
 		if(nb_data == 1) {
 			/* Read 1 data */
 			cprintf(con, hydrabus_mode_str_read_one_u8, rx_data[0]);
@@ -313,7 +318,7 @@ static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	status = bsp_uart_read_u8(proto->dev_num, rx_data, nb_data);
+	status = bsp_uart_read_u8(proto->dev_num, rx_data, &nb_data);
 
 	return status;
 }
