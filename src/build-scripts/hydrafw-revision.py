@@ -12,5 +12,5 @@ try:
         print(r.search(version).group(1))
     else:
         print("0.0")
-except git.exc.InvalidGitRepositoryError:
+except InvalidGitRepositoryError:
     print("0.0")
