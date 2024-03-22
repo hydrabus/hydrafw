@@ -31,7 +31,7 @@ jobs:
           submodules: true
 
       - name: Git ownership exception
-        run: ls -la / ; ls -la /__w/ ; git config --global --add safe.directory /__w/hydrabus/hydrafw && git config --global safe.directory "$GITHUB_WORKSPACE"
+        run: git config --global --add safe.directory /home/runner/work/hydrafw/hydrafw && git config --global safe.directory "$GITHUB_WORKSPACE"
 
       - name: Git meta info
         run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"
