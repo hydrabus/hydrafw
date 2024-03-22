@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies (python)
         run: python3  -m pip  install  GitPython intelhex  --upgrade
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           submodules: true
 
