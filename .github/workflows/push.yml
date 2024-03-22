@@ -36,6 +36,12 @@ jobs:
       - name: Git meta info
         run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"
 
+      - name: DEBUGGING
+        run: echo "FW_REVISION" && python3 build-scripts/hydrafw-revision.py && echo "DONE"
+
+      - name: DEBUGGING2
+        run: git tag --points-at ${GITHUB_CI_PR_SHA} || true
+
       - name: Build ${{ matrix.model }}
         run: cd  src  &&  make  clean  &&  make  -j$(nproc)
 
