@@ -10,4 +10,4 @@ version = git.describe(tags=True,always=True,dirty=True,long=True)
 if r.search(version):
     print(r.search(version).group(1))
 else:
-    print(version)
+    print("0.0")
