@@ -32,8 +32,6 @@ jobs:
         run: python3  -m pip  install  GitPython intelhex  --upgrade
 
       - uses: actions/checkout@v3
-        with:
-          submodules: true
 
       - name: Git meta info
         run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"
