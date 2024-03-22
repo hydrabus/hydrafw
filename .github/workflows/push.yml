@@ -26,7 +26,7 @@ jobs:
         run: cat /etc/apt/sources.list  &&  apt  update  -y
 
       - name: Install dependencies
-        run: apt  install  -y  --no-install-recommends  --no-install-suggests  python3-pip  gcc-arm-none-eabi  libnewlib-arm-none-eabi  libstdc++-arm-none-eabi-newlib
+        run: apt  install  -y  --no-install-recommends  --no-install-suggests  git  python3-pip  gcc-arm-none-eabi  libnewlib-arm-none-eabi  libstdc++-arm-none-eabi-newlib
 
       - name: Install dependencies (python)
         run: python3  -m pip  install  GitPython intelhex  --upgrade
