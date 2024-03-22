@@ -47,7 +47,7 @@ jobs:
         with:
           name: ${{ matrix.model }}
           path: |
-            build/${{ matrix.model }}.dfu
+            src/build/${{ matrix.model }}.dfu
           if-no-files-found: error
 
 
