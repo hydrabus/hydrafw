@@ -22,30 +22,24 @@ jobs:
       fail-fast: true
 
     steps:
-      - name: Configure apt
-        run: cat /etc/apt/sources.list  &&  apt  update  -y
+      - name: Update package cache
+        run: apt  update  -y
 
-      - name: Install dependencies
+      - name: Install packages
         run: apt  install  -y  --no-install-recommends  --no-install-suggests  git  make  python3-pip  gcc-arm-none-eabi  libnewlib-arm-none-eabi  libstdc++-arm-none-eabi-newlib
 
-      - name: Install dependencies (python)
+      - name: Install python modules
         run: python3  -m pip  install  GitPython intelhex  --upgrade
 
       - uses: actions/checkout@v4
         with:
           submodules: true
 
-      - name: Git ownership
+      - name: Set git ownership
         run: git config --global --add safe.directory /__w/hydrafw/hydrafw
 
-      - name: Git meta info
+      - name: Set git meta info
         run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"
-
-      - name: DEBUGGING
-        run: echo "FW_REVISION" && cd  src  &&  python3 build-scripts/hydrafw-revision.py && echo "DONE"
-
-      - name: DEBUGGING2
-        run: git tag --points-at ${GITHUB_CI_PR_SHA} || true
 
       - name: Build ${{ matrix.model }}
         run: cd  src  &&  make  clean  &&  make  -j$(nproc)
