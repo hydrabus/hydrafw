@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        model:
+          [
+            "hydrafw",
+          ]
+      fail-fast: true
+
+    steps:
+      - name: Install dependencies
+        run: apt  install  --no-install-recommends  --no-install-suggests  python3-pip  gcc-arm-none-eabi  libnewlib-arm-none-eabi  libstdc++-arm-none-eabi-newlib  libc6:i386
+
+      - name: Install dependencies (python)
+        run: python3  -m pip  install  GitPython intelhex  --upgrade
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Git ownership exception
+        run: ls -la / ; ls -la /__w/ ; git config --global --add safe.directory /__w/hydrabus/hydrafw && git config --global safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Git meta info
+        run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"
+
+      - name: Build ${{ matrix.model }}
+        run: cd  src  &&  make  clean  &&  make  -j$(nproc)
+
+      - name: Archive ${{ matrix.model }} artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.model }}
+          path: |
+            build/${{ matrix.model }}.dfu
+          if-no-files-found: error
+
+
