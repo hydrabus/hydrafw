@@ -22,6 +22,9 @@ jobs:
       fail-fast: true
 
     steps:
+      - name: Configure apt
+        run: add-apt-repository  universe  &&  add-apt-repository multiverse  &&  add-apt-repository restricted  &&  apt  update
+
       - name: Install dependencies
         run: apt  install  --no-install-recommends  --no-install-suggests  python3-pip  gcc-arm-none-eabi  libnewlib-arm-none-eabi  libstdc++-arm-none-eabi-newlib
 
