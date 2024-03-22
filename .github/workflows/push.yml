@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Install dependencies
-        run: sudo  apt  install  --no-install-recommends  --no-install-suggests  python3-pip  gcc-arm-none-eabi  libnewlib-arm-none-eabi  libstdc++-arm-none-eabi-newlib
+        run: apt  install  --no-install-recommends  --no-install-suggests  python3-pip  gcc-arm-none-eabi  libnewlib-arm-none-eabi  libstdc++-arm-none-eabi-newlib
 
       - name: Install dependencies (python)
         run: python3  -m pip  install  GitPython intelhex  --upgrade
