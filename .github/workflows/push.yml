@@ -17,10 +17,7 @@ jobs:
       image: debian:oldstable
     strategy:
       matrix:
-        model:
-          [
-            "hydrafw",
-          ]
+        model: hydrafw
       fail-fast: true
 
     steps:
@@ -38,13 +35,13 @@ jobs:
           submodules: true
 
       - name: Set git ownership
-        run: git config --global --add safe.directory /__w/hydrafw/hydrafw
+        run: git  config  --global  --add safe.directory /__w/hydrafw/hydrafw
 
       - name: Set git meta info
         run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"
 
       - name: Build ${{ matrix.model }}
-        run: python3 src/build-scripts/hydrafw-revision.py  &&  cd  src  &&  make  clean  &&  make  -j$(nproc)
+        run: make  -j$(nproc)  -C src/
 
       - name: Archive ${{ matrix.model }} artifacts
         uses: actions/upload-artifact@v4
