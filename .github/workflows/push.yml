@@ -24,6 +24,9 @@ jobs:
       fail-fast: true
 
     steps:
+      - name: Update package cache
+        run: apt  update  -y
+
       - name: Install packages
         run: apt  install  -y  --no-install-recommends  --no-install-suggests  git  make  python3-pip  gcc-arm-none-eabi  libnewlib-arm-none-eabi  libstdc++-arm-none-eabi-newlib
 
