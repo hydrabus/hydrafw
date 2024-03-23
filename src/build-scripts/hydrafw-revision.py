@@ -5,12 +5,9 @@ import re
 
 r = re.compile("v(\d+\.\d+).*")
 
-try:
-    git=Repo(search_parent_directories=True).git
-    version = git.describe(tags=True,always=True,dirty=True,long=True)
-    if r.search(version):
-        print(r.search(version).group(1))
-    else:
-        print("0.0")
-except InvalidGitRepositoryError:
+git=Repo(search_parent_directories=True).git
+version = git.describe(tags=True,always=True,dirty=True,long=True)
+if r.search(version):
+    print(r.search(version).group(1))
+else:
     print("0.0")
