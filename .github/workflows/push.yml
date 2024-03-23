@@ -28,7 +28,7 @@ jobs:
         run: apt  update  -y
 
       - name: Install packages
-        run: apt  install  -y  --no-install-recommends  --no-install-suggests  make  python3-pip  gcc-arm-none-eabi  libnewlib-arm-none-eabi  libstdc++-arm-none-eabi-newlib
+        run: apt  install  -y  --no-install-recommends  --no-install-suggests  git  make  python3-pip  gcc-arm-none-eabi  libnewlib-arm-none-eabi  libstdc++-arm-none-eabi-newlib
 
       - name: Install python modules
         run: python3  -m pip  install  GitPython intelhex  --upgrade
