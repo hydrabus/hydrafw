@@ -42,7 +42,7 @@ jobs:
         run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"
 
       - name: Build ${{ matrix.model }}
-        run: source  build.env  &&  make  -j$(nproc)  -C src/
+        run: source  build.env  &&  make  V=1  -j$(nproc)  -C src/
 
       - name: Archive ${{ matrix.model }} artifacts
         uses: actions/upload-artifact@v4
