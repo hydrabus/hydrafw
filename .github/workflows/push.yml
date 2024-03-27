@@ -30,6 +30,9 @@ jobs:
       - name: Install python modules
         run: python3  -m pip  install  GitPython intelhex  --upgrade
 
+      - name: Install standalone reference GCC toolchain
+        run: bash  scripts/env.sh
+
       - uses: actions/checkout@v4
         with:
           submodules: true
@@ -41,7 +44,7 @@ jobs:
         run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"
 
       - name: Build ${{ matrix.model }}
-        run: make  -j$(nproc)  -C src/
+        run: source  build.env  &&  make  -j$(nproc)  -C src/
 
       - name: Archive ${{ matrix.model }} artifacts
         uses: actions/upload-artifact@v4
