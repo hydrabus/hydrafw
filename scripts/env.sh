@@ -1,6 +1,27 @@
 #!/usr/bin/env bash
 set -e
 
+set +e
+set -x
+
+echo "${GITHUB_CI_PR_SHA}"
+sha="`git  rev-parse  --short=8  HEAD`"
+tag="`git  tag  --points-at  ${sha}`"
+git  rev-parse  --symbolic-full-name  --short  HEAD
+date +%Y-%m-%d
+git  log  --pretty=oneline  v0.11..master
+git  log  --pretty=oneline  v0.11..master  |  wc -l
+git  log  --pretty=oneline  v0.11...master
+git  log  --pretty=oneline  v0.11...master  |  wc -l
+git describe --tags
+
+git  log  --pretty=oneline  origin/v0.11..origin/master
+git  log  --pretty=oneline  origin/v0.11..origin/master  |  wc -l
+
+echo `git describe --tags --abbrev=0`-`git  log  --pretty=oneline  v0.11..master  |  wc -l`
+
+set -e
+
 # This script is used to enroll toolchain with GitHub Actions for CI/CD purposes
 # But this script can be used as reference to install recommended toolchain for building hydrafw.dfu locally as well
 
@@ -18,18 +39,3 @@ tar  xvjf  "${TARBALL}"
 
 echo  "export  PATH=\"${CURDIR}/${TARDIR}/bin\":\"\${PATH}\"" > build.env
 
-set +e
-set -x
-
-echo "${GITHUB_CI_PR_SHA}"
-sha="`git  rev-parse  --short=8  HEAD`"
-tag="`git  tag  --points-at  ${sha}`"
-git  rev-parse  --symbolic-full-name  --short  HEAD
-date +%Y-%m-%d
-git  log  --pretty=oneline  v0.11..master
-git  log  --pretty=oneline  v0.11..master  |  wc -l
-git  log  --pretty=oneline  v0.11...master
-git  log  --pretty=oneline  v0.11...master  |  wc -l
-git describe --tags
-
-echo `git describe --tags --abbrev=0`-`git  log  --pretty=oneline  v0.11..master  |  wc -l`
