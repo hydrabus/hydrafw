@@ -31,6 +31,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+          fetch-tags: true
 
       - name: Set git meta info
         run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"
@@ -39,7 +40,7 @@ jobs:
         run: bash  scripts/env.sh
 
       - name: Build ${{ matrix.model }}
-        run: source  build.env  &&  arm-none-eabi-gcc --version  &&  arm-none-eabi-gcc -print-search-dirs  &&  make  V=1  -j$(nproc)  -C src/
+        run: source  build.env  &&  arm-none-eabi-gcc --version  &&  arm-none-eabi-gcc -print-search-dirs  &&  python3  src/build-scripts/hydrafw-revision.py  &&  make  V=1  -j$(nproc)  -C src/
 
       - name: Archive ${{ matrix.model }} artifacts
         uses: actions/upload-artifact@v4
