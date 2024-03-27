@@ -17,7 +17,19 @@ git describe --tags
 
 git branch -a
 
+fw_tag="`git describe --tags --abbrev=0`"
+fw_id="`git  rev-list  -n 1  ${fw_tag}`"
+
+git  log  --pretty=oneline  ${fw_id}..origin/master
+git  log  --pretty=oneline  ${fw_id}..origin/master | wc -l
+NUMERB22=git  log  --pretty=oneline  ${fw_id}..origin/master | wc -l
+
+echo "====="
+echo "${NUMBER22}"
+echo "====="
+
 git  log  --pretty=oneline  d6d65865716adc1419cc89e59d05f99dc99f89a9..origin/master
+git  log  --pretty=oneline  v0.11..origin/master
 git  log  --pretty=oneline  d6d65865716adc1419cc89e59d05f99dc99f89a9..remotes/origin/master
 git  log  --pretty=oneline  d6d65865716adc1419cc89e59d05f99dc99f89a9..hydrabus/master
 
