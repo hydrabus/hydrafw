@@ -10,13 +10,15 @@ tag="`git  tag  --points-at  ${sha}`"
 git  rev-parse  --symbolic-full-name  --short  HEAD
 date +%Y-%m-%d
 git  log  --pretty=oneline  v0.11..master
-git  log  --pretty=oneline  v0.11..master  |  wc -l
+git  log  --pretty=oneline  v0.11..master
 git  log  --pretty=oneline  v0.11...master
-git  log  --pretty=oneline  v0.11...master  |  wc -l
+git  log  --pretty=oneline  v0.11...master
 git describe --tags
 
-git  log  --pretty=oneline  origin/v0.11..origin/master
-git  log  --pretty=oneline  origin/v0.11..origin/master  |  wc -l
+git  log  --pretty=oneline  origin/master
+
+git branch -a
+
 
 echo `git describe --tags --abbrev=0`-`git  log  --pretty=oneline  v0.11..master  |  wc -l`
 
