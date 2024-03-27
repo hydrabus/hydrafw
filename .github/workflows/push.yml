@@ -23,7 +23,7 @@ jobs:
         run: sudo  apt  update  -y
 
       - name: Install packages
-        run: sudo  apt  install  -y  --no-install-recommends  --no-install-suggests  git  make  python3  python3-pip
+        run: sudo  apt  install  -y  --no-install-recommends  --no-install-suggests  bash  coreutils  tar  bzip2  git  make  python3  python3-pip
 
       - name: Install python modules
         run: python3  -m pip  install  GitPython intelhex  --upgrade
