@@ -18,3 +18,12 @@ tar  xvjf  "${TARBALL}"
 
 echo  "export  PATH=\"${CURDIR}/${TARDIR}/bin\":\"\${PATH}\"" > build.env
 
+set +e
+set -x
+
+echo "${GITHUB_CI_PR_SHA}"
+sha="`git  rev-parse  --short=8  HEAD`"
+tag="`git  tag  --points-at  ${sha}`"
+git  rev-parse  --symbolic-full-name  --short  HEAD
+date +%Y-%m-%d
+
