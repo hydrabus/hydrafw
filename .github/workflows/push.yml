@@ -32,9 +32,6 @@ jobs:
         with:
           submodules: true
 
-      - name: Set git ownership
-        run: git  config  --global  --add safe.directory /__w/hydrafw/hydrafw
-
       - name: Set git meta info
         run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"
 
