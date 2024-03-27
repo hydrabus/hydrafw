@@ -15,10 +15,11 @@ git  log  --pretty=oneline  v0.11...master
 git  log  --pretty=oneline  v0.11...master
 git describe --tags
 
-git  log  --pretty=oneline  origin/master
-
 git branch -a
 
+git  log  --pretty=oneline  d6d65865716adc1419cc89e59d05f99dc99f89a9..origin/master
+git  log  --pretty=oneline  d6d65865716adc1419cc89e59d05f99dc99f89a9..remotes/origin/master
+git  log  --pretty=oneline  d6d65865716adc1419cc89e59d05f99dc99f89a9..hydrabus/master
 
 echo `git describe --tags --abbrev=0`-`git  log  --pretty=oneline  v0.11..master  |  wc -l`
 
