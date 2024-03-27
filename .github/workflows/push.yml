@@ -28,9 +28,6 @@ jobs:
       - name: Install python modules
         run: python3  -m pip  install  GitPython intelhex  --upgrade
 
-      - name: Install standalone reference GCC toolchain
-        run: bash  scripts/env.sh
-
       - uses: actions/checkout@v4
         with:
           submodules: true
@@ -40,6 +37,9 @@ jobs:
 
       - name: Set git meta info
         run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"
+
+      - name: Install standalone reference GCC toolchain
+        run: bash  scripts/env.sh
 
       - name: Build ${{ matrix.model }}
         run: source  build.env  &&  make  V=1  -j$(nproc)  -C src/
