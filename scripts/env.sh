@@ -28,6 +28,8 @@ git  rev-parse  --symbolic-full-name  --short  HEAD
 date +%Y-%m-%d
 git  log  --pretty=oneline  v0.11..master
 git  log  --pretty=oneline  v0.11..master  |  wc -l
+git  log  --pretty=oneline  v0.11...master
+git  log  --pretty=oneline  v0.11...master  |  wc -l
 git describe --tags
 
 echo `git describe --tags --abbrev=0`-`git  log  --pretty=oneline  v0.11..master  |  wc -l`
