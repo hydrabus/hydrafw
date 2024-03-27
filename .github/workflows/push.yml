@@ -32,6 +32,7 @@ jobs:
         with:
           submodules: true
           fetch-tags: true
+          fetch-branches: true
           fetch-depth: 0
 
       - name: Set git meta info
