@@ -13,8 +13,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    container:
-      image: debian:oldstable
     strategy:
       matrix:
         model: [ "hydrafw" ]
