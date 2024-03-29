@@ -4,6 +4,11 @@ set -e
 set +e
 set -x
 
+git describe --tags  HEAD^1
+git describe --tags
+
+echo "-------------------------"
+
 echo "${GITHUB_CI_PR_SHA}"
 sha="`git  rev-parse  --short=8  HEAD`"
 tag="`git  tag  --points-at  ${sha}`"
@@ -13,7 +18,6 @@ git  log  --pretty=oneline  v0.11..master
 git  log  --pretty=oneline  v0.11..master
 git  log  --pretty=oneline  v0.11...master
 git  log  --pretty=oneline  v0.11...master
-git describe --tags
 
 git branch -a
 
