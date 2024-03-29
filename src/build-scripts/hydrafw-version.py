@@ -2,6 +2,7 @@
 
 import sys
 import os
+import re
 from optparse import OptionParser
 from datetime import *
 from git import *
