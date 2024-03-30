@@ -59,11 +59,12 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 static int trigger_run(t_hydra_console *con)
 {
 	uint32_t i=0;
-	uint8_t rx_data;
+	uint8_t rx_data, to_read;
 	bsp_trigger_init();
 	while(!hydrabus_ubtn()) {
 		if(con->mode->exec->read) {
-			con->mode->exec->dump(con,&rx_data,&(uint8_t){1});
+			to_read = 1;
+			con->mode->exec->dump(con,&rx_data,&to_read);
 		}
 		if(rx_data == trigger_data[i]) {
 			i++;
