@@ -22,6 +22,8 @@
 #include "hydrabus_trigger.h"
 #include <string.h>
 
+#define LIN_DEFAULT_TIMEOUT (2000)
+
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos);
 static int show(t_hydra_console *con, t_tokenline_parsed *p);
 
@@ -42,6 +44,7 @@ static void init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
+	proto->timeout = LIN_DEFAULT_TIMEOUT;
 	proto->config.uart.dev_speed = 9600;
 	proto->config.uart.bus_mode = BSP_UART_MODE_LIN;
 }
@@ -52,6 +55,8 @@ static void show_params(t_hydra_console *con)
 
 	cprintf(con, "Device: LIN%d\r\n",
 		proto->dev_num + 1);
+	cprintf(con, "Timeout: %d msec\r\n",
+				proto->timeout);
 }
 
 static int init(t_hydra_console *con, t_tokenline_parsed *p)
@@ -107,6 +112,16 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			tl_set_prompt(con->tl, (char *)con->mode->exec->get_prompt(con));
 			cprintf(con, "Note: LIN parameters have been reset to default values.\r\n");
 			break;
+		case T_TIMEOUT:
+			/* Integer parameter. */
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			if (arg_int < 1 || arg_int > 30000) {
+				cprintf(con, "Timeout value must be set between 1 and 30000.\r\n");
+				return t;
+			}
+			proto->timeout = arg_int;
+			break;
 		case T_TRIGGER:
 			t++;
 			t += cmd_trigger(con, p, t);
@@ -147,9 +162,14 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	int i;
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
+	uint8_t orig_nb_data = nb_data;
 
-	status = bsp_uart_read_u8(proto->dev_num, rx_data, nb_data);
-	if(status == BSP_OK) {
+	status = bsp_uart_read_u8(proto->dev_num, rx_data, &nb_data, TIME_MS2I(proto->timeout));
+	switch(status) {
+	case BSP_TIMEOUT:
+		cprintf(con, hydrabus_mode_str_read_timeout, nb_data, orig_nb_data);
+		__attribute__ ((fallthrough)); // Explicitly fall through
+	case BSP_OK:
 		if(nb_data == 1) {
 			/* Read 1 data */
 			cprintf(con, hydrabus_mode_str_read_one_u8, rx_data[0]);
@@ -165,12 +185,12 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return status;
 }
 
-static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t *nb_data)
 {
 	uint32_t status;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	status = bsp_uart_read_u8(proto->dev_num, rx_data, nb_data);
+	status = bsp_uart_read_u8(proto->dev_num, rx_data, nb_data, TIME_MS2I(proto->timeout));
 
 	return status;
 }

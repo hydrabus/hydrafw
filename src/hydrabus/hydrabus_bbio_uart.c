@@ -34,6 +34,7 @@ void bbio_uart_init_proto_default(t_hydra_console *con)
 
 	/* Defaults */
 	proto->dev_num = 0;
+	proto->timeout = 10000;
 	proto->config.uart.dev_speed = 9600;
 	proto->config.uart.dev_parity = 0;
 	proto->config.uart.dev_stop_bit = 1;
@@ -53,10 +54,11 @@ static THD_FUNCTION(uart_reader_thread, arg)
 		if(!chThdShouldTerminateX())
 		{
 			if(bsp_uart_rxne(proto->dev_num)) {
-				bytes_read = bsp_uart_read_u8_timeout(proto->dev_num,
-											proto->buffer_rx,
-											UART_BRIDGE_BUFF_SIZE,
-											TIME_US2I(100));
+				bytes_read = UART_BRIDGE_BUFF_SIZE;
+				bsp_uart_read_u8(proto->dev_num,
+						 proto->buffer_rx,
+						 &bytes_read,
+						 TIME_US2I(100));
 				if(bytes_read > 0) {
 					cprint(con, (char *)proto->buffer_rx, bytes_read);
 				}

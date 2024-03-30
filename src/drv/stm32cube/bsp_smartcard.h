@@ -27,9 +27,8 @@ bsp_status_t bsp_smartcard_init(bsp_dev_smartcard_t dev_num, mode_config_proto_t
 bsp_status_t bsp_smartcard_deinit(bsp_dev_smartcard_t dev_num);
 
 bsp_status_t bsp_smartcard_write_u8(bsp_dev_smartcard_t dev_num, uint8_t* tx_data, uint8_t nb_data);
-bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data, uint8_t nb_data);
+bsp_status_t bsp_smartcard_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* rx_data, uint8_t *nb_data, uint32_t timeout);
 
-bsp_status_t bsp_smartcard_read_u8_timeout(bsp_dev_smartcard_t dev_num, uint8_t* rx_data, uint8_t nb_data, uint32_t timeout);
 bsp_status_t bsp_smartcard_write_read_u8(bsp_dev_smartcard_t dev_num, uint8_t* tx_data, uint8_t* rx_data, uint8_t nb_data);
 bsp_status_t bsp_smartcard_rxne(bsp_dev_smartcard_t dev_num);
 

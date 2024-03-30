@@ -294,13 +294,13 @@ static uint32_t read(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
 	return status;
 }
 
-static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data)
+static uint32_t dump(t_hydra_console *con, uint8_t *rx_data, uint8_t *nb_data)
 {
 	uint32_t status;
 	uint8_t i, tmp;
 	mode_config_proto_t* proto = &con->mode->proto;
 	status = BSP_ERROR;
-	for(i = 0; i < nb_data; i++) {
+	for(i = 0; i < *nb_data; i++) {
 		if(proto->config.i2c.ack_pending) {
 			/* Send I2C ACK */
 			status = bsp_i2c_read_ack(I2C_DEV_NUM, TRUE);

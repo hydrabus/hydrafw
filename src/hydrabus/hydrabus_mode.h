@@ -52,6 +52,9 @@ extern const char hydrabus_mode_str_mul_value_u8[];
 /* "\r\n" */
 extern const char hydrabus_mode_str_mul_br[];
 
+/* "TIMEOUT: read %lu out of %lu\r\n" */
+extern const char hydrabus_mode_str_read_timeout[];
+
 typedef struct mode_exec_t {
 	/* Initialize mode hardware. */
 	int (*init)(t_hydra_console *con, t_tokenline_parsed *p);
@@ -66,7 +69,7 @@ typedef struct mode_exec_t {
 	/* Read data command 'read' or 'read:n' (return status 0=OK) */
 	uint32_t (*read)(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
 	/* Dump data */
-	uint32_t (*dump)(t_hydra_console *con, uint8_t *rx_data, uint8_t nb_data);
+	uint32_t (*dump)(t_hydra_console *con, uint8_t *rx_data, uint8_t *nb_data);
 	/* Write & Read data (return status 0=OK) */
 	uint32_t (*write_read)(t_hydra_console *con, uint8_t *tx_data, uint8_t *rx_data, uint8_t nb_data);
 	/* Set CLK High (x-WIRE or other raw mode) command '/' */

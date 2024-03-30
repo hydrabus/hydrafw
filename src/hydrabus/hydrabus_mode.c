@@ -102,6 +102,7 @@ const char hydrabus_mode_str_mul_read[] = "READ: ";
 const char hydrabus_mode_str_mul_value_u8[] = "0x%02X ";
 const char hydrabus_mode_str_mul_br[] = "\r\n";
 const char hydrabus_mode_str_mdelay[] = "DELAY: %lu ms\r\n";
+const char hydrabus_mode_str_read_timeout[] = "! TIMEOUT: read %lu out of %lu\r\n";
 
 static const char mode_str_write_error[] =  "WRITE error:%d\r\n";
 static const char mode_str_read_error[] = "READ error:%d\r\n";
@@ -233,7 +234,7 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p)
 				usec = 1;
 			}
 			DelayUs(usec);
-			break;            
+			break;
 		case T_PERCENT:
 			factor = 1000;
 			if (p->tokens[t + 1] == T_ARG_TOKEN_SUFFIX_INT) {
@@ -454,7 +455,7 @@ static int hydrabus_mode_read(t_hydra_console *con, t_tokenline_parsed *p,
 	if(con->mode->exec->read != NULL) {
 		mode_status = con->mode->exec->read(con, p_proto->buffer_rx, count);
 	}
-	if (mode_status != HYDRABUS_MODE_STATUS_OK)
+	if (mode_status == BSP_ERROR)
 		hydrabus_mode_read_error(con, mode_status);
 
 	return t - token_pos;
@@ -494,12 +495,19 @@ static int hydrabus_mode_hexdump(t_hydra_console *con, t_tokenline_parsed *p,
 		}
 
 		if(con->mode->exec->dump != NULL) {
-			mode_status = con->mode->exec->dump(con, p_proto->buffer_rx, to_rx);
+			mode_status = con->mode->exec->dump(con, p_proto->buffer_rx, &to_rx);
 		}
-		if (mode_status == HYDRABUS_MODE_STATUS_OK) {
+		switch(mode_status) {
+		case BSP_OK:
 			print_hex(con, p_proto->buffer_rx, to_rx);
-		} else {
+			break;
+		case BSP_TIMEOUT:
+			print_hex(con, p_proto->buffer_rx, to_rx);
+			cprintf(con, hydrabus_mode_str_read_timeout, bytes_read+to_rx, count);
+			return t - token_pos;
+		default:
 			hydrabus_mode_read_error(con, mode_status);
+			return t - token_pos;
 		}
 
 		bytes_read += to_rx;

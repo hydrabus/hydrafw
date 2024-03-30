@@ -163,6 +163,7 @@ const t_token_dict tl_dict[] = {
 	{ T_CONVENTION, "convention" },
 	{ T_DELAY, "delay" },
 	{ T_CLOCK_STRETCH, "clock-stretch" },
+	{ T_TIMEOUT, "timeout" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -475,6 +476,11 @@ t_token tokens_parity[] = {
 		T_STOP_BITS,\
 		.arg_type = T_ARG_UINT,\
 		.help = "Stop bits (1/2)"\
+	},\
+	{\
+		T_TIMEOUT,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Read timeout in msec"\
 	},
 
 t_token tokens_mode_uart[] = {
@@ -604,6 +610,11 @@ t_token tokens_uart[] = {
 		.arg_type = T_ARG_UINT,\
 		.help = "Communication convention",\
 		.help_full = "Set communication convention (0=normal, 1=inverse)"\
+	},\
+	{\
+		T_TIMEOUT,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Read timeout in msec"\
 	},
 
 t_token tokens_mode_smartcard[] = {
@@ -717,6 +728,11 @@ t_token tokens_smartcard[] = {
 		.arg_type = T_ARG_UINT,\
 		.help = "LIN device (1/2)"\
 	},\
+	{\
+		T_TIMEOUT,\
+		.arg_type = T_ARG_UINT,\
+		.help = "Read timeout in msec"\
+	},
 
 t_token tokens_mode_lin[] = {
 	{
