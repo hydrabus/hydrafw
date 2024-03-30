@@ -101,10 +101,11 @@ static THD_FUNCTION(bridge_thread, arg)
 
 	while (!hydrabus_ubtn()) {
 		if(bsp_uart_rxne(proto->dev_num)) {
-			bytes_read = bsp_uart_read_u8(proto->dev_num,
-						      proto->buffer_rx,
-						      &(uint8_t){UART_BRIDGE_BUFF_SIZE},
-						      TIME_US2I(100));
+			bytes_read = UART_BRIDGE_BUFF_SIZE;
+			bsp_uart_read_u8(proto->dev_num,
+					 proto->buffer_rx,
+					 &bytes_read,
+					 TIME_US2I(100));
 			if(bytes_read > 0) {
 				cprint(con, (char *)proto->buffer_rx, bytes_read);
 			}
