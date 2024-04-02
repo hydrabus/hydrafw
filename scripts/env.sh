@@ -19,5 +19,15 @@ rm  md5.txt
 tar  xvjf  "${TARBALL}"
 rm  "${TARBALL}"
 
-echo  "export  PATH=\"${CURDIR}/${TARDIR}/bin\":\"\${PATH}\"" > build.env
+if [ -n "${GITHUB_CI_PR_SHA}" ]; then
+	# This is for GitHub Actions CI/CD tooling only
+	echo  "export  PATH=\"${CURDIR}/${TARDIR}/bin\":\"\${PATH}\"" > build.env
+else
+	# And this is for local install
+	echo ""
+	echo  "Add a line like"
+	echo "export  PATH=\"${CURDIR}/${TARDIR}/bin\":\"\${PATH}\""
+	echo "to your ~/.profile and/or ~/.bashrc and run the line to enable toolchain as default one for arm-none-eabi-* target"
+	echo ""
+fi;
 
