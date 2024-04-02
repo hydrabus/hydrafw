@@ -14,8 +14,10 @@ CURDIR="$(pwd)"
 echo  "${MD5SUM} ${TARBALL}"  >  md5.txt
 wget  "${LINK}"
 md5sum  -c  md5.txt
+rm  md5.txt
 
 tar  xvjf  "${TARBALL}"
+rm  "${TARBALL}"
 
 echo  "export  PATH=\"${CURDIR}/${TARDIR}/bin\":\"\${PATH}\"" > build.env
 
