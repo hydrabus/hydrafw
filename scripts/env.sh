@@ -19,7 +19,7 @@ rm  md5.txt
 tar  xvjf  "${TARBALL}"
 rm  "${TARBALL}"
 
-if [ -n "${GITHUB_CI_PR_SHA}" ]; then
+if [ -n "${GITHUB_CI_PR_SHA}" ] || [ 1 -eq "${GITHUB_CI_CD}" ]; then
 	# This is for GitHub Actions CI/CD tooling only
 	echo  "export  PATH=\"${CURDIR}/${TARDIR}/bin\":\"\${PATH}\"" > build.env
 else
