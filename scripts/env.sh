@@ -19,6 +19,9 @@ rm  md5.txt
 tar  xvjf  "${TARBALL}"
 rm  "${TARBALL}"
 
+# Ensure GITHUB_CI_CD is set and is an integer, default to 0 if not set
+GITHUB_CI_CD="${GITHUB_CI_CD:-0}"
+
 if [ -n "${GITHUB_CI_PR_SHA}" ] || [ 1 -eq "${GITHUB_CI_CD}" ]; then
 	# This is for GitHub Actions CI/CD tooling only
 	echo  "export  PATH=\"${CURDIR}/${TARDIR}/bin\":\"\${PATH}\"" > build.env
@@ -30,4 +33,3 @@ else
 	echo "to your ~/.profile and/or ~/.bashrc and run the line to enable toolchain as default one for arm-none-eabi-* target"
 	echo ""
 fi;
-
