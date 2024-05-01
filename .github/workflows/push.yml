@@ -1,6 +1,5 @@
 name: CI
 
-
 on:
   push:
     branches:
@@ -12,27 +11,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        model: [ "hydrafw" ]
-      fail-fast: true
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Update package cache
-        run: sudo  apt  update  -y
-
-      - name: Install packages
-        run: sudo  apt  install  -y  --no-install-recommends  --no-install-suggests  bash  coreutils  tar  bzip2  git  make  python3  python3-pip
-
-      - name: Install python modules
-        run: python3  -m pip  install  GitPython intelhex  --upgrade
-
       - uses: actions/checkout@v4
         with:
           submodules: true
           fetch-tags: true
           fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: 'pip' # caching pip dependencies
+
+      - run: pip install -r src/requirements.txt
 
       - name: Set git meta info
         run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"  &&  echo "GITHUB_CI_CD=1" >> "${GITHUB_ENV}"
@@ -40,15 +33,15 @@ jobs:
       - name: Install standalone reference GCC toolchain
         run: bash  scripts/env.sh
 
-      - name: Build ${{ matrix.model }}
+      - name: Build hydrafw
         run: source  build.env  &&  arm-none-eabi-gcc --version  &&  arm-none-eabi-gcc -print-search-dirs  &&  make  V=1  -j$(nproc)  -C src/
 
-      - name: Archive ${{ matrix.model }} artifacts
+      - name: Archive hydrafw artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.model }}
+          name: hydrafw
           path: |
-            src/build/${{ matrix.model }}.dfu
+            src/build/hydrafw.dfu
           if-no-files-found: error
 
 
