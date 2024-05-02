@@ -20,7 +20,7 @@ export STM32F4XX ?= 1
 # Set to 1 HYDRAFW_NFC to include HydraNFC extension support
 export HYDRAFW_NFC ?= 1
 export HYDRAFW_DEBUG ?= 0
-export FW_REVISION := $(shell $(PYTHON) build-scripts/hydrafw-revision.py)
+export FW_REVISION := $(shell build-scripts/hydrafw-revision)
 
 HYDRAFW_OPTS =
 

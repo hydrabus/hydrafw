@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Get the version description from git
+version=$(git describe --tags --always --dirty --long)
+
+# Use regex to match version pattern v(x.x)
+if [[ $version =~ v([0-9]+\.[0-9]+).* ]]
+then
+  # If match found, print the version
+  echo ${BASH_REMATCH[1]}
+else
+  # Print 0.0 if no match is found
+  echo "0.0"
+fi
