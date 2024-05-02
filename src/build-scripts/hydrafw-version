@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+if [ $# -eq 1 ]
+then
+  exec > $1  # directing stdout to the file passed as argument
+  vermagic=$(git describe --tags --always --dirty --long)
+  if [[ -n "$GITHUB_CI_PR_SHA" ]]; then
+    # if GITHUB_CI_PR_SHA is set, then it's GitHub Actions build, so workaround to set a valid tag is required
+    sha_id=${GITHUB_CI_PR_SHA:0:7}
+    vermagic=$(echo ${vermagic} | sed "s/-g.*$/-g${sha_id}/")
+  fi
+  echo "#define HYDRAFW_GIT_TAG \"$vermagic\""
+  echo "#define HYDRAFW_CHECKIN_DATE \"$(git show -s --pretty=format:%ai | cut -d' ' -f1)\""
+else
+  echo "usage: $0 outfile.txt"
+  exit 1
+fi

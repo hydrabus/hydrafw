@@ -341,7 +341,7 @@ FORCE:
 %.hdr: FORCE
 	$(OUT_LOG) echo Creating ./common/hydrafw_version.hdr
 	$(OUT_CMD) rm -f $(OBJDIR)/common.o
-	$(OUT_CMD) $(PYTHON) build-scripts/hydrafw-version.py ./common/hydrafw_version.hdr
+	$(OUT_CMD) build-scripts/hydrafw-version ./common/hydrafw_version.hdr
 
 %.dfu: %.hex $(LDSCRIPT)
 	$(OUT_LOG) echo Creating $@
