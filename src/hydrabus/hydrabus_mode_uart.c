@@ -117,9 +117,16 @@ static THD_FUNCTION(bridge_thread, arg)
 
 static void bridge(t_hydra_console *con)
 {
-	uint8_t bytes_read;
-	//uint8_t bytes_read;
+	bsp_status_t bsp_status;
 	mode_config_proto_t* proto = &con->mode->proto;
+
+	uint8_t bytes_read;
+
+	bsp_status = bsp_uart_init(proto->dev_num, proto);
+	if( bsp_status != BSP_OK) {
+		cprintf(con, str_bsp_init_err, bsp_status);
+		return;
+	}
 
 	cprintf(con, "Interrupt by pressing user button.\r\n");
 	cprint(con, "\r\n", 2);
