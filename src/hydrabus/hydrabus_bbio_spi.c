@@ -283,7 +283,13 @@ void bbio_mode_spi(t_hydra_console *con)
 				} else if ((bbio_subcommand & BBIO_SPI_CONFIG) == BBIO_SPI_CONFIG) {
 					proto->config.spi.dev_polarity = (bbio_subcommand & 0b100)?1:0;
 					proto->config.spi.dev_phase = (bbio_subcommand & 0b10)?1:0;
-					proto->dev_num = (bbio_subcommand & 0b1)?BSP_DEV_SPI1:BSP_DEV_SPI2;
+
+					data = (bbio_subcommand & 0b1)?BSP_DEV_SPI1:BSP_DEV_SPI2;
+					if (proto->dev_num != data) {
+						bsp_spi_deinit(proto->dev_num);
+						proto->dev_num = data;
+					}
+
 					status = bsp_spi_init(proto->dev_num, proto);
 					if(status == BSP_OK) {
 						cprint(con, "\x01", 1);
