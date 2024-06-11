@@ -345,7 +345,7 @@ FORCE:
 
 %.dfu: %.hex $(LDSCRIPT)
 	$(OUT_LOG) echo Creating $@
-	$(OUT_CMD) $(PYTHON) build-scripts/dfu-convert.py -r $(FW_REVISION) -i $< $@
+	$(OUT_CMD) build-scripts/dfu-convert -r $(FW_REVISION) -i $< $@
 
 # This rule hook is defined in the ChibiOS build system
 PRE_MAKE_ALL_RULE_HOOK: ./common/hydrafw_version.hdr
