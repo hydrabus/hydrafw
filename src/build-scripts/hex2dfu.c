@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #define ED25519_SUPPORT 0
 
@@ -75,13 +76,15 @@ int main (int argc, char **argv) {
         targen_number = strtol(optarg, NULL, 16);
         break;
       case 'r': // Target Revision format "xx.yy"
-		uint16_t revision_number_MSB, revision_number_LSB;
-		if (sscanf(optarg, "%hx.%hx", &revision_number_MSB, &revision_number_LSB) != 2) {
-			fprintf(stderr, "Invalid revision format: %s\n", optarg);
-			exit(EXIT_FAILURE); // or return an error code
-		}
+      {
+        uint16_t revision_number_MSB, revision_number_LSB;
+        if (sscanf(optarg, "%hx.%hx", &revision_number_MSB, &revision_number_LSB) != 2) {
+          fprintf(stderr, "Invalid revision format: %s\n", optarg);
+          exit(EXIT_FAILURE); // or return an error code
+        }
         ver = (int)(revision_number_MSB << 8 | revision_number_LSB);;
         break;
+      }
       case 'd':   //device version
         ver = strtol (optarg, NULL, 16);
         break;
