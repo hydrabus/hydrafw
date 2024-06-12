@@ -4,10 +4,10 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c99
 
 # Source files
-SRCS = dfu-convert.c
+SRCS = hex2dfu.c
 
 # Output executable
-TARGET = dfu-convert
+TARGET = hex2dfu
 
 # Default target
 all: $(TARGET)

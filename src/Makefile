@@ -6,14 +6,6 @@
 .SUFFIXES:            # Delete the default suffixes
 MAKEFLAGS += --no-builtin-rules
 
-ifeq ($(OS), Windows_NT)
-  PYTHON = python
-else ifeq ($(shell which python3),)
-  PYTHON = python
-else
-  PYTHON = python3
-endif
-
 # Set CPU target (default STM32F4XX)
 export STM32F4XX ?= 1
 
@@ -345,7 +337,8 @@ FORCE:
 
 %.dfu: %.hex $(LDSCRIPT)
 	$(OUT_LOG) echo Creating $@
-	$(OUT_CMD) build-scripts/dfu-convert -r $(FW_REVISION) -i $< $@
+	$(OUT_LOG) echo ./build-scripts/hex2dfu -l ST... -r $(FW_REVISION) -i $< -o $@
+	$(OUT_CMD) ./build-scripts/hex2dfu -l ST... -r $(FW_REVISION) -i $< -o $@
 
 # This rule hook is defined in the ChibiOS build system
 PRE_MAKE_ALL_RULE_HOOK: ./common/hydrafw_version.hdr
