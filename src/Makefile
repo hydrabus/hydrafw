@@ -312,6 +312,13 @@ ULIBDIR =
 # List all user libraries here
 ULIBS =
 
+# hex2dfu  utility, depending on platform
+ifeq ($(OS), Windows_NT)
+HEX2DFU_BIN = ./build-scripts/hex2dfu.exe
+else
+HEX2DFU_BIN = ./build-scripts/hex2dfu
+endif
+
 # Flash tool with arguments depending on platform
 ifeq ($(OS), Windows_NT)
 FLASH_CMD = ../utils/windows_dfu_util/DfuSeCommand.exe -c --de 0 -d --fn
@@ -330,15 +337,18 @@ include $(RULESPATH)/rules.mk
 FORCE:
 .PHONY: FORCE
 
+build-scripts/hex2dfu:
+	make -C build-scripts/
+
 %.hdr: FORCE
 	$(OUT_LOG) echo Creating ./common/hydrafw_version.hdr
 	$(OUT_CMD) rm -f $(OBJDIR)/common.o
 	$(OUT_CMD) build-scripts/hydrafw-version ./common/hydrafw_version.hdr
 
-%.dfu: %.hex $(LDSCRIPT)
+%.dfu: %.hex $(LDSCRIPT) $(HEX2DFU_BIN)
 	$(OUT_LOG) echo Creating $@
-	$(OUT_LOG) echo ./build-scripts/hex2dfu -l ST... -r $(FW_REVISION) -i $< -o $@
-	$(OUT_CMD) ./build-scripts/hex2dfu -l ST... -r $(FW_REVISION) -i $< -o $@
+	$(OUT_LOG) echo $(HEX2DFU_BIN) -l ST... -r $(FW_REVISION) -i $< -o $@
+	$(OUT_CMD) $(HEX2DFU_BIN) -l ST... -r $(FW_REVISION) -i $< -o $@
 
 # This rule hook is defined in the ChibiOS build system
 PRE_MAKE_ALL_RULE_HOOK: ./common/hydrafw_version.hdr
