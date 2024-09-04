@@ -45,6 +45,8 @@ jobs:
           name: hydrafw
           path: |
             src/build/hydrafw.dfu
+            src/build/hydrafw.hex
+            src/build/hydrafw.elf
           if-no-files-found: error
 
 
