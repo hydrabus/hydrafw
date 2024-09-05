@@ -13,11 +13,16 @@ export STM32F4XX ?= 1
 export HYDRAFW_NFC ?= 1
 export HYDRAFW_DEBUG ?= 0
 export FW_REVISION := $(shell build-scripts/hydrafw-revision)
+export HYDRANFC_KAMELEON_FLAVOR ?= 0
 
 HYDRAFW_OPTS =
 
 ifeq ($(HYDRAFW_NFC),1)
 HYDRAFW_OPTS += -DHYDRANFC
+endif
+
+ifeq ($(HYDRANFC_KAMELEON_FLAVOR),1)
+HYDRAFW_OPTS += -DHYDRANFC_KAMELEON_FLAVOR
 endif
 
 # Compiler options here.
