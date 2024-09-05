@@ -93,9 +93,9 @@ limitations under the License.
 #undef K2_BUTTON
 #undef K3_BUTTON
 #undef K4_BUTTON
-#define K2_BUTTON 0
-#define K3_BUTTON 0
-#define K4_BUTTON 0
+#define K2_BUTTON 0 // K2 is not used (only led actions ?)
+#define K3_BUTTON K1_BUTTON // K3 is used in key/sniffing actions, but not K1, so we're using it in place
+#define K4_BUTTON 0 // K4 is used to stop sniffing, but the USER BUTTON can be used in place, so we don't deal with K4 [ if ( (K4_BUTTON) || (hydrabus_ubtn()) ) ]
 #endif
 
 /* LEDs D2/D3/D4/D5 Configured as Output */
