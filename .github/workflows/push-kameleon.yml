@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      HYDRANFC_KAMELEON_FLAVOR: 1
+      
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-tags: true
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: 'pip' # caching pip dependencies
+
+      - run: pip install -r src/requirements.txt
+
+      - name: Set git meta info
+        run: echo "GITHUB_CI_PR_SHA=${{github.event.pull_request.head.sha}}" >> "${GITHUB_ENV}"  &&  echo "GITHUB_CI_CD=1" >> "${GITHUB_ENV}"
+
+      - name: Install standalone reference GCC toolchain
+        run: bash  scripts/env.sh
+
+      - name: Build src/build-scripts/hex2dfu
+        run: cd src/build-scripts && make clean all
+
+      - name: Build hydrafw-kameleon
+        run: source  build.env  &&  arm-none-eabi-gcc --version  &&  arm-none-eabi-gcc -print-search-dirs  &&  make  V=1  -j$(nproc)  -C src/
+
+      - name: Archive hydrafw-kameleon artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydrafw-kameleon
+          path: |
+            src/build/hydrafw.dfu
+            src/build/hydrafw.hex
+            src/build/hydrafw.elf
+          if-no-files-found: error
