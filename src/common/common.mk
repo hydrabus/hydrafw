@@ -5,7 +5,8 @@ COMMONSRC = common/common.c \
             common/usb1cfg.c \
             common/usb2cfg.c \
             common/script.c \
-            common/alloc.c
+            common/alloc.c \
+			common/debug.c
 
 # Required include directories
 COMMONINC = ./common

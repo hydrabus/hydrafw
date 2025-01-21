@@ -164,6 +164,8 @@ const t_token_dict tl_dict[] = {
 	{ T_DELAY, "delay" },
 	{ T_CLOCK_STRETCH, "clock-stretch" },
 	{ T_TIMEOUT, "timeout" },
+	{ T_PEEK, "peek" },
+	{ T_POKE, "poke" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -2037,6 +2039,17 @@ t_token tokens_show[] = {
 };
 
 t_token tokens_debug[] = {
+	{
+		T_PEEK,
+		.arg_type = T_ARG_UINT,
+		.help = "Peek a value from memory"
+	},
+	{
+		T_POKE,
+		.flags = T_FLAG_SUFFIX_TOKEN_DELIM_INT,
+		.arg_type = T_ARG_UINT,
+		.help = "Poke a value to memory"
+	},
 	{
 		T_TOKENLINE,
 		.help = "Tokenline dump for every command"

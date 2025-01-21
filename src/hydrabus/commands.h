@@ -156,6 +156,8 @@ enum {
 	T_DELAY,
 	T_CLOCK_STRETCH,
 	T_TIMEOUT,
+	T_PEEK,
+	T_POKE,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */

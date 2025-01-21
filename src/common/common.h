@@ -117,8 +117,6 @@ int cmd_mode_exec(t_hydra_console *con, t_tokenline_parsed *p);
 typedef int (*cmdfunc)(t_hydra_console *con, t_tokenline_parsed *p);
 int mode_exit(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_show(t_hydra_console *con, t_tokenline_parsed *p);
-int cmd_debug_timing(t_hydra_console *con, t_tokenline_parsed *p);
-int cmd_debug_test_rx(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_adc(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_dac(t_hydra_console *con, t_tokenline_parsed *p);
 int cmd_pwm(t_hydra_console *con, t_tokenline_parsed *p);

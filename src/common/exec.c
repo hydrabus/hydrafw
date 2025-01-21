@@ -28,6 +28,7 @@
 #include "hydrabus_sd.h"
 
 #include "common.h"
+#include "debug.h"
 
 uint32_t debug_flags = 0;
 
@@ -121,6 +122,12 @@ static int cmd_debug(t_hydra_console *con, t_tokenline_parsed *p)
 		case T_ON:
 		case T_OFF:
 			action = p->tokens[t];
+			break;
+		case T_PEEK:
+			t = cmd_debug_peek(con, p, t);
+			break;
+		case T_POKE:
+			t = cmd_debug_poke(con, p, t);
 			break;
 		}
 	}
