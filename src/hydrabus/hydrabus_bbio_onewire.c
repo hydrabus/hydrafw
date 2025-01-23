@@ -38,6 +38,7 @@ static void bbio_mode_id(t_hydra_console *con)
 void bbio_mode_onewire(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
+	uint32_t swio_data;
 	uint8_t bbio_subcommand, i;
 	uint8_t rx_data[16], tx_data[16];
 	uint8_t data;
@@ -64,6 +65,17 @@ void bbio_mode_onewire(t_hydra_console *con)
 				rx_data[0] = onewire_read_u8(con);
 				cprint(con, (char *)&rx_data[0], 1);
 				break;
+			case BBIO_ONEWIRE_SWIO_READ:
+				chnRead(con->sdu, &data, 1);
+				swio_data = onewire_swio_read_reg(con, data);
+				cprint(con, (void *)&swio_data, 4);
+				break;
+			case BBIO_ONEWIRE_SWIO_WRITE:
+				chnRead(con->sdu, &data, 1);
+				chnRead(con->sdu, (uint8_t *)&swio_data, 4);
+				onewire_swio_write_reg(con, data, swio_data);
+				cprint(con, "\x01", 1);
+				break;
 			default:
 				if ((bbio_subcommand & BBIO_AUX_MASK) == BBIO_AUX_MASK) {
 					cprintf(con, "%c", bbio_aux(con, bbio_subcommand));
@@ -78,8 +90,16 @@ void bbio_mode_onewire(t_hydra_console *con)
 					}
 					cprint(con, "\x01", 1);
 				} else if ((bbio_subcommand & BBIO_ONEWIRE_CONFIG_PERIPH) == BBIO_ONEWIRE_CONFIG_PERIPH) {
-					proto->config.onewire.dev_gpio_pull = (bbio_subcommand & 0b100)?1:0;
-					status = onewire_pin_init(con);
+					if(bbio_subcommand & 0b1000) {
+						onewire_init_proto_swio(con);
+						proto->config.onewire.dev_gpio_pull = (bbio_subcommand & 0b100)?1:0;
+						status = onewire_pin_init(con);
+						onewire_swio_reset(con);
+					} else {
+						onewire_init_proto_default(con);
+						proto->config.onewire.dev_gpio_pull = (bbio_subcommand & 0b100)?1:0;
+						status = onewire_pin_init(con);
+					}
 					//Set AUX[0] (PC4) value
 					bbio_aux_write((bbio_subcommand & 0b10)>>1);
 

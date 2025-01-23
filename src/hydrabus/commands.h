@@ -158,6 +158,7 @@ enum {
 	T_TIMEOUT,
 	T_PEEK,
 	T_POKE,
+	T_SWIO,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */

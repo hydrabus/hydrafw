@@ -166,6 +166,7 @@ const t_token_dict tl_dict[] = {
 	{ T_TIMEOUT, "timeout" },
 	{ T_PEEK, "peek" },
 	{ T_POKE, "poke" },
+	{ T_SWIO, "swio" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -1373,6 +1374,10 @@ t_token tokens_mode_onewire[] = {
 	{
 		T_ARG_STRING,
 		.help = "Write string"
+	},
+	{
+		T_DEBUG,
+		.help = "minichlink compatible SWIO debugger"
 	},
 	/* BP commands */
 	{

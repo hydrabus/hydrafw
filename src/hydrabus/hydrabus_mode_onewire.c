@@ -62,6 +62,17 @@ void onewire_init_proto_default(t_hydra_console *con)
 	proto->config.onewire.dev_bit_lsb_msb = DEV_FIRSTBIT_LSB;
 }
 
+void onewire_init_proto_swio(t_hydra_console *con)
+{
+	mode_config_proto_t* proto = &con->mode->proto;
+
+	/* Defaults */
+	proto->dev_num = 0;
+	proto->config.onewire.dev_gpio_mode = MODE_CONFIG_DEV_GPIO_OUT_PUSHPULL;
+	proto->config.onewire.dev_gpio_pull = MODE_CONFIG_DEV_GPIO_NOPULL;
+	proto->config.onewire.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
+}
+
 static void show_params(t_hydra_console *con)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -388,6 +399,182 @@ static int init(t_hydra_console *con, t_tokenline_parsed *p)
 	return tokens_used;
 }
 
+/* Around 250us */
+static void onewire_swio_delay_250(void)
+{
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+	__asm__("nop");
+}
+
+void onewire_swio_reset(t_hydra_console *con)
+{
+	(void) con;
+	onewire_low();
+	DelayMs(20);
+	onewire_high();
+}
+
+void onewire_swio_write_bit(t_hydra_console *con, uint8_t bit)
+{
+	onewire_mode_output(con);
+
+	if(bit) {
+		onewire_low();
+		onewire_swio_delay_250();
+		onewire_high();
+		onewire_swio_delay_250();
+		onewire_swio_delay_250();
+		onewire_swio_delay_250();
+	} else {
+		onewire_low();
+		onewire_swio_delay_250();
+		onewire_swio_delay_250();
+		onewire_swio_delay_250();
+		onewire_swio_delay_250();
+		onewire_high();
+	}
+}
+
+uint8_t onewire_swio_read_bit(t_hydra_console *con)
+{
+	uint8_t bit=0;
+
+	onewire_mode_output(con);
+	onewire_low();
+	onewire_swio_delay_250();
+	onewire_mode_input(con);
+	onewire_swio_delay_250();
+	onewire_swio_delay_250();
+	bit = bsp_gpio_pin_read(BSP_GPIO_PORTB, ONEWIRE_PIN);
+	while (0 == bsp_gpio_pin_read(BSP_GPIO_PORTB, ONEWIRE_PIN)){};
+	onewire_high();
+	onewire_mode_output(con);
+	return bit;
+}
+
+uint32_t onewire_swio_read_reg(t_hydra_console *con, uint8_t address)
+{
+	uint32_t result = 0;
+	uint8_t i;
+
+	// start bit
+	onewire_swio_write_bit(con, 1);
+
+	for (i=0; i<7; i++) {
+		onewire_swio_write_bit(con, (address<<i) & 0x40);
+	}
+
+	// Read command
+	onewire_swio_write_bit(con, 0);
+
+	for (i=0; i<32; i++) {
+		result = result << 1;
+		result |= onewire_swio_read_bit(con);
+	}
+
+	DelayUs(10);
+
+	return result;
+
+}
+
+void onewire_swio_write_reg(t_hydra_console *con, uint8_t address, uint32_t value)
+{
+	uint8_t i;
+
+	// start bit
+	onewire_swio_write_bit(con, 1);
+
+	for (i=0; i<7; i++) {
+		onewire_swio_write_bit(con, (address<<i) & 0x40);
+	}
+
+	// Write command
+	onewire_swio_write_bit(con, 1);
+
+	for (i=0; i<32; i++) {
+		onewire_swio_write_bit(con, ((value<<i) & 0x80000000) != 0);
+	}
+
+	DelayUs(10);
+}
+
+void onewire_swio_debug(t_hydra_console *con)
+{
+	uint32_t value;
+	uint8_t command, reg;
+
+	cprintf(con, "Interrupt by pressing user button.\r\n");
+	cprint(con, "\r\n", 2);
+
+	while (!hydrabus_ubtn()) {
+		if(chnReadTimeout(con->sdu, &command, 1, 1)) {
+			switch(command) {
+			case '?':
+				// TODO
+				cprint(con, "+", 1);
+				break;
+			case 'p':
+			case 'P':
+				// TODO
+				cprint(con, "+", 1);
+				break;
+			case 'w':
+				if(chnRead(con->sdu, &reg, 1) == 1) {
+					if(chnRead(con->sdu, (uint8_t *)&value, 4) == 4) {
+						onewire_swio_write_reg(con, reg, value);
+					}
+				}
+				cprint(con, "+", 1);
+				break;
+			case 'r':
+				if(chnRead(con->sdu, &reg, 1) == 1) {
+					value = onewire_swio_read_reg(con, reg);
+					cprint(con, (void *)&value, 4);
+				}
+				break;
+			default:
+				cprint(con, "+", 1);
+				break;
+			}
+		}
+	}
+}
+
 static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 {
 	mode_config_proto_t* proto = &con->mode->proto;
@@ -420,6 +607,13 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 			break;
 		case T_SCAN:
 			onewire_scan(con);
+			break;
+		case T_DEBUG:
+			onewire_init_proto_swio(con);
+			onewire_pin_init(con);
+			onewire_swio_debug(con);
+			onewire_init_proto_default(con);
+			onewire_pin_init(con);
 			break;
 		default:
 			return t - token_pos;

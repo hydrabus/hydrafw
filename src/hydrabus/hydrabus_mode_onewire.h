@@ -29,6 +29,7 @@
 
 
 void onewire_init_proto_default(t_hydra_console *con);
+void onewire_init_proto_swio(t_hydra_console *con);
 bool onewire_pin_init(t_hydra_console *con);
 uint8_t onewire_read_u8(t_hydra_console *con);
 void onewire_write_u8(t_hydra_console *con, uint8_t tx_data);
@@ -38,6 +39,12 @@ void onewire_send_bit(t_hydra_console *con, uint8_t bit);
 uint8_t onewire_read_bit(t_hydra_console *con);
 void onewire_cleanup(t_hydra_console *con);
 void onewire_start(t_hydra_console *con);
+void onewire_swio_write_bit(t_hydra_console *con, uint8_t bit);
+void onewire_swio_reset(t_hydra_console *con);
+uint8_t onewire_swio_read_bit(t_hydra_console *con);
+uint32_t onewire_swio_read_reg(t_hydra_console *con, uint8_t address);
+void onewire_swio_write_reg(t_hydra_console *con, uint8_t address, uint32_t value);
+void onewire_swio_debug(t_hydra_console *con);
 
 struct onewire_scan_state {
 	uint8_t ROM_ADDR[8];
