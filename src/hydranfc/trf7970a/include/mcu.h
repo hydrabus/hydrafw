@@ -82,11 +82,21 @@ limitations under the License.
 #define LED2_OFF (palClearPad(GPIOB, 0))
 #define LED2_TOGGLE (palTogglePad(GPIOB, 0))
 
-/* USer Button K1/2/3/4 Configured as Input */
+/* User Button K1/2/3/4 Configured as Input */
 #define K1_BUTTON (palReadPad(GPIOB, 7))
 #define K2_BUTTON (palReadPad(GPIOB, 6))
 #define K3_BUTTON (palReadPad(GPIOB, 8))
 #define K4_BUTTON (palReadPad(GPIOB, 9))
+
+/* Only one K1 Button on Kameleon board */
+#if defined(HYDRANFC_KAMELEON_FLAVOR)
+#undef K2_BUTTON
+#undef K3_BUTTON
+#undef K4_BUTTON
+#define K2_BUTTON 0 // K2 is not used (only led actions ?)
+#define K3_BUTTON K1_BUTTON // K3 is used in key/sniffing actions, but not K1, so we're using it in place
+#define K4_BUTTON 0 // K4 is used to stop sniffing, but the USER BUTTON can be used in place, so we don't deal with K4 [ if ( (K4_BUTTON) || (hydrabus_ubtn()) ) ]
+#endif
 
 /* LEDs D2/D3/D4/D5 Configured as Output */
 #define D2_ON  (palSetPad(GPIOB, 0))
