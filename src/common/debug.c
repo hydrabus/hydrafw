@@ -227,6 +227,4 @@ int cmd_debug_poke(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 	cprintf(con, "@ 0x%08x=> 0x%08x\r\n", address, value);
 
 	return token_pos;
-	return token_pos;
-
 }
