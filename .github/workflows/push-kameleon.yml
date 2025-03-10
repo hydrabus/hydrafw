@@ -1,4 +1,4 @@
-name: CI
+name: CI-KAMELEON
 
 on:
   push:
@@ -8,11 +8,12 @@ on:
     branches:
       - master
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      HYDRANFC_KAMELEON_FLAVOR: 1
+      
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,17 +37,15 @@ jobs:
       - name: Build src/build-scripts/hex2dfu
         run: cd src/build-scripts && make clean all
 
-      - name: Build hydrafw
+      - name: Build hydrafw-kameleon
         run: source  build.env  &&  arm-none-eabi-gcc --version  &&  arm-none-eabi-gcc -print-search-dirs  &&  make  V=1  -j$(nproc)  -C src/
 
-      - name: Archive hydrafw artifacts
+      - name: Archive hydrafw-kameleon artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: hydrafw
+          name: hydrafw-kameleon
           path: |
             src/build/hydrafw.dfu
             src/build/hydrafw.hex
             src/build/hydrafw.elf
           if-no-files-found: error
-
-
