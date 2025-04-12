@@ -159,6 +159,7 @@ enum {
 	T_PEEK,
 	T_POKE,
 	T_SWIO,
+	T_CONTINUITY,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
