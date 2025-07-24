@@ -21,6 +21,7 @@
 
 #include "hydrabus.h"
 #include "hydrafw_version.hdr"
+#include "chversion.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -217,7 +218,7 @@ void cmd_show_system(t_hydra_console *con)
 	cprintf(con, "Flash Size:   %dKB\r\n", *((uint16_t*)0x1FFF7A22));
 	cprintf(con, "\r\n");
 
-	cprintf(con, "Kernel:       ChibiOS %s\r\n", CH_KERNEL_VERSION);
+	cprintf(con, "Kernel:       ChibiOS %s (RT %s)\r\n", CH_VERSION, CH_KERNEL_VERSION);
 #ifdef PORT_COMPILER_NAME
 	cprintf(con, "Compiler:     %s\r\n", PORT_COMPILER_NAME);
 #endif
