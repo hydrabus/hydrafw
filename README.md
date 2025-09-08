@@ -1,7 +1,7 @@
 HydraFW official firmware for HydraBus v1
 ========
 
-HydraFW is a native C (and asm) open source firmware for HydraBus v1 board.
+HydraFW is a native C (and asm) open source firmware for the HydraBus v1 board.
 
 You can Buy HydraBus v1 Online: http://hydrabus.com/buy-online
 
