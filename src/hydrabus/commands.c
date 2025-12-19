@@ -168,6 +168,7 @@ const t_token_dict tl_dict[] = {
 	{ T_POKE, "poke" },
 	{ T_SWIO, "swio" },
 	{ T_CONTINUITY, "continuity" },
+	{ T_BIDIR, "bidir" },
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */
@@ -1065,7 +1066,10 @@ t_token tokens_i2c[] = {
 	{ T_MSB_FIRST, \
 		.help = "Send/receive MSB first" }, \
 	{ T_LSB_FIRST, \
-		.help = "Send/receive LSB first" },
+		.help = "Send/receive LSB first" }, \
+	{ T_BIDIR, \
+		.arg_type = T_ARG_UINT, \
+		.help = "Bidir mode (0/1)" }, \
 
 t_token tokens_mode_spi[] = {
 	{

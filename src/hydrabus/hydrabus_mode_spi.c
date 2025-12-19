@@ -75,6 +75,7 @@ static void init_proto_default(t_hydra_console *con)
 	proto->config.spi.dev_polarity = 0;
 	proto->config.spi.dev_phase = 0;
 	proto->config.spi.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
+	proto->config.spi.dev_bidir = 0;
 }
 
 static void show_params(t_hydra_console *con)
@@ -82,13 +83,14 @@ static void show_params(t_hydra_console *con)
 	uint8_t i, cnt;
 	mode_config_proto_t* proto = &con->mode->proto;
 
-	cprintf(con, "Device: SPI%d\r\nGPIO resistor: %s\r\nMode: %s\r\n"
+	cprintf(con, "Device: SPI%d\r\nGPIO resistor: %s\r\nMode: %s\r\nBidir: %s\r\n"
 		"Frequency: ",
 		proto->dev_num + 1,
 		proto->config.spi.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLUP ? "pull-up" :
 		proto->config.spi.dev_gpio_pull == MODE_CONFIG_DEV_GPIO_PULLDOWN ? "pull-down" :
 		"floating",
-		proto->config.spi.dev_mode == DEV_MASTER ? "master" : "slave");
+		proto->config.spi.dev_mode == DEV_MASTER ? "master" : "slave",
+		proto->config.spi.dev_bidir == 0 ? "off" : "on");
 
 	print_freq(con, spi_speeds[proto->dev_num][proto->config.spi.dev_speed]);
 	cprintf(con, " (");
@@ -241,6 +243,17 @@ static int exec(t_hydra_console *con, t_tokenline_parsed *p, int token_pos)
 				cprintf(con, str_bsp_init_err, bsp_status);
 				return t;
 			}
+			break;
+		case T_BIDIR:
+			/* Integer parameter. */
+			t += 2;
+			memcpy(&arg_int, p->buf + p->tokens[t], sizeof(int));
+			if (arg_int > 1 ) {
+				cprintf(con, "Bidir must be 0 or 1.\r\n");
+				return t;
+			}
+			proto->config.spi.dev_bidir = arg_int;
+			bsp_spi_init(proto->dev_num, proto);
 			break;
 		default:
 			return t - token_pos;

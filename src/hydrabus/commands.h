@@ -160,6 +160,7 @@ enum {
 	T_POKE,
 	T_SWIO,
 	T_CONTINUITY,
+	T_BIDIR,
 	/* Developer warning add new command(s) here */
 
 	/* BP-compatible commands */

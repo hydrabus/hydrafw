@@ -186,7 +186,12 @@ bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
 	/* SW NSS user shall call bsp_spi_select()/bsp_spi_unselect() */
 	hspi->Init.NSS = SPI_NSS_SOFT;
 	hspi->Init.BaudRatePrescaler = ((7 - mode_conf->config.spi.dev_speed) * SPI_CR1_BR_0);
-	hspi->Init.Direction = SPI_DIRECTION_2LINES;
+	/* Half-duplex / bidirectional or normal 2-line */
+	if(mode_conf->config.spi.dev_bidir == 0) {
+		hspi->Init.Direction = SPI_DIRECTION_2LINES;
+	} else {
+		hspi->Init.Direction = SPI_DIRECTION_1LINE;
+	}
 
 	if(mode_conf->config.spi.dev_phase == 0)
 		cpha = SPI_PHASE_1EDGE;
@@ -220,6 +225,9 @@ bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
 
 	/* Enable SPI peripheral */
 	__HAL_SPI_ENABLE(hspi);
+
+	/* Enable TX mode to avoid spurious clock output */
+	SPI_1LINE_TX(hspi);
 
 	return status;
 }
@@ -351,9 +359,21 @@ bsp_status_t bsp_spi_write_read_u8(bsp_dev_spi_t dev_num, uint8_t* tx_data, uint
 	hspi = &spi_handle[dev_num];
 
 	bsp_status_t status;
-	status = (bsp_status_t) HAL_SPI_TransmitReceive(hspi, tx_data, rx_data, nb_data, SPIx_TIMEOUT_MAX);
-	if(status != BSP_OK) {
-		spi_error(dev_num);
+	if(hspi->Init.Direction == SPI_DIRECTION_1LINE) {
+		status = (bsp_status_t) HAL_SPI_Transmit(hspi, tx_data, nb_data, SPIx_TIMEOUT_MAX);
+		if(status != BSP_OK) {
+			spi_error(dev_num);
+			return status;
+		}
+		status = (bsp_status_t) HAL_SPI_Receive(hspi, rx_data, nb_data, SPIx_TIMEOUT_MAX);
+		if(status != BSP_OK) {
+			spi_error(dev_num);
+		}
+	} else {
+		status = (bsp_status_t) HAL_SPI_TransmitReceive(hspi, tx_data, rx_data, nb_data, SPIx_TIMEOUT_MAX);
+		if(status != BSP_OK) {
+			spi_error(dev_num);
+		}
 	}
 	return status;
 }

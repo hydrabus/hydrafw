@@ -302,6 +302,9 @@ void bbio_mode_spi(t_hydra_console *con)
 					} else {
 						bsp_spi_select(proto->dev_num);
 					}
+					//Set bidir mode
+					proto->config.spi.dev_bidir = (bbio_subcommand & 0b100)?1:0;
+
 					//Set AUX[0] (PC4) value
 					bbio_aux_write((bbio_subcommand & 0b10)>>1);
 

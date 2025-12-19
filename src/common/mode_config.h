@@ -98,6 +98,7 @@ typedef struct {
 	uint8_t dev_polarity;
 	uint8_t dev_phase;
 	uint8_t dev_bit_lsb_msb;
+	uint8_t dev_bidir;
 } spi_config_t;
 
 typedef struct {
