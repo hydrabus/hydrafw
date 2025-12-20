@@ -37,6 +37,7 @@ void bbio_serprog_init_proto_default(t_hydra_console *con)
 	proto->config.spi.dev_polarity = 0;
 	proto->config.spi.dev_phase = 0;
 	proto->config.spi.dev_bit_lsb_msb = DEV_FIRSTBIT_MSB;
+	proto->config.spi.dev_bidir = 0;
 }
 
 void bbio_mode_serprog(t_hydra_console *con)

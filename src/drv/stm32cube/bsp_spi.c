@@ -227,7 +227,9 @@ bsp_status_t bsp_spi_init(bsp_dev_spi_t dev_num, mode_config_proto_t* mode_conf)
 	__HAL_SPI_ENABLE(hspi);
 
 	/* Enable TX mode to avoid spurious clock output */
-	SPI_1LINE_TX(hspi);
+	if(mode_conf->config.spi.dev_bidir == 1) {
+		SPI_1LINE_TX(hspi);
+	}
 
 	return status;
 }
