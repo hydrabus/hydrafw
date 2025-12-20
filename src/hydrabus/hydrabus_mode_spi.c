@@ -379,14 +379,14 @@ static int show(t_hydra_console *con, t_tokenline_parsed *p)
 		if (proto->dev_num == 0) {
 			cprint(con, str_pins_spi1, strlen(str_pins_spi1));
 			if (proto->config.spi.dev_bidir == 0) {
-				cprint(con, str_pins_spi1, strlen(str_pins_spi1_io));
+				cprint(con, str_pins_spi1_io, strlen(str_pins_spi1_io));
 			} else {
 				cprintf(con, "IO:   %s\r\n", proto->config.spi.dev_mode == DEV_MASTER ? "PB5" : "PB4");
 			}
 		} else {
-			cprint(con, str_pins_spi1, strlen(str_pins_spi2));
+			cprint(con, str_pins_spi2, strlen(str_pins_spi2));
 			if (proto->config.spi.dev_bidir == 0) {
-				cprint(con, str_pins_spi2, strlen(str_pins_spi2_io));
+				cprint(con, str_pins_spi2_io, strlen(str_pins_spi2_io));
 			} else {
 				cprintf(con, "IO:   %s\r\n", proto->config.spi.dev_mode == DEV_MASTER ? "PC3" : "PC2");
 			}
